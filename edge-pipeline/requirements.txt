@@ -1,0 +1,6 @@
+# UniHealth EHR Phase 1 - Edge pipeline (Kafka → Redis + Postgres)
+kafka-python==2.0.2
+redis==5.0.1
+psycopg2-binary==2.9.9
+pydantic==2.5.3
+pydantic-settings==2.1.0
