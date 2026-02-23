@@ -4,6 +4,16 @@ Next-generation national Electronic Health Record system (see [Blueprint](docs/U
 
 ## Phase 1 quick start
 
+**One-shot full flow (after Docker is running):**
+
+```bash
+./scripts/run_full_flow.sh
+```
+
+Then open http://localhost:8000/docs or run `curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5`.
+
+**Manual steps:**
+
 ### 1. Start infrastructure
 
 ```bash
@@ -39,6 +49,42 @@ Install [k6](https://k6.io), then:
 k6 run load-tests/gateway-latency.js
 ```
 
+## Full flow (event-driven path)
+
+To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** (no direct DB seed):
+
+1. Start infra and apply schema (no `seed_data.py`):
+
+   ```bash
+   cd infra && docker compose up -d && cd ..
+   psql -U ehr -d ehr -h localhost -f ehr-api/schema.sql
+   ```
+
+2. Start the **consumer** (in one terminal; it will wait for events):
+
+   ```bash
+   cd edge-pipeline && python -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt && python -m consumer.main
+   ```
+
+3. In another terminal, **produce** sample events:
+
+   ```bash
+   pip install -r scripts/requirements.txt
+   python scripts/produce_sample_events.py
+   ```
+
+   The consumer will upsert patients/encounters into Postgres and invalidate Redis cache.
+
+4. Start the **gateway** and query:
+
+   ```bash
+   cd ehr-api && source .venv/bin/activate && uvicorn app.main:app --port 8000
+   curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
+   ```
+
+   First request hits Postgres (cache miss); subsequent requests are served from Redis (&lt;50 ms).
+
 ## Repo layout
 
 | Path | Description |
@@ -48,7 +94,7 @@ k6 run load-tests/gateway-latency.js
 | [ehr-api/](ehr-api/) | Edge FHIR gateway (FastAPI; Redis → Postgres) |
 | [edge-pipeline/](edge-pipeline/) | Kafka consumer → Redis + Postgres |
 | [load-tests/](load-tests/) | k6 latency test |
-| [scripts/](scripts/) | Seed data |
+| [scripts/](scripts/) | Seed data, Kafka producer for sample events |
 
 ## Phase 1 success criteria
 
