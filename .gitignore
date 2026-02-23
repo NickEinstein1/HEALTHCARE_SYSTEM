@@ -1,0 +1,38 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+*.so
+.Python
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and local
+*.log
+*.sqlite3
+.cache/
+
+# k6
+load-tests/result-*
+
+# Docker
+.docker/
+
+# Secrets (do not commit)
+*.pem
+secrets/
