@@ -46,18 +46,18 @@
 
 ```
                     ┌─────────────────────────────────────────────────────────────────┐
-                    │                    NATIONAL CONTROL PLANE                         │
-                    │  (Policy, Consent Registry, Analytics Aggregates, FL Orchestrator) │
+                    │                    NATIONAL CONTROL PLANE                       │
+                    │(Policy, Consent Registry, Analytics Aggregates, FL Orchestrator)│
                     └─────────────────────────────────────────────────────────────────┘
                                                 │
                     ┌───────────────────────────┼───────────────────────────┐
                     │                           │                           │
                     ▼                           ▼                           ▼
     ┌───────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
-    │   REGION / CLOUD       │   │   REGION / CLOUD       │   │   REGION / CLOUD       │
-    │   (Primary + DR)       │   │   (Primary + DR)       │   │   (Primary + DR)       │
-    │   FHIR R5 • Kafka      │   │   FHIR R5 • Kafka      │   │   FHIR R5 • Kafka      │
-    │   Redis • Analytics    │   │   Redis • Analytics    │   │   Redis • Analytics    │
+    │   REGION / CLOUD       │   │   REGION / CLOUD       │   │  REGION / CLOUD     │
+    │   (Primary + DR)       │   │   (Primary + DR)       │   │  (Primary + DR)     │
+    │   FHIR R5 • Kafka      │   │   FHIR R5 • Kafka      │   │  FHIR R5 • Kafka    │
+    │   Redis • Analytics    │   │   Redis • Analytics    │   │  Redis • Analytics  │
     └───────────┬───────────┘   └───────────┬───────────┘   └───────────┬───────────┘
                 │                           │                           │
                 ▼                           ▼                           ▼
@@ -71,13 +71,13 @@
                 └───────────────────────────┼───────────────────────────┘
                                             │
                     ┌───────────────────────┴───────────────────────┐
-                    │   INTEROPERABILITY LAYER (FHIR R5 + HL7 v2)    │
-                    │   Event-driven sync • Dedup • Consent checks   │
+                    │   INTEROPERABILITY LAYER (FHIR R5 + HL7 v2)   │
+                    │   Event-driven sync • Dedup • Consent checks  │
                     └───────────────────────────────────────────────┘
                                             │
                     ┌───────────────────────┴───────────────────────┐
                     │   IDENTITY & ACCESS                           │
-                    │   Smart Card (NFC + Biometric) • OAuth2/OIDC   │
+                    │   Smart Card (NFC + Biometric) • OAuth2/OIDC  │
                     └───────────────────────────────────────────────┘
 ```
 
