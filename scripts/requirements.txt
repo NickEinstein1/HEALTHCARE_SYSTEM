@@ -1,0 +1,2 @@
+# For scripts that need Kafka (produce_sample_events.py)
+kafka-python==2.0.2
