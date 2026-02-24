@@ -2,11 +2,15 @@
 
 Phase 1 implementation of the UniHealth EHR edge gateway. Serves **patient + recent encounters** with a **P95 &lt;50 ms** target by reading from Redis first, then PostgreSQL.
 
-## Endpoint
+## Endpoints
 
 - **GET** `/fhir/r5/Patient/{patient_id}/summary?encounters=5`  
   Returns patient demographics and last N encounters (FHIR-style JSON).  
   Cache-first; on miss loads from DB and backfills cache.
+
+- **POST** `/fhir/r5/Patient` – Ingest patient (pilot EMR). Body: FHIR-style Patient JSON (`id` required). Publishes to Kafka → consumer updates Postgres/Redis.
+
+- **POST** `/fhir/r5/Encounter` – Ingest encounter (pilot EMR). Body: FHIR-style Encounter JSON (`id`, `patient_id` or `subject.reference` required). Publishes to Kafka.
 
 ## Run locally
 
