@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     postgres_dsn: str = "postgresql://ehr:ehr_dev_password@localhost:5432/ehr"
     cache_ttl_seconds: int = 300  # 5 min for patient summary
     default_encounters_limit: int = 5
+    kafka_bootstrap_servers: str = "localhost:9092"
 
     class Config:
         env_prefix = "EHR_"
