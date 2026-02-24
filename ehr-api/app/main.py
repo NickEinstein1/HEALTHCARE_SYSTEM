@@ -3,12 +3,14 @@ UniHealth EHR Phase 1 - Edge FHIR gateway.
 
 Target: P95 < 50 ms for GET /fhir/r5/Patient/{id}/summary
 Strategy: Redis (hot) first; on miss, PostgreSQL (warm) then backfill cache.
+Pilot EMRs POST Patient/Encounter to Kafka via ingestion API.
 """
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
+from app.ingestion import send_encounter, send_patient
 from app.models import PatientSummary
 from app.store import get_summary_from_cache, get_summary_from_db, set_summary_in_cache
 
@@ -66,3 +68,38 @@ async def patient_summary(
     await set_summary_in_cache(patient_id, summary)
 
     return summary
+
+
+# ----- Pilot EMR ingestion (POST → Kafka) -----
+
+
+@app.post(
+    "/fhir/r5/Patient",
+    status_code=202,
+    summary="Ingest patient (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
+)
+async def ingest_patient(body: dict):
+    """Accept FHIR-style Patient JSON. Required: id. Optional: nhi_number, family_name, given_name, birth_date, gender."""
+    try:
+        send_patient(body)
+        return {"status": "accepted", "resourceType": "Patient", "id": body.get("id")}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
+
+
+@app.post(
+    "/fhir/r5/Encounter",
+    status_code=202,
+    summary="Ingest encounter (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
+)
+async def ingest_encounter(body: dict):
+    """Accept FHIR-style Encounter JSON. Required: id, patient_id (or subject.reference). Optional: facility_id, facility_name, status, class_code, period."""
+    try:
+        send_encounter(body)
+        return {"status": "accepted", "resourceType": "Encounter", "id": body.get("id")}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
