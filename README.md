@@ -10,7 +10,8 @@ Next-generation national Electronic Health Record system (see [Blueprint](docs/U
 ./scripts/run_full_flow.sh
 ```
 
-Then open http://localhost:8000/docs or run `curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5`.
+Then open http://localhost:8000/docs or run:
+`curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5`
 
 **Manual steps:**
 
@@ -38,7 +39,7 @@ cd ehr-api && source .venv/bin/activate && uvicorn app.main:app --reload --port 
 ### 4. Test
 
 ```bash
-curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
+curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
 ```
 
 ### 5. Load test (P95 &lt;50 ms)
@@ -74,13 +75,15 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
    python scripts/produce_sample_events.py
    ```
 
-   The consumer will upsert patients/encounters into Postgres and invalidate Redis cache.
+   The consumer will upsert patients/encounters/observations/medication_requests into Postgres and invalidate Redis caches.
 
 4. Start the **gateway** and query:
 
    ```bash
    cd ehr-api && source .venv/bin/activate && uvicorn app.main:app --port 8000
-   curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
+   curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
+   curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/observations?limit=20
+   curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/medication-requests?limit=20
    ```
 
    First request hits Postgres (cache miss); subsequent requests are served from Redis (&lt;50 ms).
