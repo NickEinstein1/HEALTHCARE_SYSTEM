@@ -46,3 +46,23 @@ def send_encounter(resource: dict) -> None:
         raise ValueError("Encounter resource must have 'id' and 'patient_id' (or subject.reference)")
     get_producer().send("ehr.encounter", value={"resource": resource})
     get_producer().flush()
+
+
+def send_observation(resource: dict) -> None:
+    """Publish observation to ehr.observation. Required: id and patient_id (or subject.reference)."""
+    oid = resource.get("id")
+    pid = resource.get("patient_id") or (resource.get("subject") or {}).get("reference", "").split("/")[-1]
+    if not oid or not pid:
+        raise ValueError("Observation resource must have 'id' and 'patient_id' (or subject.reference)")
+    get_producer().send("ehr.observation", value={"resource": resource})
+    get_producer().flush()
+
+
+def send_medication_request(resource: dict) -> None:
+    """Publish MedicationRequest to ehr.medication_request. Required: id and patient_id (or subject.reference)."""
+    mid = resource.get("id")
+    pid = resource.get("patient_id") or (resource.get("subject") or {}).get("reference", "").split("/")[-1]
+    if not mid or not pid:
+        raise ValueError("MedicationRequest must have 'id' and 'patient_id' (or subject.reference)")
+    get_producer().send("ehr.medication_request", value={"resource": resource})
+    get_producer().flush()
