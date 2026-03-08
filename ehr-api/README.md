@@ -12,6 +12,34 @@ Phase 1 implementation of the UniHealth EHR edge gateway. Serves **patient + rec
 
 - **POST** `/fhir/r5/Encounter` – Ingest encounter (pilot EMR). Body: FHIR-style Encounter JSON (`id`, `patient_id` or `subject.reference` required). Publishes to Kafka.
 
+- **POST** `/fhir/r5/Observation` – Ingest observation. Body requires `id` and `patient_id` (or `subject.reference`). Publishes to Kafka.
+
+- **POST** `/fhir/r5/MedicationRequest` – Ingest medication request. Body requires `id` and `patient_id` (or `subject.reference`). Publishes to Kafka.
+
+- **GET** `/fhir/r5/Patient/{patient_id}/observations?limit=20` – Read observations (Redis → Postgres).
+
+- **GET** `/fhir/r5/Patient/{patient_id}/medication-requests?limit=20` – Read medication requests (Redis → Postgres).
+
+## Consent (Phase 1)
+
+Consent is **optional by default** (`EHR_CONSENT_MODE=permissive`). If you set `EHR_CONSENT_MODE=strict`, reads will be denied unless an active consent exists for the requested facility (via header `X-Facility-Id`).
+
+- Grant:
+
+```bash
+curl -s -X POST http://localhost:8000/consent/grant \\
+  -H "Content-Type: application/json" \\
+  -d '{"patient_id":"P001","facility_id":"FAC-A","scope":"treatment"}'
+```
+
+- Revoke:
+
+```bash
+curl -s -X POST http://localhost:8000/consent/revoke \\
+  -H "Content-Type: application/json" \\
+  -d '{"patient_id":"P001","facility_id":"FAC-A","scope":"treatment"}'
+```
+
 ## Run locally
 
 1. Start infra (from repo root):
