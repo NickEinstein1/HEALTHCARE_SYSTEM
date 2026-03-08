@@ -115,10 +115,111 @@ def process_encounter(payload: dict, conn, redis_client):
     redis_client.delete(f"patient:{pid}:summary")
 
 
+def _extract_code(resource: dict) -> str | None:
+    coding = None
+    if isinstance(resource.get("code"), dict):
+        coding = (resource.get("code") or {}).get("coding")
+    if isinstance(coding, list) and coding:
+        first = coding[0] or {}
+        return first.get("code") or first.get("display")
+    return resource.get("code") if isinstance(resource.get("code"), str) else None
+
+
+def process_observation(payload: dict, conn, redis_client):
+    o = payload.get("resource", payload)
+    oid = o.get("id") or payload.get("observationId")
+    subj = o.get("subject") or {}
+    ref = subj.get("reference", "") if isinstance(subj, dict) else ""
+    pid = o.get("patient_id") or o.get("patientId") or (ref.split("/")[-1] if ref else None)
+    if not oid or not pid:
+        return
+
+    effective = o.get("effective_time") or (o.get("effectiveDateTime") if isinstance(o.get("effectiveDateTime"), str) else None)
+    if effective is None and isinstance(o.get("effective"), dict):
+        effective = o["effective"].get("dateTime") or o["effective"].get("start")
+    eff_dt = parse_datetime(effective) if effective else None
+
+    code = o.get("code_text") or _extract_code(o)
+    value_text = None
+    unit = None
+    if isinstance(o.get("valueQuantity"), dict):
+        vq = o["valueQuantity"]
+        value_text = str(vq.get("value")) if vq.get("value") is not None else None
+        unit = vq.get("unit") or vq.get("code")
+    elif o.get("valueString") is not None:
+        value_text = str(o.get("valueString"))
+    elif o.get("valueBoolean") is not None:
+        value_text = str(o.get("valueBoolean"))
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO observations (id, patient_id, code, effective_time, value_text, unit, resource_json)
+            VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
+            ON CONFLICT (id) DO UPDATE SET
+                patient_id = EXCLUDED.patient_id,
+                code = EXCLUDED.code,
+                effective_time = EXCLUDED.effective_time,
+                value_text = EXCLUDED.value_text,
+                unit = EXCLUDED.unit,
+                resource_json = EXCLUDED.resource_json,
+                updated_at = NOW()
+            """,
+            (oid, pid, code, eff_dt, value_text, unit, json.dumps(o)),
+        )
+    conn.commit()
+    redis_client.delete(f"patient:{pid}:observations")
+
+
+def process_medication_request(payload: dict, conn, redis_client):
+    m = payload.get("resource", payload)
+    mid = m.get("id") or payload.get("medicationRequestId")
+    subj = m.get("subject") or {}
+    ref = subj.get("reference", "") if isinstance(subj, dict) else ""
+    pid = m.get("patient_id") or m.get("patientId") or (ref.split("/")[-1] if ref else None)
+    if not mid or not pid:
+        return
+
+    med_code = None
+    if isinstance(m.get("medicationCodeableConcept"), dict):
+        med_code = _extract_code(m.get("medicationCodeableConcept") or {})
+    if med_code is None and isinstance(m.get("medication_code"), str):
+        med_code = m.get("medication_code")
+
+    authored_on = parse_datetime(m.get("authoredOn") or m.get("authored_on"))
+    status = m.get("status")
+    dosage_text = None
+    if isinstance(m.get("dosageInstruction"), list) and m["dosageInstruction"]:
+        dosage_text = (m["dosageInstruction"][0] or {}).get("text")
+    if dosage_text is None:
+        dosage_text = m.get("dosage_text")
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO medication_requests (id, patient_id, medication_code, status, authored_on, dosage_text, resource_json)
+            VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
+            ON CONFLICT (id) DO UPDATE SET
+                patient_id = EXCLUDED.patient_id,
+                medication_code = EXCLUDED.medication_code,
+                status = EXCLUDED.status,
+                authored_on = EXCLUDED.authored_on,
+                dosage_text = EXCLUDED.dosage_text,
+                resource_json = EXCLUDED.resource_json,
+                updated_at = NOW()
+            """,
+            (mid, pid, med_code, status, authored_on, dosage_text, json.dumps(m)),
+        )
+    conn.commit()
+    redis_client.delete(f"patient:{pid}:med_requests")
+
+
 def run():
     consumer = KafkaConsumer(
         "ehr.patient",
         "ehr.encounter",
+        "ehr.observation",
+        "ehr.medication_request",
         bootstrap_servers=KAFKA_BOOTSTRAP.split(","),
         value_deserializer=lambda m: json.loads(m.decode("utf-8")) if m else None,
         auto_offset_reset="earliest",
@@ -148,6 +249,10 @@ def run():
                     process_patient(payload, conn, redis_client)
                 elif topic == "ehr.encounter":
                     process_encounter(payload, conn, redis_client)
+                elif topic == "ehr.observation":
+                    process_observation(payload, conn, redis_client)
+                elif topic == "ehr.medication_request":
+                    process_medication_request(payload, conn, redis_client)
             except Exception as exc:
                 print(f"Error processing {topic}: {exc}", file=sys.stderr)
     finally:
