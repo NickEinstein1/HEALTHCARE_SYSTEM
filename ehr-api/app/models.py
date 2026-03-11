@@ -29,3 +29,21 @@ class PatientSummary(BaseModel):
 
     patient: Patient
     encounters: list[Encounter] = Field(default_factory=list)
+
+
+class Observation(BaseModel):
+    id: str
+    patient_id: str
+    code: Optional[str] = None
+    effective_time: Optional[datetime] = None
+    value_text: Optional[str] = None
+    unit: Optional[str] = None
+
+
+class MedicationRequest(BaseModel):
+    id: str
+    patient_id: str
+    medication_code: Optional[str] = None
+    status: Optional[str] = None
+    authored_on: Optional[datetime] = None
+    dosage_text: Optional[str] = None
