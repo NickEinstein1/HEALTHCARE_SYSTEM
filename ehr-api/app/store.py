@@ -5,7 +5,7 @@ from typing import Optional
 
 import redis.asyncio as redis
 from app.config import settings
-from app.models import Encounter, Patient, PatientSummary
+from app.models import Encounter, MedicationRequest, Observation, Patient, PatientSummary
 
 
 def _summary_to_json(s: PatientSummary) -> str:
@@ -89,5 +89,199 @@ async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optiona
         ]
 
         return PatientSummary(patient=patient, encounters=encounters)
+    finally:
+        await conn.close()
+
+
+async def get_observations_from_cache(patient_id: str) -> Optional[list[Observation]]:
+    client = redis.from_url(settings.redis_url, decode_responses=True)
+    try:
+        key = f"patient:{patient_id}:observations"
+        raw = await client.get(key)
+        if raw is None:
+            return None
+        data = json.loads(raw)
+        return [Observation.model_validate(item) for item in data]
+    finally:
+        await client.aclose()
+
+
+async def set_observations_in_cache(patient_id: str, observations: list[Observation]) -> None:
+    client = redis.from_url(settings.redis_url, decode_responses=True)
+    try:
+        key = f"patient:{patient_id}:observations"
+        await client.set(
+            key,
+            json.dumps([o.model_dump(mode="json") for o in observations]),
+            ex=settings.cache_ttl_seconds,
+        )
+    finally:
+        await client.aclose()
+
+
+async def get_observations_from_db(patient_id: str, limit: int) -> list[Observation]:
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        rows = await conn.fetch(
+            """
+            SELECT id, patient_id, code, effective_time, value_text, unit
+            FROM observations
+            WHERE patient_id = $1
+            ORDER BY effective_time DESC NULLS LAST, created_at DESC
+            LIMIT $2
+            """,
+            patient_id,
+            limit,
+        )
+        return [
+            Observation(
+                id=str(r["id"]),
+                patient_id=str(r["patient_id"]),
+                code=str(r["code"]) if r["code"] else None,
+                effective_time=r["effective_time"],
+                value_text=str(r["value_text"]) if r["value_text"] else None,
+                unit=str(r["unit"]) if r["unit"] else None,
+            )
+            for r in rows
+        ]
+    finally:
+        await conn.close()
+
+
+async def get_med_requests_from_cache(patient_id: str) -> Optional[list[MedicationRequest]]:
+    client = redis.from_url(settings.redis_url, decode_responses=True)
+    try:
+        key = f"patient:{patient_id}:med_requests"
+        raw = await client.get(key)
+        if raw is None:
+            return None
+        data = json.loads(raw)
+        return [MedicationRequest.model_validate(item) for item in data]
+    finally:
+        await client.aclose()
+
+
+async def set_med_requests_in_cache(patient_id: str, meds: list[MedicationRequest]) -> None:
+    client = redis.from_url(settings.redis_url, decode_responses=True)
+    try:
+        key = f"patient:{patient_id}:med_requests"
+        await client.set(
+            key,
+            json.dumps([m.model_dump(mode="json") for m in meds]),
+            ex=settings.cache_ttl_seconds,
+        )
+    finally:
+        await client.aclose()
+
+
+async def get_med_requests_from_db(patient_id: str, limit: int) -> list[MedicationRequest]:
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        rows = await conn.fetch(
+            """
+            SELECT id, patient_id, medication_code, status, authored_on, dosage_text
+            FROM medication_requests
+            WHERE patient_id = $1
+            ORDER BY authored_on DESC NULLS LAST, created_at DESC
+            LIMIT $2
+            """,
+            patient_id,
+            limit,
+        )
+        return [
+            MedicationRequest(
+                id=str(r["id"]),
+                patient_id=str(r["patient_id"]),
+                medication_code=str(r["medication_code"]) if r["medication_code"] else None,
+                status=str(r["status"]) if r["status"] else None,
+                authored_on=r["authored_on"],
+                dosage_text=str(r["dosage_text"]) if r["dosage_text"] else None,
+            )
+            for r in rows
+        ]
+    finally:
+        await conn.close()
+
+
+async def has_active_consent(patient_id: str, facility_id: str, scope: str) -> bool:
+    """Return True if an active consent exists for patient/facility/scope."""
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        row = await conn.fetchrow(
+            """
+            SELECT 1
+            FROM consents
+            WHERE patient_id = $1
+              AND facility_id = $2
+              AND scope = $3
+              AND active = TRUE
+            LIMIT 1
+            """,
+            patient_id,
+            facility_id,
+            scope,
+        )
+        return row is not None
+    finally:
+        await conn.close()
+
+
+async def grant_consent(patient_id: str, facility_id: str, scope: str) -> None:
+    """Grant (activate) consent; creates a row and deactivates older rows for same key."""
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        async with conn.transaction():
+            await conn.execute(
+                """
+                UPDATE consents
+                SET active = FALSE, revoked_at = NOW()
+                WHERE patient_id = $1 AND facility_id = $2 AND scope = $3 AND active = TRUE
+                """,
+                patient_id,
+                facility_id,
+                scope,
+            )
+            await conn.execute(
+                """
+                INSERT INTO consents (patient_id, facility_id, scope, active)
+                VALUES ($1, $2, $3, TRUE)
+                """,
+                patient_id,
+                facility_id,
+                scope,
+            )
+    finally:
+        await conn.close()
+
+
+async def revoke_consent(patient_id: str, facility_id: str, scope: str) -> int:
+    """Revoke consent; returns number of rows changed."""
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        result = await conn.execute(
+            """
+            UPDATE consents
+            SET active = FALSE, revoked_at = NOW()
+            WHERE patient_id = $1 AND facility_id = $2 AND scope = $3 AND active = TRUE
+            """,
+            patient_id,
+            facility_id,
+            scope,
+        )
+        # asyncpg returns like: "UPDATE <n>"
+        try:
+            return int(result.split()[-1])
+        except Exception:
+            return 0
     finally:
         await conn.close()

@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """
-Produce sample Patient and Encounter events to Kafka for Phase 1 testing.
-Run after: infra (Kafka) is up. Consumer will upsert into Postgres and invalidate Redis.
+Produce sample events to Kafka for Phase 1 testing.
+Topics:
+- ehr.patient
+- ehr.encounter
+- ehr.observation
+- ehr.medication_request
+
+Run after: infra (Kafka) is up. Consumer will upsert into Postgres and invalidate Redis caches.
 Usage: python scripts/produce_sample_events.py
 """
 
@@ -9,16 +15,13 @@ import json
 import os
 from datetime import datetime, timedelta
 
-from kafka import KafkaProducer
+from confluent_kafka import Producer
 
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 
 def main():
-    producer = KafkaProducer(
-        bootstrap_servers=KAFKA_BOOTSTRAP.split(","),
-        value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
-    )
+    producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP})
 
     patients = [
         {
@@ -58,26 +61,86 @@ def main():
     ]
 
     for p in patients:
-        producer.send("ehr.patient", value={"resource": p})
+        producer.produce("ehr.patient", value=json.dumps({"resource": p}, default=str).encode("utf-8"))
         print(f"Sent patient {p['id']}")
 
     for eid, pid, fid, fname, status, cls, start, end in encounters:
-        producer.send(
+        producer.produce(
             "ehr.encounter",
-            value={
-                "resource": {
-                    "id": eid,
-                    "patient_id": pid,
-                    "facility_id": fid,
-                    "facility_name": fname,
-                    "status": status,
-                    "class_code": cls,
-                    "period_start": start.isoformat(),
-                    "period_end": end.isoformat(),
-                }
-            },
+            value=json.dumps(
+                {
+                    "resource": {
+                        "id": eid,
+                        "patient_id": pid,
+                        "facility_id": fid,
+                        "facility_name": fname,
+                        "status": status,
+                        "class_code": cls,
+                        "period_start": start.isoformat(),
+                        "period_end": end.isoformat(),
+                    }
+                },
+                default=str,
+            ).encode("utf-8"),
         )
         print(f"Sent encounter {eid} (patient {pid})")
+
+    # Observations (FHIR-ish)
+    observations = [
+        {
+            "id": "O001",
+            "patient_id": "P001",
+            "code_text": "heart-rate",
+            "effectiveDateTime": (base + timedelta(days=1)).isoformat() + "Z",
+            "valueQuantity": {"value": 78, "unit": "bpm"},
+        },
+        {
+            "id": "O002",
+            "patient_id": "P001",
+            "code_text": "body-temperature",
+            "effectiveDateTime": (base + timedelta(days=1, minutes=5)).isoformat() + "Z",
+            "valueQuantity": {"value": 36.8, "unit": "C"},
+        },
+        {
+            "id": "O003",
+            "patient_id": "P002",
+            "code_text": "sbp",
+            "effectiveDateTime": (base + timedelta(days=2)).isoformat() + "Z",
+            "valueQuantity": {"value": 118, "unit": "mmHg"},
+        },
+    ]
+    for o in observations:
+        producer.produce(
+            "ehr.observation",
+            value=json.dumps({"resource": o}, default=str).encode("utf-8"),
+        )
+        print(f"Sent observation {o['id']} (patient {o['patient_id']})")
+
+    # MedicationRequests (FHIR-ish)
+    meds = [
+        {
+            "id": "M001",
+            "patient_id": "P001",
+            "status": "active",
+            "authoredOn": (base + timedelta(days=1)).date().isoformat(),
+            "medication_code": "metformin",
+            "dosage_text": "500mg PO BID",
+        },
+        {
+            "id": "M002",
+            "patient_id": "P002",
+            "status": "active",
+            "authoredOn": (base + timedelta(days=2)).date().isoformat(),
+            "medication_code": "amlodipine",
+            "dosage_text": "5mg PO daily",
+        },
+    ]
+    for m in meds:
+        producer.produce(
+            "ehr.medication_request",
+            value=json.dumps({"resource": m}, default=str).encode("utf-8"),
+        )
+        print(f"Sent medication_request {m['id']} (patient {m['patient_id']})")
 
     producer.flush()
     producer.close()

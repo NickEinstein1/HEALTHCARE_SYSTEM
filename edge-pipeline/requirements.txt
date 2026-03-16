@@ -1,5 +1,6 @@
 # UniHealth EHR Phase 1 - Edge pipeline (Kafka → Redis + Postgres)
-kafka-python>=2.0.2
+# Use confluent-kafka (C client) instead of kafka-python for Python 3.13 compatibility.
+confluent-kafka>=2.5.0
 redis>=5.0.1
 psycopg2-binary>=2.9.9
 pydantic>=2.5

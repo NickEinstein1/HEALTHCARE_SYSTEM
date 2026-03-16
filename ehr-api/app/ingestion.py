@@ -1,16 +1,18 @@
 """
-Pilot EMR ingestion: publish Patient/Encounter to Kafka (consumer writes to Postgres/Redis).
+Pilot EMR ingestion: publish Patient/Encounter/Observation/MedicationRequest to Kafka
+(consumer writes to Postgres/Redis).
+
+Implementation: confluent-kafka Producer for Python 3.13 compatibility.
 """
 
 import json
 from typing import Any
 
-from kafka import KafkaProducer
-from kafka.errors import KafkaError
+from confluent_kafka import Producer
 
 from app.config import settings
 
-_producer: KafkaProducer | None = None
+_producer: Producer | None = None
 
 
 def _default_serializer(obj: Any) -> str:
@@ -19,13 +21,10 @@ def _default_serializer(obj: Any) -> str:
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 
-def get_producer() -> KafkaProducer:
+def get_producer() -> Producer:
     global _producer
     if _producer is None:
-        _producer = KafkaProducer(
-            bootstrap_servers=settings.kafka_bootstrap_servers.split(","),
-            value_serializer=lambda v: json.dumps(v, default=_default_serializer).encode("utf-8"),
-        )
+        _producer = Producer({"bootstrap.servers": settings.kafka_bootstrap_servers})
     return _producer
 
 
@@ -34,7 +33,8 @@ def send_patient(resource: dict) -> None:
     pid = resource.get("id")
     if not pid:
         raise ValueError("Patient resource must have 'id'")
-    get_producer().send("ehr.patient", value={"resource": resource})
+    payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
+    get_producer().produce("ehr.patient", value=payload)
     get_producer().flush()
 
 
@@ -44,7 +44,8 @@ def send_encounter(resource: dict) -> None:
     pid = resource.get("patient_id") or (resource.get("subject") or {}).get("reference", "").split("/")[-1]
     if not eid or not pid:
         raise ValueError("Encounter resource must have 'id' and 'patient_id' (or subject.reference)")
-    get_producer().send("ehr.encounter", value={"resource": resource})
+    payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
+    get_producer().produce("ehr.encounter", value=payload)
     get_producer().flush()
 
 
@@ -54,7 +55,8 @@ def send_observation(resource: dict) -> None:
     pid = resource.get("patient_id") or (resource.get("subject") or {}).get("reference", "").split("/")[-1]
     if not oid or not pid:
         raise ValueError("Observation resource must have 'id' and 'patient_id' (or subject.reference)")
-    get_producer().send("ehr.observation", value={"resource": resource})
+    payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
+    get_producer().produce("ehr.observation", value=payload)
     get_producer().flush()
 
 
@@ -64,5 +66,6 @@ def send_medication_request(resource: dict) -> None:
     pid = resource.get("patient_id") or (resource.get("subject") or {}).get("reference", "").split("/")[-1]
     if not mid or not pid:
         raise ValueError("MedicationRequest must have 'id' and 'patient_id' (or subject.reference)")
-    get_producer().send("ehr.medication_request", value={"resource": resource})
+    payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
+    get_producer().produce("ehr.medication_request", value=payload)
     get_producer().flush()

@@ -1,6 +1,8 @@
 """
-Phase 1 edge pipeline: consume Patient and Encounter events from Kafka,
+Phase 1 edge pipeline: consume events from Kafka,
 upsert into PostgreSQL, invalidate Redis cache so gateway serves fresh data.
+
+Implementation: confluent-kafka (Python binding to C client) for Python 3.13 compatibility.
 """
 
 import json
@@ -11,7 +13,7 @@ from datetime import date, datetime
 
 import psycopg2
 import redis
-from kafka import KafkaConsumer
+from confluent_kafka import Consumer, KafkaException
 
 POSTGRES_DSN = os.environ.get(
     "EHR_POSTGRES_DSN",
@@ -215,14 +217,15 @@ def process_medication_request(payload: dict, conn, redis_client):
 
 
 def run():
-    consumer = KafkaConsumer(
-        "ehr.patient",
-        "ehr.encounter",
-        "ehr.observation",
-        "ehr.medication_request",
-        bootstrap_servers=KAFKA_BOOTSTRAP.split(","),
-        value_deserializer=lambda m: json.loads(m.decode("utf-8")) if m else None,
-        auto_offset_reset="earliest",
+    consumer = Consumer(
+        {
+            "bootstrap.servers": KAFKA_BOOTSTRAP,
+            "group.id": "edge-pipeline-consumer",
+            "auto.offset.reset": "earliest",
+        }
+    )
+    consumer.subscribe(
+        ["ehr.patient", "ehr.encounter", "ehr.observation", "ehr.medication_request"]
     )
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
     conn = psycopg2.connect(POSTGRES_DSN)
@@ -237,13 +240,22 @@ def run():
     signal.signal(signal.SIGTERM, on_signal)
 
     try:
-        for msg in consumer:
-            if stopped:
-                break
-            if msg.value is None:
+        while not stopped:
+            msg = consumer.poll(1.0)
+            if msg is None:
                 continue
-            payload = msg.value
-            topic = msg.topic
+            if msg.error():
+                # Log and continue; in production, handle specific errors.
+                print(f"Kafka error: {msg.error()}", file=sys.stderr)
+                continue
+            topic = msg.topic()
+            try:
+                payload = json.loads(msg.value().decode("utf-8")) if msg.value() else None
+            except Exception as exc:
+                print(f"Error decoding message on {topic}: {exc}", file=sys.stderr)
+                continue
+            if not payload:
+                continue
             try:
                 if topic == "ehr.patient":
                     process_patient(payload, conn, redis_client)
@@ -256,7 +268,10 @@ def run():
             except Exception as exc:
                 print(f"Error processing {topic}: {exc}", file=sys.stderr)
     finally:
-        consumer.close()
+        try:
+            consumer.close()
+        except Exception:
+            pass
         conn.close()
         redis_client.close()
 
