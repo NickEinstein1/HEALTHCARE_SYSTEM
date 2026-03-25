@@ -207,6 +207,18 @@ async def get_med_requests_from_db(patient_id: str, limit: int) -> list[Medicati
         await conn.close()
 
 
+async def patient_exists(patient_id: str) -> bool:
+    """Return True if a row exists in patients (required before consents FK insert)."""
+    import asyncpg
+
+    conn = await asyncpg.connect(settings.postgres_dsn)
+    try:
+        row = await conn.fetchrow("SELECT 1 FROM patients WHERE id = $1", patient_id)
+        return row is not None
+    finally:
+        await conn.close()
+
+
 async def has_active_consent(patient_id: str, facility_id: str, scope: str) -> bool:
     """Return True if an active consent exists for patient/facility/scope."""
     import asyncpg
