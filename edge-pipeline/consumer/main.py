@@ -77,8 +77,13 @@ def process_patient(payload: dict, conn, redis_client):
                 p.get("gender"),
             ),
         )
-    conn.commit()
     redis_client.delete(f"patient:{pid}:summary")
+
+
+def _patient_exists(conn, patient_id: str) -> bool:
+    with conn.cursor() as cur:
+        cur.execute("SELECT 1 FROM patients WHERE id = %s LIMIT 1", (patient_id,))
+        return cur.fetchone() is not None
 
 
 def process_encounter(payload: dict, conn, redis_client):
@@ -88,6 +93,10 @@ def process_encounter(payload: dict, conn, redis_client):
     ref = subj.get("reference", "") if isinstance(subj, dict) else getattr(subj, "reference", "") or ""
     pid = e.get("patient_id") or e.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not eid or not pid:
+        return
+    # Messages may arrive out of order across partitions. Avoid FK violation cascades.
+    if not _patient_exists(conn, pid):
+        print(f"Skip encounter {eid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
         return
     sp = e.get("serviceProvider") or {}
     facility = e.get("facility_id") or (sp.get("identifier", {}).get("value") if isinstance(sp, dict) else None) or "FAC-UNK"
@@ -113,7 +122,6 @@ def process_encounter(payload: dict, conn, redis_client):
             """,
             (eid, pid, facility, fname, e.get("status", "finished"), cls, start_, end_),
         )
-    conn.commit()
     redis_client.delete(f"patient:{pid}:summary")
 
 
@@ -134,6 +142,9 @@ def process_observation(payload: dict, conn, redis_client):
     ref = subj.get("reference", "") if isinstance(subj, dict) else ""
     pid = o.get("patient_id") or o.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not oid or not pid:
+        return
+    if not _patient_exists(conn, pid):
+        print(f"Skip observation {oid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
         return
 
     effective = o.get("effective_time") or (o.get("effectiveDateTime") if isinstance(o.get("effectiveDateTime"), str) else None)
@@ -169,7 +180,6 @@ def process_observation(payload: dict, conn, redis_client):
             """,
             (oid, pid, code, eff_dt, value_text, unit, json.dumps(o)),
         )
-    conn.commit()
     redis_client.delete(f"patient:{pid}:observations")
 
 
@@ -180,6 +190,9 @@ def process_medication_request(payload: dict, conn, redis_client):
     ref = subj.get("reference", "") if isinstance(subj, dict) else ""
     pid = m.get("patient_id") or m.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not mid or not pid:
+        return
+    if not _patient_exists(conn, pid):
+        print(f"Skip med_request {mid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
         return
 
     med_code = None
@@ -212,11 +225,11 @@ def process_medication_request(payload: dict, conn, redis_client):
             """,
             (mid, pid, med_code, status, authored_on, dosage_text, json.dumps(m)),
         )
-    conn.commit()
     redis_client.delete(f"patient:{pid}:med_requests")
 
 
 def run():
+    print(f"Edge consumer starting. bootstrap={KAFKA_BOOTSTRAP}", flush=True)
     consumer = Consumer(
         {
             "bootstrap.servers": KAFKA_BOOTSTRAP,
@@ -227,8 +240,11 @@ def run():
     consumer.subscribe(
         ["ehr.patient", "ehr.encounter", "ehr.observation", "ehr.medication_request"]
     )
+    print("Subscribed to topics: ehr.patient, ehr.encounter, ehr.observation, ehr.medication_request", flush=True)
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
     conn = psycopg2.connect(POSTGRES_DSN)
+    # Avoid "transaction aborted" cascading failures in dev.
+    conn.autocommit = True
 
     stopped = False
 
@@ -249,6 +265,7 @@ def run():
                 print(f"Kafka error: {msg.error()}", file=sys.stderr)
                 continue
             topic = msg.topic()
+            # Heartbeat log on first message per topic could be added later; keep quiet for latency.
             try:
                 payload = json.loads(msg.value().decode("utf-8")) if msg.value() else None
             except Exception as exc:
@@ -266,6 +283,10 @@ def run():
                 elif topic == "ehr.medication_request":
                     process_medication_request(payload, conn, redis_client)
             except Exception as exc:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
                 print(f"Error processing {topic}: {exc}", file=sys.stderr)
     finally:
         try:
