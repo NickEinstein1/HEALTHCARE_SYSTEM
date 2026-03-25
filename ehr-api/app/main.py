@@ -6,7 +6,8 @@ Strategy: Redis (hot) first; on miss, PostgreSQL (warm) then backfill cache.
 Pilot EMRs POST Patient/Encounter to Kafka via ingestion API.
 """
 
-from fastapi import FastAPI, HTTPException, Query, Header
+import asyncpg
+from fastapi import Body, FastAPI, HTTPException, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -24,6 +25,7 @@ from app.store import (
     set_observations_in_cache,
     grant_consent,
     has_active_consent,
+    patient_exists,
     revoke_consent,
 )
 
@@ -100,13 +102,35 @@ async def patient_summary(
     status_code=200,
     summary="Grant consent for (patient, facility, scope).",
 )
-async def consent_grant(body: dict):
-    patient_id = body.get("patient_id")
-    facility_id = body.get("facility_id")
-    scope = body.get("scope", "treatment")
+async def consent_grant(payload: dict = Body(...)):
+    patient_id = payload.get("patient_id")
+    facility_id = payload.get("facility_id")
+    scope = payload.get("scope", "treatment")
     if not patient_id or not facility_id:
         raise HTTPException(status_code=400, detail="patient_id and facility_id are required")
-    await grant_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
+    if not await patient_exists(patient_id):
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Patient not in database. Create P001 first: run edge consumer + "
+                "scripts/produce_sample_events.py, or: source ehr-api/.venv/bin/activate && "
+                "python scripts/seed_data.py"
+            ),
+        )
+    try:
+        await grant_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
+    except asyncpg.UndefinedTableError:
+        raise HTTPException(
+            status_code=503,
+            detail="Table 'consents' missing. Apply schema: PGPASSWORD=ehr_dev_password psql -U ehr -d ehr -h localhost -f ehr-api/schema.sql",
+        )
+    except asyncpg.ForeignKeyViolationError:
+        raise HTTPException(
+            status_code=404,
+            detail="Patient not in database (foreign key). Seed or ingest patient first.",
+        )
+    except asyncpg.PostgresError as e:
+        raise HTTPException(status_code=400, detail=f"Database error: {e}")
     return {"status": "granted", "patient_id": patient_id, "facility_id": facility_id, "scope": scope}
 
 
@@ -115,10 +139,10 @@ async def consent_grant(body: dict):
     status_code=200,
     summary="Revoke consent for (patient, facility, scope).",
 )
-async def consent_revoke(body: dict):
-    patient_id = body.get("patient_id")
-    facility_id = body.get("facility_id")
-    scope = body.get("scope", "treatment")
+async def consent_revoke(payload: dict = Body(...)):
+    patient_id = payload.get("patient_id")
+    facility_id = payload.get("facility_id")
+    scope = payload.get("scope", "treatment")
     if not patient_id or not facility_id:
         raise HTTPException(status_code=400, detail="patient_id and facility_id are required")
     changed = await revoke_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
@@ -139,11 +163,11 @@ async def consent_revoke(body: dict):
     status_code=202,
     summary="Ingest patient (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
 )
-async def ingest_patient(body: dict):
+async def ingest_patient(payload: dict = Body(...)):
     """Accept FHIR-style Patient JSON. Required: id. Optional: nhi_number, family_name, given_name, birth_date, gender."""
     try:
-        send_patient(body)
-        return {"status": "accepted", "resourceType": "Patient", "id": body.get("id")}
+        send_patient(payload)
+        return {"status": "accepted", "resourceType": "Patient", "id": payload.get("id")}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -155,11 +179,11 @@ async def ingest_patient(body: dict):
     status_code=202,
     summary="Ingest encounter (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
 )
-async def ingest_encounter(body: dict):
+async def ingest_encounter(payload: dict = Body(...)):
     """Accept FHIR-style Encounter JSON. Required: id, patient_id (or subject.reference). Optional: facility_id, facility_name, status, class_code, period."""
     try:
-        send_encounter(body)
-        return {"status": "accepted", "resourceType": "Encounter", "id": body.get("id")}
+        send_encounter(payload)
+        return {"status": "accepted", "resourceType": "Encounter", "id": payload.get("id")}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -171,10 +195,10 @@ async def ingest_encounter(body: dict):
     status_code=202,
     summary="Ingest observation (pilot EMR/device). Publishes to Kafka; consumer updates Postgres/Redis.",
 )
-async def ingest_observation(body: dict):
+async def ingest_observation(payload: dict = Body(...)):
     try:
-        send_observation(body)
-        return {"status": "accepted", "resourceType": "Observation", "id": body.get("id")}
+        send_observation(payload)
+        return {"status": "accepted", "resourceType": "Observation", "id": payload.get("id")}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -186,10 +210,10 @@ async def ingest_observation(body: dict):
     status_code=202,
     summary="Ingest MedicationRequest (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
 )
-async def ingest_medication_request(body: dict):
+async def ingest_medication_request(payload: dict = Body(...)):
     try:
-        send_medication_request(body)
-        return {"status": "accepted", "resourceType": "MedicationRequest", "id": body.get("id")}
+        send_medication_request(payload)
+        return {"status": "accepted", "resourceType": "MedicationRequest", "id": payload.get("id")}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
