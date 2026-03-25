@@ -15,12 +15,18 @@ import json
 import os
 from datetime import datetime, timedelta
 
-from confluent_kafka import Producer
+from confluent_kafka import Producer, KafkaException
 
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 
 def main():
+    delivery_errors = []
+
+    def delivery_report(err, msg):
+        if err is not None:
+            delivery_errors.append((str(err), msg.topic(), msg.partition(), msg.offset()))
+
     producer = Producer({"bootstrap.servers": KAFKA_BOOTSTRAP})
 
     patients = [
@@ -50,7 +56,7 @@ def main():
         },
     ]
 
-    base = datetime.utcnow() - timedelta(days=30)
+    base = datetime.now().astimezone() - timedelta(days=30)
     encounters = [
         ("E001", "P001", "FAC-A", "Pilot Hospital A", "finished", "AMB", base, base + timedelta(hours=1)),
         ("E002", "P001", "FAC-A", "Pilot Hospital A", "finished", "IMP", base - timedelta(days=5), base - timedelta(days=5) + timedelta(hours=24)),
@@ -61,8 +67,13 @@ def main():
     ]
 
     for p in patients:
-        producer.produce("ehr.patient", value=json.dumps({"resource": p}, default=str).encode("utf-8"))
+        producer.produce(
+            "ehr.patient",
+            value=json.dumps({"resource": p}, default=str).encode("utf-8"),
+            callback=delivery_report,
+        )
         print(f"Sent patient {p['id']}")
+        producer.poll(0)
 
     for eid, pid, fid, fname, status, cls, start, end in encounters:
         producer.produce(
@@ -82,8 +93,10 @@ def main():
                 },
                 default=str,
             ).encode("utf-8"),
+            callback=delivery_report,
         )
         print(f"Sent encounter {eid} (patient {pid})")
+        producer.poll(0)
 
     # Observations (FHIR-ish)
     observations = [
@@ -113,8 +126,10 @@ def main():
         producer.produce(
             "ehr.observation",
             value=json.dumps({"resource": o}, default=str).encode("utf-8"),
+            callback=delivery_report,
         )
         print(f"Sent observation {o['id']} (patient {o['patient_id']})")
+        producer.poll(0)
 
     # MedicationRequests (FHIR-ish)
     meds = [
@@ -139,10 +154,17 @@ def main():
         producer.produce(
             "ehr.medication_request",
             value=json.dumps({"resource": m}, default=str).encode("utf-8"),
+            callback=delivery_report,
         )
         print(f"Sent medication_request {m['id']} (patient {m['patient_id']})")
+        producer.poll(0)
 
-    producer.flush()
+    remaining = producer.flush(15)
+    if remaining != 0 or delivery_errors:
+        print(f"ERROR: Kafka delivery incomplete. remaining={remaining}, errors={len(delivery_errors)}")
+        for err, topic, part, off in delivery_errors[:10]:
+            print(f"  - {err} (topic={topic} partition={part} offset={off})")
+        raise SystemExit(2)
     producer.close()
     print("Done. Run the consumer to process events, then query the gateway.")
 
