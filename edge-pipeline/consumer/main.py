@@ -86,6 +86,21 @@ def _patient_exists(conn, patient_id: str) -> bool:
         return cur.fetchone() is not None
 
 
+def _ensure_patient_exists(conn, patient_id: str) -> None:
+    """Create a placeholder patient row when child events arrive first."""
+    if _patient_exists(conn, patient_id):
+        return
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO patients (id, nhi_number, family_name, given_name, gender)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO NOTHING
+            """,
+            (patient_id, patient_id, "Unknown", "Unknown", "unknown"),
+        )
+
+
 def process_encounter(payload: dict, conn, redis_client):
     e = payload.get("resource", payload)
     eid = e.get("id") or payload.get("encounterId")
@@ -94,10 +109,8 @@ def process_encounter(payload: dict, conn, redis_client):
     pid = e.get("patient_id") or e.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not eid or not pid:
         return
-    # Messages may arrive out of order across partitions. Avoid FK violation cascades.
-    if not _patient_exists(conn, pid):
-        print(f"Skip encounter {eid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
-        return
+    # Messages may arrive out of order across partitions.
+    _ensure_patient_exists(conn, pid)
     sp = e.get("serviceProvider") or {}
     facility = e.get("facility_id") or (sp.get("identifier", {}).get("value") if isinstance(sp, dict) else None) or "FAC-UNK"
     fname = e.get("facility_name") or facility
@@ -143,9 +156,7 @@ def process_observation(payload: dict, conn, redis_client):
     pid = o.get("patient_id") or o.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not oid or not pid:
         return
-    if not _patient_exists(conn, pid):
-        print(f"Skip observation {oid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
-        return
+    _ensure_patient_exists(conn, pid)
 
     effective = o.get("effective_time") or (o.get("effectiveDateTime") if isinstance(o.get("effectiveDateTime"), str) else None)
     if effective is None and isinstance(o.get("effective"), dict):
@@ -191,9 +202,7 @@ def process_medication_request(payload: dict, conn, redis_client):
     pid = m.get("patient_id") or m.get("patientId") or (ref.split("/")[-1] if ref else None)
     if not mid or not pid:
         return
-    if not _patient_exists(conn, pid):
-        print(f"Skip med_request {mid}: patient {pid} not yet in DB", file=sys.stderr, flush=True)
-        return
+    _ensure_patient_exists(conn, pid)
 
     med_code = None
     if isinstance(m.get("medicationCodeableConcept"), dict):
