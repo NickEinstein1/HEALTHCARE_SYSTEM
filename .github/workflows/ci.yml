@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest ruff
+          pip install -r ehr-api/requirements.txt
+          pip install -r edge-pipeline/requirements.txt
+          pip install -r scripts/requirements.txt
+
+      - name: Lint (Ruff critical rules)
+        run: |
+          ruff check . --select E9,F63,F7,F82
+
+      - name: Unit tests
+        run: |
+          pytest -q tests
