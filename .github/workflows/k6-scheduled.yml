@@ -1,0 +1,26 @@
+name: k6 Scheduled Smoke
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  k6-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 (if K6_BASE_URL is configured)
+        env:
+          K6_BASE_URL: ${{ secrets.K6_BASE_URL }}
+        run: |
+          if [ -z "$K6_BASE_URL" ]; then
+            echo "K6_BASE_URL secret is not set; skipping scheduled k6 run."
+            exit 0
+          fi
+          BASE_URL="$K6_BASE_URL" k6 run load-tests/gateway-latency.js
