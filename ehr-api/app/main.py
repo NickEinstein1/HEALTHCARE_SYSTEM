@@ -7,13 +7,19 @@ Pilot EMRs POST Patient/Encounter to Kafka via ingestion API.
 """
 
 import asyncpg
-from fastapi import Body, FastAPI, HTTPException, Header, Query
+import time
+from collections import defaultdict
+
+from fastapi import Body, FastAPI, HTTPException, Header, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 from app.config import settings
 from app.ingestion import send_encounter, send_medication_request, send_observation, send_patient
 from app.models import MedicationRequest, Observation, PatientSummary
 from app.store import (
+    close_postgres_pool,
+    close_redis_client,
     get_summary_from_cache,
     get_summary_from_db,
     get_med_requests_from_cache,
@@ -25,6 +31,8 @@ from app.store import (
     set_observations_in_cache,
     grant_consent,
     has_active_consent,
+    init_postgres_pool,
+    init_redis_client,
     patient_exists,
     revoke_consent,
 )
@@ -35,6 +43,10 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# Lightweight in-memory metrics for Phase 1 validation.
+_metrics_counts = defaultdict(int)
+_metrics_latency_sum_ms = defaultdict(float)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,9 +56,91 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+async def on_startup() -> None:
+    await init_postgres_pool()
+    await init_redis_client()
+
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    await close_redis_client()
+    await close_postgres_pool()
+
+
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    start = time.perf_counter()
+    path = request.url.path
+    method = request.method
+    try:
+        response = await call_next(request)
+        status = response.status_code
+    except Exception:
+        status = 500
+        _metrics_counts[(method, path, status)] += 1
+        raise
+    finally:
+        elapsed_ms = (time.perf_counter() - start) * 1000.0
+        _metrics_latency_sum_ms[(method, path)] += elapsed_ms
+        _metrics_counts[(method, path, "requests")] += 1
+    response.headers["X-Request-Latency-Ms"] = f"{elapsed_ms:.2f}"
+    _metrics_counts[(method, path, status)] += 1
+    return response
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/metrics/json", summary="Simple in-memory metrics (Phase 1)")
+async def metrics_json():
+    rows = []
+    for key, req_count in _metrics_counts.items():
+        if len(key) == 3 and key[2] == "requests":
+            method, path, _ = key
+            total_ms = _metrics_latency_sum_ms[(method, path)]
+            avg_ms = (total_ms / req_count) if req_count else 0.0
+            status_counts = {
+                str(k[2]): v
+                for k, v in _metrics_counts.items()
+                if len(k) == 3 and k[0] == method and k[1] == path and k[2] != "requests"
+            }
+            rows.append(
+                {
+                    "method": method,
+                    "path": path,
+                    "requests": req_count,
+                    "avg_latency_ms": round(avg_ms, 2),
+                    "status_counts": status_counts,
+                }
+            )
+    return {"routes": sorted(rows, key=lambda r: (r["path"], r["method"]))}
+
+
+@app.get("/metrics/prometheus", response_class=PlainTextResponse, summary="Prometheus-style metrics")
+async def metrics_prometheus():
+    lines = []
+    for key, req_count in _metrics_counts.items():
+        if len(key) == 3 and key[2] == "requests":
+            method, path, _ = key
+            safe_path = path.replace('"', '\\"')
+            lines.append(
+                f'unihealth_http_requests_total{{method="{method}",path="{safe_path}"}} {req_count}'
+            )
+            total_ms = _metrics_latency_sum_ms[(method, path)]
+            lines.append(
+                f'unihealth_http_latency_ms_sum{{method="{method}",path="{safe_path}"}} {total_ms:.2f}'
+            )
+    for key, cnt in _metrics_counts.items():
+        if len(key) == 3 and key[2] != "requests":
+            method, path, status = key
+            safe_path = path.replace('"', '\\"')
+            lines.append(
+                f'unihealth_http_status_total{{method="{method}",path="{safe_path}",status="{status}"}} {cnt}'
+            )
+    return "\n".join(lines) + "\n"
 
 
 @app.get(
@@ -64,17 +158,23 @@ async def patient_summary(
     ),
     x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
     scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
+    response: Response = None,
 ):
+    start = time.perf_counter()
     facility_id = x_facility_id
+    strict_consent = settings.consent_mode.lower() == "strict"
     # Phase 1: simple consent enforcement. Emergency bypass is allowed but can be audited later.
-    if scope != "emergency" and facility_id:
+    if strict_consent and scope != "emergency" and facility_id:
         allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed and settings.consent_mode.lower() == "strict":
+        if not allowed:
             raise HTTPException(status_code=403, detail="Consent denied")
 
     # 1. Try Redis (hot path)
     summary = await get_summary_from_cache(patient_id)
     if summary is not None:
+        if response is not None:
+            response.headers["X-Cache-Source"] = "redis-hit"
+            response.headers["X-Endpoint-Latency-Ms"] = f"{((time.perf_counter() - start) * 1000.0):.2f}"
         # Trim encounters to requested count if cache had more
         if len(summary.encounters) > encounters:
             summary = PatientSummary(
@@ -90,6 +190,9 @@ async def patient_summary(
 
     # 3. Backfill cache for next time
     await set_summary_in_cache(patient_id, summary)
+    if response is not None:
+        response.headers["X-Cache-Source"] = "postgres-miss"
+        response.headers["X-Endpoint-Latency-Ms"] = f"{((time.perf_counter() - start) * 1000.0):.2f}"
 
     return summary
 
@@ -230,19 +333,25 @@ async def patient_observations(
     limit: int = Query(default=20, ge=1, le=200),
     x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
     scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
+    response: Response = None,
 ):
     facility_id = x_facility_id
-    if scope != "emergency" and facility_id:
+    strict_consent = settings.consent_mode.lower() == "strict"
+    if strict_consent and scope != "emergency" and facility_id:
         allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed and settings.consent_mode.lower() == "strict":
+        if not allowed:
             raise HTTPException(status_code=403, detail="Consent denied")
 
     cached = await get_observations_from_cache(patient_id)
     if cached is not None:
+        if response is not None:
+            response.headers["X-Cache-Source"] = "redis-hit"
         return cached[:limit]
 
     obs = await get_observations_from_db(patient_id, limit)
     await set_observations_in_cache(patient_id, obs)
+    if response is not None:
+        response.headers["X-Cache-Source"] = "postgres-miss"
     return obs
 
 
@@ -256,17 +365,23 @@ async def patient_med_requests(
     limit: int = Query(default=20, ge=1, le=200),
     x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
     scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
+    response: Response = None,
 ):
     facility_id = x_facility_id
-    if scope != "emergency" and facility_id:
+    strict_consent = settings.consent_mode.lower() == "strict"
+    if strict_consent and scope != "emergency" and facility_id:
         allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed and settings.consent_mode.lower() == "strict":
+        if not allowed:
             raise HTTPException(status_code=403, detail="Consent denied")
 
     cached = await get_med_requests_from_cache(patient_id)
     if cached is not None:
+        if response is not None:
+            response.headers["X-Cache-Source"] = "redis-hit"
         return cached[:limit]
 
     meds = await get_med_requests_from_db(patient_id, limit)
     await set_med_requests_in_cache(patient_id, meds)
+    if response is not None:
+        response.headers["X-Cache-Source"] = "postgres-miss"
     return meds
