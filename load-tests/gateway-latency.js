@@ -8,7 +8,7 @@
 import http from "k6/http";
 import { check, sleep } from "k6";
 
-const BASE_URL = __ENV.BASE_URL || "http://localhost:8000";
+const BASE_URL = __ENV.BASE_URL || "http://localhost:8100";
 const VUS = parseInt(__ENV.VUS || "100", 10);
 const DURATION = __ENV.DURATION || "30s";
 const P95_TARGET_MS = 50;
@@ -25,6 +25,8 @@ export const options = {
       startTime: "0s",
     },
   },
+  // Ensure handleSummary receives the percentiles we want.
+  summaryTrendStats: ["avg", "min", "p(50)", "p(95)", "p(99)", "max"],
   thresholds: {
     http_req_duration: ["p(95)<" + P95_TARGET_MS],
   },
@@ -32,17 +34,23 @@ export const options = {
 
 export default function () {
   const id = PATIENT_IDS[Math.floor(Math.random() * PATIENT_IDS.length)];
-  const res = http.get(`${BASE_URL}/fhir/r5/Patient/${id}/summary?encounters=5`);
-  check(res, { "status 200 or 404": (r) => r.status === 200 || r.status === 404 });
+  const res = http.get(`${BASE_URL}/fhir/r5/Patient/${id}/summary?encounters=5`, {
+    headers: { "X-Facility-Id": "FAC-A" },
+  });
+  check(res, { "status 200": (r) => r.status === 200 });
   sleep(0.1);
 }
 
 export function handleSummary(data) {
+  const p50 = data.metrics.http_req_duration.values["p(50)"];
   const p95 = data.metrics.http_req_duration.values["p(95)"];
+  const p99 = data.metrics.http_req_duration.values["p(99)"];
   const ok = p95 < P95_TARGET_MS;
+
+  const fmt = (v) => (typeof v === "number" ? v.toFixed(2) : "n/a");
   return {
     stdout: ok
-      ? `P95 latency: ${p95.toFixed(2)} ms (target <${P95_TARGET_MS} ms) — PASS\n`
-      : `P95 latency: ${p95.toFixed(2)} ms (target <${P95_TARGET_MS} ms) — FAIL\n`,
+      ? `Latency ms — P50: ${fmt(p50)} P95: ${fmt(p95)} P99: ${fmt(p99)} (target P95 <${P95_TARGET_MS}) — PASS\n`
+      : `Latency ms — P50: ${fmt(p50)} P95: ${fmt(p95)} P99: ${fmt(p99)} (target P95 <${P95_TARGET_MS}) — FAIL\n`,
   };
 }
