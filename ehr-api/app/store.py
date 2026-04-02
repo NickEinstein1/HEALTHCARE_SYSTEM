@@ -3,9 +3,59 @@
 import json
 from typing import Optional
 
+import asyncpg
 import redis.asyncio as redis
 from app.config import settings
 from app.models import Encounter, MedicationRequest, Observation, Patient, PatientSummary
+
+_pg_pool: asyncpg.Pool | None = None
+_redis_client: redis.Redis | None = None
+
+
+async def init_postgres_pool() -> None:
+    """Initialize shared asyncpg connection pool once per process."""
+    global _pg_pool
+    if _pg_pool is None:
+        _pg_pool = await asyncpg.create_pool(
+            dsn=settings.postgres_dsn,
+            min_size=2,
+            max_size=20,
+        )
+
+
+async def close_postgres_pool() -> None:
+    """Close pool during app shutdown."""
+    global _pg_pool
+    if _pg_pool is not None:
+        await _pg_pool.close()
+        _pg_pool = None
+
+
+def _require_pool() -> asyncpg.Pool:
+    if _pg_pool is None:
+        raise RuntimeError("Postgres pool not initialized")
+    return _pg_pool
+
+
+async def init_redis_client() -> None:
+    """Initialize shared Redis client once per process."""
+    global _redis_client
+    if _redis_client is None:
+        _redis_client = redis.from_url(settings.redis_url, decode_responses=True)
+
+
+async def close_redis_client() -> None:
+    """Close Redis client during app shutdown."""
+    global _redis_client
+    if _redis_client is not None:
+        await _redis_client.aclose()
+        _redis_client = None
+
+
+def _require_redis_client() -> redis.Redis:
+    if _redis_client is None:
+        raise RuntimeError("Redis client not initialized")
+    return _redis_client
 
 
 def _summary_to_json(s: PatientSummary) -> str:
@@ -18,32 +68,24 @@ def _json_to_summary(raw: str) -> PatientSummary:
 
 async def get_summary_from_cache(patient_id: str) -> Optional[PatientSummary]:
     """Return cached patient summary if present. Sub-ms typically."""
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:summary"
-        raw = await client.get(key)
-        if raw is None:
-            return None
-        return _json_to_summary(raw)
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:summary"
+    raw = await client.get(key)
+    if raw is None:
+        return None
+    return _json_to_summary(raw)
 
 
 async def set_summary_in_cache(patient_id: str, summary: PatientSummary) -> None:
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:summary"
-        await client.set(key, _summary_to_json(summary), ex=settings.cache_ttl_seconds)
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:summary"
+    await client.set(key, _summary_to_json(summary), ex=settings.cache_ttl_seconds)
 
 
 async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optional[PatientSummary]:
     """Load patient + last N encounters from PostgreSQL."""
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
             SELECT id, nhi_number, family_name, given_name, birth_date, gender
@@ -89,41 +131,31 @@ async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optiona
         ]
 
         return PatientSummary(patient=patient, encounters=encounters)
-    finally:
-        await conn.close()
 
 
 async def get_observations_from_cache(patient_id: str) -> Optional[list[Observation]]:
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:observations"
-        raw = await client.get(key)
-        if raw is None:
-            return None
-        data = json.loads(raw)
-        return [Observation.model_validate(item) for item in data]
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:observations"
+    raw = await client.get(key)
+    if raw is None:
+        return None
+    data = json.loads(raw)
+    return [Observation.model_validate(item) for item in data]
 
 
 async def set_observations_in_cache(patient_id: str, observations: list[Observation]) -> None:
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:observations"
-        await client.set(
-            key,
-            json.dumps([o.model_dump(mode="json") for o in observations]),
-            ex=settings.cache_ttl_seconds,
-        )
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:observations"
+    await client.set(
+        key,
+        json.dumps([o.model_dump(mode="json") for o in observations]),
+        ex=settings.cache_ttl_seconds,
+    )
 
 
 async def get_observations_from_db(patient_id: str, limit: int) -> list[Observation]:
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         rows = await conn.fetch(
             """
             SELECT id, patient_id, code, effective_time, value_text, unit
@@ -146,41 +178,31 @@ async def get_observations_from_db(patient_id: str, limit: int) -> list[Observat
             )
             for r in rows
         ]
-    finally:
-        await conn.close()
 
 
 async def get_med_requests_from_cache(patient_id: str) -> Optional[list[MedicationRequest]]:
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:med_requests"
-        raw = await client.get(key)
-        if raw is None:
-            return None
-        data = json.loads(raw)
-        return [MedicationRequest.model_validate(item) for item in data]
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:med_requests"
+    raw = await client.get(key)
+    if raw is None:
+        return None
+    data = json.loads(raw)
+    return [MedicationRequest.model_validate(item) for item in data]
 
 
 async def set_med_requests_in_cache(patient_id: str, meds: list[MedicationRequest]) -> None:
-    client = redis.from_url(settings.redis_url, decode_responses=True)
-    try:
-        key = f"patient:{patient_id}:med_requests"
-        await client.set(
-            key,
-            json.dumps([m.model_dump(mode="json") for m in meds]),
-            ex=settings.cache_ttl_seconds,
-        )
-    finally:
-        await client.aclose()
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:med_requests"
+    await client.set(
+        key,
+        json.dumps([m.model_dump(mode="json") for m in meds]),
+        ex=settings.cache_ttl_seconds,
+    )
 
 
 async def get_med_requests_from_db(patient_id: str, limit: int) -> list[MedicationRequest]:
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         rows = await conn.fetch(
             """
             SELECT id, patient_id, medication_code, status, authored_on, dosage_text
@@ -203,28 +225,20 @@ async def get_med_requests_from_db(patient_id: str, limit: int) -> list[Medicati
             )
             for r in rows
         ]
-    finally:
-        await conn.close()
 
 
 async def patient_exists(patient_id: str) -> bool:
     """Return True if a row exists in patients (required before consents FK insert)."""
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         row = await conn.fetchrow("SELECT 1 FROM patients WHERE id = $1", patient_id)
         return row is not None
-    finally:
-        await conn.close()
 
 
 async def has_active_consent(patient_id: str, facility_id: str, scope: str) -> bool:
     """Return True if an active consent exists for patient/facility/scope."""
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
             SELECT 1
@@ -240,16 +254,12 @@ async def has_active_consent(patient_id: str, facility_id: str, scope: str) -> b
             scope,
         )
         return row is not None
-    finally:
-        await conn.close()
 
 
 async def grant_consent(patient_id: str, facility_id: str, scope: str) -> None:
     """Grant (activate) consent; creates a row and deactivates older rows for same key."""
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         async with conn.transaction():
             await conn.execute(
                 """
@@ -270,16 +280,12 @@ async def grant_consent(patient_id: str, facility_id: str, scope: str) -> None:
                 facility_id,
                 scope,
             )
-    finally:
-        await conn.close()
 
 
 async def revoke_consent(patient_id: str, facility_id: str, scope: str) -> int:
     """Revoke consent; returns number of rows changed."""
-    import asyncpg
-
-    conn = await asyncpg.connect(settings.postgres_dsn)
-    try:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
         result = await conn.execute(
             """
             UPDATE consents
@@ -295,5 +301,3 @@ async def revoke_consent(patient_id: str, facility_id: str, scope: str) -> int:
             return int(result.split()[-1])
         except Exception:
             return 0
-    finally:
-        await conn.close()
