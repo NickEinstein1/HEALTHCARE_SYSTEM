@@ -13,11 +13,15 @@ Usage: python scripts/produce_sample_events.py
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from confluent_kafka import Producer, KafkaException
 
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
+def to_zulu(dt: datetime) -> str:
+    """Convert datetime to UTC ISO-8601 with trailing 'Z'."""
+    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def main():
@@ -104,21 +108,21 @@ def main():
             "id": "O001",
             "patient_id": "P001",
             "code_text": "heart-rate",
-            "effectiveDateTime": (base + timedelta(days=1)).isoformat() + "Z",
+            "effectiveDateTime": to_zulu(base + timedelta(days=1)),
             "valueQuantity": {"value": 78, "unit": "bpm"},
         },
         {
             "id": "O002",
             "patient_id": "P001",
             "code_text": "body-temperature",
-            "effectiveDateTime": (base + timedelta(days=1, minutes=5)).isoformat() + "Z",
+            "effectiveDateTime": to_zulu(base + timedelta(days=1, minutes=5)),
             "valueQuantity": {"value": 36.8, "unit": "C"},
         },
         {
             "id": "O003",
             "patient_id": "P002",
             "code_text": "sbp",
-            "effectiveDateTime": (base + timedelta(days=2)).isoformat() + "Z",
+            "effectiveDateTime": to_zulu(base + timedelta(days=2)),
             "valueQuantity": {"value": 118, "unit": "mmHg"},
         },
     ]
