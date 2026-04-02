@@ -10,7 +10,7 @@ Next-generation national Electronic Health Record system (see [Blueprint](docs/U
 ./scripts/run_full_flow.sh
 ```
 
-Then open http://localhost:8000/docs or run:
+Then open <http://localhost:8000/docs> or run:
 `curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5`
 
 **Manual steps:**
@@ -91,7 +91,7 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 ## Repo layout
 
 | Path | Description |
-|------|-------------|
+| ------ | ------------- |
 | [docs/](docs/) | Blueprint, Phase 1 plan |
 | [infra/](infra/) | Docker Compose (Kafka, Redis, PostgreSQL) |
 | [ehr-api/](ehr-api/) | Edge FHIR gateway (FastAPI; Redis → Postgres) |
@@ -106,3 +106,33 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 - 99.9% uptime during pilot
 
 See [docs/phase1-plan.md](docs/phase1-plan.md) for full scope and timeline.
+
+## CI/CD (GitHub Actions)
+
+This repo includes two workflows:
+
+- `CI` (`.github/workflows/ci.yml`)
+  - Triggers on push to `main` and pull requests.
+  - Runs Python lint checks (`ruff`) and unit tests (`pytest`).
+
+- `k6 Scheduled Smoke` (`.github/workflows/k6-scheduled.yml`)
+  - Runs nightly and can also be triggered manually.
+  - Runs `load-tests/gateway-latency.js` only when `K6_BASE_URL` is configured.
+
+### Optional: enable scheduled k6
+
+When you are ready, configure this repository secret in GitHub:
+
+- `K6_BASE_URL` = URL of your deployed gateway environment (for example, staging).
+
+If the secret is not set, the scheduled workflow exits successfully and skips k6.
+
+### k6 target readiness checklist
+
+Before relying on scheduled k6 results, verify the target environment:
+
+- **Gateway is reachable:** `GET {K6_BASE_URL}/health` returns `200`.
+- **Test data is present:** patient `P001` exists with at least one encounter.
+- **Header compatibility:** summary endpoint accepts `X-Facility-Id: FAC-A`.
+- **Consent behavior is understood:** if strict mode is enabled, ensure test consent exists or run with `scope=emergency`.
+- **Latency interpretation:** compare k6 `P95` with the Phase 1 target (`<50 ms`) and investigate regressions early.
