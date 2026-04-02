@@ -239,11 +239,13 @@ def process_medication_request(payload: dict, conn, redis_client):
 
 def run():
     print(f"Edge consumer starting. bootstrap={KAFKA_BOOTSTRAP}", flush=True)
+    group_id = os.environ.get("EDGE_CONSUMER_GROUP_ID", "edge-pipeline-consumer")
+    auto_offset_reset = os.environ.get("EDGE_CONSUMER_AUTO_OFFSET_RESET", "earliest")
     consumer = Consumer(
         {
             "bootstrap.servers": KAFKA_BOOTSTRAP,
-            "group.id": "edge-pipeline-consumer",
-            "auto.offset.reset": "earliest",
+            "group.id": group_id,
+            "auto.offset.reset": auto_offset_reset,
         }
     )
     consumer.subscribe(
