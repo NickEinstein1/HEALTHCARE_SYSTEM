@@ -1,25 +1,1877 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniHealth EHR — Admin (stub)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root { --g: #1a8a4a; --gd: #0a4a26; --bg: #f4f7f4; --t1: #14201a; --bdr: #dde3dd; }
-    body { font-family: "Sora", sans-serif; background: var(--bg); color: var(--t1); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .card { background: #fff; border: 1.5px solid var(--bdr); border-radius: 16px; padding: 2rem; max-width: 440px; box-shadow: 0 24px 64px rgba(10, 74, 38, 0.1); }
-    h1 { color: var(--gd); font-size: 1.35rem; margin: 0 0 0.75rem; }
-    p { margin: 0 0 1rem; line-height: 1.55; color: #3d5245; font-size: 0.95rem; }
-    a { color: var(--g); font-weight: 600; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AfyaCare EHR — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--gl:#e6f5ed;--gm:#b6dfc8;
+  --r:#dc2626;--rl:#fef2f2;--rm:#fecaca;
+  --b:#2563eb;--bl:#eff6ff;--bm:#bfdbfe;
+  --am:#d97706;--al:#fffbeb;--amm:#fde68a;
+  --pu:#7c3aed;--pul:#f5f3ff;--pm:#ddd6fe;
+  --bg:#f0f4f1;--sbg:#111c2b;--sbg2:#1a2a3d;
+  --card:#fff;--bdr:#e2e8ef;--bdr2:#c8d5c8;
+  --t1:#0f172a;--t2:#374151;--t3:#6b7280;--t4:#9ca3af;
+  --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 1px 4px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.06);
+  --sh2:0 8px 32px rgba(0,0,0,.12);
+  --shg:0 4px 20px rgba(26,138,74,.25);
+  --sw:248px; --th:60px;
+}
+html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg);overflow:hidden}
+body{display:flex}
+
+/* ═══ SIDEBAR ═══ */
+.sb{
+  width:var(--sw);flex-shrink:0;height:100vh;
+  background:var(--sbg);
+  display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;z-index:200;
+  overflow:hidden;
+}
+.sb::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 140% 50% at -10% 100%,rgba(26,138,74,.14) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 40% at 110% 0%,rgba(37,99,235,.1) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
+.sb-flag{position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#bb0000 0%,#bb0000 33%,#111 33%,#111 35.5%,#e8e8e8 35.5%,#e8e8e8 37%,#111 37%,#111 39.5%,#1a8a4a 39.5%,#1a8a4a 100%);
+  z-index:10;}
+.sb-in{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden;}
+.sb-in::-webkit-scrollbar{width:0}
+
+/* Brand row */
+.sb-brand{display:flex;align-items:center;gap:11px;padding:20px 18px 16px;
+  border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-ico{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--g),#3ecf7a);
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+  box-shadow:0 3px 10px rgba(26,138,74,.4);}
+.sb-nm{font-family:var(--serif);font-size:17px;color:#fff;letter-spacing:-.1px;line-height:1.1}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.32);letter-spacing:.5px;font-weight:500;margin-top:2px}
+.sb-live{width:6px;height:6px;border-radius:50%;background:#2ecc71;
+  box-shadow:0 0 8px #2ecc71;animation:pulse 2s infinite;margin-left:auto;flex-shrink:0}
+@keyframes pulse{0%,100%{box-shadow:0 0 5px #2ecc71}50%{box-shadow:0 0 14px #2ecc71,0 0 22px rgba(46,204,113,.4)}}
+
+/* Nav section */
+.sb-sec{padding:10px 10px 0;}
+.sb-sec-lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.22);padding:8px 10px 5px;font-weight:500;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;
+  cursor:pointer;transition:all .15s;margin-bottom:1px;position:relative;}
+.ni:hover{background:rgba(255,255,255,.06);}
+.ni.on{background:rgba(26,138,74,.2);border:1px solid rgba(26,138,74,.28);}
+.ni-ico{font-size:14px;flex-shrink:0;width:18px;text-align:center;
+  opacity:.65;transition:opacity .15s;}
+.ni:hover .ni-ico,.ni.on .ni-ico{opacity:1;}
+.ni-lbl{font-size:12px;font-weight:600;color:rgba(255,255,255,.6);transition:color .15s;white-space:nowrap;}
+.ni:hover .ni-lbl,.ni.on .ni-lbl{color:#fff;}
+.ni-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;
+  border-radius:10px;min-width:18px;text-align:center;}
+.ni-badge.red{background:var(--r);color:#fff;}
+.ni-badge.amber{background:var(--am);color:#fff;}
+.ni-badge.green{background:var(--g);color:#fff;}
+
+/* User strip at bottom */
+.sb-user{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);
+  display:flex;align-items:center;gap:9px;}
+.sb-av{width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g),#7beba4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;color:#fff;flex-shrink:0;}
+.sb-un{font-size:12px;font-weight:700;color:rgba(255,255,255,.8);line-height:1.2}
+.sb-ue{font-size:9.5px;color:rgba(255,255,255,.32);margin-top:1px;}
+.sb-signout{margin-left:auto;padding:5px 9px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;font-size:10.5px;font-weight:600;
+  color:rgba(255,255,255,.45);cursor:pointer;transition:all .15s;
+  font-family:var(--font);}
+.sb-signout:hover{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5;}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;}
+
+/* Topbar */
+.topbar{height:var(--th);background:var(--card);border-bottom:1.5px solid var(--bdr);
+  display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0;
+  position:sticky;top:0;z-index:100;}
+.tb-page{font-family:var(--serif);font-size:18px;color:var(--t1);letter-spacing:-.2px;}
+.tb-crumb{font-size:11px;color:var(--t3);font-weight:500;margin-top:1px;}
+.tb-crumb b{color:var(--g);}
+.tb-gap{flex:1;}
+.tb-search{display:flex;align-items:center;gap:8px;padding:8px 13px;
+  background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;
+  width:220px;transition:all .2s;}
+.tb-search:focus-within{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);}
+.tb-search input{border:none;background:transparent;outline:none;
+  font-family:var(--font);font-size:12.5px;color:var(--t1);width:100%;}
+.tb-search input::placeholder{color:var(--t4);}
+.tb-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:var(--card);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;font-size:15px;position:relative;flex-shrink:0;}
+.tb-btn:hover{border-color:var(--g);background:var(--gl);}
+.tb-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;
+  background:var(--r);border:2px solid var(--card);}
+.tb-datepill{font-family:var(--mono);font-size:10.5px;color:var(--t3);
+  padding:6px 11px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;
+  white-space:nowrap;flex-shrink:0;}
+
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow-y:auto;padding:24px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-track{background:transparent;}
+.content::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px;}
+.pg{display:none;animation:pgIn .3s ease both;}
+.pg.on{display:block;}
+@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Page header ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
+.ph-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.ph-title{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.3px;line-height:1.1;}
+.ph-sub{font-size:12.5px;color:var(--t3);margin-top:5px;line-height:1.5;}
+.ph-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+
+/* ── Buttons ── */
+.btn-p{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;
+  background:var(--g);color:#fff;border:none;border-radius:8px;
+  font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:all .18s;box-shadow:var(--shg);white-space:nowrap;}
+.btn-p:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 8px 24px rgba(26,138,74,.35);}
+.btn-s{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;
+  background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);border-radius:8px;
+  font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-s:hover{border-color:var(--g);color:var(--gd);background:var(--gl);}
+
+/* ── Alert strip ── */
+.alert-strip{display:flex;align-items:center;gap:10px;padding:11px 16px;
+  background:linear-gradient(90deg,rgba(220,38,38,.07),rgba(220,38,38,.02));
+  border:1px solid var(--rm);border-radius:10px;margin-bottom:18px;
+  animation:pgIn .4s ease;}
+.alert-msg{font-size:12.5px;font-weight:600;color:var(--r);flex:1;line-height:1.5;}
+.alert-x{cursor:pointer;font-size:15px;padding:3px 6px;border-radius:4px;color:var(--t3);
+  transition:all .15s;background:none;border:none;font-family:var(--font);}
+.alert-x:hover{background:var(--rl);color:var(--r);}
+
+/* ── KPI grid ── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpi{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;
+  padding:18px 20px;position:relative;overflow:hidden;
+  transition:box-shadow .2s,transform .2s;cursor:default;
+  animation:kpiFade .5s ease both;}
+@keyframes kpiFade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
+.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi-bar.g{background:linear-gradient(90deg,var(--gd),#3ecf7a);}
+.kpi-bar.b{background:linear-gradient(90deg,#1e40af,#60a5fa);}
+.kpi-bar.am{background:linear-gradient(90deg,#92400e,#fbbf24);}
+.kpi-bar.r{background:linear-gradient(90deg,#7f1d1d,#f87171);}
+.kpi-bar.pu{background:linear-gradient(90deg,#4c1d95,#a78bfa);}
+.kpi-ico{position:absolute;top:14px;right:16px;font-size:24px;opacity:.14;}
+.kpi-lbl{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.kpi-val{font-family:var(--serif);font-size:31px;color:var(--t1);letter-spacing:-.5px;line-height:1;margin-bottom:8px;}
+.kpi-meta{font-size:11px;font-weight:600;}
+.kpi-meta.up{color:var(--g);}
+.kpi-meta.dn{color:var(--r);}
+.kpi-meta.fl{color:var(--t3);}
+
+/* ── Quick actions ── */
+.qa{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:22px;}
+.qa-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 8px;
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;
+  cursor:pointer;transition:all .15s;text-align:center;}
+.qa-item:hover{border-color:var(--g);background:var(--gl);transform:translateY(-2px);box-shadow:var(--sh);}
+.qa-e{font-size:20px;transition:transform .2s;}
+.qa-item:hover .qa-e{transform:scale(1.12);}
+.qa-t{font-size:10.5px;font-weight:700;color:var(--t2);}
+.qa-item:hover .qa-t{color:var(--gd);}
+
+/* ── Layout grids ── */
+.g2{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:18px;}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+
+/* ── Panel ── */
+.panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;overflow:hidden;}
+.pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--bdr);}
+.pnl-title{font-size:13.5px;font-weight:700;color:var(--t1);}
+.pnl-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+.pnl-link{font-size:11px;font-weight:700;color:var(--g);cursor:pointer;white-space:nowrap;}
+.pnl-link:hover{text-decoration:underline;}
+.pnl-body{padding:18px 20px;}
+
+/* ── Bar chart ── */
+.bc{display:flex;flex-direction:column;gap:11px;}
+.bc-row{display:flex;align-items:center;gap:10px;}
+.bc-lbl{font-size:11px;color:var(--t2);font-weight:600;flex-shrink:0;}
+.bc-track{flex:1;height:7px;background:#edf0ed;border-radius:4px;overflow:hidden;}
+.bc-fill{height:100%;border-radius:4px;transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0;}
+.bc-fill.g{background:linear-gradient(90deg,var(--gd),#3ecf7a);}
+.bc-fill.b{background:linear-gradient(90deg,#1e40af,#60a5fa);}
+.bc-fill.am{background:linear-gradient(90deg,#92400e,#fbbf24);}
+.bc-fill.r{background:linear-gradient(90deg,#7f1d1d,#f87171);}
+.bc-fill.pu{background:linear-gradient(90deg,#4c1d95,#a78bfa);}
+.bc-val{font-family:var(--mono);font-size:10.5px;color:var(--t3);flex-shrink:0;width:44px;text-align:right;}
+
+/* ── Activity feed ── */
+.feed{display:flex;flex-direction:column;}
+.feed-item{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid #f3f5f3;}
+.feed-item:last-child{border:none;}
+.feed-dot-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px;}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.feed-dot.g{background:var(--g);}
+.feed-dot.r{background:var(--r);}
+.feed-dot.b{background:var(--b);}
+.feed-dot.am{background:var(--am);}
+.feed-dot.pu{background:var(--pu);}
+.feed-connector{width:1.5px;flex:1;background:#e8ece8;min-height:14px;margin-top:3px;}
+.feed-main{flex:1;min-width:0;}
+.feed-title{font-size:12px;font-weight:600;color:var(--t1);line-height:1.4;}
+.feed-sub{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.feed-time{font-family:var(--mono);font-size:10px;color:var(--t4);flex-shrink:0;padding-top:2px;}
+
+/* ── Tag / badge ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.2px;white-space:nowrap;}
+.tag.g{background:var(--gl);color:var(--gd);border:1px solid var(--gm);}
+.tag.r{background:var(--rl);color:#7f1d1d;border:1px solid var(--rm);}
+.tag.b{background:var(--bl);color:#1e40af;border:1px solid var(--bm);}
+.tag.am{background:var(--al);color:#78350f;border:1px solid var(--amm);}
+.tag.pu{background:var(--pul);color:#4c1d95;border:1px solid var(--pm);}
+.tag.grey{background:#f3f4f6;color:var(--t3);border:1px solid #e5e7eb;}
+.tag.dot::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:2px;}
+
+/* ── Data table ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  padding:10px 14px;text-align:left;background:#f8faf8;border-bottom:1.5px solid var(--bdr);}
+.tbl td{font-size:12.5px;color:var(--t2);padding:11px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.tbl tr:hover td{background:#f8fbf8;}
+.tbl tr:last-child td{border:none;}
+.cell-user{display:flex;align-items:center;gap:9px;}
+.av{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--g),#7beba4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.av.b{background:linear-gradient(135deg,#1e40af,#60a5fa);}
+.av.am{background:linear-gradient(135deg,#92400e,#fbbf24);}
+.av.pu{background:linear-gradient(135deg,#4c1d95,#a78bfa);}
+.mono{font-family:var(--mono);font-size:11px;}
+
+/* ── Node list ── */
+.node-row{display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--bdr);}
+.node-row:last-child{border:none;}
+.node-pulse{width:8px;height:8px;border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;}
+.node-pulse.g{background:var(--g);box-shadow:0 0 6px var(--g);}
+.node-pulse.am{background:var(--am);box-shadow:0 0 6px var(--am);}
+.node-pulse.r{background:var(--r);box-shadow:0 0 6px var(--r);}
+.node-info{flex:1;min-width:0;}
+.node-name{font-size:12px;font-weight:700;color:var(--t1);}
+.node-id{font-family:var(--mono);font-size:10px;color:var(--t3);}
+.node-right{text-align:right;flex-shrink:0;}
+.node-lat{font-family:var(--mono);font-size:12.5px;font-weight:700;}
+
+/* ── Stat strip ── */
+.stat-strip{display:flex;border-top:1px solid var(--bdr);}
+.stat-cell{flex:1;padding:12px 10px;text-align:center;border-right:1px solid var(--bdr);}
+.stat-cell:last-child{border:none;}
+.stat-v{font-family:var(--serif);font-size:21px;color:var(--t1);letter-spacing:-.3px;}
+.stat-l{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+
+/* ── Donut (CSS conic) ── */
+.donut-wrap{display:flex;align-items:center;gap:16px;}
+.donut{width:84px;height:84px;border-radius:50%;flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:7px;}
+.dl{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--t2);}
+.dl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* ── County grid ── */
+.county-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
+.cc{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;
+  font-size:6.5px;font-weight:700;cursor:pointer;transition:transform .15s;
+  position:relative;}
+.cc:hover{transform:scale(1.15);z-index:2;}
+.cc.full{background:var(--gd);color:rgba(255,255,255,.9);}
+.cc.hi{background:var(--g);color:#fff;}
+.cc.med{background:var(--gm);color:var(--gd);}
+.cc.lo{background:var(--gl);color:#1a5c34;}
+.cc.off{background:#f1f5f1;color:var(--t4);border:1px solid #dde5dd;}
+
+/* ── Facility card ── */
+.fac-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;
+  padding:16px;transition:all .15s;}
+.fac-card:hover{border-color:var(--gm);box-shadow:var(--sh);}
+.fac-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.fac-name{font-size:13px;font-weight:700;color:var(--t1);line-height:1.3;}
+.fac-loc{font-size:11px;color:var(--t3);margin-top:2px;}
+.fac-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;}
+.fac-s{background:var(--bg);border-radius:7px;padding:8px 10px;}
+.fac-sv{font-family:var(--serif);font-size:17px;font-weight:700;color:var(--t1);}
+.fac-sl{font-size:9.5px;color:var(--t3);margin-top:1px;}
+.pbar{height:5px;background:#e8ece8;border-radius:3px;overflow:hidden;margin-top:9px;}
+.pbar-fill{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.16,1,.3,1);}
+
+/* ── Report card ── */
+.rep-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:16px;
+  display:flex;gap:13px;cursor:pointer;transition:all .15s;}
+.rep-card:hover{border-color:var(--g);box-shadow:var(--sh);}
+.rep-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:19px;flex-shrink:0;}
+.rep-name{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px;}
+.rep-desc{font-size:11.5px;color:var(--t3);line-height:1.5;}
+.rep-meta{display:flex;align-items:center;gap:8px;margin-top:8px;}
+
+/* ══ RBAC ROLE BADGE ══ */
+.rbac-badge{display:flex;align-items:center;gap:7px;padding:7px 12px;
+  background:rgba(26,138,74,.12);border:1px solid rgba(26,138,74,.22);
+  border-radius:7px;margin:0 10px 12px;}
+.rbac-ico{font-size:13px;}
+.rbac-role{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);line-height:1.2;}
+.rbac-perm{font-size:8.5px;color:rgba(255,255,255,.35);margin-top:1px;font-family:var(--mono);}
+.rbac-role-sel{font-family:var(--mono);font-size:9px;font-weight:700;
+  background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;
+  padding:2px 0;margin-top:2px;text-decoration:underline dotted;}
+/* Role permission pill on pages */
+.role-guard{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  padding:4px 10px;border-radius:6px;background:var(--gl);border:1px solid var(--gm);color:var(--gd);}
+.role-guard.locked{background:var(--rl);border-color:var(--rm);color:#7f1d1d;}
+
+/* ══ AI MONITOR PANELS ══ */
+.ai-status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.ai-stat{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;
+  padding:15px 16px;position:relative;overflow:hidden;}
+.ai-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.ai-stat.ok::before{background:linear-gradient(90deg,var(--gd),#3ecf7a);}
+.ai-stat.warn::before{background:linear-gradient(90deg,#92400e,#fbbf24);}
+.ai-stat.crit::before{background:linear-gradient(90deg,#7f1d1d,#f87171);}
+.ai-stat.info::before{background:linear-gradient(90deg,#1e40af,#60a5fa);}
+.ai-stat-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.ai-stat-val{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.4px;margin-bottom:4px;}
+.ai-stat-sub{font-size:10.5px;font-weight:600;}
+.ai-stat-sub.ok{color:var(--g);}
+.ai-stat-sub.warn{color:var(--am);}
+.ai-stat-sub.crit{color:var(--r);}
+.ai-pulse-dot{position:absolute;top:14px;right:14px;width:8px;height:8px;border-radius:50%;}
+.ai-pulse-dot.g{background:var(--g);box-shadow:0 0 7px var(--g);animation:pulse 2s infinite;}
+.ai-pulse-dot.am{background:var(--am);box-shadow:0 0 7px var(--am);animation:pulse 2s infinite;}
+.ai-pulse-dot.r{background:var(--r);box-shadow:0 0 7px var(--r);animation:pulse 1s infinite;}
+/* Alert card */
+.ai-alert{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;
+  border-radius:10px;margin-bottom:10px;border-width:1px;border-style:solid;
+  animation:pgIn .3s ease;}
+.ai-alert.crit{background:var(--rl);border-color:var(--rm);}
+.ai-alert.warn{background:var(--al);border-color:var(--amm);}
+.ai-alert.info{background:var(--bl);border-color:var(--bm);}
+.ai-alert.ok{background:var(--gl);border-color:var(--gm);}
+.ai-alert-ico{font-size:18px;flex-shrink:0;margin-top:1px;}
+.ai-alert-body{flex:1;min-width:0;}
+.ai-alert-title{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:3px;}
+.ai-alert-sub{font-size:11px;color:var(--t3);line-height:1.5;}
+.ai-alert-ts{font-family:var(--mono);font-size:10px;color:var(--t4);margin-top:4px;}
+.ai-alert-act{flex-shrink:0;display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+/* Metric sparkline placeholder */
+.spark-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f3f5f3;}
+.spark-row:last-child{border:none;}
+.spark-name{font-size:12px;font-weight:700;color:var(--t1);width:160px;flex-shrink:0;}
+.spark-val{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--t1);width:54px;text-align:right;flex-shrink:0;}
+.spark-bar-wrap{flex:1;height:6px;background:#edf0ed;border-radius:3px;overflow:hidden;}
+.spark-bar-fill{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0;}
+.spark-status{flex-shrink:0;margin-left:8px;}
+/* Query table */
+.query-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f5f3;font-size:11.5px;}
+.query-row:last-child{border:none;}
+.query-txt{flex:1;font-family:var(--mono);font-size:10.5px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.query-ms{font-family:var(--mono);font-size:11px;font-weight:700;flex-shrink:0;width:56px;text-align:right;}
+
+/* ══ SYSTEM HEALTH PANELS ══ */
+.backup-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--bdr);}
+.backup-row:last-child{border:none;}
+.backup-ico{font-size:20px;flex-shrink:0;width:30px;text-align:center;}
+.backup-info{flex:1;min-width:0;}
+.backup-name{font-size:12.5px;font-weight:700;color:var(--t1);}
+.backup-meta{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.4;}
+.backup-right{text-align:right;flex-shrink:0;}
+.backup-size{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--t2);}
+.backup-ago{font-size:10px;color:var(--t3);margin-top:2px;}
+/* Health gauge ring */
+.gauge-ring{width:88px;height:88px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;position:relative;}
+.gauge-val{font-family:var(--serif);font-size:20px;color:var(--t1);letter-spacing:-.3px;text-align:center;}
+.gauge-lbl{font-size:8.5px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+/* DR config */
+.dr-step{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid #f3f5f3;}
+.dr-step:last-child{border:none;}
+.dr-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;}
+.dr-body{flex:1;}
+.dr-title{font-size:12.5px;font-weight:700;color:var(--t1);}
+.dr-desc{font-size:11px;color:var(--t3);margin-top:2px;line-height:1.5;}
+/* RTO/RPO pills */
+.rto-strip{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.rto-pill{display:flex;flex-direction:column;align-items:center;padding:10px 18px;
+  border-radius:10px;border:1.5px solid var(--bdr);background:var(--bg);}
+.rto-val{font-family:var(--serif);font-size:22px;color:var(--t1);letter-spacing:-.3px;}
+.rto-lbl{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}
+/* Animated toast */
+.toast{position:fixed;bottom:24px;right:24px;z-index:900;
+  background:var(--card);border:1.5px solid var(--gm);border-radius:12px;
+  padding:13px 18px;box-shadow:var(--sh2);display:none;
+  animation:toastIn .35s cubic-bezier(.16,1,.3,1);}
+.toast.show{display:flex;align-items:center;gap:10px;}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.toast-ico{font-size:18px;}
+.toast-msg{font-size:12.5px;font-weight:700;color:var(--t1);}
+.toast-sub{font-size:11px;color:var(--t3);margin-top:1px;}
+
+/* ══ TOGGLE SWITCH ══ */
+.sw-wrap{display:flex;align-items:center;gap:11px;padding:11px 14px;
+  border:1.5px solid var(--bdr);border-radius:9px;background:var(--bg);margin-bottom:10px;cursor:pointer;}
+.sw-wrap:hover{border-color:var(--gm);}
+.sw-info{flex:1;}
+.sw-name{font-size:12.5px;font-weight:700;color:var(--t1);}
+.sw-desc{font-size:11px;color:var(--t3);margin-top:2px;}
+.sw{width:40px;height:22px;border-radius:11px;position:relative;transition:background .25s;flex-shrink:0;}
+.sw.on{background:var(--g);}
+.sw.off{background:#d1d5db;}
+.sw-knob{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:left .25s;}
+.sw.on .sw-knob{left:21px;}
+.sw.off .sw-knob{left:3px;}
+
+/* ── Filter row ── */
+.filter-row{display:flex;align-items:center;gap:9px;margin-bottom:16px;flex-wrap:wrap;}
+.fsearch{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:8px;
+  flex:1;max-width:280px;}
+.fsearch:focus-within{border-color:var(--g);}
+.fsearch input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12.5px;color:var(--t1);width:100%;}
+.fsearch input::placeholder{color:var(--t4);}
+.fsel{padding:8px 12px;border:1.5px solid var(--bdr);border-radius:8px;
+  font-family:var(--font);font-size:12.5px;color:var(--t2);background:var(--card);
+  outline:none;cursor:pointer;transition:all .15s;}
+.fsel:focus{border-color:var(--g);}
+.pg-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;}
+.pg-info{font-size:12px;color:var(--t3);}
+.pg-btns{display:flex;gap:5px;}
+.pg-btn{padding:6px 12px;border:1.5px solid var(--bdr);border-radius:7px;
+  font-family:var(--font);font-size:11.5px;font-weight:600;color:var(--t2);
+  background:var(--card);cursor:pointer;transition:all .15s;}
+.pg-btn:hover,.pg-btn.cur{border-color:var(--g);color:var(--g);background:var(--gl);}
+
+/* ── Modal ── */
+.mo-overlay{position:fixed;inset:0;background:rgba(10,20,40,.5);backdrop-filter:blur(5px);
+  z-index:500;display:none;align-items:center;justify-content:center;}
+.mo-overlay.open{display:flex;}
+.mo{background:var(--card);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.22);
+  width:100%;max-width:476px;overflow:hidden;
+  animation:moIn .3s cubic-bezier(.16,1,.3,1);}
+@keyframes moIn{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mo-hd{padding:20px 24px 16px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;}
+.mo-title{font-family:var(--serif);font-size:20px;color:var(--t1);}
+.mo-x{cursor:pointer;font-size:19px;color:var(--t3);padding:4px 7px;
+  border-radius:5px;background:none;border:none;font-family:var(--font);transition:all .15s;}
+.mo-x:hover{background:var(--rl);color:var(--r);}
+.mo-body{padding:20px 24px;}
+.mo-foot{padding:14px 24px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:9px;}
+.ff{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.ff label{font-size:11px;font-weight:700;color:var(--t2);}
+.ff input,.ff select{padding:10px 13px;border:1.5px solid var(--bdr);border-radius:8px;
+  font-family:var(--font);font-size:13px;color:var(--t1);background:var(--bg);outline:none;transition:all .2s;}
+.ff input:focus,.ff select:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);}
+.ff-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>Administrator dashboard</h1>
-    <p>Placeholder route after sign-in. Replace with facility / system admin UI.</p>
-    <p><a href="sign-in.html">← Back to sign in</a></p>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav class="sb">
+  <div class="sb-flag"></div>
+  <div class="sb-in">
+
+    <div class="sb-brand">
+      <div class="sb-ico">🏥</div>
+      <div>
+        <div class="sb-nm">AfyaCare EHR</div>
+        <div class="sb-sub">Admin Portal · MOH Kenya</div>
+      </div>
+      <div class="sb-live"></div>
+    </div>
+
+    <!-- RBAC Role Badge -->
+    <div class="rbac-badge">
+      <span class="rbac-ico" id="rbacIco">🛡️</span>
+      <div>
+        <div class="rbac-role" id="rbacRole">System Administrator</div>
+        <div class="rbac-perm" id="rbacPerm">FULL ACCESS · ALL MODULES</div>
+        <select class="rbac-role-sel" id="rbacSel" onchange="switchRole(this.value)">
+          <option value="sysadmin">System Administrator</option>
+          <option value="secadmin">Security Administrator</option>
+          <option value="datamanager">Data Manager</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-lbl">Main</div>
+      <div class="ni on"  onclick="go('overview',this)"><span class="ni-ico">📊</span><span class="ni-lbl">Overview</span></div>
+      <div class="ni"     onclick="go('users',this)" id="nav-users"><span class="ni-ico">👥</span><span class="ni-lbl">User Management</span><span class="ni-badge red">12</span></div>
+      <div class="ni"     onclick="go('facilities',this)"><span class="ni-ico">🏥</span><span class="ni-lbl">Facilities</span></div>
+      <div class="ni"     onclick="go('counties',this)"><span class="ni-ico">🗺️</span><span class="ni-lbl">County Coverage</span></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-lbl">Clinical</div>
+      <div class="ni"     onclick="go('patients',this)" id="nav-patients"><span class="ni-ico">🧑‍⚕️</span><span class="ni-lbl">Patient Registry</span></div>
+      <div class="ni"     onclick="go('staff',this)"><span class="ni-ico">💼</span><span class="ni-lbl">Staff Directory</span></div>
+      <div class="ni"     onclick="go('afyacare',this)"><span class="ni-ico">🛡️</span><span class="ni-lbl">AfyaCare Integration</span><span class="ni-badge amber">3</span></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-lbl">Security & Intelligence</div>
+      <div class="ni"     onclick="go('ai',this)" id="nav-ai"><span class="ni-ico">🤖</span><span class="ni-lbl">AI Monitor</span><span class="ni-badge red" id="aiBadge">3</span></div>
+      <div class="ni"     onclick="go('rbac',this)" id="nav-rbac"><span class="ni-ico">🔐</span><span class="ni-lbl">RBAC & Roles</span></div>
+      <div class="ni"     onclick="go('audit',this)"><span class="ni-ico">⛓️</span><span class="ni-lbl">Audit Log</span></div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-sec-lbl">System</div>
+      <div class="ni"     onclick="go('health',this)" id="nav-health"><span class="ni-ico">💾</span><span class="ni-lbl">System Health</span><span class="ni-badge amber">1</span></div>
+      <div class="ni"     onclick="go('reports',this)"><span class="ni-ico">📋</span><span class="ni-lbl">Reports</span></div>
+      <div class="ni"     onclick="go('settings',this)"><span class="ni-ico">⚙️</span><span class="ni-lbl">Settings</span></div>
+    </div>
+
+    <div class="sb-user">
+      <div class="sb-av">MK</div>
+      <div>
+        <div class="sb-un">M. Kamau</div>
+        <div class="sb-ue">m.kamau@moh.go.ke</div>
+      </div>
+      <button class="sb-signout" onclick="signOut()">Sign Out</button>
+    </div>
+
   </div>
-</body>
-</html>
+</nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="tb-page" id="tbTitle">Overview</div>
+      <div class="tb-crumb">AfyaCare EHR › <b id="tbCrumb">Dashboard</b></div>
+    </div>
+    <div class="tb-gap"></div>
+    <div class="tb-search">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg>
+      <input placeholder="Search patients, staff, facilities…">
+    </div>
+    <div class="tb-btn" title="Notifications">🔔<div class="tb-dot"></div></div>
+    <div class="tb-btn" title="AfyaCare Live Status">🛡️</div>
+    <div class="tb-datepill" id="tbDate"></div>
+  </header>
+
+  <!-- Scrollable content -->
+  <div class="content">
+
+    <!-- ══ OVERVIEW ══ -->
+    <div id="pg-overview" class="pg on">
+
+      <div class="alert-strip" id="alertStrip">
+        <span style="font-size:18px">⚠️</span>
+        <span class="alert-msg">Nakuru Level 5 Hospital node is <strong>degraded</strong> — 3 pending AfyaCare approvals may be affected. <span style="text-decoration:underline;cursor:pointer" onclick="go('facilities',document.querySelector('[onclick*=facilities]'))">View facility status →</span></span>
+        <button class="alert-x" onclick="document.getElementById('alertStrip').style.display='none'">✕</button>
+      </div>
+
+      <div class="ph">
+        <div>
+          <div class="ph-eyebrow">Ministry of Health Kenya · 2026</div>
+          <div class="ph-title">Good morning, Administrator 👋</div>
+          <div class="ph-sub">System overview for <span id="todayFull" style="color:var(--g);font-weight:700"></span></div>
+        </div>
+        <div class="ph-right">
+          <button class="btn-s" onclick="modal('export')">📥 Export Report</button>
+          <button class="btn-p" onclick="modal('addUser')">+ Add User</button>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="qa">
+        <div class="qa-item" onclick="go('users',null)"><span class="qa-e">👤</span><span class="qa-t">Add Staff</span></div>
+        <div class="qa-item" onclick="modal('addPatient')"><span class="qa-e">🧑‍⚕️</span><span class="qa-t">Register Patient</span></div>
+        <div class="qa-item" onclick="modal('facility')"><span class="qa-e">🏥</span><span class="qa-t">New Facility</span></div>
+        <div class="qa-item" onclick="go('afyacare',null)"><span class="qa-e">🏛️</span><span class="qa-t">AfyaCare Claims</span></div>
+        <div class="qa-item" onclick="go('reports',null)"><span class="qa-e">📋</span><span class="qa-t">Generate Report</span></div>
+        <div class="qa-item" onclick="go('audit',null)"><span class="qa-e">⛓️</span><span class="qa-t">Audit Log</span></div>
+        <div class="qa-item" onclick="go('counties',null)"><span class="qa-e">🗺️</span><span class="qa-t">County Map</span></div>
+        <div class="qa-item" onclick="go('settings',null)"><span class="qa-e">⚙️</span><span class="qa-t">Settings</span></div>
+      </div>
+
+      <!-- KPIs row 1 -->
+      <div class="kpis">
+        <div class="kpi" style="animation-delay:.05s"><div class="kpi-bar g"></div><div class="kpi-ico">🏥</div><div class="kpi-lbl">Registered Patients</div><div class="kpi-val">55.2M</div><div class="kpi-meta up">▲ 2.1% this month</div></div>
+        <div class="kpi" style="animation-delay:.1s"><div class="kpi-bar b"></div><div class="kpi-ico">👥</div><div class="kpi-lbl">Active Staff</div><div class="kpi-val">48,914</div><div class="kpi-meta up">▲ 340 new this week</div></div>
+        <div class="kpi" style="animation-delay:.15s"><div class="kpi-bar am"></div><div class="kpi-ico">🏥</div><div class="kpi-lbl">Facilities Online</div><div class="kpi-val">2,387</div><div class="kpi-meta fl">— 13 degraded</div></div>
+        <div class="kpi" style="animation-delay:.2s"><div class="kpi-bar r"></div><div class="kpi-ico">⚠️</div><div class="kpi-lbl">Pending Approvals</div><div class="kpi-val">127</div><div class="kpi-meta dn">▼ Needs attention</div></div>
+      </div>
+
+      <!-- KPIs row 2 -->
+      <div class="kpis">
+        <div class="kpi" style="animation-delay:.25s"><div class="kpi-bar g"></div><div class="kpi-ico">💊</div><div class="kpi-lbl">AfyaCare Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ Ksh 47.5B total</div></div>
+        <div class="kpi" style="animation-delay:.3s"><div class="kpi-bar b"></div><div class="kpi-ico">📡</div><div class="kpi-lbl">FHIR Events/Day</div><div class="kpi-val">118M</div><div class="kpi-meta up">▲ P95 latency 32ms</div></div>
+        <div class="kpi" style="animation-delay:.35s"><div class="kpi-bar pu"></div><div class="kpi-ico">🗺️</div><div class="kpi-lbl">Counties Connected</div><div class="kpi-val">47/47</div><div class="kpi-meta up">▲ Full coverage</div></div>
+        <div class="kpi" style="animation-delay:.4s"><div class="kpi-bar g"></div><div class="kpi-ico">🔒</div><div class="kpi-lbl">System Uptime</div><div class="kpi-val">99.97%</div><div class="kpi-meta up">▲ SLA met</div></div>
+      </div>
+
+      <!-- Main panels -->
+      <div class="g2">
+        <!-- AfyaCare claims chart -->
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">AfyaCare Claims by Facility Level</div><div class="pnl-sub">Last 30 days · All 47 counties</div></div>
+            <span class="pnl-link" onclick="go('afyacare',null)">View all →</span>
+          </div>
+          <div class="pnl-body">
+            <div class="bc">
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 6 — National Referral</span><div class="bc-track"><div class="bc-fill g" data-w="92"></div></div><span class="bc-val">14,823</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 5 — County Referral</span><div class="bc-track"><div class="bc-fill g" data-w="78"></div></div><span class="bc-val">32,441</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 4 — Sub-County Hosp.</span><div class="bc-track"><div class="bc-fill b" data-w="65"></div></div><span class="bc-val">67,890</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 3 — Health Centre</span><div class="bc-track"><div class="bc-fill am" data-w="48"></div></div><span class="bc-val">124,332</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 2 — Dispensary</span><div class="bc-track"><div class="bc-fill r" data-w="32"></div></div><span class="bc-val">89,201</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Live feed -->
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">Live System Activity</div><div class="pnl-sub" id="feedSub">Updating…</div></div>
+            <span class="pnl-link" onclick="go('audit',null)">Audit log →</span>
+          </div>
+          <div style="padding:0 20px">
+            <div class="feed" id="feed"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom row -->
+      <div class="g3">
+        <!-- Edge nodes -->
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Edge Node Status</div><span class="pnl-link" onclick="go('facilities',null)">All →</span></div>
+          <div id="nodeList"></div>
+        </div>
+        <!-- User roles donut -->
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Staff by Role</div></div>
+          <div class="pnl-body">
+            <div class="donut-wrap">
+              <div class="donut" style="background:conic-gradient(var(--b) 0% 38%,var(--g) 38% 67%,var(--am) 67% 82%,var(--pu) 82% 100%)"></div>
+              <div class="donut-legend">
+                <div class="dl"><div class="dl-dot" style="background:var(--b)"></div>Nurses / COs — 38%</div>
+                <div class="dl"><div class="dl-dot" style="background:var(--g)"></div>Doctors — 29%</div>
+                <div class="dl"><div class="dl-dot" style="background:var(--am)"></div>Admins — 15%</div>
+                <div class="dl"><div class="dl-dot" style="background:var(--pu)"></div>Other — 18%</div>
+              </div>
+            </div>
+          </div>
+          <div class="stat-strip">
+            <div class="stat-cell"><div class="stat-v" style="color:var(--b)">18,587</div><div class="stat-l">Nurses</div></div>
+            <div class="stat-cell"><div class="stat-v" style="color:var(--g)">14,185</div><div class="stat-l">Doctors</div></div>
+            <div class="stat-cell"><div class="stat-v" style="color:var(--am)">7,340</div><div class="stat-l">Admins</div></div>
+          </div>
+        </div>
+        <!-- Auth method compliance -->
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Auth Method Usage (Today)</div></div>
+          <div class="pnl-body">
+            <div class="bc">
+              <div class="bc-row"><span class="bc-lbl">Biometric</span><div class="bc-track"><div class="bc-fill g" data-w="72"></div></div><span class="bc-val">72%</span></div>
+              <div class="bc-row"><span class="bc-lbl">Practice 360</span><div class="bc-track"><div class="bc-fill b" data-w="18"></div></div><span class="bc-val">18%</span></div>
+              <div class="bc-row"><span class="bc-lbl">SMS OTP</span><div class="bc-track"><div class="bc-fill am" data-w="7"></div></div><span class="bc-val">7%</span></div>
+              <div class="bc-row"><span class="bc-lbl">Smart Card</span><div class="bc-track"><div class="bc-fill pu" data-w="3"></div></div><span class="bc-val">3%</span></div>
+            </div>
+            <div style="margin-top:13px;padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--gd)">✅ AfyaCare Compliance: 90% biometric/app</div>
+              <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Target 95% at L4–L6 facilities (AfyaCare Aug 2025)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Overview strip -->
+      <div class="g3" style="margin-bottom:0">
+        <div class="panel" style="cursor:pointer" onclick="go('ai',null)">
+          <div class="pnl-hd"><div><div class="pnl-title">🤖 AI Security Status</div><div class="pnl-sub">Click to open AI Monitor</div></div><span class="tag am">3 alerts</span></div>
+          <div style="padding:12px 20px;display:flex;flex-direction:column;gap:7px">
+            <div class="ai-alert crit" style="padding:9px 12px;margin-bottom:0"><span style="font-size:14px">🔴</span><div style="font-size:11.5px;font-weight:700;color:var(--t1)">Unauthorised access attempt blocked · IP 197.232.xx.xx</div></div>
+            <div class="ai-alert warn" style="padding:9px 12px;margin-bottom:0"><span style="font-size:14px">🟡</span><div style="font-size:11.5px;font-weight:700;color:var(--t1)">Abnormal DB query pattern · uid=staff_4421</div></div>
+          </div>
+        </div>
+        <div class="panel" style="cursor:pointer" onclick="go('health',null)">
+          <div class="pnl-hd"><div><div class="pnl-title">💾 Backup Status</div><div class="pnl-sub">Click to open System Health</div></div><span class="tag g">HEALTHY</span></div>
+          <div style="padding:14px 20px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Last full backup</span><strong style="color:var(--g)">✓ 2h ago</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Incremental</span><strong style="color:var(--g)">✓ 15m ago</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">DR Failover</span><strong style="color:var(--g)">✓ Hot standby</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Storage used</span><strong style="color:var(--am)">63% (2.4TB)</strong></div>
+          </div>
+        </div>
+        <div class="panel" style="cursor:pointer" onclick="go('rbac',null)">
+          <div class="pnl-hd"><div><div class="pnl-title">🔐 RBAC Overview</div><div class="pnl-sub">Click to manage roles</div></div></div>
+          <div style="padding:14px 20px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">System Admins</span><strong>3 users</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Security Admins</span><strong>2 users</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Data Managers</span><strong>5 users</strong></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--t3)">Your role</span><strong id="overviewRbacRole" style="color:var(--g)">System Admin</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USER MANAGEMENT ══ -->
+    <div id="pg-users" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Administration</div><div class="ph-title">User Management</div><div class="ph-sub">Manage staff accounts, roles and access permissions</div></div>
+        <div class="ph-right"><button class="btn-s">📥 Import CSV</button><button class="btn-p" onclick="modal('addUser')">+ Add User</button></div>
+      </div>
+      <div class="filter-row">
+        <div class="fsearch"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg><input placeholder="Search name, email, reg. number…"></div>
+        <select class="fsel"><option>All Roles</option><option>Doctor</option><option>Nurse / CO</option><option>Administrator</option></select>
+        <select class="fsel"><option>All Facilities</option><option>KNH Nairobi</option><option>Coast General</option><option>MTRH Eldoret</option><option>Kisumu County Ref.</option></select>
+        <select class="fsel"><option>All Status</option><option>Active</option><option>Inactive</option><option>Pending</option></select>
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>User</th><th>Role</th><th>Reg. / ID</th><th>Facility</th><th>Last Login</th><th>Auth Method</th><th>Status</th><th></th></tr></thead>
+          <tbody id="userTbody"></tbody>
+        </table>
+      </div>
+      <div class="pg-foot">
+        <span class="pg-info">Showing <strong>8</strong> of <strong>48,914</strong> staff members</span>
+        <div class="pg-btns">
+          <div class="pg-btn">← Prev</div>
+          <div class="pg-btn cur">1</div><div class="pg-btn">2</div><div class="pg-btn">3</div>
+          <div class="pg-btn">Next →</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FACILITIES ══ -->
+    <div id="pg-facilities" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">Facility Management</div><div class="ph-sub">2,387 AfyaCare-accredited facilities across 47 counties</div></div>
+        <button class="btn-p" onclick="modal('facility')">+ Register Facility</button>
+      </div>
+      <div class="g3" id="facGrid" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+
+    <!-- ══ COUNTY COVERAGE ══ -->
+    <div id="pg-counties" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Coverage</div><div class="ph-title">County Coverage Map</div><div class="ph-sub">All 47 counties · Real-time connectivity</div></div>
+      </div>
+      <div class="g2e">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Coverage Heatmap — 47 Counties</div></div>
+          <div class="pnl-body">
+            <div class="county-grid" id="countyGrid"></div>
+            <div style="display:flex;gap:12px;margin-top:13px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--gd)"></div>Full</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--g)"></div>High</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--gm)"></div>Medium</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--gl)"></div>Low</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:#f1f5f1;border:1px solid #dde5dd"></div>Offline</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Top Counties by Connectivity</div></div>
+          <div class="pnl-body">
+            <div class="bc" id="countyBars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PATIENT REGISTRY ══ -->
+    <div id="pg-patients" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Clinical</div><div class="ph-title">Patient Registry</div><div class="ph-sub">55.2M AfyaCare-registered patients across 47 counties</div></div>
+        <button class="btn-p" onclick="modal('addPatient')">+ Register Patient</button>
+      </div>
+      <div class="filter-row">
+        <div class="fsearch"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg><input placeholder="Search name, National ID, AfyaCare member number…"></div>
+        <select class="fsel"><option>All Counties</option><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option></select>
+        <select class="fsel"><option>All ID Types</option><option>National ID</option><option>Passport</option><option>Alien ID</option><option>Refugee ID</option></select>
+        <select class="fsel"><option>All AfyaCare Status</option><option>Active</option><option>Inactive</option><option>Pending</option></select>
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>Patient</th><th>National ID</th><th>County</th><th>AfyaCare Status</th><th>AfyaCare No.</th><th>Last Visit</th><th></th></tr></thead>
+          <tbody id="patTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ STAFF DIRECTORY ══ -->
+    <div id="pg-staff" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Human Resources</div><div class="ph-title">Staff Directory</div><div class="ph-sub">KMPDC and NCK verified clinical staff</div></div>
+        <button class="btn-p" onclick="modal('addUser')">+ Add Staff Member</button>
+      </div>
+      <div class="filter-row">
+        <div class="fsearch"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg><input placeholder="Search name or registration number…"></div>
+        <select class="fsel"><option>All Roles</option><option>Doctor</option><option>Nurse</option><option>Clinical Officer</option></select>
+        <select class="fsel"><option>All Councils</option><option>KMPDC</option><option>NCK</option></select>
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>Name</th><th>Role</th><th>Registration No.</th><th>Council</th><th>Facility</th><th>KMPDC/NCK Verified</th><th>Status</th></tr></thead>
+          <tbody id="staffTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ AfyaCare INTEGRATION ══ -->
+    <div id="pg-afyacare" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">AfyaCare Health Cover</div><div class="ph-title">AfyaCare Integration Hub</div><div class="ph-sub">Claims management, biometric verification, Practice 360 approvals</div></div>
+        <button class="btn-p">↺ Sync AfyaCare</button>
+      </div>
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+        <div class="kpi"><div class="kpi-bar g"></div><div class="kpi-ico">🏛️</div><div class="kpi-lbl">Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ Ksh 47.5B disbursed</div></div>
+        <div class="kpi"><div class="kpi-bar am"></div><div class="kpi-ico">⏳</div><div class="kpi-lbl">Pending Claims</div><div class="kpi-val">127</div><div class="kpi-meta dn">▼ Avg wait 4.2h</div></div>
+        <div class="kpi"><div class="kpi-bar r"></div><div class="kpi-ico">❌</div><div class="kpi-lbl">Rejected Claims</div><div class="kpi-val">23</div><div class="kpi-meta fl">— fraud prevention active</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Pending Approvals</div><span class="pnl-link">Approve all →</span></div>
+          <table class="tbl">
+            <thead><tr><th>AfyaCare No.</th><th>Facility</th><th>Service</th><th>Amount</th><th>Auth</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">AfyaCare-2024-884321</td><td>KNH Nairobi</td><td>Inpatient ward</td><td>Ksh 12,400</td><td><span class="tag g dot">Biometric</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
+              <tr><td class="mono">AfyaCare-2023-441209</td><td>MTRH Eldoret</td><td>Surgery pre-auth</td><td>Ksh 45,000</td><td><span class="tag b dot">Practice 360</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
+              <tr><td class="mono">AfyaCare-2024-221087</td><td>Nakuru L5</td><td>Maternity</td><td>Ksh 8,200</td><td><span class="tag am dot">OTP ⚠️</span></td><td><button class="btn-s" style="padding:5px 11px;font-size:11px">Review</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Biometric Compliance by Level</div></div>
+          <div class="pnl-body">
+            <div style="padding:10px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;margin-bottom:15px">
+              <div style="font-size:12px;font-weight:700;color:var(--gd)">AfyaCare Policy — August 2025</div>
+              <div style="font-size:11px;color:var(--t2);margin-top:3px;line-height:1.5">OTP no longer accepted at Level 4–6 facilities. All approvals via <strong>biometric</strong> or <strong>Practice 360</strong>.</div>
+            </div>
+            <div class="bc">
+              <div class="bc-row"><span class="bc-lbl">L6 National Ref.</span><div class="bc-track"><div class="bc-fill g" data-w="98"></div></div><span class="bc-val">98%</span></div>
+              <div class="bc-row"><span class="bc-lbl">L5 County Ref.</span><div class="bc-track"><div class="bc-fill g" data-w="94"></div></div><span class="bc-val">94%</span></div>
+              <div class="bc-row"><span class="bc-lbl">L4 Sub-county</span><div class="bc-track"><div class="bc-fill am" data-w="81"></div></div><span class="bc-val">81%</span></div>
+              <div class="bc-row"><span class="bc-lbl">L3 Health Centre</span><div class="bc-track"><div class="bc-fill b" data-w="44"></div></div><span class="bc-val">44%</span></div>
+              <div class="bc-row"><span class="bc-lbl">L2 Dispensary</span><div class="bc-track"><div class="bc-fill r" data-w="22"></div></div><span class="bc-val">22%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS ══ -->
+    <div id="pg-reports" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Analytics</div><div class="ph-title">Reports & Analytics</div><div class="ph-sub">Generate and export system reports</div></div>
+        <button class="btn-p" onclick="modal('export')">📥 Export All</button>
+      </div>
+      <div class="g3" id="repGrid" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+
+    <!-- ══ AUDIT LOG ══ -->
+    <div id="pg-audit" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">Hyperledger Fabric Blockchain · Append-Only</div><div class="ph-title">Audit Log</div><div class="ph-sub">Immutable blockchain-recorded system events · All admin actions logged · KDPA 2019 compliant</div></div>
+        <div class="ph-right">
+          <span class="role-guard">⛓️ Tamper-Evident</span>
+          <button class="btn-s">📥 Export log</button>
+        </div>
+      </div>
+      <div style="padding:10px 16px;background:var(--al);border:1px solid var(--amm);border-radius:10px;margin-bottom:16px;font-size:12px;color:#78350f;font-weight:600;display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">⛓️</span> All administrator actions including <strong>account creation, configuration changes and record deletion</strong> are permanently recorded here. This log is append-only and cannot be edited or deleted.
+      </div>
+      <div class="panel">
+        <table class="tbl">
+          <thead><tr><th>Timestamp</th><th>Action Type</th><th>Event</th><th>Actor (RBAC Role)</th><th>IP / Device</th><th>Block Hash</th><th>Status</th></tr></thead>
+          <tbody id="auditTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div id="pg-settings" class="pg">
+      <div class="ph">
+        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div><div class="ph-sub">Configure AfyaCare EHR authentication, RBAC policies and integration preferences</div></div>
+        <button class="btn-p" onclick="logAudit('MODIFY settings saved by '+ROLES[currentRole].lbl);showToast('✅','Settings saved','Changes logged to audit trail')">Save Changes</button>
+      </div>
+      <div class="g2e">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-title">Authentication Policies</div></div>
+          <div class="pnl-body" id="settingsAuth"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-title">🔐 RBAC Security Policies</div></div>
+            <div class="pnl-body" id="settingsRbac"></div>
+          </div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-title">AfyaCare Integration</div></div>
+            <div class="pnl-body">
+              <div class="ff"><label>AfyaCare API Endpoint</label><input value="https://api.afyacare.go.ke/v1" style="font-family:var(--mono);font-size:12px"></div>
+              <div class="ff"><label>AfyaCare Portal URL</label><input value="https://portal.afyacare.go.ke" style="font-family:var(--mono);font-size:12px"></div>
+              <div class="ff"><label>Practice 360 Webhook URL</label><input value="https://afyacare.moh.go.ke/webhooks/p360" style="font-family:var(--mono);font-size:12px"></div>
+              <div style="padding:10px 13px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;margin-top:4px">
+                <div style="font-size:12px;font-weight:700;color:var(--gd)">✅ AfyaCare Connection: Live</div>
+                <div style="font-size:11px;color:var(--t3);margin-top:3px">Last sync: 4 minutes ago · 25M+ patient records linked</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ══ AI MONITOR ══ -->
+    <div id="pg-ai" class="pg">
+      <div class="ph">
+        <div>
+          <div class="ph-eyebrow">AI · Security Intelligence</div>
+          <div class="ph-title">AI System Monitor</div>
+          <div class="ph-sub">Automated anomaly detection · Behavioural analysis · Real-time threat intelligence</div>
+        </div>
+        <div class="ph-right">
+          <span class="role-guard" id="aiRoleGuard">🛡️ System Administrator</span>
+          <button class="btn-s" onclick="dismissAlerts()">✓ Dismiss Alerts</button>
+          <button class="btn-p" onclick="runAIScan()">🤖 Run AI Scan Now</button>
+        </div>
+      </div>
+
+      <!-- AI KPI Strip -->
+      <div class="ai-status-grid">
+        <div class="ai-stat ok">
+          <div class="ai-pulse-dot g"></div>
+          <div class="ai-stat-lbl">Threat Detection (NIDS)</div>
+          <div class="ai-stat-val">Active</div>
+          <div class="ai-stat-sub ok">▲ 0 breaches detected</div>
+        </div>
+        <div class="ai-stat warn">
+          <div class="ai-pulse-dot am"></div>
+          <div class="ai-stat-lbl">Anomaly Alerts (24h)</div>
+          <div class="ai-stat-val" id="aiAlertCount">3</div>
+          <div class="ai-stat-sub warn">⚠ 1 critical, 2 warnings</div>
+        </div>
+        <div class="ai-stat ok">
+          <div class="ai-pulse-dot g"></div>
+          <div class="ai-stat-lbl">UEBA Behaviour Model</div>
+          <div class="ai-stat-val">Running</div>
+          <div class="ai-stat-sub ok">▲ 48,914 user profiles</div>
+        </div>
+        <div class="ai-stat info">
+          <div class="ai-pulse-dot g" style="background:var(--b);box-shadow:0 0 7px var(--b)"></div>
+          <div class="ai-stat-lbl">DB Query Analysis</div>
+          <div class="ai-stat-val">Normal</div>
+          <div class="ai-stat-sub" style="color:var(--b)">▲ 118M events/day scanned</div>
+        </div>
+      </div>
+
+      <!-- Active Alerts -->
+      <div class="panel" style="margin-bottom:18px">
+        <div class="pnl-hd">
+          <div><div class="pnl-title">🚨 Active AI Alerts</div><div class="pnl-sub">Automated anomaly detection — requires administrator action</div></div>
+          <span class="pnl-link" onclick="go('audit',null)">View audit log →</span>
+        </div>
+        <div style="padding:16px 20px" id="aiAlertList">
+          <div class="ai-alert crit">
+            <span class="ai-alert-ico">🔴</span>
+            <div class="ai-alert-body">
+              <div class="ai-alert-title">Unauthorized Access Attempt Detected</div>
+              <div class="ai-alert-sub">IP 197.232.xx.xx attempted 14 login requests in 60 seconds to Admin Portal. UEBA model flagged as bot behaviour (confidence: 97%). Account auto-blocked.</div>
+              <div class="ai-alert-ts">2026-04-03 09:42:11 · NIDS Engine · Block Hash: 0x9c34e7a2…</div>
+            </div>
+            <div class="ai-alert-act">
+              <span class="tag r">CRITICAL</span>
+              <button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('IP block confirmed by '+currentRole)">Confirm Block</button>
+            </div>
+          </div>
+          <div class="ai-alert warn">
+            <span class="ai-alert-ico">🟡</span>
+            <div class="ai-alert-body">
+              <div class="ai-alert-title">Abnormal Database Query Pattern</div>
+              <div class="ai-alert-sub">User session uid=staff_4421 executed 3,200+ SELECT queries on patient_records table in 4 minutes. Exceeds normal baseline by 18×. Possible data exfiltration or runaway script.</div>
+              <div class="ai-alert-ts">2026-04-03 09:18:44 · DB Query Analyser · Isolation Forest score: 0.91</div>
+            </div>
+            <div class="ai-alert-act">
+              <span class="tag am">WARNING</span>
+              <button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('DB query anomaly reviewed')">Review</button>
+            </div>
+          </div>
+          <div class="ai-alert warn">
+            <span class="ai-alert-ico">🟡</span>
+            <div class="ai-alert-body">
+              <div class="ai-alert-title">Unusual Login Time — Admin Account</div>
+              <div class="ai-alert-sub">Admin M. Njeri logged in at 02:34 from Nakuru — outside normal operating hours (07:00–21:00). UEBA model flagged as unusual (confidence: 83%). Adaptive MFA challenge was issued.</div>
+              <div class="ai-alert-ts">2026-04-03 02:34:07 · UEBA Engine · Adaptive MFA: triggered</div>
+            </div>
+            <div class="ai-alert-act">
+              <span class="tag am">WARNING</span>
+              <button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('Off-hours login reviewed')">Review</button>
+            </div>
+          </div>
+          <div class="ai-alert ok">
+            <span class="ai-alert-ico">🟢</span>
+            <div class="ai-alert-body">
+              <div class="ai-alert-title">AI Security Scan Complete — No New Threats</div>
+              <div class="ai-alert-sub">Scheduled scan completed at 09:00. All 2,387 facility nodes checked. No new anomalies. System security score: 98.4%.</div>
+              <div class="ai-alert-ts">2026-04-03 09:00:00 · Scheduled AI Scan · Duration: 4.2s</div>
+            </div>
+            <div class="ai-alert-act">
+              <span class="tag g">CLEAR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Server Metrics + DB Queries -->
+      <div class="g2e">
+        <div class="panel">
+          <div class="pnl-hd"><div><div class="pnl-title">📡 Server Performance Metrics</div><div class="pnl-sub">AI baseline monitoring — all nodes</div></div></div>
+          <div style="padding:6px 20px">
+            <div class="spark-row">
+              <div class="spark-name">API Gateway CPU</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill g" data-w="34"></div></div>
+              <div class="spark-val" style="color:var(--g)">34%</div>
+              <span class="spark-status"><span class="tag g">NORMAL</span></span>
+            </div>
+            <div class="spark-row">
+              <div class="spark-name">Database Server CPU</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill am" data-w="71"></div></div>
+              <div class="spark-val" style="color:var(--am)">71%</div>
+              <span class="spark-status"><span class="tag am">HIGH</span></span>
+            </div>
+            <div class="spark-row">
+              <div class="spark-name">FHIR Kafka Cluster</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill g" data-w="48"></div></div>
+              <div class="spark-val" style="color:var(--g)">48%</div>
+              <span class="spark-status"><span class="tag g">NORMAL</span></span>
+            </div>
+            <div class="spark-row">
+              <div class="spark-name">Auth Service Memory</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill g" data-w="52"></div></div>
+              <div class="spark-val" style="color:var(--g)">52%</div>
+              <span class="spark-status"><span class="tag g">NORMAL</span></span>
+            </div>
+            <div class="spark-row">
+              <div class="spark-name">Edge Node Avg. Latency</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill b" data-w="22"></div></div>
+              <div class="spark-val" style="color:var(--b)">32ms</div>
+              <span class="spark-status"><span class="tag b">P95</span></span>
+            </div>
+            <div class="spark-row">
+              <div class="spark-name">Backup Storage Used</div>
+              <div class="spark-bar-wrap"><div class="spark-bar-fill bc-fill pu" data-w="63"></div></div>
+              <div class="spark-val" style="color:var(--pu)">63%</div>
+              <span class="spark-status"><span class="tag pu">OK</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div><div class="pnl-title">🗄️ Abnormal Database Queries</div><div class="pnl-sub">Isolation Forest anomaly detection</div></div></div>
+          <div style="padding:8px 20px">
+            <div class="query-row">
+              <div class="query-txt">SELECT * FROM patient_records WHERE ... (3,200 calls/4min)</div>
+              <div class="query-ms" style="color:var(--r)">⚠ 3,200×</div>
+              <span class="tag r" style="margin-left:8px">FLAGGED</span>
+            </div>
+            <div class="query-row">
+              <div class="query-txt">DROP TABLE IF EXISTS session_tokens (blocked at WAF)</div>
+              <div class="query-ms" style="color:var(--r)">BLOCKED</div>
+              <span class="tag r" style="margin-left:8px">BLOCKED</span>
+            </div>
+            <div class="query-row">
+              <div class="query-txt">SELECT staff_id, password_hash FROM staff_auth</div>
+              <div class="query-ms" style="color:var(--am)">1× unusual</div>
+              <span class="tag am" style="margin-left:8px">REVIEW</span>
+            </div>
+            <div class="query-row">
+              <div class="query-txt">UPDATE claims SET status='approved' WHERE amount>100000</div>
+              <div class="query-ms" style="color:var(--am)">bulk op</div>
+              <span class="tag am" style="margin-left:8px">REVIEW</span>
+            </div>
+            <div class="query-row">
+              <div class="query-txt">SELECT * FROM audit_log ORDER BY ts DESC LIMIT 1000</div>
+              <div class="query-ms" style="color:var(--g)">42ms</div>
+              <span class="tag g" style="margin-left:8px">OK</span>
+            </div>
+            <div style="margin-top:13px;padding:9px 12px;background:var(--al);border:1px solid var(--amm);border-radius:8px;font-size:11px;color:#78350f;line-height:1.5">
+              <strong>AI Model:</strong> Isolation Forest (scikit-learn) · Anomaly threshold: 0.85 · <strong>2 queries flagged for DBA review</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RBAC & ROLES ══ -->
+    <div id="pg-rbac" class="pg">
+      <div class="ph">
+        <div>
+          <div class="ph-eyebrow">Security · Access Control</div>
+          <div class="ph-title">RBAC &amp; Role Management</div>
+          <div class="ph-sub">Define admin privileges · Assign roles · Enforce least-privilege access</div>
+        </div>
+        <div class="ph-right">
+          <span class="role-guard locked" id="rbacPageGuard">🔐 System Administrator only</span>
+          <button class="btn-p" onclick="modal('addUser')">+ Assign Role</button>
+        </div>
+      </div>
+
+      <!-- Role cards -->
+      <div class="g3" style="margin-bottom:20px">
+        <div class="panel">
+          <div class="pnl-hd" style="background:linear-gradient(135deg,rgba(26,138,74,.06),rgba(26,138,74,.02))">
+            <div><div class="pnl-title" style="color:var(--gd)">🛡️ System Administrator</div><div class="pnl-sub">Full system access</div></div>
+            <span class="tag g">3 users</span>
+          </div>
+          <div class="pnl-body">
+            <div style="font-size:11.5px;color:var(--t2);line-height:1.7;margin-bottom:12px">
+              ✅ Create / modify / delete accounts<br>
+              ✅ Modify system configurations<br>
+              ✅ Access all clinical records<br>
+              ✅ Export audit logs<br>
+              ✅ Configure disaster recovery<br>
+              ✅ Manage RBAC roles
+            </div>
+            <div style="padding:8px 11px;background:var(--gl);border:1px solid var(--gm);border-radius:7px;font-size:10.5px;color:var(--gd);font-weight:600">All actions logged in append-only audit trail</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd" style="background:linear-gradient(135deg,rgba(220,38,38,.05),rgba(220,38,38,.01))">
+            <div><div class="pnl-title" style="color:#7f1d1d">🔒 Security Administrator</div><div class="pnl-sub">Security &amp; audit focus</div></div>
+            <span class="tag r">2 users</span>
+          </div>
+          <div class="pnl-body">
+            <div style="font-size:11.5px;color:var(--t2);line-height:1.7;margin-bottom:12px">
+              ✅ View AI anomaly alerts<br>
+              ✅ Manage RBAC roles<br>
+              ✅ View &amp; export audit logs<br>
+              ✅ Block / unblock user accounts<br>
+              ❌ Cannot delete clinical records<br>
+              ❌ Cannot modify system config
+            </div>
+            <div style="padding:8px 11px;background:var(--rl);border:1px solid var(--rm);border-radius:7px;font-size:10.5px;color:#7f1d1d;font-weight:600">Restricted from data modification</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd" style="background:linear-gradient(135deg,rgba(37,99,235,.05),rgba(37,99,235,.01))">
+            <div><div class="pnl-title" style="color:#1e40af">📋 Data Manager</div><div class="pnl-sub">Data management only</div></div>
+            <span class="tag b">5 users</span>
+          </div>
+          <div class="pnl-body">
+            <div style="font-size:11.5px;color:var(--t2);line-height:1.7;margin-bottom:12px">
+              ✅ View patient &amp; staff records<br>
+              ✅ Register new patients<br>
+              ✅ Manage facility data<br>
+              ✅ Export data reports<br>
+              ❌ Cannot create staff accounts<br>
+              ❌ Cannot access AI Monitor<br>
+              ❌ Cannot view audit logs
+            </div>
+            <div style="padding:8px 11px;background:var(--bl);border:1px solid var(--bm);border-radius:7px;font-size:10.5px;color:#1e40af;font-weight:600">Read-write data access, no security access</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RBAC users table -->
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-title">Admin Role Assignments</div><div class="pnl-sub">All administrative accounts — role-enforced at API level (KDPA 2019)</div></div>
+        <table class="tbl">
+          <thead><tr><th>Administrator</th><th>RBAC Role</th><th>Assigned By</th><th>Last Login</th><th>Permitted Actions</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="cell-user"><div class="av">MK</div><div><div style="font-weight:700">M. Kamau</div><div style="font-size:10.5px;color:var(--t3)">m.kamau@moh.go.ke</div></div></div></td>
+              <td><span class="tag g">🛡️ System Admin</span></td>
+              <td style="font-size:11.5px;color:var(--t3)">System root</td>
+              <td class="mono" style="font-size:11px">Today 09:42</td>
+              <td style="font-size:11px;color:var(--t3)">Full access</td>
+              <td><span class="tag g dot">ACTIVE</span></td>
+              <td><button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('Role edit attempted: M. Kamau')">Edit Role</button></td>
+            </tr>
+            <tr>
+              <td><div class="cell-user"><div class="av b">SN</div><div><div style="font-weight:700">S. Njeri</div><div style="font-size:10.5px;color:var(--t3)">s.njeri@moh.go.ke</div></div></div></td>
+              <td><span class="tag r">🔒 Security Admin</span></td>
+              <td style="font-size:11.5px;color:var(--t3)">M. Kamau</td>
+              <td class="mono" style="font-size:11px">Today 02:34</td>
+              <td style="font-size:11px;color:var(--t3)">Audit, RBAC, blocks</td>
+              <td><span class="tag am dot">FLAGGED</span></td>
+              <td><button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('Role edit attempted: S. Njeri')">Edit Role</button></td>
+            </tr>
+            <tr>
+              <td><div class="cell-user"><div class="av am">JO</div><div><div style="font-weight:700">J. Odhiambo</div><div style="font-size:10.5px;color:var(--t3)">j.odhiambo@kisumu.go.ke</div></div></div></td>
+              <td><span class="tag b">📋 Data Manager</span></td>
+              <td style="font-size:11.5px;color:var(--t3)">M. Kamau</td>
+              <td class="mono" style="font-size:11px">Yesterday 14:21</td>
+              <td style="font-size:11px;color:var(--t3)">Records, reports</td>
+              <td><span class="tag g dot">ACTIVE</span></td>
+              <td><button class="btn-s" style="font-size:11px;padding:5px 10px" onclick="logAudit('Role edit attempted: J. Odhiambo')">Edit Role</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:12px 20px;background:#f8faf8;border-top:1px solid var(--bdr);font-size:11px;color:var(--t3)">
+          🔐 All role assignments recorded in append-only audit log · RBAC enforced server-side · Deny-by-default policy active
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SYSTEM HEALTH ══ -->
+    <div id="pg-health" class="pg">
+      <div class="ph">
+        <div>
+          <div class="ph-eyebrow">Infrastructure · Reliability</div>
+          <div class="ph-title">System Health &amp; Backups</div>
+          <div class="ph-sub">Database backup management · Health monitoring · Disaster recovery configuration</div>
+        </div>
+        <div class="ph-right">
+          <button class="btn-s" onclick="triggerBackup()">💾 Run Backup Now</button>
+          <button class="btn-p" onclick="modal('export')">📥 Health Report</button>
+        </div>
+      </div>
+
+      <!-- Health KPIs -->
+      <div class="kpis" style="margin-bottom:20px">
+        <div class="kpi"><div class="kpi-bar g"></div><div class="kpi-ico">💚</div><div class="kpi-lbl">System Uptime</div><div class="kpi-val">99.97%</div><div class="kpi-meta up">▲ SLA: 99.9% met</div></div>
+        <div class="kpi"><div class="kpi-bar b"></div><div class="kpi-ico">💾</div><div class="kpi-lbl">Last Backup</div><div class="kpi-val">2h ago</div><div class="kpi-meta up">▲ Full + incremental</div></div>
+        <div class="kpi"><div class="kpi-bar am"></div><div class="kpi-ico">🗄️</div><div class="kpi-lbl">Backup Storage</div><div class="kpi-val">63%</div><div class="kpi-meta fl">— 2.4TB used / 3.8TB</div></div>
+        <div class="kpi"><div class="kpi-bar pu"></div><div class="kpi-ico">🔁</div><div class="kpi-lbl">DR Failover Ready</div><div class="kpi-val">✓ Live</div><div class="kpi-meta up">▲ Hot standby active</div></div>
+      </div>
+
+      <div class="g2e" style="margin-bottom:18px">
+        <!-- Backup Management -->
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">💾 Database Backup Management</div><div class="pnl-sub">Automated · AES-256 encrypted · Geo-redundant storage</div></div>
+            <span class="tag g dot">AUTOMATED</span>
+          </div>
+          <div class="backup-row">
+            <div class="backup-ico">🟢</div>
+            <div class="backup-info">
+              <div class="backup-name">Full Backup — Production DB</div>
+              <div class="backup-meta">AfyaCare EHR · All 47 counties · AES-256 · Stored: Nairobi + Mombasa DR sites</div>
+            </div>
+            <div class="backup-right">
+              <div class="backup-size">847 GB</div>
+              <div class="backup-ago">2h ago · <span style="color:var(--g)">✓ Verified</span></div>
+            </div>
+          </div>
+          <div class="backup-row">
+            <div class="backup-ico">🟢</div>
+            <div class="backup-info">
+              <div class="backup-name">Incremental Backup — Transaction Log</div>
+              <div class="backup-meta">AfyaCare claims &amp; FHIR events · Every 15 minutes · S3-compatible storage</div>
+            </div>
+            <div class="backup-right">
+              <div class="backup-size">12.4 GB</div>
+              <div class="backup-ago">15m ago · <span style="color:var(--g)">✓ Verified</span></div>
+            </div>
+          </div>
+          <div class="backup-row">
+            <div class="backup-ico">🟢</div>
+            <div class="backup-info">
+              <div class="backup-name">Audit Log Archive — Hyperledger</div>
+              <div class="backup-meta">Immutable blockchain anchor · Tamper-evident · KDPA 2019 compliant</div>
+            </div>
+            <div class="backup-right">
+              <div class="backup-size">3.1 GB</div>
+              <div class="backup-ago">1h ago · <span style="color:var(--g)">✓ Anchored</span></div>
+            </div>
+          </div>
+          <div class="backup-row">
+            <div class="backup-ico">🟡</div>
+            <div class="backup-info">
+              <div class="backup-name">Configuration Snapshot — Settings</div>
+              <div class="backup-meta">RBAC policies, system config, integration settings</div>
+            </div>
+            <div class="backup-right">
+              <div class="backup-size">240 MB</div>
+              <div class="backup-ago" style="color:var(--am)">6h ago · Due soon</div>
+            </div>
+          </div>
+          <div style="padding:13px 20px;display:flex;gap:10px;border-top:1px solid var(--bdr);background:#f8faf8">
+            <div style="flex:1;font-size:11px;color:var(--t3);line-height:1.5">
+              Next full backup: <strong style="color:var(--t1)">Tonight 02:00 EAT</strong> · Schedule: Daily full, 15-min incremental
+            </div>
+            <button class="btn-s" style="font-size:11px;padding:5px 11px" onclick="triggerBackup()">💾 Run Now</button>
+          </div>
+        </div>
+
+        <!-- System Health Monitor -->
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">🩺 System Health Monitor</div><div class="pnl-sub">AI predictive maintenance · Real-time metrics</div></div>
+            <span class="tag g dot">HEALTHY</span>
+          </div>
+          <div class="pnl-body">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px">
+              <div class="gauge-ring" style="background:conic-gradient(var(--g) 0% 99.97%, #e8ece8 99.97% 100%);padding:5px">
+                <div style="width:78px;height:78px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <div class="gauge-val">99.97</div>
+                  <div class="gauge-lbl">Uptime %</div>
+                </div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:8px">Overall Health: <span style="color:var(--g)">Excellent</span></div>
+                <div style="font-size:11px;color:var(--t3);line-height:1.6">
+                  3 redundant auth servers online<br>
+                  Hot standby DB replica synced<br>
+                  AI predictive model: no failures predicted<br>
+                  Next maintenance window: Sunday 01:00 EAT
+                </div>
+              </div>
+            </div>
+            <div class="bc">
+              <div class="bc-row"><span class="bc-lbl" style="width:140px">API Gateway</span><div class="bc-track"><div class="bc-fill g" data-w="100"></div></div><span class="bc-val" style="color:var(--g)">UP</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:140px">Auth Service</span><div class="bc-track"><div class="bc-fill g" data-w="100"></div></div><span class="bc-val" style="color:var(--g)">UP</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:140px">FHIR Engine</span><div class="bc-track"><div class="bc-fill g" data-w="100"></div></div><span class="bc-val" style="color:var(--g)">UP</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:140px">Nakuru L5 Node</span><div class="bc-track"><div class="bc-fill r" data-w="40"></div></div><span class="bc-val" style="color:var(--r)">DEGR.</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:140px">Backup Storage</span><div class="bc-track"><div class="bc-fill am" data-w="63"></div></div><span class="bc-val">63%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disaster Recovery -->
+      <div class="panel">
+        <div class="pnl-hd">
+          <div><div class="pnl-title">🔁 Disaster Recovery Configuration</div><div class="pnl-sub">RTO: 4 hours · RPO: 15 minutes · Hot standby active</div></div>
+          <button class="btn-s" onclick="logAudit('DR test initiated by '+currentRole)">🔁 Test Failover</button>
+        </div>
+        <div class="pnl-body">
+          <div class="rto-strip">
+            <div class="rto-pill"><div class="rto-val" style="color:var(--g)">4h</div><div class="rto-lbl">RTO Target</div></div>
+            <div class="rto-pill"><div class="rto-val" style="color:var(--b)">15m</div><div class="rto-lbl">RPO Target</div></div>
+            <div class="rto-pill"><div class="rto-val" style="color:var(--g)">3×</div><div class="rto-lbl">Geo Sites</div></div>
+            <div class="rto-pill"><div class="rto-val" style="color:var(--g)">Hot</div><div class="rto-lbl">Standby</div></div>
+            <div class="rto-pill"><div class="rto-val" style="color:var(--pu)">AES-256</div><div class="rto-lbl">Encryption</div></div>
+          </div>
+          <div class="dr-step">
+            <div class="dr-num" style="background:var(--g)">1</div>
+            <div class="dr-body"><div class="dr-title">Automated Failure Detection</div><div class="dr-desc">AI health monitor detects primary DB failure within 30 seconds. Alert fired to on-call administrator via SMS + AfyaCare portal notification.</div></div>
+            <span class="tag g">ACTIVE</span>
+          </div>
+          <div class="dr-step">
+            <div class="dr-num" style="background:var(--b)">2</div>
+            <div class="dr-body"><div class="dr-title">Automatic Hot-Standby Failover</div><div class="dr-desc">Hot standby database replica (Mombasa DR site) automatically promoted within 2 minutes. DNS failover handled by AWS Route 53 health checks.</div></div>
+            <span class="tag b">CONFIGURED</span>
+          </div>
+          <div class="dr-step">
+            <div class="dr-num" style="background:var(--am)">3</div>
+            <div class="dr-body"><div class="dr-title">Data Integrity Verification</div><div class="dr-desc">Post-failover automated checksum comparison between primary backup and standby. Any discrepancies trigger DBA alert before restoring write access.</div></div>
+            <span class="tag am">SCRIPTED</span>
+          </div>
+          <div class="dr-step">
+            <div class="dr-num" style="background:var(--pu)">4</div>
+            <div class="dr-body"><div class="dr-title">Audit Trail Continuity</div><div class="dr-desc">Hyperledger Fabric blockchain log continues uninterrupted on all 3 geo-sites. Append-only audit records are replicated in real-time — disaster recovery cannot break the chain of custody.</div></div>
+            <span class="tag pu">BLOCKCHAIN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <span class="toast-ico" id="toastIco">✅</span>
+  <div><div class="toast-msg" id="toastMsg">Action recorded</div><div class="toast-sub" id="toastSub">Logged to audit trail</div></div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="mo-overlay" id="moOverlay" onclick="if(event.target===this)closeMo()">
+  <div class="mo">
+    <div class="mo-hd">
+      <div class="mo-title" id="moTitle">Action</div>
+      <button class="mo-x" onclick="closeMo()">✕</button>
+    </div>
+    <div class="mo-body" id="moBody"></div>
+    <div class="mo-foot">
+      <button class="btn-s" onclick="closeMo()">Cancel</button>
+      <button class="btn-p" id="moSubmit" onclick="submitMo()"><span id="moSubmitTxt">Save</span></button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── DATE ──
+var now=new Date();
+var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var ds=DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+document.getElementById('tbDate').textContent=ds;
+document.getElementById('todayFull').textContent=ds;
+
+// ── NAVIGATION ──
+var TITLES={overview:'Overview',users:'User Management',facilities:'Facility Management',
+  counties:'County Coverage',patients:'Patient Registry',staff:'Staff Directory',
+  afyacare:'AfyaCare Integration',reports:'Reports & Analytics',audit:'Audit Log',settings:'System Settings',
+  ai:'AI Monitor',rbac:'RBAC & Roles',health:'System Health & Backups'};
+var CRUMBS={overview:'Dashboard',users:'Admin › Users',facilities:'Admin › Facilities',
+  counties:'Admin › Coverage',patients:'Clinical › Patients',staff:'Clinical › Staff',
+  afyacare:'Payments › AfyaCare',reports:'System › Reports',audit:'System › Audit',settings:'System › Settings',
+  ai:'Security › AI Monitor',rbac:'Security › RBAC',health:'System › Health & Backups'};
+
+function go(pg,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('pg-'+pg).classList.add('on');
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  if(el){el.classList.add('on');}
+  else{
+    document.querySelectorAll('.ni').forEach(function(n){
+      if((n.getAttribute('onclick')||'').includes("'"+pg+"'"))n.classList.add('on');
+    });
+  }
+  document.getElementById('tbTitle').textContent=TITLES[pg]||pg;
+  document.getElementById('tbCrumb').textContent=CRUMBS[pg]||pg;
+  // RBAC page guard check
+  checkRBACGuard(pg);
+  animBars();
+}
+
+// ── SIGN OUT ──
+function signOut(){
+  if(confirm('Sign out of AfyaCare EHR admin portal?')){
+    logAudit('LOGOUT by '+currentRole);
+    window.location.href='afyacare-login.html';
+  }
+}
+
+// ── RBAC ──
+var currentRole='sysadmin';
+var ROLES={
+  sysadmin:{lbl:'System Administrator',perm:'FULL ACCESS · ALL MODULES',ico:'🛡️',
+    locked:[],desc:'Full system access'},
+  secadmin:{lbl:'Security Administrator',perm:'AUDIT · RBAC · SECURITY ONLY',ico:'🔒',
+    locked:['users','patients','health'],desc:'Security & audit focus'},
+  datamanager:{lbl:'Data Manager',perm:'DATA MANAGEMENT ONLY',ico:'📋',
+    locked:['ai','rbac','audit','settings'],desc:'Data management only'}
+};
+function switchRole(r){
+  currentRole=r;
+  var ro=ROLES[r];
+  document.getElementById('rbacRole').textContent=ro.lbl;
+  document.getElementById('rbacPerm').textContent=ro.perm;
+  document.getElementById('rbacIco').textContent=ro.ico;
+  showToast('🔐','Role switched to '+ro.lbl,'All restricted pages locked · Logged to audit trail');
+  logAudit('ROLE_SWITCH to '+ro.lbl);
+}
+function checkRBACGuard(pg){
+  var ro=ROLES[currentRole];
+  var guard=document.getElementById('aiRoleGuard');
+  if(guard)guard.textContent='🛡️ '+ROLES[currentRole].lbl;
+  if(ro.locked.includes(pg)){
+    var pgEl=document.getElementById('pg-'+pg);
+    if(pgEl){
+      pgEl.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center">'
+        +'<div style="font-size:48px;margin-bottom:16px">🔐</div>'
+        +'<div style="font-family:var(--serif);font-size:24px;color:var(--t1);margin-bottom:8px">Access Restricted</div>'
+        +'<div style="font-size:14px;color:var(--t3);margin-bottom:20px;max-width:400px">This module requires <strong style="color:var(--t1)">'+requiredRole(pg)+'</strong> privileges. Your current role (<strong>'+ROLES[currentRole].lbl+'</strong>) does not have access.</div>'
+        +'<span class="role-guard locked">🔐 '+requiredRole(pg)+' required</span>'
+        +'</div>';
+    }
+  }
+}
+function requiredRole(pg){
+  if(['ai','rbac','audit'].includes(pg))return'Security Administrator or higher';
+  if(['users','patients','health'].includes(pg))return'System Administrator';
+  return'Administrator';
+}
+
+// ── MODAL DATA ──
+var MO={
+  addUser:{title:'Add New Staff User',submit:'Create Account',body:`
+    <div class="ff-row">
+      <div class="ff"><label>First Name</label><input placeholder="e.g. Amina"></div>
+      <div class="ff"><label>Last Name</label><input placeholder="e.g. Wanjiru"></div>
+    </div>
+    <div class="ff"><label>Role</label><select><option>Doctor</option><option>Nurse / CO</option><option>Administrator</option></select></div>
+    <div class="ff"><label>Registration Number</label><input placeholder="e.g. A4821 or RN/12345"></div>
+    <div class="ff"><label>Institutional Email</label><input type="email" placeholder="name@hospital.go.ke"></div>
+    <div class="ff-row">
+      <div class="ff"><label>Facility</label><select><option>KNH Nairobi</option><option>MTRH Eldoret</option><option>Coast General</option><option>Kisumu County Ref.</option><option>Nakuru Level 5</option></select></div>
+      <div class="ff"><label>Phone (for OTP)</label><input type="tel" placeholder="0712 345 678"></div>
+    </div>
+    <div style="padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);font-weight:600;margin-top:4px">🔐 Account creation will be logged in the append-only audit trail</div>`
+  },
+  addPatient:{title:'Register New Patient',submit:'Register Patient',body:`
+    <div class="ff-row">
+      <div class="ff"><label>First Name</label><input placeholder="e.g. John"></div>
+      <div class="ff"><label>Last Name</label><input placeholder="e.g. Mwangi Kamau"></div>
+    </div>
+    <div class="ff-row">
+      <div class="ff"><label>ID Type</label><select><option>National ID</option><option>Passport</option><option>Alien ID</option><option>Refugee ID</option></select></div>
+      <div class="ff"><label>ID Number</label><input placeholder="e.g. 12345678"></div>
+    </div>
+    <div class="ff-row">
+      <div class="ff"><label>Phone Number</label><input type="tel" placeholder="0712 345 678"></div>
+      <div class="ff"><label>County</label><select><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option></select></div>
+    </div>`
+  },
+  facility:{title:'Register New Facility',submit:'Register Facility',body:`
+    <div class="ff"><label>Facility Name</label><input placeholder="e.g. Machakos County Referral Hospital"></div>
+    <div class="ff-row">
+      <div class="ff"><label>Facility Level</label><select><option>Level 2 — Dispensary</option><option>Level 3 — Health Centre</option><option>Level 4 — Sub-County Hospital</option><option>Level 5 — County Referral</option><option>Level 6 — National Referral</option></select></div>
+      <div class="ff"><label>County</label><select><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option><option>Uasin Gishu</option><option>Machakos</option><option>Garissa</option></select></div>
+    </div>
+    <div class="ff-row">
+      <div class="ff"><label>AfyaCare Accreditation No.</label><input placeholder="e.g. AFL-2024-KE-00441"></div>
+      <div class="ff"><label>Admin Email</label><input type="email" placeholder="admin@facility.go.ke"></div>
+    </div>
+    <div style="padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);font-weight:600;margin-top:4px">🔐 Facility registration logged in audit trail</div>`
+  },
+  export:{title:'Export Report',submit:'Export',body:`
+    <div class="ff"><label>Report Type</label><select><option>System Overview</option><option>AfyaCare Claims Summary</option><option>User Activity</option><option>Facility Status</option><option>County Coverage</option><option>Blockchain Audit</option></select></div>
+    <div class="ff-row">
+      <div class="ff"><label>From Date</label><input type="date"></div>
+      <div class="ff"><label>To Date</label><input type="date"></div>
+    </div>
+    <div class="ff"><label>Format</label><select><option>PDF</option><option>Excel (XLSX)</option><option>CSV</option><option>JSON (Audit only)</option></select></div>`
+  }
+};
+function modal(key){
+  var m=MO[key]||{title:'Action',body:'',submit:'OK'};
+  document.getElementById('moTitle').textContent=m.title;
+  document.getElementById('moBody').innerHTML=m.body;
+  document.getElementById('moSubmitTxt').textContent=m.submit;
+  document.getElementById('moOverlay').classList.add('open');
+}
+function closeMo(){document.getElementById('moOverlay').classList.remove('open');}
+function submitMo(){
+  var btn=document.getElementById('moSubmit');
+  btn.textContent='✓ Done!';btn.style.background='var(--gd)';
+  logAudit('ACTION '+document.getElementById('moTitle').textContent+' by '+ROLES[currentRole].lbl);
+  setTimeout(closeMo,700);
+}
+
+// ── AUDIT LOG HELPER ──
+var AUDIT_LIVE=[];
+function logAudit(msg){
+  var ts=new Date().toISOString().replace('T',' ').substring(0,19);
+  AUDIT_LIVE.unshift({ts:ts,ev:msg,actor:ROLES[currentRole].lbl,ip:'MOH HQ · Admin Portal',hash:'0x'+Math.random().toString(16).slice(2,10)+'…',st:'g',sl:'LOGGED'});
+  showToast('📋','Action logged to audit trail',msg.substring(0,50));
+}
+
+// ── TOAST ──
+var toastTimer=null;
+function showToast(ico,msg,sub){
+  var t=document.getElementById('toast');
+  document.getElementById('toastIco').textContent=ico;
+  document.getElementById('toastMsg').textContent=msg;
+  document.getElementById('toastSub').textContent=sub||'';
+  t.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},3200);
+}
+
+// ── AI SCAN ──
+function runAIScan(){
+  showToast('🤖','AI Security Scan Running…','Checking all 2,387 facility nodes');
+  setTimeout(function(){
+    showToast('✅','AI Scan Complete — No New Threats','System security score: 98.4% · All nodes checked');
+    logAudit('AI_SCAN completed by '+ROLES[currentRole].lbl);
+  },2800);
+}
+function dismissAlerts(){
+  logAudit('ALERTS dismissed by '+ROLES[currentRole].lbl);
+  showToast('✅','Alerts dismissed','All current alerts acknowledged and logged');
+  document.getElementById('aiBadge').textContent='0';
+  document.getElementById('aiAlertCount').textContent='0';
+}
+
+// ── BACKUP ──
+function triggerBackup(){
+  showToast('💾','Backup initiated…','Full database backup running — ETA 4 minutes');
+  logAudit('MANUAL_BACKUP triggered by '+ROLES[currentRole].lbl);
+  setTimeout(function(){showToast('✅','Backup complete','847 GB backed up · Verified · AES-256 encrypted');},4000);
+}
+
+
+// ── LIVE FEED ──
+var FEED_BASE=[
+  {c:'g',t:'Dr. A. Wanjiku logged in via Biometric',s:'KNH Nairobi · Doctor · KMPDC A4821',tm:'2m ago'},
+  {c:'b',t:'AfyaCare claim approved — Ksh 12,400',s:'AfyaCare-2024-884321 · KNH Ward · Biometric verified',tm:'5m ago'},
+  {c:'am',t:'Nakuru L5 node degraded — latency spike',s:'NAK-005 · 180ms response time · Auto-alert',tm:'8m ago'},
+  {c:'g',t:'New facility registered: Machakos County Ref.',s:'Admin: M. Kamau · Level 5 · AfyaCare accredited',tm:'12m ago'},
+  {c:'r',t:'Failed login blocked (3 attempts)',s:'IP: 197.232.xx.xx · Admin portal · Blocked 30min',tm:'18m ago'},
+  {c:'pu',t:'FHIR R5 sync complete — 118M events',s:'Kafka cluster · 0 errors · 32ms P95',tm:'22m ago'},
+];
+var FEED_NEW=[
+  {c:'g',t:'Nurse J. Otieno authenticated via Practice 360',s:'Kisumu County Ref. · NCK/RN/98123 · Geo-verified'},
+  {c:'b',t:'M-TIBA community health sync — 1,240 records',s:'Homabay County · FHIR R5 · AfyaCare linked'},
+  {c:'am',t:'AfyaCare biometric touchpoint — Discharge registered',s:'AfyaCare-2023-441209 · MTRH Eldoret · Touchpoint 3/3'},
+  {c:'g',t:'eCitizen SSO session validated — Admin login',s:'accounts.ecitizen.go.ke · Nairobi · TLS 1.3'},
+];
+var feedIdx=0;
+function renderFeed(list){
+  var f=document.getElementById('feed');
+  if(!f)return;
+  f.innerHTML='';
+  list.forEach(function(a,i){
+    var last=i===list.length-1;
+    f.innerHTML+='<div class="feed-item">'
+      +'<div class="feed-dot-col"><div class="feed-dot '+a.c+'"></div>'+(last?'':'<div class="feed-connector"></div>')+'</div>'
+      +'<div class="feed-main"><div class="feed-title">'+a.t+'</div><div class="feed-sub">'+a.s+'</div></div>'
+      +'<div class="feed-time">'+(a.tm||'Just now')+'</div>'
+      +'</div>';
+  });
+  var sub=document.getElementById('feedSub');
+  if(sub){var d=new Date();sub.textContent='Live · '+d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');}
+}
+renderFeed(FEED_BASE);
+setInterval(function(){
+  var ev=[Object.assign({},FEED_NEW[feedIdx%FEED_NEW.length],{tm:'Just now'})].concat(FEED_BASE.slice(0,5));
+  renderFeed(ev);feedIdx++;
+},4200);
+
+// ── EDGE NODES ──
+var NODES=[
+  {name:'Kenyatta National Hospital',loc:'Nairobi · KNH-001',lat:24,st:'g'},
+  {name:'MTRH Eldoret',loc:'Uasin Gishu · MTRH-002',lat:38,st:'g'},
+  {name:'Coast General Hospital',loc:'Mombasa · CGH-003',lat:41,st:'g'},
+  {name:'Kisumu County Referral',loc:'Kisumu · KCR-004',lat:52,st:'am'},
+  {name:'Nakuru Level 5',loc:'Nakuru · NAK-005',lat:180,st:'r'},
+];
+var nl=document.getElementById('nodeList');
+NODES.forEach(function(n){
+  var lc=n.lat<50?'var(--g)':n.lat<100?'var(--am)':'var(--r)';
+  var stLabel=n.st==='g'?'ONLINE':n.st==='am'?'SLOW':'DEGRADED';
+  var stClass=n.st==='g'?'g':n.st==='am'?'am':'r';
+  nl.innerHTML+='<div class="node-row">'
+    +'<div class="node-pulse '+n.st+'"></div>'
+    +'<div class="node-info"><div class="node-name">'+n.name+'</div><div class="node-id">'+n.loc+'</div></div>'
+    +'<div class="node-right"><div class="node-lat" style="color:'+lc+'">'+n.lat+'ms</div>'
+    +'<span class="tag '+stClass+'">'+stLabel+'</span></div>'
+    +'</div>';
+});
+
+// ── USER TABLE ──
+var USERS=[
+  {n:'Dr. Amina Wanjiru',i:'AW',ic:'',rc:'b',rl:'🩺 Doctor',reg:'A4821',f:'KNH Nairobi',lg:'2 min ago',auth:'Biometric',st:'g',stl:'ACTIVE'},
+  {n:'Nurse John Otieno',i:'JO',ic:'',rc:'g',rl:'💉 Nurse / CO',reg:'NCK/RN/12345',f:'Coast General',lg:'14 min ago',auth:'Practice 360',st:'g',stl:'ACTIVE'},
+  {n:'Dr. Grace Muthoni',i:'GM',ic:'',rc:'b',rl:'🩺 Doctor',reg:'M/9822',f:'MTRH Eldoret',lg:'1h ago',auth:'SMS OTP',st:'g',stl:'ACTIVE'},
+  {n:'CO Peter Kamau',i:'PK',ic:'b',rc:'g',rl:'💉 Nurse / CO',reg:'CO/7890',f:'Nakuru L5',lg:'3h ago',auth:'Smart Card',st:'g',stl:'ACTIVE'},
+  {n:'Admin Sarah Njeri',i:'SN',ic:'am',rc:'am',rl:'🗂️ Admin',reg:'ADMIN-KE-00441',f:'MOH Kenya',lg:'5h ago',auth:'eCitizen SSO',st:'g',stl:'ACTIVE'},
+  {n:'Dr. Ibrahim Hassan',i:'IH',ic:'pu',rc:'b',rl:'🩺 Doctor',reg:'A2210',f:'Kisumu Ref.',lg:'1 day ago',auth:'Biometric',st:'grey',stl:'INACTIVE'},
+  {n:'Nurse Lucy Achieng',i:'LA',ic:'',rc:'g',rl:'💉 Nurse / CO',reg:'NCK/RN/44221',f:'KNH Nairobi',lg:'2 days ago',auth:'Practice 360',st:'g',stl:'ACTIVE'},
+  {n:'Dr. Moses Omondi',i:'MO',ic:'b',rc:'b',rl:'🩺 Doctor',reg:'A7710',f:'MTRH Eldoret',lg:'Never',auth:'—',st:'am',stl:'PENDING'},
+];
+var ut=document.getElementById('userTbody');
+USERS.forEach(function(u){
+  ut.innerHTML+='<tr>'
+    +'<td><div class="cell-user"><div class="av'+(u.ic?' '+u.ic:'')+'">'+u.i+'</div><span style="font-weight:700">'+u.n+'</span></div></td>'
+    +'<td><span class="tag '+u.rc+'">'+u.rl+'</span></td>'
+    +'<td class="mono">'+u.reg+'</td>'
+    +'<td>'+u.f+'</td>'
+    +'<td class="mono" style="color:var(--t3)">'+u.lg+'</td>'
+    +'<td><span class="tag grey">'+u.auth+'</span></td>'
+    +'<td><span class="tag '+u.st+'">'+u.stl+'</span></td>'
+    +'<td><button class="btn-s" style="padding:4px 10px;font-size:11px" onclick="modal(\'addUser\')">Edit</button></td>'
+    +'</tr>';
+});
+
+// ── PATIENT TABLE ──
+var PATIENTS=[
+  {n:'Wangui Njoroge',i:'WN',id:'12345678',county:'Nairobi',cst:'g',shl:'ACTIVE',afl:'AFL-MBR-2024-884321',lv:'3 days ago'},
+  {n:'Omar Abdullahi',i:'OA',id:'87654321',county:'Mombasa',cst:'g',shl:'ACTIVE',afl:'AFL-MBR-2023-441209',lv:'1 week ago'},
+  {n:'Adhiambo Grace',i:'AG',id:'23456789',county:'Kisumu',cst:'am',shl:'PENDING',afl:'AFL-MBR-2024-221087',lv:'Today'},
+  {n:'Kipchoge Mutai',i:'KM',id:'34567891',county:'Uasin Gishu',cst:'g',shl:'ACTIVE',afl:'AFL-MBR-2022-112344',lv:'2 weeks ago'},
+  {n:'Fatuma Ali',i:'FA',id:'REF/2023/0001',county:'Garissa',cst:'grey',shl:'INACTIVE',afl:'—',lv:'1 month ago'},
+];
+var pt=document.getElementById('patTbody');
+PATIENTS.forEach(function(p){
+  pt.innerHTML+='<tr>'
+    +'<td><div class="cell-user"><div class="av">'+p.i+'</div><span style="font-weight:700">'+p.n+'</span></div></td>'
+    +'<td class="mono">'+p.id+'</td>'
+    +'<td>'+p.county+'</td>'
+    +'<td><span class="tag '+p.cst+'">'+p.shl+'</span></td>'
+    +'<td class="mono" style="color:var(--t3)">'+p.afl+'</td>'
+    +'<td style="color:var(--t3)">'+p.lv+'</td>'
+    +'<td><button class="btn-s" style="padding:4px 10px;font-size:11px">View record</button></td>'
+    +'</tr>';
+});
+
+// ── STAFF TABLE ──
+var STAFF=[
+  {n:'Dr. Amina Wanjiru',i:'AW',role:'Doctor',rc:'b',reg:'A4821',council:'KMPDC',f:'KNH Nairobi',ok:true},
+  {n:'Nurse John Otieno',i:'JO',role:'Nurse',rc:'g',reg:'NCK/RN/12345',council:'NCK',f:'Coast General',ok:true},
+  {n:'CO Peter Kamau',i:'PK',role:'Clin. Officer',rc:'g',reg:'CO/7890',council:'NCK',f:'Nakuru L5',ok:true},
+  {n:'Dr. Grace Muthoni',i:'GM',role:'Doctor',rc:'b',reg:'M/9822',council:'KMPDC',f:'MTRH Eldoret',ok:false},
+  {n:'Nurse Lucy Achieng',i:'LA',role:'Nurse',rc:'g',reg:'NCK/RN/44221',council:'NCK',f:'KNH Nairobi',ok:true},
+];
+var st2=document.getElementById('staffTbody');
+STAFF.forEach(function(s){
+  st2.innerHTML+='<tr>'
+    +'<td><div class="cell-user"><div class="av">'+s.i+'</div><span style="font-weight:700">'+s.n+'</span></div></td>'
+    +'<td><span class="tag '+s.rc+'">'+s.role+'</span></td>'
+    +'<td class="mono">'+s.reg+'</td>'
+    +'<td><span class="tag grey">'+s.council+'</span></td>'
+    +'<td>'+s.f+'</td>'
+    +'<td><span class="tag '+(s.ok?'g':'am')+'">'+(s.ok?'✓ Verified':'⏳ Pending')+'</span></td>'
+    +'<td><span class="tag '+(s.ok?'g':'am')+'">'+(s.ok?'ACTIVE':'REVIEW')+'</span></td>'
+    +'</tr>';
+});
+
+// ── FACILITIES ──
+var FACS=[
+  {name:'Kenyatta National Hospital',loc:'Nairobi County',lvl:'Level 6',beds:1800,occ:78,st:'g',stl:'ONLINE',lat:24},
+  {name:'Moi Teaching & Referral',loc:'Uasin Gishu County',lvl:'Level 6',beds:800,occ:82,st:'g',stl:'ONLINE',lat:38},
+  {name:'Coast General Hospital',loc:'Mombasa County',lvl:'Level 5',beds:600,occ:65,st:'g',stl:'ONLINE',lat:41},
+  {name:'Kisumu County Referral',loc:'Kisumu County',lvl:'Level 5',beds:480,occ:71,st:'am',stl:'SLOW',lat:52},
+  {name:'Nakuru Level 5 Hospital',loc:'Nakuru County',lvl:'Level 5',beds:400,occ:58,st:'r',stl:'DEGRADED',lat:180},
+  {name:'Machakos County Referral',loc:'Machakos County',lvl:'Level 5',beds:350,occ:44,st:'g',stl:'ONLINE',lat:29},
+];
+var fg=document.getElementById('facGrid');
+FACS.forEach(function(f){
+  var oc=f.occ>80?'var(--r)':f.occ>60?'var(--am)':'var(--g)';
+  fg.innerHTML+='<div class="fac-card">'
+    +'<div class="fac-top"><div><div class="fac-name">'+f.name+'</div><div class="fac-loc">📍 '+f.loc+'</div></div>'
+    +'<span class="tag '+f.st+'">'+f.stl+'</span></div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag b">'+f.lvl+'</span>'
+    +'<span class="tag grey" style="font-family:var(--mono)">'+f.lat+'ms</span></div>'
+    +'<div class="fac-stats">'
+    +'<div class="fac-s"><div class="fac-sv">'+f.beds.toLocaleString()+'</div><div class="fac-sl">Bed Capacity</div></div>'
+    +'<div class="fac-s"><div class="fac-sv" style="color:'+oc+'">'+f.occ+'%</div><div class="fac-sl">Occupancy</div></div>'
+    +'</div><div class="pbar"><div class="pbar-fill" style="width:0%;background:'+oc+'" data-w="'+f.occ+'%"></div></div>'
+    +'</div>';
+});
+
+// ── COUNTY GRID ──
+var COUNTIES=[
+  {c:'NBI',cl:'full'},{c:'MSA',cl:'full'},{c:'KSM',cl:'full'},{c:'NAK',cl:'hi'},
+  {c:'ELD',cl:'hi'},{c:'KER',cl:'hi'},{c:'KIS',cl:'hi'},{c:'HOM',cl:'med'},
+  {c:'MIG',cl:'med'},{c:'SIA',cl:'med'},{c:'KLF',cl:'med'},{c:'LAI',cl:'lo'},
+  {c:'NRK',cl:'lo'},{c:'MRS',cl:'lo'},{c:'MBR',cl:'off'},{c:'KIT',cl:'full'},
+  {c:'MVT',cl:'hi'},{c:'TTA',cl:'med'},{c:'TRK',cl:'lo'},{c:'SAM',cl:'off'},
+  {c:'GRS',cl:'hi'},{c:'WSM',cl:'med'},{c:'ISL',cl:'full'},{c:'MND',cl:'hi'},
+  {c:'GRB',cl:'med'},{c:'GRB2',cl:'lo'},{c:'VHG',cl:'off'},{c:'TNZ',cl:'hi'},
+  {c:'MLD',cl:'med'},{c:'NRB2',cl:'full'},{c:'KBC',cl:'full'},{c:'KJD',cl:'hi'},
+  {c:'BWN',cl:'med'},{c:'BTM',cl:'lo'},{c:'TRV',cl:'off'},{c:'KRM',cl:'full'},
+  {c:'NYR',cl:'hi'},{c:'NYA',cl:'hi'},{c:'MTH',cl:'med'},{c:'KNM',cl:'lo'},
+  {c:'MRS3',cl:'off'},{c:'TTA2',cl:'hi'},{c:'WSM2',cl:'med'},{c:'NRK2',cl:'full'},
+  {c:'MSB',cl:'hi'},{c:'KBC2',cl:'med'},{c:'EXX',cl:'lo'},
+];
+var cg=document.getElementById('countyGrid');
+COUNTIES.forEach(function(c){
+  cg.innerHTML+='<div class="cc '+c.cl+'" title="'+c.c+'">'+c.c+'</div>';
+});
+
+// County bar chart
+var CBA=[
+  {l:'Nairobi',p:98,c:'g'},{l:'Mombasa',p:95,c:'g'},{l:'Kisumu',p:89,c:'g'},
+  {l:'Nakuru',p:82,c:'b'},{l:'Eldoret',p:79,c:'b'},{l:'Garissa',p:43,c:'am'},
+  {l:'Turkana',p:31,c:'r'},{l:'Marsabit',p:19,c:'r'},
+];
+var cb=document.getElementById('countyBars');
+CBA.forEach(function(d){
+  cb.innerHTML+='<div class="bc-row"><span class="bc-lbl">'+d.l+'</span>'
+    +'<div class="bc-track"><div class="bc-fill '+d.c+'" data-w="'+d.p+'"></div></div>'
+    +'<span class="bc-val">'+d.p+'%</span></div>';
+});
+
+// ── AUDIT LOG ──
+var AUDIT=[
+  {ts:'2026-04-03 09:42:11',act:'LOGIN',ev:'Admin Login — Success',actor:'M. Kamau',role:'System Admin',ip:'41.80.xx.xx · Chrome/Win',hash:'0x8f4a2c1e…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-03 09:38:04',act:'APPROVE',ev:'AfyaCare Claim Approved — Ksh 12,400',actor:'Dr. A. Wanjiru',role:'Doctor',ip:'KNH Edge Node · Biometric',hash:'0x2d91b7f3…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-03 09:30:22',act:'BLOCK',ev:'Failed Login (×3) — IP Blocked',actor:'AI Monitor',role:'System',ip:'197.232.xx.xx · Firefox',hash:'0x7c53a8e1…',st:'r',sl:'BLOCKED'},
+  {ts:'2026-04-03 09:18:44',act:'CREATE',ev:'Facility Registered — Machakos',actor:'Admin S. Njeri',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0x4e82d1c9…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-03 09:05:33',act:'CREATE',ev:'User Created — Dr. M. Omondi',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0x1a6f9b4d…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-03 08:55:17',act:'ALERT',ev:'Nakuru L5 Node Degraded Alert',actor:'AI Monitor',role:'System',ip:'AutoMonitor · AfyaCare',hash:'0x9c34e7a2…',st:'am',sl:'WARNING'},
+  {ts:'2026-04-03 02:34:07',act:'LOGIN',ev:'Unusual Off-Hours Login — Adaptive MFA triggered',actor:'Admin S. Njeri',role:'Security Admin',ip:'Nakuru · Mobile · MFA challenged',hash:'0x3b78e1d5…',st:'am',sl:'FLAGGED'},
+  {ts:'2026-04-02 17:12:44',act:'MODIFY',ev:'System Config Changed — MFA policy updated',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0xa2c15f8b…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-02 14:30:11',act:'DELETE',ev:'Inactive account deactivated — staff_0029',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0xd4e92c7a…',st:'r',sl:'DELETED'},
+];
+var ACTION_COLORS={CREATE:'g',MODIFY:'am',DELETE:'r',LOGIN:'b',BLOCK:'r',APPROVE:'g',ALERT:'am'};
+var ab=document.getElementById('auditTbody');
+AUDIT.forEach(function(a){
+  ab.innerHTML+='<tr>'
+    +'<td class="mono" style="font-size:11px;color:var(--t3)">'+a.ts+'</td>'
+    +'<td><span class="tag '+(ACTION_COLORS[a.act]||'grey')+'">'+a.act+'</span></td>'
+    +'<td style="font-weight:700;font-size:12.5px">'+a.ev+'</td>'
+    +'<td><div style="font-size:12px;font-weight:600">'+a.actor+'</div><div style="font-size:10px;color:var(--t3)">'+a.role+'</div></td>'
+    +'<td style="font-size:11.5px;color:var(--t3)">'+a.ip+'</td>'
+    +'<td class="mono" style="font-size:10.5px;color:var(--t4)">'+a.hash+'</td>'
+    +'<td><span class="tag '+a.st+'">'+a.sl+'</span></td>'
+    +'</tr>';
+});
+
+// ── REPORTS ──
+var REPS=[
+  {ico:'📊',bg:'var(--gl)',n:'System Overview Report',d:'Full system health, uptime, FHIR events and KPIs across all 47 counties.',tag:'PDF · XLSX',u:'Updated daily'},
+  {ico:'🏛️',bg:'var(--bl)',n:'AfyaCare Claims Summary',d:'Claims processed, disbursements, fraud flags and biometric compliance rates.',tag:'PDF · CSV',u:'Updated hourly'},
+  {ico:'👥',bg:'var(--pul)',n:'User Activity Report',d:'Login attempts, auth methods used, failed logins and account changes.',tag:'PDF · XLSX',u:'Updated daily'},
+  {ico:'🏥',bg:'var(--al)',n:'Facility Status Report',d:'Node latency, uptime, bed occupancy and AfyaCare accreditation status.',tag:'PDF · XLSX',u:'Updated hourly'},
+  {ico:'🗺️',bg:'var(--gl)',n:'County Coverage Analysis',d:'Connectivity, patient registrations and AfyaCare claims per county.',tag:'PDF · CSV',u:'Updated weekly'},
+  {ico:'⛓️',bg:'#fdf2f8',n:'Blockchain Audit Export',d:'Full immutable audit trail from Hyperledger Fabric ledger.',tag:'JSON · CSV',u:'On demand'},
+];
+var rg=document.getElementById('repGrid');
+REPS.forEach(function(r){
+  rg.innerHTML+='<div class="rep-card" onclick="modal(\'export\')">'
+    +'<div class="rep-ico" style="background:'+r.bg+'">'+r.ico+'</div>'
+    +'<div><div class="rep-name">'+r.n+'</div>'
+    +'<div class="rep-desc">'+r.d+'</div>'
+    +'<div class="rep-meta"><span class="tag grey">'+r.tag+'</span><span style="font-size:10.5px;color:var(--t3)">'+r.u+'</span></div>'
+    +'</div></div>';
+});
+
+// ── SETTINGS AUTH ──
+var SW_DATA=[
+  {n:'Require Biometric at L4–L6',d:'AfyaCare Policy Aug 2025 — mandatory at all Level 4, 5 and 6 facilities',on:true},
+  {n:'Allow SMS OTP fallback',d:'For facilities without biometric hardware (L2/L3 only)',on:false},
+  {n:'Practice 360 Geo-fencing',d:'Verify staff are physically present at registered facility',on:true},
+  {n:'Force MFA for all roles',d:'All users must complete Step 3 multi-factor authentication',on:true},
+  {n:'Block failed logins after 3 attempts',d:'Lock account for 30 minutes after 3 consecutive failures',on:true},
+];
+var RBAC_SW=[
+  {n:'Enforce RBAC deny-by-default',d:'All pages require explicit role permission — no implicit access',on:true},
+  {n:'Log all admin actions to audit trail',d:'Account creation, config changes and deletions are append-only logged',on:true},
+  {n:'Require Security Admin for audit access',d:'Only Security Admin and System Admin can view audit logs',on:true},
+  {n:'AI anomaly alerts to all System Admins',d:'Automated threat alerts sent to all System Administrator accounts',on:true},
+  {n:'Adaptive MFA on unusual login behaviour',d:'UEBA model triggers extra verification for off-hours / new location logins',on:true},
+];
+var sa=document.getElementById('settingsAuth');
+var swHtml='';
+SW_DATA.forEach(function(sw,i){
+  swHtml+='<div class="sw-wrap" onclick="toggleSw(\'auth\','+i+',this)">'
+    +'<div class="sw-info"><div class="sw-name">'+sw.n+'</div><div class="sw-desc">'+sw.d+'</div></div>'
+    +'<div class="sw '+(sw.on?'on':'off')+'"><div class="sw-knob"></div></div>'
+    +'</div>';
+});
+sa.innerHTML=swHtml;
+var sr=document.getElementById('settingsRbac');
+var rbacHtml='';
+RBAC_SW.forEach(function(sw,i){
+  rbacHtml+='<div class="sw-wrap" onclick="toggleSw(\'rbac\','+i+',this)">'
+    +'<div class="sw-info"><div class="sw-name">'+sw.n+'</div><div class="sw-desc">'+sw.d+'</div></div>'
+    +'<div class="sw '+(sw.on?'on':'off')+'"><div class="sw-knob"></div></div>'
+    +'</div>';
+});
+sr.innerHTML=rbacHtml;
+function toggleSw(grp,i,el){
+  var sw=el.querySelector('.sw');
+  var isOn=sw.classList.contains('on');
+  sw.classList.toggle('on',!isOn);sw.classList.toggle('off',isOn);
+  logAudit('MODIFY setting toggled: '+el.querySelector('.sw-name').textContent);
+}
+
+// ── ANIMATE ALL BAR FILLS ──
+function animBars(){
+  setTimeout(function(){
+    documen
