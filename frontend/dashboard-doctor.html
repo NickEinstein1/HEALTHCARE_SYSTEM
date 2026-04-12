@@ -1,25 +1,1141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniHealth EHR — Doctor (stub)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root { --g: #1a8a4a; --gd: #0a4a26; --bg: #f4f7f4; --t1: #14201a; --bdr: #dde3dd; }
-    body { font-family: "Sora", sans-serif; background: var(--bg); color: var(--t1); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .card { background: #fff; border: 1.5px solid var(--bdr); border-radius: 16px; padding: 2rem; max-width: 440px; box-shadow: 0 24px 64px rgba(10, 74, 38, 0.1); }
-    h1 { color: var(--gd); font-size: 1.35rem; margin: 0 0 0.75rem; }
-    p { margin: 0 0 1rem; line-height: 1.55; color: #3d5245; font-size: 0.95rem; }
-    a { color: var(--g); font-weight: 600; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniHealth EHR — Doctor Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--gx:#166638;--gl:#e8f5ee;--gm:#a8d8bc;
+  --r:#dc2626;--rl:#fff1f1;--rm:#fecaca;
+  --b:#2563eb;--bl:#eff6ff;--bm:#bfdbfe;
+  --am:#d97706;--al:#fffbeb;--amm:#fde68a;
+  --pu:#7c3aed;--pul:#f5f3ff;--pm:#ddd6fe;
+  --te:#0d9488;--tel:#f0fdfa;--tem:#99f6e4;
+  --cy:#0891b2;--cyl:#ecfeff;--cym:#a5f3fc;
+  --pk:#db2777;--pkl:#fdf2f8;--pkm:#fbcfe8;
+  --bg:#f0f4f2;--sbg:#0f1f2e;--card:#fff;
+  --bdr:#dde5e0;--bdr2:#c2d4c8;
+  --t1:#0c1a14;--t2:#2d4a38;--t3:#5a7a66;--t4:#90a899;
+  --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 1px 4px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.06);
+  --sh2:0 8px 32px rgba(0,0,0,.12);
+  --shg:0 4px 18px rgba(26,138,74,.25);
+  --sw:240px;--th:58px;
+}
+html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg);}
+body{display:flex;min-height:100vh;overflow:hidden;}
+
+/* ═══ SIDEBAR ═══ */
+.sb{width:var(--sw);flex-shrink:0;height:100vh;background:var(--sbg);
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;overflow:hidden;}
+.sb::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 130% 50% at -10% 100%,rgba(26,138,74,.15) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 40% at 110% 0%,rgba(13,148,136,.12) 0%,transparent 50%);
+  pointer-events:none;}
+.sb-flag{position:absolute;top:0;left:0;right:0;height:3px;z-index:10;
+  background:linear-gradient(90deg,#bb0000 0 33%,#111 33% 35.5%,#e8e8e8 35.5% 37%,#111 37% 39.5%,#1a8a4a 39.5% 100%);}
+.sb-in{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 15px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--g),#3ecf7a);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:var(--shg);}
+.sb-nm{font-family:var(--serif);font-size:15px;color:#fff;line-height:1.1;}
+.sb-sub{font-size:8.5px;color:rgba(255,255,255,.3);letter-spacing:.5px;margin-top:1px;}
+.sb-live{width:6px;height:6px;border-radius:50%;background:#2ecc71;margin-left:auto;flex-shrink:0;
+  box-shadow:0 0 8px #2ecc71;animation:glow 2s infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 5px #2ecc71}50%{box-shadow:0 0 14px #2ecc71}}
+
+/* Doctor card */
+.sb-doc{margin:12px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 12px;}
+.sb-av-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.sb-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0d9488,#2dd4bf);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+.sb-dname{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
+.sb-dreg{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.38);margin-top:2px;}
+.sb-role-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(13,148,136,.2);
+  border:1px solid rgba(13,148,136,.3);border-radius:5px;padding:3px 8px;font-size:9px;font-weight:700;color:#2dd4bf;}
+.sb-role-badge .dot{width:5px;height:5px;border-radius:50%;background:#2dd4bf;box-shadow:0 0 5px #2dd4bf;animation:glow 2s infinite;}
+
+.sb-nav{flex:1;padding:8px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:0;}
+.sb-sec{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.2);padding:7px 8px 3px;font-weight:500;}
+.ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .14s;margin-bottom:2px;}
+.ni:hover{background:rgba(255,255,255,.06);}
+.ni.on{background:rgba(13,148,136,.18);border:1px solid rgba(13,148,136,.25);}
+.ni-e{font-size:14px;flex-shrink:0;width:17px;text-align:center;opacity:.6;transition:opacity .14s;}
+.ni:hover .ni-e,.ni.on .ni-e{opacity:1;}
+.ni-l{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.55);transition:color .14s;white-space:nowrap;}
+.ni:hover .ni-l,.ni.on .ni-l{color:#fff;}
+.ni-b{margin-left:auto;font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:9px;color:#fff;}
+.ni-b.r{background:var(--r);}
+.ni-b.am{background:var(--am);}
+.ni-b.te{background:var(--te);}
+
+.sb-foot{padding:11px 14px;border-top:1px solid rgba(255,255,255,.05);}
+.sb-out{width:100%;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:7px;font-family:var(--font);font-size:11px;font-weight:600;color:rgba(255,255,255,.38);
+  cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.sb-out:hover{background:rgba(220,38,38,.18);border-color:rgba(220,38,38,.35);color:#fca5a5;}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;overflow:hidden;}
+
+/* Topbar */
+.topbar{height:var(--th);background:var(--card);border-bottom:1.5px solid var(--bdr);
+  display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;z-index:100;}
+.tb-pg{font-family:var(--serif);font-size:16px;color:var(--t1);letter-spacing:-.2px;}
+.tb-cr{font-size:10px;color:var(--t3);margin-top:1px;}
+.tb-cr b{color:var(--te);}
+.tb-gap{flex:1;}
+.tb-ward{background:var(--tel);border:1.5px solid var(--tem);border-radius:6px;padding:5px 10px;
+  font-size:10.5px;font-weight:700;color:var(--te);display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.tb-srch{display:flex;align-items:center;gap:6px;padding:6px 11px;background:var(--bg);
+  border:1.5px solid var(--bdr);border-radius:7px;width:200px;transition:all .2s;}
+.tb-srch:focus-within{border-color:var(--te);background:#fff;box-shadow:0 0 0 3px rgba(13,148,136,.09);}
+.tb-srch input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12px;color:var(--t1);width:100%;}
+.tb-srch input::placeholder{color:var(--t4);}
+.tb-ic{width:33px;height:33px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--card);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;
+  position:relative;flex-shrink:0;transition:all .14s;}
+.tb-ic:hover{border-color:var(--te);background:var(--tel);}
+.tb-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--r);border:2px solid var(--card);}
+.tb-date{font-family:var(--mono);font-size:10px;color:var(--t3);padding:5px 10px;
+  background:var(--bg);border:1.5px solid var(--bdr);border-radius:6px;white-space:nowrap;flex-shrink:0;}
+
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow-y:auto;padding:18px 20px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px;}
+.pg{display:none;animation:pgIn .3s ease both;}
+.pg.on{display:block;}
+@keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Layouts ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+.ph-ey{font-family:var(--mono);font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3px;}
+.ph-ti{font-family:var(--serif);font-size:23px;color:var(--t1);letter-spacing:-.3px;}
+.ph-su{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5;}
+.ph-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.gcol2{display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:14px;}
+.gcol3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;}
+
+/* ── Buttons ── */
+.btn-p{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;background:var(--te);color:#fff;
+  border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .16s;box-shadow:0 3px 12px rgba(13,148,136,.28);white-space:nowrap;}
+.btn-p:hover{background:#0e7270;transform:translateY(-1px);}
+.btn-pg{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;background:var(--g);color:#fff;
+  border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .16s;box-shadow:var(--shg);white-space:nowrap;}
+.btn-pg:hover{background:var(--gd);}
+.btn-s{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:var(--card);
+  color:var(--t2);border:1.5px solid var(--bdr);border-radius:7px;font-family:var(--font);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
+.btn-s:hover{border-color:var(--te);color:var(--te);}
+.btn-sm{padding:4px 10px;font-size:11px;}
+.btn-r{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:var(--rl);
+  color:var(--r);border:1px solid var(--rm);border-radius:6px;font-family:var(--font);
+  font-size:11px;font-weight:700;cursor:pointer;transition:all .14s;white-space:nowrap;}
+
+/* ── Panel ── */
+.panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;overflow:hidden;
+  animation:cardIn .4s ease both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr);}
+.pnl-ti{font-size:13px;font-weight:700;color:var(--t1);}
+.pnl-su{font-size:10px;color:var(--t3);margin-top:1px;}
+.pnl-lk{font-size:11px;font-weight:700;color:var(--te);cursor:pointer;}
+.pnl-lk:hover{text-decoration:underline;}
+.pnl-bd{padding:14px 16px;}
+
+/* ── Tags ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap;}
+.tag.g{background:var(--gl);color:var(--gd);border:1px solid var(--gm);}
+.tag.r{background:var(--rl);color:#7f1d1d;border:1px solid var(--rm);}
+.tag.b{background:var(--bl);color:#1e40af;border:1px solid var(--bm);}
+.tag.am{background:var(--al);color:#78350f;border:1px solid var(--amm);}
+.tag.pu{background:var(--pul);color:#4c1d95;border:1px solid var(--pm);}
+.tag.te{background:var(--tel);color:#0f766e;border:1px solid var(--tem);}
+.tag.cy{background:var(--cyl);color:#0e7490;border:1px solid var(--cym);}
+.tag.pk{background:var(--pkl);color:#9d174d;border:1px solid var(--pkm);}
+.tag.grey{background:#f3f4f6;color:var(--t3);border:1px solid #e5e7eb;}
+.tag.dot::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:1px;}
+
+/* ── KPI cards ── */
+.kpi{background:var(--card);border:1.5px solid var(--bdr);border-radius:11px;padding:15px 16px;
+  animation:cardIn .4s ease both;transition:box-shadow .2s,transform .2s;}
+.kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
+.kpi-ico{font-size:22px;margin-bottom:7px;}
+.kpi-val{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.4px;line-height:1;}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px;}
+.kpi-sub{font-size:10.5px;color:var(--t3);margin-top:3px;}
+
+/* ── Patient queue item ── */
+.q-item{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--bdr);
+  cursor:pointer;transition:background .14s;}
+.q-item:hover{background:#f7fbf8;margin:0 -16px;padding:10px 16px;}
+.q-item:last-child{border:none;}
+.q-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:800;flex-shrink:0;}
+.q-name{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.q-det{font-size:10.5px;color:var(--t3);line-height:1.4;}
+.q-right{margin-left:auto;text-align:right;flex-shrink:0;}
+.q-time{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--t2);}
+.q-wait{font-size:10px;margin-top:2px;}
+
+/* ── Vitals row ── */
+.vrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.vcard{background:var(--bg);border:1.5px solid var(--bdr);border-radius:9px;padding:10px 12px;text-align:center;}
+.vc-e{font-size:18px;margin-bottom:4px;}
+.vc-v{font-family:var(--serif);font-size:17px;color:var(--t1);letter-spacing:-.2px;}
+.vc-u{font-family:var(--mono);font-size:9.5px;color:var(--t3);display:block;margin-top:1px;}
+.vc-l{font-size:9.5px;font-weight:700;color:var(--t3);margin-top:4px;text-transform:uppercase;letter-spacing:.3px;}
+.vc-s{margin-top:4px;}
+
+/* ── Timeline ── */
+.tl-item{display:flex;gap:11px;padding-bottom:14px;position:relative;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.tl-line{width:1.5px;flex:1;background:var(--bdr);margin-top:3px;}
+.tl-item:last-child .tl-line{display:none;}
+.tl-ti{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.tl-meta{font-size:10.5px;color:var(--t3);line-height:1.5;}
+.tl-date{font-family:var(--mono);font-size:10px;color:var(--t4);}
+
+/* ── Lab result row ── */
+.lab-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.lab-row:last-child{border:none;}
+.lab-ind{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.lab-ind.norm{background:var(--g);}
+.lab-ind.high{background:var(--r);}
+.lab-ind.low{background:var(--am);}
+.lab-ind.crit{background:var(--r);box-shadow:0 0 6px var(--r);}
+.lab-name{flex:1;font-size:12px;font-weight:600;color:var(--t1);}
+.lab-ref{font-size:10px;color:var(--t3);margin-top:1px;}
+.lab-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.lab-val.high{color:var(--r);}
+.lab-val.low{color:var(--am);}
+.lab-val.norm{color:var(--g);}
+.lab-val.crit{color:var(--r);animation:flashRed 1s infinite;}
+@keyframes flashRed{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Drug/prescription row ── */
+.rx-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr);}
+.rx-row:last-child{border:none;}
+.rx-ico{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.rx-name{font-size:12.5px;font-weight:700;color:var(--t1);}
+.rx-det{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.rx-right{margin-left:auto;text-align:right;}
+
+/* ── Table ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  padding:8px 11px;text-align:left;background:#f8faf8;border-bottom:1.5px solid var(--bdr);}
+.tbl td{font-size:11.5px;color:var(--t2);padding:9px 11px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.tbl tr:hover td{background:#f8faf8;}
+.tbl tr:last-child td{border:none;}
+.mono{font-family:var(--mono);font-size:11px;}
+
+/* ── Pbar ── */
+.pbar{height:4px;background:#e8ede8;border-radius:2px;overflow:hidden;margin-top:5px;}
+.pbar-f{height:100%;border-radius:2px;transition:width 1.4s cubic-bezier(.16,1,.3,1);}
+
+/* ── Notice ── */
+.notice{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:7px;margin-bottom:12px;}
+.notice.r{background:var(--rl);border:1px solid var(--rm);}
+.notice.am{background:var(--al);border:1px solid var(--amm);}
+.notice.g{background:var(--gl);border:1px solid var(--gm);}
+.notice.b{background:var(--bl);border:1px solid var(--bm);}
+.notice-e{font-size:14px;flex-shrink:0;margin-top:1px;}
+.notice-tx{font-size:11.5px;color:var(--t1);line-height:1.5;}
+
+/* ── Allergy chip ── */
+.allergy{display:inline-flex;align-items:center;gap:4px;background:var(--rl);border:1.5px solid var(--rm);
+  border-radius:6px;padding:4px 10px;font-size:10.5px;font-weight:700;color:#7f1d1d;margin-right:6px;margin-bottom:5px;}
+.allergy::before{content:'⚠';font-size:11px;}
+
+/* ── Patient info card ── */
+.pt-banner{background:linear-gradient(135deg,#0f2744 0%,#1a3a5c 60%,#0e4a3a 100%);
+  border-radius:14px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden;
+  animation:heroIn .5s cubic-bezier(.16,1,.3,1);}
+@keyframes heroIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+.pt-banner::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 90% 10%,rgba(45,212,191,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 50% at -5% 90%,rgba(26,138,74,.1) 0%,transparent 50%);
+  pointer-events:none;}
+.pt-banner::after{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:22px 22px;pointer-events:none;}
+.pt-in{position:relative;z-index:1;display:flex;align-items:center;gap:18px;}
+.pt-av{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#2dd4bf,#0d9488);
+  display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;}
+.pt-name{font-family:var(--serif);font-size:20px;color:#fff;letter-spacing:-.2px;margin-bottom:3px;}
+.pt-meta{font-size:11.5px;color:rgba(255,255,255,.55);line-height:1.5;}
+.pt-ids{margin-left:auto;text-align:right;}
+.pt-id-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:5px;
+  padding:4px 9px;font-family:var(--mono);font-size:9.5px;color:rgba(255,255,255,.6);margin-bottom:5px;}
+.pt-stats{margin-top:14px;display:grid;grid-template-columns:repeat(5,1fr);gap:1px;
+  background:rgba(255,255,255,.08);border-radius:9px;overflow:hidden;}
+.pt-stat{background:rgba(0,0,0,.12);padding:9px 12px;text-align:center;}
+.pt-sv{font-family:var(--serif);font-size:16px;color:#fff;line-height:1;}
+.pt-sl{font-size:9px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
+
+/* ── Input / form ── */
+.ff{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.ff label{font-size:11px;font-weight:700;color:var(--t2);}
+.ff input,.ff select,.ff textarea{padding:8px 11px;border:1.5px solid var(--bdr);
+  border-radius:7px;font-family:var(--font);font-size:12px;color:var(--t1);
+  background:var(--bg);outline:none;transition:all .18s;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--te);background:#fff;box-shadow:0 0 0 3px rgba(13,148,136,.09);}
+.ff textarea{resize:vertical;min-height:80px;}
+.ff-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── Modal ── */
+.mo-ov{position:fixed;inset:0;background:rgba(5,15,25,.55);backdrop-filter:blur(5px);
+  z-index:600;display:none;align-items:center;justify-content:center;}
+.mo-ov.open{display:flex;}
+.mo{background:var(--card);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.22);
+  width:100%;max-width:500px;overflow:hidden;animation:moIn .3s cubic-bezier(.16,1,.3,1);}
+@keyframes moIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+.mo-stripe{height:4px;background:linear-gradient(90deg,#0d9488,#2dd4bf,#7beba4);}
+.mo-hd{padding:16px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;}
+.mo-ti{font-family:var(--serif);font-size:18px;color:var(--t1);}
+.mo-x{cursor:pointer;font-size:17px;color:var(--t3);padding:4px 6px;border-radius:5px;background:none;border:none;font-family:var(--font);}
+.mo-x:hover{background:var(--rl);color:var(--r);}
+.mo-bd{padding:16px 20px;}
+.mo-ft{padding:12px 20px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px;}
+
+/* ── Ward bed grid ── */
+.bed-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.bed{border-radius:9px;padding:10px 8px;text-align:center;border:1.5px solid transparent;cursor:pointer;transition:all .15s;}
+.bed:hover{transform:translateY(-2px);box-shadow:var(--sh);}
+.bed.occ{background:var(--rl);border-color:var(--rm);}
+.bed.free{background:var(--gl);border-color:var(--gm);}
+.bed.res{background:var(--al);border-color:var(--amm);}
+.bed.main{background:var(--pul);border-color:var(--pm);}
+.bed-e{font-size:18px;margin-bottom:4px;}
+.bed-id{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--t2);}
+.bed-pt{font-size:9.5px;color:var(--t3);margin-top:2px;line-height:1.3;}
+
+/* ══ SECURITY SESSION PILL ══ */
+.sec-pill{display:flex;align-items:center;gap:5px;padding:5px 10px;
+  border:1.5px solid var(--gm);border-radius:6px;background:var(--gl);
+  font-size:10px;font-weight:700;color:var(--gd);flex-shrink:0;}
+.sec-pill .sp-dot{width:5px;height:5px;border-radius:50%;background:var(--g);
+  flex-shrink:0;animation:glow 2s infinite;}
+/* ══ AI CLINICAL WIDGET ══ */
+.ai-widget{background:linear-gradient(135deg,rgba(13,148,136,.07),rgba(13,148,136,.02));
+  border:1.5px solid rgba(13,148,136,.2);border-radius:12px;padding:15px 16px;
+  margin-bottom:14px;animation:cardIn .4s .05s ease both;}
+.ai-widget.warn{background:linear-gradient(135deg,rgba(217,119,6,.07),rgba(217,119,6,.02));
+  border-color:rgba(217,119,6,.25);}
+.ai-widget.crit{background:linear-gradient(135deg,rgba(220,38,38,.07),rgba(220,38,38,.02));
+  border-color:rgba(220,38,38,.2);}
+.ai-widget-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ai-widget-ti{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--t1);}
+.ai-widget-su{font-size:10px;color:var(--t3);margin-top:1px;}
+.ai-row{display:flex;align-items:flex-start;gap:9px;padding:8px 0;
+  border-bottom:1px solid rgba(0,0,0,.05);font-size:11.5px;}
+.ai-row:last-child{border:none;padding-bottom:0;}
+.ai-row-ico{font-size:15px;flex-shrink:0;margin-top:1px;}
+.ai-row-body{flex:1;}
+.ai-row-ti{font-weight:700;color:var(--t1);line-height:1.35;}
+.ai-row-su{font-size:10.5px;color:var(--t3);margin-top:2px;line-height:1.4;}
+.ai-conf{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 6px;
+  border-radius:4px;flex-shrink:0;white-space:nowrap;}
+.ai-conf.high{background:rgba(13,148,136,.15);color:var(--te);}
+.ai-conf.med{background:var(--al);color:#78350f;}
+.ai-conf.crit{background:var(--rl);color:#7f1d1d;}
+/* ══ AUDIT NOTICE ══ */
+.audit-notice{display:flex;align-items:center;gap:8px;padding:8px 12px;
+  background:rgba(10,74,38,.05);border:1px solid rgba(10,74,38,.12);
+  border-radius:7px;font-size:10.5px;color:var(--gd);font-weight:600;margin-top:10px;}
+/* ══ NEWS2 EWS BADGE ══ */
+.ews-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.3px;}
+.ews-0{background:#f0fdf4;color:#14532d;border:1px solid #86efac;}
+.ews-low{background:var(--al);color:#78350f;border:1px solid var(--amm);}
+.ews-med{background:#fff1f2;color:#881337;border:1px solid #fecdd3;}
+.ews-high{background:var(--rl);color:#7f1d1d;border:1px solid var(--rm);animation:glow 1.4s infinite;}
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;
+  background:var(--card);border:1.5px solid var(--gm);border-radius:10px;
+  padding:11px 16px;box-shadow:0 8px 32px rgba(0,0,0,.14);
+  display:none;align-items:center;gap:10px;}
+.toast.show{display:flex;animation:cardIn .3s ease both;}
+.toast-ico{font-size:18px;}
+.toast-msg{font-size:12px;font-weight:700;color:var(--t1);}
+.toast-sub{font-size:10px;color:var(--t3);margin-top:1px;}
+
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>Doctor dashboard</h1>
-    <p>Placeholder route after sign-in. Replace with your SPA (e.g. clinical workspace).</p>
-    <p><a href="sign-in.html">← Back to sign in</a></p>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sb">
+  <div class="sb-flag"></div>
+  <div class="sb-in">
+    <div class="sb-brand">
+      <div class="sb-ico">🏥</div>
+      <div>
+        <div class="sb-nm">UniHealth EHR</div>
+        <div class="sb-sub">Clinical Workstation</div>
+      </div>
+      <div class="sb-live"></div>
+    </div>
+
+    <div style="margin:11px 13px 0;">
+      <div class="sb-doc">
+        <div class="sb-av-row">
+          <div class="sb-av">JM</div>
+          <div>
+            <div class="sb-dname">Dr. James Mutuku</div>
+            <div class="sb-dreg">KMPDC/2019/04821</div>
+          </div>
+        </div>
+        <div class="sb-role-badge"><span class="dot"></span>Internal Medicine · KNH</div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-sec">Clinical</div>
+      <div class="ni on"  onclick="go('home',this)">    <span class="ni-e">🏠</span><span class="ni-l">Today's Overview</span></div>
+      <div class="ni"     onclick="go('queue',this)">   <span class="ni-e">👥</span><span class="ni-l">Patient Queue</span><span class="ni-b r">8</span></div>
+      <div class="ni"     onclick="go('patient',this)"> <span class="ni-e">🩺</span><span class="ni-l">Patient Workup</span></div>
+      <div class="ni"     onclick="go('ward',this)">    <span class="ni-e">🛏️</span><span class="ni-l">Ward / Beds</span><span class="ni-b am">3</span></div>
+      <div class="ni"     onclick="go('labs',this)">    <span class="ni-e">🧪</span><span class="ni-l">Lab Orders &amp; Results</span><span class="ni-b te">5</span></div>
+      <div class="ni"     onclick="go('prescriptions',this)"><span class="ni-e">💊</span><span class="ni-l">Prescriptions</span></div>
+      <div class="ni"     onclick="go('imaging',this)"> <span class="ni-e">🔬</span><span class="ni-l">Imaging &amp; Reports</span></div>
+
+      <div class="sb-sec">Workflow</div>
+      <div class="ni"     onclick="go('notes',this)">   <span class="ni-e">📝</span><span class="ni-l">Clinical Notes</span></div>
+      <div class="ni"     onclick="go('referrals',this)"><span class="ni-e">📋</span><span class="ni-l">Referrals</span></div>
+      <div class="ni"     onclick="go('procedures',this)"><span class="ni-e">🏥</span><span class="ni-l">Procedures</span></div>
+
+      <div class="sb-sec">System</div>
+      <div class="ni"     onclick="go('claims',this)">  <span class="ni-e">🛡️</span><span class="ni-l">UniHealth Claims</span></div>
+      <div class="ni"     onclick="go('schedule',this)"><span class="ni-e">📅</span><span class="ni-l">My Schedule</span></div>
+    </div>
+
+    <div class="sb-foot">
+      <button class="sb-out" onclick="signOut()">🚪 Sign Out</button>
+    </div>
   </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <header class="topbar">
+    <div>
+      <div class="tb-pg" id="tbTitle">Today's Overview</div>
+      <div class="tb-cr">UniHealth EHR › <b id="tbCrumb">Home</b></div>
+    </div>
+    <div class="tb-gap"></div>
+    <div class="tb-ward">🏥 Ward 4B · KNH Nairobi</div>
+    <div class="tb-srch">
+      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="#90a899" stroke-width="2.2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg>
+      <input placeholder="Search patients, IDs…" id="ptSearch">
+    </div>
+    <div class="tb-ic">🔔<div class="tb-dot"></div></div>
+    <div class="tb-ic">⚡</div>
+    <div class="tb-date" id="tbDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══ HOME / OVERVIEW ═══ -->
+    <div id="pg-home" class="pg on">
+      <div class="ph">
+        <div>
+          <div class="ph-ey">Internal Medicine · KNH</div>
+          <div class="ph-ti">Good morning, Dr. Mutuku 👋</div>
+          <div class="ph-su">You have <strong>8 patients</strong> in today's queue · <strong>3 pending labs</strong> · Shift: 08:00–16:00</div>
+        </div>
+        <div class="ph-r">
+          <button class="btn-s btn-sm" onclick="go('notes',null)">📝 Quick Note</button>
+          <button class="btn-p" onclick="go('patient',null)">🩺 Open Workup</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="g4" style="margin-bottom:14px">
+        <div class="kpi" style="animation-delay:.03s;border-top:3px solid var(--te)"><div class="kpi-ico">👥</div><div class="kpi-val">8</div><div class="kpi-lbl">Patients Today</div><div class="kpi-sub">3 seen · 5 waiting</div></div>
+        <div class="kpi" style="animation-delay:.06s;border-top:3px solid var(--r)"><div class="kpi-ico">🚨</div><div class="kpi-val">2</div><div class="kpi-lbl">Critical Alerts</div><div class="kpi-sub">1 critical lab result</div></div>
+        <div class="kpi" style="animation-delay:.09s;border-top:3px solid var(--am)"><div class="kpi-ico">🧪</div><div class="kpi-val">5</div><div class="kpi-lbl">Pending Labs</div><div class="kpi-sub">3 awaiting results</div></div>
+        <div class="kpi" style="animation-delay:.12s;border-top:3px solid var(--g)"><div class="kpi-ico">📋</div><div class="kpi-val">12</div><div class="kpi-lbl">Active Admissions</div><div class="kpi-sub">Ward 4B · 3 available beds</div></div>
+      </div>
+
+      <!-- Critical alert -->
+      <div class="notice r" style="animation:cardIn .4s .06s ease both">
+        <span class="notice-e">🚨</span>
+        <div class="notice-tx"><strong>CRITICAL:</strong> Serum Potassium for <strong>Njoroge Wangui (AFL-2024-KE-78841209)</strong> — K⁺ 6.8 mmol/L (critical high). Immediate review required. <span style="color:var(--r);font-weight:700;cursor:pointer;text-decoration:underline" onclick="go('patient',null)">Open patient →</span></div>
+      </div>
+
+
+      <!-- AI Clinical Decision Support -->
+      <div class="ai-widget" style="animation-delay:.07s">
+        <div class="ai-widget-hd">
+          <div>
+            <div class="ai-widget-ti">🤖 AI Clinical Decision Support</div>
+            <div class="ai-widget-su">Automated analysis · FHIR R5 data · Updated every 5 minutes</div>
+          </div>
+          <span class="tag te" style="font-size:10px;font-weight:700">ACTIVE</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">🔴</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Hyperkalaemia protocol — Wangui Njoroge</div>
+            <div class="ai-row-su">K⁺ 6.8 mmol/L. AI recommends: ECG, calcium gluconate, salbutamol nebulisation, repeat U&amp;E in 4h. Consult nephrology if no improvement.</div>
+          </div>
+          <span class="ai-conf crit">CRITICAL</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">⚠️</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Drug interaction detected — Omar Abdullahi</div>
+            <div class="ai-row-su">Warfarin + Metronidazole co-prescribed. AI predicts ↑ INR risk (confidence 91%). Consider dose adjustment or alternative antibiotic.</div>
+          </div>
+          <span class="ai-conf med">INTERACTION</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">💡</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Differential diagnosis suggestion — Adhiambo Grace</div>
+            <div class="ai-row-su">Headache + vomiting + BP 162/98: AI suggests consider hypertensive encephalopathy, migraine with aura, or raised ICP. Recommend fundoscopy.</div>
+          </div>
+          <span class="ai-conf high">SUGGESTION</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">📋</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">3 patients due for diabetes screening</div>
+            <div class="ai-row-su">AI flagged Kipchoge Mutai, Fatuma Ali and Amani Said as overdue for HbA1c based on KDHS guidelines. Add to today's review.</div>
+          </div>
+          <span class="ai-conf high">PREVENTIVE</span>
+        </div>
+        <div class="audit-notice">⛓️ All AI recommendations logged to patient FHIR record · Physician override always applies</div>
+      </div>
+
+      <div class="gcol2">
+        <!-- Left: Queue + Ward -->
+        <div>
+          <div class="panel" style="margin-bottom:14px;animation-delay:.08s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Today's Queue</div><div class="pnl-su">Outpatient · Ward 4B</div></div>
+              <span class="pnl-lk" onclick="go('queue',null)">Full queue →</span>
+            </div>
+            <div class="pnl-bd" id="homeQueue"></div>
+          </div>
+          <div class="panel" style="animation-delay:.12s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Ward 4B — Bed Status</div><div class="pnl-su">12 occupied · 3 available · 1 maintenance</div></div>
+              <span class="pnl-lk" onclick="go('ward',null)">Full ward →</span>
+            </div>
+            <div class="pnl-bd">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                <span class="tag r dot">12 Occupied</span>
+                <span class="tag g dot">3 Available</span>
+                <span class="tag am dot">1 Maintenance</span>
+              </div>
+              <div class="bed-grid" id="homeBeds"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Pending labs + Quick notes -->
+        <div>
+          <div class="panel" style="margin-bottom:14px;animation-delay:.1s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Pending Lab Results</div><div class="pnl-su">Awaiting or recently returned</div></div>
+              <span class="pnl-lk" onclick="go('labs',null)">All labs →</span>
+            </div>
+            <div class="pnl-bd" id="homeLabs"></div>
+          </div>
+          <div class="panel" style="animation-delay:.14s">
+            <div class="pnl-hd"><div class="pnl-ti">Quick Clinical Note</div></div>
+            <div class="pnl-bd">
+              <div class="ff"><label>Patient</label>
+                <select><option>Wangui Njoroge · AFL-78841209</option><option>Omar Abdullahi · AFL-87654321</option><option>Adhiambo Grace · AFL-23456789</option></select></div>
+              <div class="ff"><label>Note Type</label>
+                <select><option>Progress Note</option><option>Assessment</option><option>Procedure Note</option><option>Discharge Summary</option></select></div>
+              <div class="ff"><label>Note</label>
+                <textarea placeholder="SOAP note, assessment, plan…" style="min-height:90px"></textarea></div>
+              <button class="btn-p" style="width:100%;justify-content:center">Save Note to FHIR Record</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PATIENT QUEUE ═══ -->
+    <div id="pg-queue" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Outpatient</div><div class="ph-ti">Patient Queue</div><div class="ph-su">Today · 8 patients · Dr. James Mutuku · Ward 4B</div></div>
+        <button class="btn-p" onclick="mo('addPt')">+ Add Walk-in</button>
+      </div>
+      <div class="g3" style="margin-bottom:14px">
+        <div class="kpi" style="border-top:3px solid var(--r)"><div class="kpi-ico">⏳</div><div class="kpi-val" style="color:var(--r)">5</div><div class="kpi-lbl">Waiting</div><div class="kpi-sub">Avg wait: 22 min</div></div>
+        <div class="kpi" style="border-top:3px solid var(--g)"><div class="kpi-ico">✅</div><div class="kpi-val" style="color:var(--g)">3</div><div class="kpi-lbl">Seen Today</div><div class="kpi-sub">First patient: 08:15</div></div>
+        <div class="kpi" style="border-top:3px solid var(--am)"><div class="kpi-ico">📞</div><div class="kpi-val" style="color:var(--am)">1</div><div class="kpi-lbl">Follow-ups</div><div class="kpi-sub">Hypertension review</div></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">All Patients — Today</div></div>
+        <div class="pnl-bd">
+          <table class="tbl" id="queueTable"></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PATIENT WORKUP ═══ -->
+    <div id="pg-patient" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Clinical Workup</div><div class="ph-ti">Patient Workup</div></div>
+        <div class="ph-r">
+          <button class="btn-s btn-sm" onclick="mo('discharge')">🏠 Discharge</button>
+          <button class="btn-s btn-sm" onclick="mo('refer')">📋 Refer</button>
+          <button class="btn-p" onclick="mo('note')">📝 Add Note</button>
+        </div>
+      </div>
+
+      <!-- Patient banner -->
+      <div class="pt-banner">
+        <div class="pt-in">
+          <div class="pt-av">WN</div>
+          <div>
+            <div class="pt-name">Wangui Njoroge</div>
+            <div class="pt-meta">Female · 35 yrs · O+ · Nairobi County<br>Admitted: 4 Mar 2026 · Ward 4B · Bed 07</div>
+            <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+              <span class="tag te">Internal Medicine</span>
+              <span class="tag am dot">Monitoring</span>
+              <span class="tag r">⚠ Penicillin Allergy</span>
+            </div>
+          </div>
+          <div class="pt-ids">
+            <div class="pt-id-pill">AFL‑ID: AFL‑2024‑KE‑78841209</div>
+            <div class="pt-id-pill" style="margin-top:4px">Member: AFL‑MBR‑884321</div>
+          </div>
+        </div>
+        <div class="pt-stats">
+          <div class="pt-stat"><div class="pt-sv">4</div><div class="pt-sl">Days Admitted</div></div>
+          <div class="pt-stat"><div class="pt-sv" style="color:#f87171">6.8</div><div class="pt-sl">K⁺ mmol/L ⚠</div></div>
+          <div class="pt-stat"><div class="pt-sv">120/80</div><div class="pt-sl">BP mmHg</div></div>
+          <div class="pt-stat"><div class="pt-sv">72</div><div class="pt-sl">HR bpm</div></div>
+          <div class="pt-stat"><div class="pt-sv">36.8</div><div class="pt-sl">Temp °C</div></div>
+        </div>
+      </div>
+
+      <!-- Allergies alert -->
+      <div class="notice r" style="margin-bottom:14px">
+        <span class="notice-e">🚨</span>
+        <div class="notice-tx"><strong>Allergies on file:</strong>
+          <span class="allergy">Penicillin — Anaphylaxis</span>
+          <span class="allergy">Sulfa drugs — Rash</span>
+        </div>
+      </div>
+
+      <div class="gcol3" style="margin-bottom:14px">
+        <!-- Vitals + Labs -->
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div><div class="pnl-ti">Current Vitals</div><div class="pnl-su">Last recorded: 08:30 today by Nurse Achieng</div></div><button class="btn-s btn-sm" onclick="mo('vitals')">Record New</button></div>
+            <div class="pnl-bd">
+              <div class="vrow">
+                <div class="vcard"><div class="vc-e">🩸</div><div class="vc-v">120/80<span class="vc-u">mmHg</span></div><div class="vc-l">Blood Pressure</div><div class="vc-s"><span class="tag g dot">Normal</span></div></div>
+                <div class="vcard"><div class="vc-e">💗</div><div class="vc-v">72<span class="vc-u">bpm</span></div><div class="vc-l">Heart Rate</div><div class="vc-s"><span class="tag g dot">Normal</span></div></div>
+                <div class="vcard"><div class="vc-e">🌡️</div><div class="vc-v">36.8<span class="vc-u">°C</span></div><div class="vc-l">Temperature</div><div class="vc-s"><span class="tag g dot">Normal</span></div></div>
+                <div class="vcard"><div class="vc-e">🫁</div><div class="vc-v">98.5<span class="vc-u">%</span></div><div class="vc-l">SpO₂</div><div class="vc-s"><span class="tag g dot">Normal</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div><div class="pnl-ti">Latest Lab Results</div><div class="pnl-su">Blood panel · 4 Mar 2026</div></div><button class="btn-pg btn-sm" onclick="mo('orderLab')">+ Order Lab</button></div>
+            <div class="pnl-bd" id="ptLabs"></div>
+          </div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-ti">Current Medications</div></div>
+            <div class="pnl-bd" id="ptMeds"></div>
+          </div>
+        </div>
+
+        <!-- Sidebar: diagnoses + history -->
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Diagnoses</div><button class="btn-s btn-sm" onclick="mo('addDx')">+ Add</button></div>
+            <div class="pnl-bd">
+              <div id="ptDx"></div>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Clinical History</div></div>
+            <div class="pnl-bd" id="ptHistory"></div>
+          </div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-ti">Care Plan</div><button class="btn-s btn-sm" onclick="mo('note')">Edit</button></div>
+            <div class="pnl-bd">
+              <div style="font-size:11.5px;color:var(--t2);line-height:1.7">
+                <div style="margin-bottom:6px"><strong>Monitoring:</strong> 4-hourly vitals, daily ECG, fluid balance chart</div>
+                <div style="margin-bottom:6px"><strong>Labs:</strong> Daily U&amp;E, repeat K⁺ in 6hr, 12-lead ECG now</div>
+                <div style="margin-bottom:6px"><strong>Diet:</strong> Low-potassium diet, restrict bananas, citrus</div>
+                <div><strong>Review:</strong> Dr. Mutuku ward round 14:00 today</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ WARD ═══ -->
+    <div id="pg-ward" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Ward Management</div><div class="ph-ti">Ward 4B — Internal Medicine</div><div class="ph-su">KNH Nairobi · Floor 4 · 16 beds total</div></div>
+        <button class="btn-p" onclick="mo('admit')">+ Admit Patient</button>
+      </div>
+      <div class="g4" style="margin-bottom:14px">
+        <div class="kpi" style="border-top:3px solid var(--r)"><div class="kpi-ico">🛏️</div><div class="kpi-val" style="color:var(--r)">12</div><div class="kpi-lbl">Occupied</div></div>
+        <div class="kpi" style="border-top:3px solid var(--g)"><div class="kpi-ico">✅</div><div class="kpi-val" style="color:var(--g)">3</div><div class="kpi-lbl">Available</div></div>
+        <div class="kpi" style="border-top:3px solid var(--am)"><div class="kpi-ico">🔧</div><div class="kpi-val" style="color:var(--am)">1</div><div class="kpi-lbl">Maintenance</div></div>
+        <div class="kpi" style="border-top:3px solid var(--pu)"><div class="kpi-ico">🏠</div><div class="kpi-val" style="color:var(--pu)">3</div><div class="kpi-lbl">Discharges Today</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Bed Map — Ward 4B</div></div>
+          <div class="pnl-bd">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;font-size:11px;color:var(--t3)">
+              <span>🔴 Occupied</span><span>🟢 Available</span><span>🟡 Reserved</span><span>🟣 Maintenance</span>
+            </div>
+            <div class="bed-grid" id="fullBeds"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Admitted Patients</div></div>
+          <div class="pnl-bd">
+            <table class="tbl" id="wardTable"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LABS ═══ -->
+    <div id="pg-labs" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Laboratory</div><div class="ph-ti">Lab Orders &amp; Results</div><div class="ph-su">Order, track and review laboratory investigations</div></div>
+        <button class="btn-p" onclick="mo('orderLab')">+ Order Lab Test</button>
+      </div>
+      <div class="notice r" style="margin-bottom:14px">
+        <span class="notice-e">🚨</span>
+        <div class="notice-tx"><strong>Critical result:</strong> Wangui Njoroge — K⁺ 6.8 mmol/L (critical high). Immediate action required.</div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="pnl-hd"><div><div class="pnl-ti">Recent &amp; Pending Results</div></div></div>
+          <div class="pnl-bd">
+            <table class="tbl" id="labsTable"></table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Order a Lab Test</div></div>
+          <div class="pnl-bd">
+            <div class="ff"><label>Patient</label><select><option>Wangui Njoroge · AFL-78841209</option><option>Omar Abdullahi · AFL-87654321</option><option>Adhiambo Grace · AFL-23456789</option></select></div>
+            <div class="ff"><label>Test Panel</label><select><option>Urea &amp; Electrolytes (U&amp;E)</option><option>Full Blood Count (FBC)</option><option>Liver Function Test (LFT)</option><option>Blood Culture &amp; Sensitivity</option><option>Serum Glucose</option><option>Thyroid Function (TFT)</option><option>Coagulation Screen (PT/APTT)</option><option>Lipid Profile</option><option>Urinalysis</option></select></div>
+            <div class="ff"><label>Priority</label><select><option>Routine (4–6 hrs)</option><option>Urgent (2 hrs)</option><option>STAT — Critical (30 min)</option></select></div>
+            <div class="ff"><label>Clinical Notes</label><textarea placeholder="Clinical indication for this test…" style="min-height:70px"></textarea></div>
+            <button class="btn-p" style="width:100%;justify-content:center">Submit Lab Order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PRESCRIPTIONS ═══ -->
+    <div id="pg-prescriptions" class="pg">
+        <div style="padding:10px 14px;background:var(--al);border:1px solid var(--amm);border-radius:8px;margin-bottom:14px;font-size:11.5px;color:#78350f;display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">⛓️</span> <strong>Audit Trail Active:</strong> All prescription sign-off actions are permanently logged to the patient FHIR record and the append-only UniHealth audit trail (KDPA 2019).
+        </div>
+
+      <div class="ph">
+        <div><div class="ph-ey">Pharmacy</div><div class="ph-ti">Prescriptions &amp; Medication Orders</div></div>
+        <button class="btn-p" onclick="mo('prescribe')">+ New Prescription</button>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Active Prescription Orders</div></div>
+          <div class="pnl-bd">
+            <table class="tbl" id="rxTable"></table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Prescribe Medication</div></div>
+          <div class="pnl-bd">
+            <div class="notice am"><span class="notice-e">⚠️</span><div class="notice-tx"><strong>Allergy check active:</strong> Penicillin (Anaphylaxis), Sulfa drugs (Rash) — system will flag contraindications automatically.</div></div>
+            <div class="ff"><label>Patient</label><select><option>Wangui Njoroge · AFL-78841209</option><option>Omar Abdullahi · AFL-87654321</option></select></div>
+            <div class="ff"><label>Drug Name (INN)</label><input placeholder="e.g. Amlodipine, Metformin…"></div>
+            <div class="ff-row"><div class="ff"><label>Dose</label><input placeholder="e.g. 5 mg"></div><div class="ff"><label>Route</label><select><option>Oral</option><option>IV</option><option>IM</option><option>SC</option><option>Topical</option><option>Inhaled</option></select></div></div>
+            <div class="ff-row"><div class="ff"><label>Frequency</label><select><option>OD</option><option>BD</option><option>TDS</option><option>QDS</option><option>PRN</option><option>STAT</option></select></div><div class="ff"><label>Duration</label><input placeholder="e.g. 7 days"></div></div>
+            <div class="ff"><label>Instructions</label><input placeholder="e.g. After meals, avoid dairy"></div>
+            <button class="btn-p" style="width:100%;justify-content:center;margin-top:4px">Sign &amp; Submit Prescription</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ IMAGING ═══ -->
+    <div id="pg-imaging" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Radiology</div><div class="ph-ti">Imaging &amp; Radiology Reports</div></div>
+        <button class="btn-p" onclick="mo('orderImaging')">+ Request Imaging</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Imaging Requests &amp; Reports</div></div>
+        <div class="pnl-bd">
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Patient</th><th>Study</th><th>Modality</th><th>Radiologist</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="color:var(--t3)">4 Mar 2026</td><td>Wangui Njoroge</td><td>Chest X-Ray (PA)</td><td><span class="tag b">XR</span></td><td>Dr. Osei</td><td><span class="tag g">Reported</span></td><td><button class="btn-s btn-sm">View</button></td></tr>
+              <tr><td class="mono" style="color:var(--t3)">4 Mar 2026</td><td>Omar Abdullahi</td><td>Abdominal Ultrasound</td><td><span class="tag te">US</span></td><td>Pending</td><td><span class="tag am">In Progress</span></td><td><button class="btn-s btn-sm">Track</button></td></tr>
+              <tr><td class="mono" style="color:var(--t3)">3 Mar 2026</td><td>Adhiambo Grace</td><td>CT Brain (Non-contrast)</td><td><span class="tag pu">CT</span></td><td>Dr. Mwangi</td><td><span class="tag g">Reported</span></td><td><button class="btn-s btn-sm">View</button></td></tr>
+              <tr><td class="mono" style="color:var(--t3)">3 Mar 2026</td><td>Kipchoge Mutai</td><td>ECG (12-lead)</td><td><span class="tag cy">ECG</span></td><td>Dr. Mutuku</td><td><span class="tag g">Interpreted</span></td><td><button class="btn-s btn-sm">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ NOTES ═══ -->
+    <div id="pg-notes" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Documentation</div><div class="ph-ti">Clinical Notes</div><div class="ph-su">FHIR-linked · Blockchain-anchored · KDPA 2019 compliant</div></div>
+        <button class="btn-p" onclick="mo('note')">+ New Note</button>
+      </div>
+      <div class="gcol3">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Recent Notes</div><div class="pnl-su">Dr. Mutuku — last 7 days</div></div>
+          <div class="pnl-bd">
+            <table class="tbl">
+              <thead><tr><th>Date/Time</th><th>Patient</th><th>Note Type</th><th>Summary</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="mono" style="color:var(--t3)">04 Mar 09:15</td><td>Wangui Njoroge</td><td><span class="tag te">Progress Note</span></td><td>Hyperkalaemia management, fluids reviewed</td><td><span class="tag g">Signed</span></td></tr>
+                <tr><td class="mono" style="color:var(--t3)">04 Mar 08:40</td><td>Omar Abdullahi</td><td><span class="tag b">Assessment</span></td><td>Abdominal pain workup, ultrasound ordered</td><td><span class="tag g">Signed</span></td></tr>
+                <tr><td class="mono" style="color:var(--t3)">03 Mar 16:20</td><td>Kipchoge Mutai</td><td><span class="tag pu">Discharge Note</span></td><td>Hypertension well controlled, discharged</td><td><span class="tag g">Signed</span></td></tr>
+                <tr><td class="mono" style="color:var(--t3)">03 Mar 14:55</td><td>Adhiambo Grace</td><td><span class="tag am">Procedure Note</span></td><td>LP performed, opening pressure 18 cmH₂O</td><td><span class="tag am">Pending Co-sign</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-ti">New Clinical Note</div></div>
+            <div class="pnl-bd">
+              <div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option><option>Adhiambo Grace</option></select></div>
+              <div class="ff"><label>Note Type</label><select><option>Progress Note (SOAP)</option><option>Assessment &amp; Plan</option><option>Discharge Summary</option><option>Procedure Note</option><option>Referral Letter</option><option>Death Certificate</option></select></div>
+              <div class="ff"><label>Subjective</label><textarea placeholder="Patient's reported symptoms…" style="min-height:60px"></textarea></div>
+              <div class="ff"><label>Objective</label><textarea placeholder="Examination findings, vitals, labs…" style="min-height:60px"></textarea></div>
+              <div class="ff"><label>Assessment</label><textarea placeholder="Diagnosis / differential…" style="min-height:60px"></textarea></div>
+              <div class="ff"><label>Plan</label><textarea placeholder="Management plan, orders…" style="min-height:60px"></textarea></div>
+              <button class="btn-p" style="width:100%;justify-content:center">Sign &amp; Save to FHIR Record</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ REFERRALS ═══ -->
+    <div id="pg-referrals" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Referrals</div><div class="ph-ti">Referrals</div><div class="ph-su">Intra-hospital and inter-facility referrals</div></div>
+        <button class="btn-p" onclick="mo('refer')">+ New Referral</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Active &amp; Recent Referrals</div></div>
+        <div class="pnl-bd">
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Patient</th><th>From</th><th>To</th><th>Urgency</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="color:var(--t3)">28 Feb 2026</td><td>Wangui Njoroge</td><td>Internal Medicine</td><td>KNH Cardiology</td><td><span class="tag am">Urgent</span></td><td><span class="tag te">Accepted · 15 Mar</span></td></tr>
+              <tr><td class="mono" style="color:var(--t3)">04 Mar 2026</td><td>Omar Abdullahi</td><td>Internal Medicine</td><td>General Surgery</td><td><span class="tag r">Emergency</span></td><td><span class="tag am">Pending</span></td></tr>
+              <tr><td class="mono" style="color:var(--t3)">02 Mar 2026</td><td>Adhiambo Grace</td><td>Internal Medicine</td><td>Neurology</td><td><span class="tag b">Routine</span></td><td><span class="tag g">Confirmed · 20 Mar</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CLAIMS ═══ -->
+    <div id="pg-claims" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">UniHealth Health Cover</div><div class="ph-ti">UniHealth Claims</div><div class="ph-su">Submit and track patient UniHealth cover claims</div></div>
+        <button class="btn-p" onclick="mo('claim')">+ Submit Claim</button>
+      </div>
+      <div class="g3" style="margin-bottom:14px">
+        <div class="kpi" style="border-top:3px solid var(--g)"><div class="kpi-ico">✅</div><div class="kpi-val" style="color:var(--g)">47</div><div class="kpi-lbl">Approved Today</div><div class="kpi-sub">Ksh 142,300 processed</div></div>
+        <div class="kpi" style="border-top:3px solid var(--am)"><div class="kpi-ico">⏳</div><div class="kpi-val" style="color:var(--am)">8</div><div class="kpi-lbl">Pending Review</div><div class="kpi-sub">Awaiting UniHealth auth</div></div>
+        <div class="kpi" style="border-top:3px solid var(--r)"><div class="kpi-ico">❌</div><div class="kpi-val" style="color:var(--r)">2</div><div class="kpi-lbl">Rejected</div><div class="kpi-sub">Additional info needed</div></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Claims This Week</div></div>
+        <div class="pnl-bd">
+          <table class="tbl">
+            <thead><tr><th>Claim No.</th><th>Patient</th><th>Service</th><th>Amount</th><th>Auth Method</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">AFL-CLM-2026-0012</td><td>Wangui Njoroge</td><td>Inpatient — Day 4</td><td>Ksh 4,800</td><td><span class="tag te">Biometric</span></td><td><span class="tag am">Pending</span></td></tr>
+              <tr><td class="mono">AFL-CLM-2026-0011</td><td>Omar Abdullahi</td><td>Outpatient Consult</td><td>Ksh 600</td><td><span class="tag g">PIN</span></td><td><span class="tag g">Approved</span></td></tr>
+              <tr><td class="mono">AFL-CLM-2026-0009</td><td>Adhiambo Grace</td><td>CT Brain</td><td>Ksh 12,000</td><td><span class="tag te">Biometric</span></td><td><span class="tag g">Approved</span></td></tr>
+              <tr><td class="mono">AFL-CLM-2026-0007</td><td>Kipchoge Mutai</td><td>Outpatient Consult</td><td>Ksh 600</td><td><span class="tag g">PIN</span></td><td><span class="tag r">Rejected</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SCHEDULE ═══ -->
+    <div id="pg-schedule" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Calendar</div><div class="ph-ti">My Schedule</div><div class="ph-su">Dr. James Mutuku · KMPDC/2019/04821</div></div>
+      </div>
+      <div class="g2">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">This Week</div><div class="pnl-su">10–14 March 2026</div></div>
+          <div class="pnl-bd">
+            <table class="tbl">
+              <thead><tr><th>Day</th><th>Shift</th><th>Ward</th><th>Clinic</th><th>On-call</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Mon 10 Mar</strong></td><td>08:00–16:00</td><td>Ward 4B</td><td>Outpatient OPD</td><td>No</td></tr>
+                <tr><td><strong>Tue 11 Mar</strong></td><td>08:00–16:00</td><td>Ward 4B</td><td>—</td><td>No</td></tr>
+                <tr style="background:var(--tel)"><td><strong>Wed 12 Mar</strong></td><td>16:00–00:00</td><td>Ward 4B</td><td>—</td><td><span class="tag te dot">On-call</span></td></tr>
+                <tr><td><strong>Thu 13 Mar</strong></td><td>08:00–16:00</td><td>Ward 4B</td><td>CME — Grand Rounds</td><td>No</td></tr>
+                <tr><td><strong>Fri 14 Mar</strong></td><td>08:00–16:00</td><td>Ward 4B</td><td>Outpatient OPD</td><td>No</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">CME &amp; Training</div></div>
+          <div class="pnl-bd">
+            <div id="cmeList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stub pages for procedures -->
+    <div id="pg-procedures" class="pg">
+      <div class="ph"><div><div class="ph-ey">Theatre</div><div class="ph-ti">Procedures</div></div><button class="btn-p" onclick="mo('procedure')">+ Book Procedure</button></div>
+      <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Scheduled Procedures</div></div>
+      <div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Patient</th><th>Procedure</th><th>Theatre</th><th>Anaesthesia</th><th>Status</th></tr></thead><tbody>
+        <tr><td class="mono" style="color:var(--t3)">10 Mar 10:00</td><td>Omar Abdullahi</td><td>Laparotomy — Appendicectomy</td><td>Theatre 2</td><td><span class="tag pu">GA</span></td><td><span class="tag am">Scheduled</span></td></tr>
+        <tr><td class="mono" style="color:var(--t3)">12 Mar 08:00</td><td>Adhiambo Grace</td><td>Lumbar Puncture</td><td>Procedure Room</td><td><span class="tag te">Local</span></td><td><span class="tag b">Confirmed</span></td></tr>
+      </tbody></table></div></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="mo-ov" id="moOv" onclick="if(event.target===this)closeMo()">
+  <div class="mo">
+    <div class="mo-stripe"></div>
+    <div class="mo-hd"><div class="mo-ti" id="moTi">Action</div><button class="mo-x" onclick="closeMo()">✕</button></div>
+    <div class="mo-bd" id="moBd"></div>
+    <div class="mo-ft"><button class="btn-s" onclick="closeMo()">Cancel</button><button class="btn-p" id="moBtn" onclick="submitMo()">Confirm</button></div>
+  </div>
+</div>
+
+<script>
+// Date
+var now=new Date(),DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('tbDate').textContent=DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+
+// Nav
+var TITLES={home:'Today\'s Overview',queue:'Patient Queue',patient:'Patient Workup',ward:'Ward 4B',
+  labs:'Lab Orders & Results',prescriptions:'Prescriptions',imaging:'Imaging & Reports',
+  notes:'Clinical Notes',referrals:'Referrals',procedures:'Procedures',claims:'UniHealth Claims',schedule:'My Schedule'};
+var CRUMBS={home:'Home',queue:'Clinical › Queue',patient:'Clinical › Workup',ward:'Clinical › Ward',
+  labs:'Clinical › Labs',prescriptions:'Clinical › Prescriptions',imaging:'Clinical › Imaging',
+  notes:'Workflow › Notes',referrals:'Workflow › Referrals',procedures:'Workflow › Procedures',
+  claims:'System › Claims',schedule:'System › Schedule'};
+function go(pg,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pg-'+pg).classList.add('on');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(el){el.classList.add('on');}
+  else{document.querySelectorAll('.ni').forEach(n=>{if((n.getAttribute('onclick')||'').includes("'"+pg+"'"))n.classList.add('on');});}
+  document.getElementById('tbTitle').textContent=TITLES[pg]||pg;
+  document.getElementById('tbCrumb').textContent=CRUMBS[pg]||pg;
+  animBars();
+}
+function signOut(){if(confirm('Sign out of UniHealth EHR?'))window.location.href='unihealth-login.html';}
+
+// Modals
+var MO={
+  note:{t:'New Clinical Note',s:'Sign & Save',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Note Type</label><select><option>Progress Note</option><option>Assessment & Plan</option><option>Discharge Summary</option></select></div><div class="ff"><label>Note Content (SOAP)</label><textarea style="min-height:120px" placeholder="Subjective, Objective, Assessment, Plan…"></textarea></div>`},
+  addPt:{t:'Add Walk-in Patient',s:'Add to Queue',b:`<div class="ff-row"><div class="ff"><label>First Name</label><input placeholder="e.g. John"></div><div class="ff"><label>Last Name</label><input placeholder="e.g. Kamau"></div></div><div class="ff"><label>AFL ID / National ID</label><input placeholder="AFL-XXXX or National ID" style="font-family:var(--mono)"></div><div class="ff"><label>Presenting Complaint</label><textarea placeholder="Chief complaint…" style="min-height:70px"></textarea></div><div class="ff"><label>Triage Priority</label><select><option>Green — Non-urgent</option><option>Yellow — Semi-urgent</option><option>Orange — Urgent</option><option>Red — Emergency</option></select></div>`},
+  refer:{t:'New Referral',s:'Send Referral',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Refer To — Specialty</label><select><option>Cardiology</option><option>General Surgery</option><option>Neurology</option><option>Gynaecology</option><option>Orthopaedics</option><option>Ophthalmology</option><option>Renal / Nephrology</option></select></div><div class="ff"><label>Receiving Facility</label><select><option>KNH Nairobi (Internal)</option><option>MTRH Eldoret</option><option>Coast General Hospital</option></select></div><div class="ff"><label>Urgency</label><select><option>Routine</option><option>Urgent (within 24hrs)</option><option>Emergency (now)</option></select></div><div class="ff"><label>Reason for Referral</label><textarea placeholder="Clinical summary and reason…" style="min-height:80px"></textarea></div>`},
+  discharge:{t:'Discharge Patient',s:'Confirm Discharge',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="ff"><label>Discharge Condition</label><select><option>Improved — Stable</option><option>Stable — Against Medical Advice</option><option>Transfer to another facility</option></select></div><div class="ff"><label>Discharge Medications</label><textarea placeholder="List discharge medications…" style="min-height:70px"></textarea></div><div class="ff"><label>Follow-up Plan</label><input placeholder="e.g. Review in 2 weeks at OPD"></div><div class="ff"><label>Discharge Summary</label><textarea placeholder="Brief summary for GP / patient…" style="min-height:80px"></textarea></div>`},
+  admit:{t:'Admit Patient',s:'Confirm Admission',b:`<div class="ff"><label>Patient AFL ID</label><input placeholder="AFL-XXXX-KE-XXXXXXXX" style="font-family:var(--mono)"></div><div class="ff-row"><div class="ff"><label>Admitting Ward</label><select><option>Ward 4B — Internal Medicine</option><option>Ward 2A — Surgical</option><option>ICU</option></select></div><div class="ff"><label>Bed No.</label><select><option>Bed 02 — Available</option><option>Bed 09 — Available</option><option>Bed 14 — Available</option></select></div></div><div class="ff"><label>Admitting Diagnosis</label><input placeholder="Primary diagnosis on admission"></div><div class="ff"><label>Admitting Doctor</label><input value="Dr. James Mutuku" readonly style="background:#f3f7f3;color:var(--t3)"></div>`},
+  orderLab:{t:'Order Lab Test',s:'Submit Order',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Test</label><select><option>Urea & Electrolytes</option><option>Full Blood Count</option><option>Blood Culture</option><option>Serum Glucose</option><option>LFT</option><option>Lipid Profile</option></select></div><div class="ff"><label>Priority</label><select><option>Routine</option><option>Urgent</option><option>STAT — Critical</option></select></div>`},
+  vitals:{t:'Record Vitals',s:'Save Vitals',b:`<div class="ff-row"><div class="ff"><label>Blood Pressure (mmHg)</label><input placeholder="e.g. 120/80"></div><div class="ff"><label>Heart Rate (bpm)</label><input type="number" placeholder="e.g. 72"></div></div><div class="ff-row"><div class="ff"><label>Temperature (°C)</label><input type="number" step="0.1" placeholder="e.g. 36.8"></div><div class="ff"><label>SpO₂ (%)</label><input type="number" placeholder="e.g. 98"></div></div><div class="ff-row"><div class="ff"><label>Respiratory Rate</label><input type="number" placeholder="e.g. 16"></div><div class="ff"><label>Blood Glucose (mmol/L)</label><input type="number" step="0.1" placeholder="e.g. 5.4"></div></div><div class="ff"><label>Recorded by</label><input value="Dr. James Mutuku" readonly style="background:#f3f7f3"></div>`},
+  prescribe:{t:'New Prescription',s:'Sign & Submit',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Drug (INN)</label><input placeholder="Generic drug name"></div><div class="ff-row"><div class="ff"><label>Dose</label><input placeholder="e.g. 5mg"></div><div class="ff"><label>Route</label><select><option>Oral</option><option>IV</option><option>IM</option><option>SC</option></select></div></div><div class="ff-row"><div class="ff"><label>Frequency</label><select><option>OD</option><option>BD</option><option>TDS</option><option>QDS</option><option>PRN</option></select></div><div class="ff"><label>Duration</label><input placeholder="e.g. 7 days"></div></div>`},
+  addDx:{t:'Add Diagnosis',s:'Save',b:`<div class="ff"><label>ICD-10 Code</label><input placeholder="e.g. I10, E11.9" style="font-family:var(--mono)"></div><div class="ff"><label>Description</label><input placeholder="Diagnosis name"></div><div class="ff"><label>Status</label><select><option>Active</option><option>Monitoring</option><option>Resolved</option></select></div><div class="ff"><label>Onset Date</label><input type="date"></div>`},
+  claim:{t:'Submit UniHealth Claim',s:'Submit Claim',b:`<div class="ff"><label>Patient AFL Member No.</label><input placeholder="AFL-MBR-XXXXXX" style="font-family:var(--mono)"></div><div class="ff"><label>Service Type</label><select><option>Outpatient Consultation</option><option>Inpatient Per Diem</option><option>Laboratory</option><option>Radiology</option><option>Procedure / Surgery</option><option>Pharmacy</option></select></div><div class="ff"><label>Amount (Ksh)</label><input type="number" placeholder="e.g. 1200"></div><div class="ff"><label>Auth Method</label><select><option>Biometric (Fingerprint)</option><option>UniHealth PIN</option><option>Facial Recognition</option></select></div>`},
+  orderImaging:{t:'Request Imaging',s:'Submit Request',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Study</label><select><option>Chest X-Ray (PA)</option><option>Abdominal Ultrasound</option><option>CT Brain</option><option>CT Chest / Abdomen</option><option>MRI Brain</option><option>ECG (12-lead)</option><option>Echocardiogram</option></select></div><div class="ff"><label>Clinical Indication</label><textarea placeholder="Reason for imaging…" style="min-height:70px"></textarea></div>`},
+  procedure:{t:'Book Procedure',s:'Schedule',b:`<div class="ff"><label>Patient</label><select><option>Wangui Njoroge</option><option>Omar Abdullahi</option></select></div><div class="ff"><label>Procedure</label><input placeholder="e.g. Lumbar Puncture"></div><div class="ff-row"><div class="ff"><label>Date</label><input type="date"></div><div class="ff"><label>Time</label><input type="time"></div></div><div class="ff"><label>Anaesthesia</label><select><option>None</option><option>Local</option><option>Regional</option><option>GA</option></select></div>`}
+};
+function mo(k){var m=MO[k]||{t:'Action',s:'OK',b:''};document.getElementById('moTi').textContent=m.t;document.getElementById('moBd').innerHTML=m.b;document.getElementById('moBtn').textContent=m.s;document.getElementById('moBtn').style.background='var(--te)';document.getElementById('moOv').classList.add('open');}
+function closeMo(){document.getElementById('moOv').classList.remove('open');}
+function submitMo(){var b=document.getElementById('moBtn');var ti=document.getElementById('moTi').textContent;b.textContent='✓ Done!';b.style.background='var(--gd)';showDrToast('✅',ti+' saved','Logged to FHIR record & audit trail');setTimeout(closeMo,700);}
+var _drToastT=null;
+function showDrToast(ico,msg,sub){var t=document.getElementById('drToast');document.getElementById('drToastIco').textContent=ico;document.getElementById('drToastMsg').textContent=msg;document.getElementById('drToastSub').textContent=sub||'';t.classList.add('show');if(_drToastT)clearTimeout(_drToastT);_drToastT=setTimeout(function(){t.classList.remove('show');},3000);}
+
+// ── DATA ──
+var QUEUE=[
+  {av:'WN',avc:'#0d9488',name:'Wangui Njoroge',det:'AFL-78841209 · Hyperkalaemia follow-up',time:'08:00',wait:'9 min',tag:'r',tl:'⚠ Critical'},
+  {av:'OA',avc:'#2563eb',name:'Omar Abdullahi',det:'AFL-87654321 · Abdominal pain',time:'08:30',wait:'Seen',tag:'g',tl:'Seen'},
+  {av:'AG',avc:'#7c3aed',name:'Adhiambo Grace',det:'AFL-23456789 · Headache, vomiting',time:'09:00',wait:'15 min',tag:'am',tl:'Waiting'},
+  {av:'KM',avc:'#059669',name:'Kipchoge Mutai',det:'AFL-22112344 · HTN review',time:'09:30',wait:'45 min',tag:'b',tl:'Waiting'},
+  {av:'FA',avc:'#d97706',name:'Fatuma Ali',det:'AFL-REF2023 · DM follow-up',time:'10:00',wait:'— ',tag:'grey',tl:'Scheduled'},
+];
+var hq=document.getElementById('homeQueue');
+QUEUE.slice(0,4).forEach(p=>{
+  hq.innerHTML+=`<div class="q-item" onclick="go('patient',null)"><div class="q-av" style="background:${p.avc}20;color:${p.avc}">${p.av}</div><div style="flex:1"><div class="q-name">${p.name}</div><div class="q-det">${p.det}</div></div><div class="q-right"><div class="q-time">${p.time}</div><div class="q-wait"><span class="tag ${p.tag}">${p.tl}</span></div></div></div>`;
+});
+
+// Queue full table
+var qt=document.getElementById('queueTable');
+qt.innerHTML='<thead><tr><th>#</th><th>Patient</th><th>AFL ID</th><th>Complaint</th><th>Time</th><th>Wait</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+var fullQ=[
+  {n:'Wangui Njoroge',id:'AFL-78841209',c:'Hyperkalaemia follow-up',t:'08:00',w:'9 min',st:'r',sl:'Critical'},
+  {n:'Omar Abdullahi',id:'AFL-87654321',c:'Abdominal pain',t:'08:30',w:'Seen',st:'g',sl:'Seen'},
+  {n:'Adhiambo Grace',id:'AFL-23456789',c:'Headache + vomiting',t:'09:00',w:'15 min',st:'am',sl:'Waiting'},
+  {n:'Kipchoge Mutai',id:'AFL-22112344',c:'Hypertension review',t:'09:30',w:'45 min',st:'b',sl:'Waiting'},
+  {n:'Fatuma Ali',id:'AFL-REF2023',c:'Diabetes follow-up',t:'10:00',w:'1h 15m',st:'grey',sl:'Scheduled'},
+  {n:'James Otieno',id:'AFL-45678901',c:'Chest pain — triage',t:'10:30',w:'—',st:'am',sl:'Triage'},
+  {n:'Mary Kamau',id:'AFL-56789012',c:'Anaemia workup',t:'11:00',w:'—',st:'grey',sl:'Scheduled'},
+  {n:'Ali Hassan',id:'AFL-67890123',c:'Post-op review — day 5',t:'11:30',w:'—',st:'grey',sl:'Scheduled'},
+];
+fullQ.forEach((p,i)=>{qt.innerHTML+=`<tr><td style="color:var(--t3)">${i+1}</td><td style="font-weight:700;color:var(--t1)">${p.n}</td><td class="mono">${p.id}</td><td>${p.c}</td><td class="mono">${p.t}</td><td style="color:var(--t3);font-size:11px">${p.w}</td><td><span class="tag ${p.st}">${p.sl}</span></td><td><button class="btn-s btn-sm" onclick="go('patient',null)">Open →</button></td></tr>`;});
+qt.innerHTML+='</tbody>';
+
+// Beds
+var BEDS=[
+  {id:'01',pt:'Wangui N.',cls:'occ'},{id:'02',pt:'Omar A.',cls:'occ'},{id:'03',pt:'Available',cls:'free'},
+  {id:'04',pt:'Adhiambo G.',cls:'occ'},{id:'05',pt:'Kipchoge M.',cls:'occ'},{id:'06',pt:'Available',cls:'free'},
+  {id:'07',pt:'Fatuma A.',cls:'occ'},{id:'08',pt:'James O.',cls:'occ'},{id:'09',pt:'Reserved',cls:'res'},
+  {id:'10',pt:'Mary K.',cls:'occ'},{id:'11',pt:'Ali H.',cls:'occ'},{id:'12',pt:'Available',cls:'free'},
+  {id:'13',pt:'Samuel W.',cls:'occ'},{id:'14',pt:'Grace M.',cls:'occ'},{id:'15',pt:'MAINT',cls:'main'},
+  {id:'16',pt:'Mercy J.',cls:'occ'},
+];
+var ICONS={occ:'🔴',free:'🟢',res:'🟡',main:'🟣'};
+[document.getElementById('homeBeds'),document.getElementById('fullBeds')].forEach(el=>{if(!el)return;BEDS.forEach(b=>{el.innerHTML+=`<div class="bed ${b.cls}"><div class="bed-e">${ICONS[b.cls]}</div><div class="bed-id">Bed ${b.id}</div><div class="bed-pt">${b.pt}</div></div>`;});});
+
+// Ward table
+var wt=document.getElementById('wardTable');
+if(wt){wt.innerHTML='<thead><tr><th>Bed</th><th>Patient</th><th>AFL ID</th><th>Diagnosis</th><th>Day</th><th>Action</th></tr></thead><tbody>';
+var wardPts=[
+  {b:'01',n:'Wangui Njoroge',id:'AFL-78841209',dx:'Hyperkalaemia',day:4},
+  {b:'02',n:'Omar Abdullahi',id:'AFL-87654321',dx:'Acute Abdomen',day:1},
+  {b:'04',n:'Adhiambo Grace',id:'AFL-23456789',dx:'Meningitis — viral',day:3},
+  {b:'05',n:'Kipchoge Mutai',id:'AFL-22112344',dx:'Essential HTN',day:2},
+  {b:'07',n:'Fatuma Ali',id:'AFL-REF2023',dx:'DM Type 2 — poor control',day:6},
+];
+wardPts.forEach(p=>{wt.innerHTML+=`<tr><td class="mono">Bed ${p.b}</td><td style="font-weight:700">${p.n}</td><td class="mono">${p.id}</td><td>${p.dx}</td><td><span class="tag ${p.day>3?'am':'g'}">Day ${p.day}</span></td><td><button class="btn-s btn-sm" onclick="go('patient',null)">Workup →</button></td></tr>`;});
+wt.innerHTML+='</tbody>';}
+
+// Home pending labs
+var HL=[
+  {pt:'Wangui Njoroge',test:'Serum K⁺ (STAT)',t:'07:45',ind:'crit',val:'6.8 mmol/L',vc:'crit'},
+  {pt:'Omar Abdullahi',test:'FBC + CRP',t:'08:10',ind:'pend',val:'Pending',vc:'norm'},
+  {pt:'Adhiambo Grace',test:'CSF analysis',t:'08:40',ind:'pend',val:'Pending',vc:'norm'},
+  {pt:'Kipchoge Mutai',test:'U&E',t:'07:30',ind:'norm',val:'Normal',vc:'norm'},
+];
+var hlEl=document.getElementById('homeLabs');
+HL.forEach(l=>{hlEl.innerHTML+=`<div class="lab-row"><div class="lab-ind ${l.ind}"></div><div style="flex:1"><div class="lab-name">${l.test}</div><div class="lab-ref">${l.pt}</div></div><div style="text-align:right"><div class="lab-val ${l.vc}">${l.val}</div><div class="lab-ref">${l.t}</div></div></div>`;});
+
+// Patient labs
+var ptLabEl=document.getElementById('ptLabs');
+var PTLABS=[
+  {ind:'crit',name:'Serum Potassium K⁺',val:'6.8 mmol/L',vc:'crit',range:'3.5–5.0 mmol/L'},
+  {ind:'norm',name:'Serum Sodium Na⁺',val:'138 mmol/L',vc:'norm',range:'135–145 mmol/L'},
+  {ind:'high',name:'Serum Creatinine',val:'124 μmol/L',vc:'high',range:'44–80 μmol/L'},
+  {ind:'norm',name:'Haemoglobin',val:'12.8 g/dL',vc:'norm',range:'12.0–16.0 g/dL'},
+  {ind:'low',name:'Serum Calcium Ca²⁺',val:'1.9 mmol/L',vc:'low',range:'2.1–2.6 mmol/L'},
+];
+PTLABS.forEach(l=>{ptLabEl.innerHTML+=`<div class="lab-row"><div class="lab-ind ${l.ind}"></div><div style="flex:1"><div class="lab-name">${l.name}</div><div class="lab-ref">Ref: ${l.range}</div></div><div style="text-align:right"><div class="lab-val ${l.vc}">${l.val}</div></div></div>`;});
+
+// Patient meds
+var ptMedEl=document.getElementById('ptMeds');
+var PTMEDS=[
+  {ico:'💊',bg:'var(--tel)',name:'Amlodipine 5mg',det:'OD oral · Hypertension'},
+  {ico:'💊',bg:'var(--bl)',name:'Furosemide 40mg IV',det:'BD IV · Fluid management'},
+  {ico:'💊',bg:'var(--pul)',name:'Calcium Gluconate 10%',det:'Slow IV · K⁺ cardioprotection · STAT'},
+];
+PTMEDS.forEach(m=>{ptMedEl.innerHTML+=`<div class="rx-row"><div class="rx-ico" style="background:${m.bg}">${m.ico}</div><div style="flex:1"><div class="rx-name">${m.name}</div><div class="rx-det">${m.det}</div></div><button class="btn-s btn-sm">Modify</button></div>`;});
+
+// Diagnoses
+var ptDxEl=document.getElementById('ptDx');
+var DX=[
+  {code:'E87.5',name:'Hyperkalaemia',st:'r',sl:'Critical'},
+  {code:'I10',name:'Essential Hypertension',st:'am',sl:'Monitoring'},
+  {code:'N18.3',name:'Chronic Kidney Disease — Stage 3',st:'am',sl:'Monitoring'},
+];
+DX.forEach(d=>{ptDxEl.innerHTML+=`<div style="display:flex;align-items:center;gap:9px;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:8px"><span class="mono" style="background:var(--bdr2);padding:2px 7px;border-radius:4px;color:var(--t3)">${d.code}</span><span style="font-size:12px;font-weight:700;color:var(--t1);flex:1">${d.name}</span><span class="tag ${d.st}">${d.sl}</span></div>`;});
+
+// History
+var ptHistEl=document.getElementById('ptHistory');
+var HIST=[
+  {dot:'var(--r)',ti:'Admitted — Hyperkalaemia',meta:'4 Mar 2026 · KNH Ward 4B'},
+  {dot:'var(--am)',ti:'Cardiology referral sent',meta:'28 Feb 2026 · Dr. Mutuku'},
+  {dot:'var(--b)',ti:'CKD Stage 3 — documented',meta:'Jan 2026 · KNH Nephrology'},
+  {dot:'var(--g)',ti:'Blood panel — reviewed',meta:'Nov 2025 · OPD'},
+];
+HIST.forEach((h,i)=>{ptHistEl.innerHTML+=`<div class="tl-item"><div class="tl-left"><div class="tl-dot" style="background:${h.dot}"></div><div class="tl-line"></div></div><div><div class="tl-ti">${h.ti}</div><div class="tl-meta">${h.meta}</div></div></div>`;});
+
+// Labs table
+var lt=document.getElementById('labsTable');
+if(lt){lt.innerHTML='<thead><tr><th>Time</th><th>Patient</th><th>Test</th><th>Result</th><th>Flag</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+var LABS=[
+  {t:'07:45',pt:'Wangui Njoroge',test:'Serum K⁺',res:'6.8 mmol/L',fl:'r',fll:'CRITICAL',st:'g',sl:'Resulted'},
+  {t:'08:10',pt:'Omar Abdullahi',test:'FBC + CRP',res:'Pending',fl:'grey',fll:'Pending',st:'am',sl:'In Lab'},
+  {t:'08:40',pt:'Adhiambo Grace',test:'CSF Analysis',res:'Pending',fl:'grey',fll:'Pending',st:'am',sl:'In Lab'},
+  {t:'07:30',pt:'Kipchoge Mutai',test:'U&E',res:'Normal',fl:'g',fll:'Normal',st:'g',sl:'Resulted'},
+  {t:'06:50',pt:'Fatuma Ali',test:'HbA1c',res:'8.4%',fl:'am',fll:'High',st:'g',sl:'Resulted'},
+];
+LABS.forEach(l=>{lt.innerHTML+=`<tr><td class="mono" style="color:var(--t3)">${l.t}</td><td>${l.pt}</td><td style="font-weight:600">${l.test}</td><td style="font-weight:700;color:var(--${l.fl=='crit'?'r':l.fl=='am'?'am':l.fl=='g'?'g':'t3'})">${l.res}</td><td><span class="tag ${l.fl}">${l.fll}</span></td><td><span class="tag ${l.st}">${l.sl}</span></td><td><button class="btn-s btn-sm">View</button></td></tr>`;});
+lt.innerHTML+='</tbody>';}
+
+// Prescriptions table
+var rxt=document.getElementById('rxTable');
+if(rxt){rxt.innerHTML='<thead><tr><th>Date</th><th>Patient</th><th>Drug</th><th>Dose / Route</th><th>Frequency</th><th>Duration</th><th>Status</th></tr></thead><tbody>';
+var RX=[
+  {dt:'04 Mar',pt:'Wangui Njoroge',drug:'Amlodipine',dose:'5mg / Oral',freq:'OD',dur:'30 days',st:'g',sl:'Active'},
+  {dt:'04 Mar',pt:'Wangui Njoroge',drug:'Furosemide',dose:'40mg / IV',freq:'BD',dur:'5 days',st:'g',sl:'Active'},
+  {dt:'04 Mar',pt:'Wangui Njoroge',drug:'Calcium Gluconate',dose:'10ml 10% / IV',freq:'STAT',dur:'Once',st:'te',sl:'STAT'},
+  {dt:'04 Mar',pt:'Omar Abdullahi',drug:'Morphine Sulphate',dose:'5mg / IV',freq:'PRN 4h',dur:'3 days',st:'am',sl:'Active'},
+  {dt:'03 Mar',pt:'Adhiambo Grace',drug:'Ceftriaxone',dose:'2g / IV',freq:'OD',dur:'10 days',st:'g',sl:'Active'},
+];
+RX.forEach(r=>{rxt.innerHTML+=`<tr><td class="mono" style="color:var(--t3)">${r.dt}</td><td>${r.pt}</td><td style="font-weight:700">${r.drug}</td><td class="mono">${r.dose}</td><td><span class="tag te">${r.freq}</span></td><td>${r.dur}</td><td><span class="tag ${r.st}">${r.sl}</span></td></tr>`;});
+rxt.innerHTML+='</tbody>';}
+
+// CME
+var cme=document.getElementById('cmeList');
+if(cme){var CMES=[{ti:'Grand Rounds — Nephrology Update',dt:'Thu 13 Mar · 08:00',tag:'b'},{ti:'UniHealth FHIR Documentation Training',dt:'Mon 17 Mar · 14:00',tag:'te'},{ti:'Sepsis Protocol Refresher',dt:'Fri 21 Mar · 09:00',tag:'am'}];
+CMES.forEach(c=>{cme.innerHTML+=`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">${c.ti}</div><div style="font-size:10.5px;color:var(--t3)">${c.dt}</div></div><span class="tag ${c.tag}">Registered</span></div>`;});}
+
+function animBars(){setTimeout(()=>document.querySelectorAll('[data-w]').forEach(el=>el.style.width=(String(el.getAttribute('data-w')).includes('%')?el.getAttribute('data-w'):el.getAttribute('data-w')+'%')),100);}
+animBars();
+</script>
+
+<!-- TOAST -->
+<div class="toast" id="drToast">
+  <span class="toast-ico" id="drToastIco">✅</span>
+  <div><div class="toast-msg" id="drToastMsg">Done</div><div class="toast-sub" id="drToastSub"></div></div>
+</div>
+
 </body>
 </html>
