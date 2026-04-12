@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AfyaCare EHR — Admin Dashboard</title>
+<title>UniHealth EHR — Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -497,7 +497,7 @@ body{display:flex}
     <div class="sb-brand">
       <div class="sb-ico">🏥</div>
       <div>
-        <div class="sb-nm">AfyaCare EHR</div>
+        <div class="sb-nm">UniHealth EHR</div>
         <div class="sb-sub">Admin Portal · MOH Kenya</div>
       </div>
       <div class="sb-live"></div>
@@ -529,7 +529,7 @@ body{display:flex}
       <div class="sb-sec-lbl">Clinical</div>
       <div class="ni"     onclick="go('patients',this)" id="nav-patients"><span class="ni-ico">🧑‍⚕️</span><span class="ni-lbl">Patient Registry</span></div>
       <div class="ni"     onclick="go('staff',this)"><span class="ni-ico">💼</span><span class="ni-lbl">Staff Directory</span></div>
-      <div class="ni"     onclick="go('afyacare',this)"><span class="ni-ico">🛡️</span><span class="ni-lbl">AfyaCare Integration</span><span class="ni-badge amber">3</span></div>
+      <div class="ni"     onclick="go('unihealth',this)"><span class="ni-ico">🛡️</span><span class="ni-lbl">UniHealth Integration</span><span class="ni-badge amber">3</span></div>
     </div>
 
     <div class="sb-sec">
@@ -565,7 +565,7 @@ body{display:flex}
   <header class="topbar">
     <div>
       <div class="tb-page" id="tbTitle">Overview</div>
-      <div class="tb-crumb">AfyaCare EHR › <b id="tbCrumb">Dashboard</b></div>
+      <div class="tb-crumb">UniHealth EHR › <b id="tbCrumb">Dashboard</b></div>
     </div>
     <div class="tb-gap"></div>
     <div class="tb-search">
@@ -573,7 +573,7 @@ body{display:flex}
       <input placeholder="Search patients, staff, facilities…">
     </div>
     <div class="tb-btn" title="Notifications">🔔<div class="tb-dot"></div></div>
-    <div class="tb-btn" title="AfyaCare Live Status">🛡️</div>
+    <div class="tb-btn" title="UniHealth Live Status">🛡️</div>
     <div class="tb-datepill" id="tbDate"></div>
   </header>
 
@@ -585,7 +585,7 @@ body{display:flex}
 
       <div class="alert-strip" id="alertStrip">
         <span style="font-size:18px">⚠️</span>
-        <span class="alert-msg">Nakuru Level 5 Hospital node is <strong>degraded</strong> — 3 pending AfyaCare approvals may be affected. <span style="text-decoration:underline;cursor:pointer" onclick="go('facilities',document.querySelector('[onclick*=facilities]'))">View facility status →</span></span>
+        <span class="alert-msg">Nakuru Level 5 Hospital node is <strong>degraded</strong> — 3 pending UniHealth approvals may be affected. <span style="text-decoration:underline;cursor:pointer" onclick="go('facilities',document.querySelector('[onclick*=facilities]'))">View facility status →</span></span>
         <button class="alert-x" onclick="document.getElementById('alertStrip').style.display='none'">✕</button>
       </div>
 
@@ -606,7 +606,7 @@ body{display:flex}
         <div class="qa-item" onclick="go('users',null)"><span class="qa-e">👤</span><span class="qa-t">Add Staff</span></div>
         <div class="qa-item" onclick="modal('addPatient')"><span class="qa-e">🧑‍⚕️</span><span class="qa-t">Register Patient</span></div>
         <div class="qa-item" onclick="modal('facility')"><span class="qa-e">🏥</span><span class="qa-t">New Facility</span></div>
-        <div class="qa-item" onclick="go('afyacare',null)"><span class="qa-e">🏛️</span><span class="qa-t">AfyaCare Claims</span></div>
+        <div class="qa-item" onclick="go('unihealth',null)"><span class="qa-e">🏛️</span><span class="qa-t">UniHealth Claims</span></div>
         <div class="qa-item" onclick="go('reports',null)"><span class="qa-e">📋</span><span class="qa-t">Generate Report</span></div>
         <div class="qa-item" onclick="go('audit',null)"><span class="qa-e">⛓️</span><span class="qa-t">Audit Log</span></div>
         <div class="qa-item" onclick="go('counties',null)"><span class="qa-e">🗺️</span><span class="qa-t">County Map</span></div>
@@ -623,25 +623,25 @@ body{display:flex}
 
       <!-- KPIs row 2 -->
       <div class="kpis">
-        <div class="kpi" style="animation-delay:.25s"><div class="kpi-bar g"></div><div class="kpi-ico">💊</div><div class="kpi-lbl">AfyaCare Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ Ksh 47.5B total</div></div>
+        <div class="kpi" style="animation-delay:.25s"><div class="kpi-bar g"></div><div class="kpi-ico">💊</div><div class="kpi-lbl">UniHealth Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ Ksh 47.5B total</div></div>
         <div class="kpi" style="animation-delay:.3s"><div class="kpi-bar b"></div><div class="kpi-ico">📡</div><div class="kpi-lbl">FHIR Events/Day</div><div class="kpi-val">118M</div><div class="kpi-meta up">▲ P95 latency 32ms</div></div>
-        <div class="kpi" style="animation-delay:.35s"><div class="kpi-bar pu"></div><div class="kpi-ico">🗺️</div><div class="kpi-lbl">Counties Connected</div><div class="kpi-val">47/47</div><div class="kpi-meta up">▲ Full coverage</div></div>
+        <div class="kpi" style="animation-delay:.35s"><div class="kpi-bar pu"></div><div class="kpi-ico">🗺️</div><div class="kpi-lbl">Regions Connected</div><div class="kpi-val">12/12</div><div class="kpi-meta up">▲ Full coverage</div></div>
         <div class="kpi" style="animation-delay:.4s"><div class="kpi-bar g"></div><div class="kpi-ico">🔒</div><div class="kpi-lbl">System Uptime</div><div class="kpi-val">99.97%</div><div class="kpi-meta up">▲ SLA met</div></div>
       </div>
 
       <!-- Main panels -->
       <div class="g2">
-        <!-- AfyaCare claims chart -->
+        <!-- UniHealth claims chart -->
         <div class="panel">
           <div class="pnl-hd">
-            <div><div class="pnl-title">AfyaCare Claims by Facility Level</div><div class="pnl-sub">Last 30 days · All 47 counties</div></div>
-            <span class="pnl-link" onclick="go('afyacare',null)">View all →</span>
+            <div><div class="pnl-title">UniHealth Claims by Facility Level</div><div class="pnl-sub">Last 30 days · All 12 regions</div></div>
+            <span class="pnl-link" onclick="go('unihealth',null)">View all →</span>
           </div>
           <div class="pnl-body">
             <div class="bc">
               <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 6 — National Referral</span><div class="bc-track"><div class="bc-fill g" data-w="92"></div></div><span class="bc-val">14,823</span></div>
               <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 5 — County Referral</span><div class="bc-track"><div class="bc-fill g" data-w="78"></div></div><span class="bc-val">32,441</span></div>
-              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 4 — Sub-County Hosp.</span><div class="bc-track"><div class="bc-fill b" data-w="65"></div></div><span class="bc-val">67,890</span></div>
+              <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 4 — District Hospital</span><div class="bc-track"><div class="bc-fill b" data-w="65"></div></div><span class="bc-val">67,890</span></div>
               <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 3 — Health Centre</span><div class="bc-track"><div class="bc-fill am" data-w="48"></div></div><span class="bc-val">124,332</span></div>
               <div class="bc-row"><span class="bc-lbl" style="width:190px">Level 2 — Dispensary</span><div class="bc-track"><div class="bc-fill r" data-w="32"></div></div><span class="bc-val">89,201</span></div>
             </div>
@@ -697,8 +697,8 @@ body{display:flex}
               <div class="bc-row"><span class="bc-lbl">Smart Card</span><div class="bc-track"><div class="bc-fill pu" data-w="3"></div></div><span class="bc-val">3%</span></div>
             </div>
             <div style="margin-top:13px;padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--gd)">✅ AfyaCare Compliance: 90% biometric/app</div>
-              <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Target 95% at L4–L6 facilities (AfyaCare Aug 2025)</div>
+              <div style="font-size:11px;font-weight:700;color:var(--gd)">✅ UniHealth Compliance: 90% biometric/app</div>
+              <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Target 95% at L4–L6 facilities (UniHealth Aug 2025)</div>
             </div>
           </div>
         </div>
@@ -734,6 +734,62 @@ body{display:flex}
       </div>
     </div>
 
+
+      <!-- Blueprint: Edge Performance · Blockchain · Real-time Kafka Events -->
+      <div class="g3" style="margin-top:18px;margin-bottom:0">
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">⚡ Edge Performance</div><div class="pnl-sub">P95 latency &amp; cache hit rate · Live</div></div>
+            <span class="tag g dot">LIVE</span>
+          </div>
+          <div class="pnl-body">
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">P95 API Latency</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--g)" id="p95Latency">32ms</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">P50 API Latency</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--g)" id="p50Latency">14ms</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Edge Cache Hit Rate</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--b)" id="cacheHitRate">94%</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Duplicate Tests Prevented</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--am)" id="dupPrevented">23</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">CDN Nodes Active</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--pu)">6 / 6</div></div>
+            </div>
+            <div style="margin-top:13px;padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:10.5px;color:var(--gd);font-weight:600">✅ All edge nodes meeting SLA · P95 target: &lt;50ms</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">🔗 Blockchain Audit Ledger</div><div class="pnl-sub">Hyperledger Fabric · Append-only · Tamper-evident</div></div>
+            <span class="tag g dot">INTACT</span>
+          </div>
+          <div class="pnl-body">
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Last Block Hash</div><div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--t1)" id="lastBlockHash">0x7f83b1a4…</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Total Events Anchored</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--b)" id="totalEvents">1,284</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Block Height</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--pu)" id="blockHeight">4,291</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Consensus Nodes</div><div style="font-family:var(--mono);font-size:18px;font-weight:700;color:var(--g)">3 / 3 UP</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:11.5px;font-weight:700;color:var(--t2)">Tamper Status</div><span class="tag g">✓ INTACT</span></div>
+            </div>
+            <div style="margin-top:13px;padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:10.5px;color:var(--gd);font-weight:600">⛓️ Last verification: 4 min ago · Chain integrity: 100%</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-title">📡 Real-Time Events (Kafka)</div><div class="pnl-sub">Live FHIR event stream · Last 5 minutes</div></div>
+            <span class="tag b dot">STREAMING</span>
+          </div>
+          <div style="padding:0 0 6px" id="realtimeEvents">
+            <div class="feed-item" style="padding:9px 20px"><div class="feed-dot-col"><div class="feed-dot g"></div><div class="feed-connector"></div></div><div class="feed-main"><div class="feed-title">Lab result — K⁺ critical · Wangui Njoroge</div><div class="feed-sub">FHIR R5 Observation · Ward 4B · KNH</div></div><div class="feed-time">0m ago</div></div>
+            <div class="feed-item" style="padding:9px 20px"><div class="feed-dot-col"><div class="feed-dot b"></div><div class="feed-connector"></div></div><div class="feed-main"><div class="feed-title">Claim approved — Ksh 12,400</div><div class="feed-sub">UniHealth Cover · AFL-2024-884321</div></div><div class="feed-time">1m ago</div></div>
+            <div class="feed-item" style="padding:9px 20px"><div class="feed-dot-col"><div class="feed-dot am"></div><div class="feed-connector"></div></div><div class="feed-main"><div class="feed-title">NEWS2 escalated — Bed 01</div><div class="feed-sub">Nurse Achieng → Dr. Mutuku · Ward 4B</div></div><div class="feed-time">3m ago</div></div>
+            <div class="feed-item" style="padding:9px 20px"><div class="feed-dot-col"><div class="feed-dot g"></div><div class="feed-connector"></div></div><div class="feed-main"><div class="feed-title">Patient registered — AFL-2026-KE-00312</div><div class="feed-sub">Machakos Level 5 · ID verified</div></div><div class="feed-time">4m ago</div></div>
+            <div class="feed-item" style="padding:9px 20px;border:none"><div class="feed-dot-col"><div class="feed-dot r"></div></div><div class="feed-main"><div class="feed-title">Duplicate lab order blocked</div><div class="feed-sub">FBC already ordered for Omar Abdullahi (90min ago) — dedup engine prevented repeat</div></div><div class="feed-time">5m ago</div></div>
+          </div>
+          <div style="padding:10px 20px;border-top:1px solid var(--bdr);background:#f8faf8;font-size:10.5px;color:var(--t3);display:flex;justify-content:space-between">
+            <span>Kafka cluster · 3 partitions · <span id="kafkaLag">0ms</span> consumer lag</span>
+            <span id="kafkaEventCount">118M events/day</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- ══ USER MANAGEMENT ══ -->
     <div id="pg-users" class="pg">
       <div class="ph">
@@ -765,7 +821,7 @@ body{display:flex}
     <!-- ══ FACILITIES ══ -->
     <div id="pg-facilities" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">Facility Management</div><div class="ph-sub">2,387 AfyaCare-accredited facilities across 47 counties</div></div>
+        <div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">Facility Management</div><div class="ph-sub">2,387 UniHealth-accredited facilities across 12 regions</div></div>
         <button class="btn-p" onclick="modal('facility')">+ Register Facility</button>
       </div>
       <div class="g3" id="facGrid" style="grid-template-columns:repeat(3,1fr)"></div>
@@ -774,7 +830,7 @@ body{display:flex}
     <!-- ══ COUNTY COVERAGE ══ -->
     <div id="pg-counties" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">Coverage</div><div class="ph-title">County Coverage Map</div><div class="ph-sub">All 47 counties · Real-time connectivity</div></div>
+        <div><div class="ph-eyebrow">Coverage</div><div class="ph-title">County Coverage Map</div><div class="ph-sub">All 12 regions · Real-time connectivity</div></div>
       </div>
       <div class="g2e">
         <div class="panel">
@@ -802,18 +858,18 @@ body{display:flex}
     <!-- ══ PATIENT REGISTRY ══ -->
     <div id="pg-patients" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">Clinical</div><div class="ph-title">Patient Registry</div><div class="ph-sub">55.2M AfyaCare-registered patients across 47 counties</div></div>
+        <div><div class="ph-eyebrow">Clinical</div><div class="ph-title">Patient Registry</div><div class="ph-sub">55.2M UniHealth-registered patients across 12 regions</div></div>
         <button class="btn-p" onclick="modal('addPatient')">+ Register Patient</button>
       </div>
       <div class="filter-row">
-        <div class="fsearch"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg><input placeholder="Search name, National ID, AfyaCare member number…"></div>
+        <div class="fsearch"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg><input placeholder="Search name, National ID, UniHealth member number…"></div>
         <select class="fsel"><option>All Counties</option><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option></select>
         <select class="fsel"><option>All ID Types</option><option>National ID</option><option>Passport</option><option>Alien ID</option><option>Refugee ID</option></select>
-        <select class="fsel"><option>All AfyaCare Status</option><option>Active</option><option>Inactive</option><option>Pending</option></select>
+        <select class="fsel"><option>All UniHealth Status</option><option>Active</option><option>Inactive</option><option>Pending</option></select>
       </div>
       <div class="panel">
         <table class="tbl">
-          <thead><tr><th>Patient</th><th>National ID</th><th>County</th><th>AfyaCare Status</th><th>AfyaCare No.</th><th>Last Visit</th><th></th></tr></thead>
+          <thead><tr><th>Patient</th><th>National ID</th><th>County</th><th>UniHealth Status</th><th>UniHealth No.</th><th>Last Visit</th><th></th></tr></thead>
           <tbody id="patTbody"></tbody>
         </table>
       </div>
@@ -838,11 +894,11 @@ body{display:flex}
       </div>
     </div>
 
-    <!-- ══ AfyaCare INTEGRATION ══ -->
-    <div id="pg-afyacare" class="pg">
+    <!-- ══ UniHealth INTEGRATION ══ -->
+    <div id="pg-unihealth" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">AfyaCare Health Cover</div><div class="ph-title">AfyaCare Integration Hub</div><div class="ph-sub">Claims management, biometric verification, Practice 360 approvals</div></div>
-        <button class="btn-p">↺ Sync AfyaCare</button>
+        <div><div class="ph-eyebrow">UniHealth Health Cover</div><div class="ph-title">UniHealth Integration Hub</div><div class="ph-sub">Claims management, biometric verification, Practice 360 approvals</div></div>
+        <button class="btn-p">↺ Sync UniHealth</button>
       </div>
       <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
         <div class="kpi"><div class="kpi-bar g"></div><div class="kpi-ico">🏛️</div><div class="kpi-lbl">Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ Ksh 47.5B disbursed</div></div>
@@ -853,11 +909,11 @@ body{display:flex}
         <div class="panel">
           <div class="pnl-hd"><div class="pnl-title">Pending Approvals</div><span class="pnl-link">Approve all →</span></div>
           <table class="tbl">
-            <thead><tr><th>AfyaCare No.</th><th>Facility</th><th>Service</th><th>Amount</th><th>Auth</th><th></th></tr></thead>
+            <thead><tr><th>UniHealth No.</th><th>Facility</th><th>Service</th><th>Amount</th><th>Auth</th><th></th></tr></thead>
             <tbody>
-              <tr><td class="mono">AfyaCare-2024-884321</td><td>KNH Nairobi</td><td>Inpatient ward</td><td>Ksh 12,400</td><td><span class="tag g dot">Biometric</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
-              <tr><td class="mono">AfyaCare-2023-441209</td><td>MTRH Eldoret</td><td>Surgery pre-auth</td><td>Ksh 45,000</td><td><span class="tag b dot">Practice 360</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
-              <tr><td class="mono">AfyaCare-2024-221087</td><td>Nakuru L5</td><td>Maternity</td><td>Ksh 8,200</td><td><span class="tag am dot">OTP ⚠️</span></td><td><button class="btn-s" style="padding:5px 11px;font-size:11px">Review</button></td></tr>
+              <tr><td class="mono">UniHealth-2024-884321</td><td>KNH Nairobi</td><td>Inpatient ward</td><td>Ksh 12,400</td><td><span class="tag g dot">Biometric</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
+              <tr><td class="mono">UniHealth-2023-441209</td><td>MTRH Eldoret</td><td>Surgery pre-auth</td><td>Ksh 45,000</td><td><span class="tag b dot">Practice 360</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr>
+              <tr><td class="mono">UniHealth-2024-221087</td><td>Nakuru L5</td><td>Maternity</td><td>Ksh 8,200</td><td><span class="tag am dot">OTP ⚠️</span></td><td><button class="btn-s" style="padding:5px 11px;font-size:11px">Review</button></td></tr>
             </tbody>
           </table>
         </div>
@@ -865,7 +921,7 @@ body{display:flex}
           <div class="pnl-hd"><div class="pnl-title">Biometric Compliance by Level</div></div>
           <div class="pnl-body">
             <div style="padding:10px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;margin-bottom:15px">
-              <div style="font-size:12px;font-weight:700;color:var(--gd)">AfyaCare Policy — August 2025</div>
+              <div style="font-size:12px;font-weight:700;color:var(--gd)">UniHealth Policy — August 2025</div>
               <div style="font-size:11px;color:var(--t2);margin-top:3px;line-height:1.5">OTP no longer accepted at Level 4–6 facilities. All approvals via <strong>biometric</strong> or <strong>Practice 360</strong>.</div>
             </div>
             <div class="bc">
@@ -912,7 +968,7 @@ body{display:flex}
     <!-- ══ SETTINGS ══ -->
     <div id="pg-settings" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div><div class="ph-sub">Configure AfyaCare EHR authentication, RBAC policies and integration preferences</div></div>
+        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div><div class="ph-sub">Configure UniHealth EHR authentication, RBAC policies and integration preferences</div></div>
         <button class="btn-p" onclick="logAudit('MODIFY settings saved by '+ROLES[currentRole].lbl);showToast('✅','Settings saved','Changes logged to audit trail')">Save Changes</button>
       </div>
       <div class="g2e">
@@ -926,13 +982,13 @@ body{display:flex}
             <div class="pnl-body" id="settingsRbac"></div>
           </div>
           <div class="panel">
-            <div class="pnl-hd"><div class="pnl-title">AfyaCare Integration</div></div>
+            <div class="pnl-hd"><div class="pnl-title">UniHealth Integration</div></div>
             <div class="pnl-body">
-              <div class="ff"><label>AfyaCare API Endpoint</label><input value="https://api.afyacare.go.ke/v1" style="font-family:var(--mono);font-size:12px"></div>
-              <div class="ff"><label>AfyaCare Portal URL</label><input value="https://portal.afyacare.go.ke" style="font-family:var(--mono);font-size:12px"></div>
-              <div class="ff"><label>Practice 360 Webhook URL</label><input value="https://afyacare.moh.go.ke/webhooks/p360" style="font-family:var(--mono);font-size:12px"></div>
+              <div class="ff"><label>UniHealth API Endpoint</label><input value="https://api.unihealth.go.ke/v1" style="font-family:var(--mono);font-size:12px"></div>
+              <div class="ff"><label>UniHealth Portal URL</label><input value="https://portal.unihealth.go.ke" style="font-family:var(--mono);font-size:12px"></div>
+              <div class="ff"><label>Practice 360 Webhook URL</label><input value="https://unihealth.moh.go.ke/webhooks/p360" style="font-family:var(--mono);font-size:12px"></div>
               <div style="padding:10px 13px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;margin-top:4px">
-                <div style="font-size:12px;font-weight:700;color:var(--gd)">✅ AfyaCare Connection: Live</div>
+                <div style="font-size:12px;font-weight:700;color:var(--gd)">✅ UniHealth Connection: Live</div>
                 <div style="font-size:11px;color:var(--t3);margin-top:3px">Last sync: 4 minutes ago · 25M+ patient records linked</div>
               </div>
             </div>
@@ -1265,7 +1321,7 @@ body{display:flex}
             <div class="backup-ico">🟢</div>
             <div class="backup-info">
               <div class="backup-name">Full Backup — Production DB</div>
-              <div class="backup-meta">AfyaCare EHR · All 47 counties · AES-256 · Stored: Nairobi + Mombasa DR sites</div>
+              <div class="backup-meta">UniHealth EHR · All 12 regions · AES-256 · Stored: Nairobi + Mombasa DR sites</div>
             </div>
             <div class="backup-right">
               <div class="backup-size">847 GB</div>
@@ -1276,7 +1332,7 @@ body{display:flex}
             <div class="backup-ico">🟢</div>
             <div class="backup-info">
               <div class="backup-name">Incremental Backup — Transaction Log</div>
-              <div class="backup-meta">AfyaCare claims &amp; FHIR events · Every 15 minutes · S3-compatible storage</div>
+              <div class="backup-meta">UniHealth claims &amp; FHIR events · Every 15 minutes · S3-compatible storage</div>
             </div>
             <div class="backup-right">
               <div class="backup-size">12.4 GB</div>
@@ -1364,7 +1420,7 @@ body{display:flex}
           </div>
           <div class="dr-step">
             <div class="dr-num" style="background:var(--g)">1</div>
-            <div class="dr-body"><div class="dr-title">Automated Failure Detection</div><div class="dr-desc">AI health monitor detects primary DB failure within 30 seconds. Alert fired to on-call administrator via SMS + AfyaCare portal notification.</div></div>
+            <div class="dr-body"><div class="dr-title">Automated Failure Detection</div><div class="dr-desc">AI health monitor detects primary DB failure within 30 seconds. Alert fired to on-call administrator via SMS + UniHealth portal notification.</div></div>
             <span class="tag g">ACTIVE</span>
           </div>
           <div class="dr-step">
@@ -1422,11 +1478,11 @@ document.getElementById('todayFull').textContent=ds;
 // ── NAVIGATION ──
 var TITLES={overview:'Overview',users:'User Management',facilities:'Facility Management',
   counties:'County Coverage',patients:'Patient Registry',staff:'Staff Directory',
-  afyacare:'AfyaCare Integration',reports:'Reports & Analytics',audit:'Audit Log',settings:'System Settings',
+  unihealth:'UniHealth Integration',reports:'Reports & Analytics',audit:'Audit Log',settings:'System Settings',
   ai:'AI Monitor',rbac:'RBAC & Roles',health:'System Health & Backups'};
 var CRUMBS={overview:'Dashboard',users:'Admin › Users',facilities:'Admin › Facilities',
   counties:'Admin › Coverage',patients:'Clinical › Patients',staff:'Clinical › Staff',
-  afyacare:'Payments › AfyaCare',reports:'System › Reports',audit:'System › Audit',settings:'System › Settings',
+  unihealth:'Payments › UniHealth',reports:'System › Reports',audit:'System › Audit',settings:'System › Settings',
   ai:'Security › AI Monitor',rbac:'Security › RBAC',health:'System › Health & Backups'};
 
 function go(pg,el){
@@ -1448,9 +1504,9 @@ function go(pg,el){
 
 // ── SIGN OUT ──
 function signOut(){
-  if(confirm('Sign out of AfyaCare EHR admin portal?')){
+  if(confirm('Sign out of UniHealth EHR admin portal?')){
     logAudit('LOGOUT by '+currentRole);
-    window.location.href='afyacare-login.html';
+    window.location.href='unihealth-login.html';
   }
 }
 
@@ -1532,13 +1588,13 @@ var MO={
       <div class="ff"><label>County</label><select><option>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option><option>Uasin Gishu</option><option>Machakos</option><option>Garissa</option></select></div>
     </div>
     <div class="ff-row">
-      <div class="ff"><label>AfyaCare Accreditation No.</label><input placeholder="e.g. AFL-2024-KE-00441"></div>
+      <div class="ff"><label>UniHealth Accreditation No.</label><input placeholder="e.g. AFL-2024-KE-00441"></div>
       <div class="ff"><label>Admin Email</label><input type="email" placeholder="admin@facility.go.ke"></div>
     </div>
     <div style="padding:9px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);font-weight:600;margin-top:4px">🔐 Facility registration logged in audit trail</div>`
   },
   export:{title:'Export Report',submit:'Export',body:`
-    <div class="ff"><label>Report Type</label><select><option>System Overview</option><option>AfyaCare Claims Summary</option><option>User Activity</option><option>Facility Status</option><option>County Coverage</option><option>Blockchain Audit</option></select></div>
+    <div class="ff"><label>Report Type</label><select><option>System Overview</option><option>UniHealth Claims Summary</option><option>User Activity</option><option>Facility Status</option><option>County Coverage</option><option>Blockchain Audit</option></select></div>
     <div class="ff-row">
       <div class="ff"><label>From Date</label><input type="date"></div>
       <div class="ff"><label>To Date</label><input type="date"></div>
@@ -1607,16 +1663,16 @@ function triggerBackup(){
 // ── LIVE FEED ──
 var FEED_BASE=[
   {c:'g',t:'Dr. A. Wanjiku logged in via Biometric',s:'KNH Nairobi · Doctor · KMPDC A4821',tm:'2m ago'},
-  {c:'b',t:'AfyaCare claim approved — Ksh 12,400',s:'AfyaCare-2024-884321 · KNH Ward · Biometric verified',tm:'5m ago'},
+  {c:'b',t:'UniHealth claim approved — Ksh 12,400',s:'UniHealth-2024-884321 · KNH Ward · Biometric verified',tm:'5m ago'},
   {c:'am',t:'Nakuru L5 node degraded — latency spike',s:'NAK-005 · 180ms response time · Auto-alert',tm:'8m ago'},
-  {c:'g',t:'New facility registered: Machakos County Ref.',s:'Admin: M. Kamau · Level 5 · AfyaCare accredited',tm:'12m ago'},
+  {c:'g',t:'New facility registered: Machakos County Ref.',s:'Admin: M. Kamau · Level 5 · UniHealth accredited',tm:'12m ago'},
   {c:'r',t:'Failed login blocked (3 attempts)',s:'IP: 197.232.xx.xx · Admin portal · Blocked 30min',tm:'18m ago'},
   {c:'pu',t:'FHIR R5 sync complete — 118M events',s:'Kafka cluster · 0 errors · 32ms P95',tm:'22m ago'},
 ];
 var FEED_NEW=[
   {c:'g',t:'Nurse J. Otieno authenticated via Practice 360',s:'Kisumu County Ref. · NCK/RN/98123 · Geo-verified'},
-  {c:'b',t:'M-TIBA community health sync — 1,240 records',s:'Homabay County · FHIR R5 · AfyaCare linked'},
-  {c:'am',t:'AfyaCare biometric touchpoint — Discharge registered',s:'AfyaCare-2023-441209 · MTRH Eldoret · Touchpoint 3/3'},
+  {c:'b',t:'M-TIBA community health sync — 1,240 records',s:'Homabay County · FHIR R5 · UniHealth linked'},
+  {c:'am',t:'UniHealth biometric touchpoint — Discharge registered',s:'UniHealth-2023-441209 · MTRH Eldoret · Touchpoint 3/3'},
   {c:'g',t:'eCitizen SSO session validated — Admin login',s:'accounts.ecitizen.go.ke · Nairobi · TLS 1.3'},
 ];
 var feedIdx=0;
@@ -1789,11 +1845,11 @@ CBA.forEach(function(d){
 // ── AUDIT LOG ──
 var AUDIT=[
   {ts:'2026-04-03 09:42:11',act:'LOGIN',ev:'Admin Login — Success',actor:'M. Kamau',role:'System Admin',ip:'41.80.xx.xx · Chrome/Win',hash:'0x8f4a2c1e…',st:'g',sl:'SUCCESS'},
-  {ts:'2026-04-03 09:38:04',act:'APPROVE',ev:'AfyaCare Claim Approved — Ksh 12,400',actor:'Dr. A. Wanjiru',role:'Doctor',ip:'KNH Edge Node · Biometric',hash:'0x2d91b7f3…',st:'g',sl:'SUCCESS'},
+  {ts:'2026-04-03 09:38:04',act:'APPROVE',ev:'UniHealth Claim Approved — Ksh 12,400',actor:'Dr. A. Wanjiru',role:'Doctor',ip:'KNH Edge Node · Biometric',hash:'0x2d91b7f3…',st:'g',sl:'SUCCESS'},
   {ts:'2026-04-03 09:30:22',act:'BLOCK',ev:'Failed Login (×3) — IP Blocked',actor:'AI Monitor',role:'System',ip:'197.232.xx.xx · Firefox',hash:'0x7c53a8e1…',st:'r',sl:'BLOCKED'},
   {ts:'2026-04-03 09:18:44',act:'CREATE',ev:'Facility Registered — Machakos',actor:'Admin S. Njeri',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0x4e82d1c9…',st:'g',sl:'SUCCESS'},
   {ts:'2026-04-03 09:05:33',act:'CREATE',ev:'User Created — Dr. M. Omondi',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0x1a6f9b4d…',st:'g',sl:'SUCCESS'},
-  {ts:'2026-04-03 08:55:17',act:'ALERT',ev:'Nakuru L5 Node Degraded Alert',actor:'AI Monitor',role:'System',ip:'AutoMonitor · AfyaCare',hash:'0x9c34e7a2…',st:'am',sl:'WARNING'},
+  {ts:'2026-04-03 08:55:17',act:'ALERT',ev:'Nakuru L5 Node Degraded Alert',actor:'AI Monitor',role:'System',ip:'AutoMonitor · UniHealth',hash:'0x9c34e7a2…',st:'am',sl:'WARNING'},
   {ts:'2026-04-03 02:34:07',act:'LOGIN',ev:'Unusual Off-Hours Login — Adaptive MFA triggered',actor:'Admin S. Njeri',role:'Security Admin',ip:'Nakuru · Mobile · MFA challenged',hash:'0x3b78e1d5…',st:'am',sl:'FLAGGED'},
   {ts:'2026-04-02 17:12:44',act:'MODIFY',ev:'System Config Changed — MFA policy updated',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0xa2c15f8b…',st:'g',sl:'SUCCESS'},
   {ts:'2026-04-02 14:30:11',act:'DELETE',ev:'Inactive account deactivated — staff_0029',actor:'Admin M. Kamau',role:'System Admin',ip:'MOH HQ · Chrome',hash:'0xd4e92c7a…',st:'r',sl:'DELETED'},
@@ -1814,11 +1870,11 @@ AUDIT.forEach(function(a){
 
 // ── REPORTS ──
 var REPS=[
-  {ico:'📊',bg:'var(--gl)',n:'System Overview Report',d:'Full system health, uptime, FHIR events and KPIs across all 47 counties.',tag:'PDF · XLSX',u:'Updated daily'},
-  {ico:'🏛️',bg:'var(--bl)',n:'AfyaCare Claims Summary',d:'Claims processed, disbursements, fraud flags and biometric compliance rates.',tag:'PDF · CSV',u:'Updated hourly'},
+  {ico:'📊',bg:'var(--gl)',n:'System Overview Report',d:'Full system health, uptime, FHIR events and KPIs across all 12 regions.',tag:'PDF · XLSX',u:'Updated daily'},
+  {ico:'🏛️',bg:'var(--bl)',n:'UniHealth Claims Summary',d:'Claims processed, disbursements, fraud flags and biometric compliance rates.',tag:'PDF · CSV',u:'Updated hourly'},
   {ico:'👥',bg:'var(--pul)',n:'User Activity Report',d:'Login attempts, auth methods used, failed logins and account changes.',tag:'PDF · XLSX',u:'Updated daily'},
-  {ico:'🏥',bg:'var(--al)',n:'Facility Status Report',d:'Node latency, uptime, bed occupancy and AfyaCare accreditation status.',tag:'PDF · XLSX',u:'Updated hourly'},
-  {ico:'🗺️',bg:'var(--gl)',n:'County Coverage Analysis',d:'Connectivity, patient registrations and AfyaCare claims per county.',tag:'PDF · CSV',u:'Updated weekly'},
+  {ico:'🏥',bg:'var(--al)',n:'Facility Status Report',d:'Node latency, uptime, bed occupancy and UniHealth accreditation status.',tag:'PDF · XLSX',u:'Updated hourly'},
+  {ico:'🗺️',bg:'var(--gl)',n:'County Coverage Analysis',d:'Connectivity, patient registrations and UniHealth claims per county.',tag:'PDF · CSV',u:'Updated weekly'},
   {ico:'⛓️',bg:'#fdf2f8',n:'Blockchain Audit Export',d:'Full immutable audit trail from Hyperledger Fabric ledger.',tag:'JSON · CSV',u:'On demand'},
 ];
 var rg=document.getElementById('repGrid');
@@ -1833,7 +1889,7 @@ REPS.forEach(function(r){
 
 // ── SETTINGS AUTH ──
 var SW_DATA=[
-  {n:'Require Biometric at L4–L6',d:'AfyaCare Policy Aug 2025 — mandatory at all Level 4, 5 and 6 facilities',on:true},
+  {n:'Require Biometric at L4–L6',d:'UniHealth Policy Aug 2025 — mandatory at all Level 4, 5 and 6 facilities',on:true},
   {n:'Allow SMS OTP fallback',d:'For facilities without biometric hardware (L2/L3 only)',on:false},
   {n:'Practice 360 Geo-fencing',d:'Verify staff are physically present at registered facility',on:true},
   {n:'Force MFA for all roles',d:'All users must complete Step 3 multi-factor authentication',on:true},
@@ -1874,4 +1930,64 @@ function toggleSw(grp,i,el){
 // ── ANIMATE ALL BAR FILLS ──
 function animBars(){
   setTimeout(function(){
-    documen
+    docume+'<div class="sw-info"><div class="sw-name">'+sw.n+'</div><div class="sw-desc">'+sw.d+'</div></div>'
+    +'<div class="sw '+(sw.on?'on':'off')+'"><div class="sw-knob"></div></div>'
+    +'</div>';
+});
+sr.innerHTML=rbacHtml;
+function toggleSw(grp,i,el){
+  var sw=el.querySelector('.sw');
+  var isOn=sw.classList.contains('on');
+  sw.classList.toggle('on',!isOn);sw.classList.toggle('off',isOn);
+  logAudit('MODIFY setting toggled: '+el.querySelector('.sw-name').textContent);
+}
+
+// ── ANIMATE ALL BAR FILLS ──
+function animBars(){
+  setTimeout(function(){
+    document.querySelectorAll('[data-w]').forEach(function(el){
+      var w=el.getAttribute('data-w');
+      el.style.width=String(w).includes('%')?w:w+'%';
+    });
+  },120);
+}
+animBars();
+
+// ── Blueprint: Edge Caching · Latency · Real-Time Events · Blockchain · Duplicate Prevention ──
+var latencyHistory=[];
+function measureLatency(ms){latencyHistory.push(ms);if(latencyHistory.length>100)latencyHistory.shift();var sorted=latencyHistory.slice().sort(function(a,b){return a-b;});var p95=sorted[Math.floor(sorted.length*.95)]||ms;var p50=sorted[Math.floor(sorted.length*.50)]||ms;var e95=document.getElementById('p95Latency');var e50=document.getElementById('p50Latency');if(e95)e95.textContent=Math.round(p95)+'ms';if(e50)e50.textContent=Math.round(p50)+'ms';}
+setInterval(function(){measureLatency(20+Math.random()*30);},4000);
+var cacheHits=940,cacheMisses=60;
+function updateCacheRate(){var t=cacheHits+cacheMisses;var el=document.getElementById('cacheHitRate');if(t>0&&el)el.textContent=Math.round((cacheHits/t)*100)+'%';}
+setInterval(function(){Math.random()>.08?cacheHits++:cacheMisses++;updateCacheRate();},3000);
+var dupCount=23;
+function preventDuplicate(testName){dupCount++;var el=document.getElementById('dupPrevented');if(el)el.textContent=dupCount;showToast('🧪','Duplicate test blocked: '+(testName||'FBC'),'Already ordered for this patient within 2 hours');}
+setInterval(function(){preventDuplicate('CBC');},45000);
+var blockchainEventsCount=1284,blockHeightCount=4291;
+function logToBlockchain(){blockchainEventsCount++;blockHeightCount++;var te=document.getElementById('totalEvents');var bh=document.getElementById('blockHeight');var lh=document.getElementById('lastBlockHash');if(te)te.textContent=blockchainEventsCount.toLocaleString();if(bh)bh.textContent=blockHeightCount.toLocaleString();if(lh)lh.textContent='0x'+Math.random().toString(16).slice(2,10)+'…';}
+setInterval(function(){logToBlockchain();},8000);
+var KAFKA_EVENTS=[
+  {c:'g',ti:'Vital signs recorded — Ward 4B',su:'Nurse Achieng · BP, HR, SpO₂, Temp'},
+  {c:'b',ti:'Prescription signed — Dr. Mutuku',su:'Lisinopril 10mg · Wangui Njoroge'},
+  {c:'am',ti:'Appointment booked — OPD',su:'Kisumu Level 5 · Dr. Omondi'},
+  {c:'g',ti:'FHIR R5 Observation synced',su:'Blood glucose · AFL-2024-KE-22112'},
+  {c:'r',ti:'Duplicate FBC blocked',su:'Dedup engine · Omar Abdullahi · already ordered 90min ago'},
+  {c:'pu',ti:'Claim submitted — Ksh 8,200',su:'Maternity · Nakuru Level 5'},
+  {c:'g',ti:'Patient discharged — Bed 09',su:'Ward 4B · Condition improved'},
+  {c:'b',ti:'Lab result returned — Normal',su:'Full Blood Count · Kipchoge Mutai'},
+];
+var kafkaIdx=0;
+setInterval(function(){
+  var ev=KAFKA_EVENTS[kafkaIdx%KAFKA_EVENTS.length];kafkaIdx++;
+  var feed=document.getElementById('realtimeEvents');if(!feed)return;
+  var div=document.createElement('div');div.className='feed-item';div.style.padding='9px 20px';
+  div.innerHTML='<div class="feed-dot-col"><div class="feed-dot '+ev.c+'"></div><div class="feed-connector"></div></div><div class="feed-main"><div class="feed-title">'+ev.ti+'</div><div class="feed-sub">'+ev.su+'</div></div><div class="feed-time">Just now</div>';
+  feed.insertBefore(div,feed.firstChild);
+  if(feed.children.length>6)feed.removeChild(feed.lastChild);
+  logToBlockchain();
+  var lag=document.getElementById('kafkaLag');if(lag)lag.textContent=Math.floor(Math.random()*12)+'ms';
+},12000);
+
+</script>
+</body>
+</html>
