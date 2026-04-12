@@ -1,25 +1,1471 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniHealth EHR — Patient (stub)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root { --g: #1a8a4a; --gd: #0a4a26; --bg: #f4f7f4; --t1: #14201a; --bdr: #dde3dd; }
-    body { font-family: "Sora", sans-serif; background: var(--bg); color: var(--t1); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .card { background: #fff; border: 1.5px solid var(--bdr); border-radius: 16px; padding: 2rem; max-width: 440px; box-shadow: 0 24px 64px rgba(10, 74, 38, 0.1); }
-    h1 { color: var(--gd); font-size: 1.35rem; margin: 0 0 0.75rem; }
-    p { margin: 0 0 1rem; line-height: 1.55; color: #3d5245; font-size: 0.95rem; }
-    a { color: var(--g); font-weight: 600; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniHealth — My Health Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--gl:#e8f5ee;--gm:#a8d8bc;--gg:#d0eedd;
+  --r:#dc2626;--rl:#fff1f1;--rm:#fecaca;
+  --b:#2563eb;--bl:#eff6ff;--bm:#bfdbfe;
+  --am:#d97706;--al:#fffbeb;--amm:#fde68a;
+  --pu:#7c3aed;--pul:#f5f3ff;--pm:#ddd6fe;
+  --te:#0d9488;--tel:#f0fdfa;--tem:#99f6e4;
+  --bg:#f2f7f4;--card:#fff;--bdr:#dce8e0;--bdr2:#b8d4c0;
+  --t1:#0d1f14;--t2:#2d4a38;--t3:#5a7a66;--t4:#93b0a0;
+  --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 2px 8px rgba(10,74,38,.06),0 8px 24px rgba(10,74,38,.06);
+  --sh2:0 8px 32px rgba(10,74,38,.13);
+  --shg:0 4px 18px rgba(26,138,74,.28);
+  --sw:228px;--th:58px;
+}
+html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg);}
+body{display:flex;min-height:100vh;}
+
+/* ═══ SIDEBAR ═══ */
+.sb{width:var(--sw);flex-shrink:0;height:100vh;background:var(--gd);
+  display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;overflow:hidden;}
+.sb::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 130% 55% at 0% 100%,rgba(46,204,113,.15) 0%,transparent 55%),
+    linear-gradient(168deg,#052412 0%,#0a3d1e 40%,#14693a 100%);pointer-events:none;}
+.sb-flag{position:absolute;top:0;left:0;right:0;height:3px;z-index:10;
+  background:linear-gradient(90deg,#bb0000 0 33%,#111 33% 35.5%,#e8e8e8 35.5% 37%,#111 37% 39.5%,#1a8a4a 39.5% 100%);}
+.sb-in{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;}
+
+/* Brand */
+.sb-brand{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-logo-row{display:flex;align-items:center;gap:9px;margin-bottom:13px;}
+.sb-ico{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sb-nm{font-family:var(--serif);font-size:16px;color:#fff;line-height:1.1;}
+.sb-tag{font-size:8.5px;color:rgba(255,255,255,.35);letter-spacing:.5px;font-weight:500;margin-top:1px;}
+
+/* Patient identity card */
+.sb-id-card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:11px 12px;}
+.sb-av-row{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+.sb-av{width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#3ecf7a,#7beba4);
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--gd);flex-shrink:0;}
+.sb-pname{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
+.sb-pid{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.38);margin-top:2px;}
+.afl-badge{display:flex;align-items:center;gap:5px;background:rgba(46,204,113,.12);
+  border:1px solid rgba(46,204,113,.22);border-radius:5px;padding:4px 8px;
+  font-size:9.5px;color:#7beba4;font-weight:700;width:fit-content;}
+.afl-dot{width:5px;height:5px;border-radius:50%;background:#2ecc71;
+  box-shadow:0 0 6px #2ecc71;animation:glow 2s infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 4px #2ecc71}50%{box-shadow:0 0 12px #2ecc71}}
+
+/* Nav */
+.sb-nav{flex:1;padding:10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:0;}
+.sb-sec-lbl{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.22);padding:8px 8px 4px;font-weight:500;}
+.ni{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;
+  cursor:pointer;transition:all .15s;margin-bottom:2px;}
+.ni:hover{background:rgba(255,255,255,.07);}
+.ni.on{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);}
+.ni-ico{font-size:14px;flex-shrink:0;width:17px;text-align:center;opacity:.65;transition:opacity .15s;}
+.ni:hover .ni-ico,.ni.on .ni-ico{opacity:1;}
+.ni-lbl{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.58);transition:color .15s;white-space:nowrap;}
+.ni:hover .ni-lbl,.ni.on .ni-lbl{color:#fff;}
+.ni-badge{margin-left:auto;background:var(--r);color:#fff;font-size:8.5px;font-weight:700;
+  padding:2px 6px;border-radius:9px;min-width:16px;text-align:center;}
+
+/* Foot */
+.sb-foot{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);}
+.sb-out{width:100%;padding:8px 12px;background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:var(--font);
+  font-size:11.5px;font-weight:600;color:rgba(255,255,255,.45);cursor:pointer;
+  transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.sb-out:hover{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5;}
+
+/* ═══ MAIN ═══ */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;}
+
+/* Topbar */
+.topbar{height:var(--th);background:var(--card);border-bottom:1.5px solid var(--bdr);
+  display:flex;align-items:center;padding:0 22px;gap:12px;flex-shrink:0;
+  position:sticky;top:0;z-index:100;}
+.tb-pg{font-family:var(--serif);font-size:17px;color:var(--t1);letter-spacing:-.2px;}
+.tb-cr{font-size:10.5px;color:var(--t3);font-weight:500;margin-top:1px;}
+.tb-cr b{color:var(--g);}
+.tb-gap{flex:1;}
+.tb-srch{display:flex;align-items:center;gap:7px;padding:7px 12px;
+  background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;width:200px;transition:all .2s;}
+.tb-srch:focus-within{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);}
+.tb-srch input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12px;color:var(--t1);width:100%;}
+.tb-srch input::placeholder{color:var(--t4);}
+.tb-ic{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:var(--card);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px;position:relative;flex-shrink:0;transition:all .15s;}
+.tb-ic:hover{border-color:var(--g);background:var(--gl);}
+.tb-dot{position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;
+  background:var(--r);border:2px solid var(--card);}
+.tb-date{font-family:var(--mono);font-size:10px;color:var(--t3);padding:5px 10px;
+  background:var(--bg);border:1.5px solid var(--bdr);border-radius:6px;white-space:nowrap;flex-shrink:0;}
+
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow-y:auto;padding:22px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:4px;}
+.pg{display:none;animation:pgIn .3s ease both;}
+.pg.on{display:block;}
+@keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Page header ── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+.ph-ey{font-family:var(--mono);font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.ph-ti{font-family:var(--serif);font-size:24px;color:var(--t1);letter-spacing:-.3px;line-height:1.1;}
+.ph-su{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.5;}
+.ph-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* ── Buttons ── */
+.btn-p{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;
+  background:var(--g);color:#fff;border:none;border-radius:8px;
+  font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:all .18s;box-shadow:var(--shg);white-space:nowrap;}
+.btn-p:hover{background:var(--gd);transform:translateY(-1px);}
+.btn-s{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;
+  background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);border-radius:8px;
+  font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-s:hover{border-color:var(--g);color:var(--gd);background:var(--gl);}
+.btn-sm{padding:5px 11px;font-size:11.5px;}
+
+/* ── Panel card ── */
+.panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;overflow:hidden;
+  animation:cardIn .45s ease both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--bdr);}
+.pnl-ti{font-size:13px;font-weight:700;color:var(--t1);}
+.pnl-su{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.pnl-lk{font-size:11px;font-weight:700;color:var(--g);cursor:pointer;}
+.pnl-lk:hover{text-decoration:underline;}
+.pnl-bd{padding:16px 18px;}
+
+/* ── Tag ── */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;
+  font-size:10px;font-weight:700;letter-spacing:.2px;white-space:nowrap;}
+.tag.g{background:var(--gl);color:var(--gd);border:1px solid var(--gm);}
+.tag.r{background:var(--rl);color:#7f1d1d;border:1px solid var(--rm);}
+.tag.b{background:var(--bl);color:#1e40af;border:1px solid var(--bm);}
+.tag.am{background:var(--al);color:#78350f;border:1px solid var(--amm);}
+.tag.pu{background:var(--pul);color:#4c1d95;border:1px solid var(--pm);}
+.tag.te{background:var(--tel);color:#0f766e;border:1px solid var(--tem);}
+.tag.grey{background:#f3f4f6;color:var(--t3);border:1px solid #e5e7eb;}
+.tag.dot::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:1px;}
+
+/* ── Grids ── */
+.g2{display:grid;grid-template-columns:1fr 308px;gap:16px;margin-bottom:16px;}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+
+/* ── Hero card ── */
+.hero{background:linear-gradient(135deg,var(--gd) 0%,#1a6635 50%,#0a4a26 100%);
+  border-radius:18px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;
+  animation:heroIn .6s cubic-bezier(.16,1,.3,1);}
+@keyframes heroIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 90% 10%,rgba(255,255,255,.06) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 60% at -10% 90%,rgba(46,204,113,.12) 0%,transparent 55%);pointer-events:none;}
+.hero::after{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:24px 24px;pointer-events:none;}
+.hero-in{position:relative;z-index:1;}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+.hero-greet{font-family:var(--serif);font-size:22px;color:#fff;letter-spacing:-.2px;line-height:1.2;}
+.hero-greet em{font-style:italic;color:#7beba4;}
+.hero-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:5px;}
+.hero-ids{display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+.id-pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;
+  padding:5px 10px;font-family:var(--mono);font-size:9.5px;color:rgba(255,255,255,.6);white-space:nowrap;}
+.id-pill b{color:rgba(255,255,255,.85);font-weight:700;}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:rgba(255,255,255,.1);border-radius:12px;overflow:hidden;}
+.hs{background:rgba(0,0,0,.15);padding:12px 14px;text-align:center;}
+.hs-v{font-family:var(--serif);font-size:22px;color:#fff;letter-spacing:-.3px;line-height:1;}
+.hs-l{font-size:9.5px;color:rgba(255,255,255,.45);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+
+/* ── Quick actions ── */
+.qas{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.qa{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 10px;
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;
+  cursor:pointer;transition:all .18s;text-align:center;position:relative;}
+.qa:hover{border-color:var(--g);background:var(--gl);transform:translateY(-2px);box-shadow:var(--sh);}
+.qa-e{font-size:22px;transition:transform .2s;}
+.qa:hover .qa-e{transform:scale(1.1);}
+.qa-l{font-size:10.5px;font-weight:700;color:var(--t2);line-height:1.3;}
+.qa:hover .qa-l{color:var(--gd);}
+.qa-dot{position:absolute;top:8px;right:9px;width:7px;height:7px;
+  border-radius:50%;background:var(--r);border:2px solid var(--card);}
+
+/* ── UniHealth Cover Card ── */
+.cover-card{border-radius:14px;overflow:hidden;background:var(--card);border:1.5px solid var(--bdr);}
+.cover-top{background:linear-gradient(135deg,#065f46,#047857,#059669);padding:18px 20px;position:relative;overflow:hidden;}
+.cover-top::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.08) 0%,transparent 50%);}
+.cover-emblem{position:absolute;right:-10px;bottom:-16px;font-size:64px;opacity:.07;}
+.cover-in{position:relative;z-index:1;}
+.cover-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.cover-amt{font-family:var(--serif);font-size:34px;color:#fff;letter-spacing:-.5px;line-height:1;margin-bottom:3px;}
+.cover-sub{font-size:10.5px;color:rgba(255,255,255,.5);}
+.cover-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:3px 8px;
+  font-size:9px;font-weight:700;color:rgba(255,255,255,.75);}
+.cover-bot{padding:14px 18px;}
+.cover-limits{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.cover-lim{background:var(--bg);border-radius:8px;padding:10px 12px;}
+.cv-v{font-family:var(--serif);font-size:16px;color:var(--t1);font-weight:700;}
+.cv-l{font-size:9.5px;color:var(--t3);margin-top:1px;}
+.pbar{height:4px;background:#e8ede8;border-radius:2px;overflow:hidden;margin-top:6px;}
+.pbar-f{height:100%;border-radius:2px;transition:width 1.4s cubic-bezier(.16,1,.3,1);}
+
+/* ── Appointment item ── */
+.appt{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr);}
+.appt:last-child{border:none;}
+.appt-box{width:44px;flex-shrink:0;background:var(--gl);border:1.5px solid var(--gm);border-radius:8px;padding:6px 4px;text-align:center;}
+.appt-day{font-family:var(--serif);font-size:18px;color:var(--gd);line-height:1;}
+.appt-mon{font-size:9px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.appt-info{flex:1;}
+.appt-name{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.appt-detail{font-size:11px;color:var(--t3);line-height:1.5;}
+.appt-r{text-align:right;flex-shrink:0;}
+.appt-time{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--g);}
+
+/* ── Medication item ── */
+.med{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--bdr);}
+.med:last-child{border:none;}
+.med-ico{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.med-name{font-size:12.5px;font-weight:700;color:var(--t1);}
+.med-dose{font-size:11px;color:var(--t3);margin-top:1px;}
+.med-next{font-family:var(--mono);font-size:11px;font-weight:600;}
+.med-ref{font-size:10px;color:var(--t3);margin-top:2px;}
+
+/* ── Test result item ── */
+.res{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--bdr);cursor:pointer;}
+.res:last-child{border:none;}
+.res-ind{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.res-ind.norm{background:var(--g);}
+.res-ind.high{background:var(--r);}
+.res-ind.low{background:var(--am);}
+.res-ind.pend{background:var(--b);}
+.res-name{flex:1;font-size:12.5px;font-weight:600;color:var(--t1);}
+.res-range{font-size:10px;color:var(--t3);margin-top:1px;}
+.res-val{font-family:var(--mono);font-size:12px;font-weight:700;}
+.res-val.norm{color:var(--g);}
+.res-val.high{color:var(--r);}
+.res-val.low{color:var(--am);}
+.res-dt{font-family:var(--mono);font-size:10px;color:var(--t4);}
+
+/* ── Visit item ── */
+.visit{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .15s;}
+.visit:hover{background:#f9fcf9;margin:0 -18px;padding:14px 18px;}
+.visit:last-child{border:none;}
+.visit-ico{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.visit-name{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px;}
+.visit-det{font-size:11px;color:var(--t3);line-height:1.5;}
+.visit-date{font-family:var(--mono);font-size:10.5px;color:var(--t3);}
+.visit-cost{font-size:12px;font-weight:700;margin-top:3px;}
+
+/* ── Contribution item ── */
+.contrib{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--bdr);}
+.contrib:last-child{border:none;}
+.contrib-dc{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.contrib-dot{width:10px;height:10px;border-radius:50%;}
+.contrib-dot.paid{background:var(--g);}
+.contrib-dot.pend{background:var(--am);}
+.contrib-dot.fail{background:var(--r);}
+.contrib-cn{width:1.5px;height:20px;background:var(--bdr);margin-top:2px;}
+.contrib-mo{font-size:12px;font-weight:700;color:var(--t1);}
+.contrib-via{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.contrib-amt{font-family:var(--serif);font-size:14px;font-weight:700;color:var(--t1);}
+.contrib-st{font-size:10px;font-weight:700;margin-top:2px;}
+.contrib-st.paid{color:var(--g);}
+.contrib-st.pend{color:var(--am);}
+.contrib-st.fail{color:var(--r);}
+
+/* ── Payment method ── */
+.pay-m{display:flex;align-items:center;gap:10px;padding:11px 13px;
+  background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;
+  cursor:pointer;transition:all .15s;margin-bottom:9px;}
+.pay-m:hover{border-color:var(--g);background:var(--gl);}
+.pay-m:last-child{margin-bottom:0;}
+.pay-logo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pay-name{font-size:12.5px;font-weight:700;color:var(--t1);}
+.pay-desc{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.pay-arr{margin-left:auto;color:var(--t4);font-size:14px;}
+
+/* ── Vital card ── */
+.vital{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:14px 16px;text-align:center;}
+.vital-e{font-size:22px;margin-bottom:6px;}
+.vital-v{font-family:var(--serif);font-size:20px;color:var(--t1);letter-spacing:-.2px;line-height:1;}
+.vital-u{font-family:var(--mono);font-size:11px;color:var(--t3);display:block;margin-top:2px;}
+.vital-l{font-size:10px;font-weight:700;color:var(--t3);margin-top:5px;text-transform:uppercase;letter-spacing:.4px;}
+.vital-s{margin-top:5px;}
+
+/* ── Doc card ── */
+.doc-c{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;
+  padding:14px 15px;display:flex;gap:11px;cursor:pointer;transition:all .15s;}
+.doc-c:hover{border-color:var(--g);box-shadow:var(--sh);transform:translateY(-1px);}
+.doc-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.doc-name{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:3px;}
+.doc-meta{font-size:10.5px;color:var(--t3);}
+
+/* ── Health score ring ── */
+.ring-wrap{width:90px;height:90px;position:relative;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-wrap circle{fill:none;stroke-width:8;}
+.ring-track{stroke:#e8ede8;}
+.ring-fill{stroke:var(--g);stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.16,1,.3,1);}
+.ring-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-num{font-family:var(--serif);font-size:22px;color:var(--t1);line-height:1;}
+.ring-max{font-size:9px;color:var(--t3);font-weight:600;}
+
+/* ── Progress bar row ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.prog-lbl{font-size:11px;font-weight:600;color:var(--t2);width:130px;flex-shrink:0;}
+.prog-tr{flex:1;height:6px;background:#e8ede8;border-radius:3px;overflow:hidden;}
+.prog-f{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.16,1,.3,1);}
+.prog-val{font-family:var(--mono);font-size:10.5px;color:var(--t3);width:36px;text-align:right;flex-shrink:0;}
+
+/* ── Referral card ── */
+.ref-card{background:linear-gradient(135deg,var(--bl),#e0ecff);
+  border:1.5px solid var(--bm);border-radius:12px;padding:14px 16px;
+  display:flex;gap:12px;align-items:flex-start;}
+.ref-ico{width:40px;height:40px;border-radius:8px;background:var(--b);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+
+/* ── Notice ── */
+.notice{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:8px;margin-bottom:14px;}
+.notice.g{background:var(--gl);border:1px solid var(--gm);}
+.notice.am{background:var(--al);border:1px solid var(--amm);}
+.notice.b{background:var(--bl);border:1px solid var(--bm);}
+.notice.r{background:var(--rl);border:1px solid var(--rm);}
+.notice-ico{font-size:15px;flex-shrink:0;margin-top:1px;}
+.notice-txt{font-size:11.5px;color:var(--t1);line-height:1.5;}
+
+/* ── Table ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;
+  padding:9px 12px;text-align:left;background:#f7faf7;border-bottom:1.5px solid var(--bdr);}
+.tbl td{font-size:12px;color:var(--t2);padding:10px 12px;border-bottom:1px solid var(--bdr);vertical-align:middle;}
+.tbl tr:hover td{background:#f7faf7;}
+.tbl tr:last-child td{border:none;}
+.mono{font-family:var(--mono);font-size:11px;}
+
+/* ── Toggle switch ── */
+.sw-row{display:flex;align-items:center;gap:11px;padding:10px 13px;
+  border:1.5px solid var(--bdr);border-radius:9px;background:var(--bg);margin-bottom:9px;cursor:pointer;}
+.sw-row:hover{border-color:var(--gm);}
+.sw-nm{font-size:12.5px;font-weight:700;color:var(--t1);}
+.sw-ds{font-size:11px;color:var(--t3);margin-top:2px;}
+.sw{width:38px;height:21px;border-radius:11px;position:relative;flex-shrink:0;transition:background .25s;}
+.sw.on{background:var(--g);}
+.sw.off{background:#d1d5db;}
+.sw-k{position:absolute;top:3px;width:15px;height:15px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:left .25s,right .25s;}
+.sw.on .sw-k{left:auto;right:3px;}
+.sw.off .sw-k{left:3px;right:auto;}
+
+/* ── Modal ── */
+.mo-ov{position:fixed;inset:0;background:rgba(5,20,12,.5);backdrop-filter:blur(5px);
+  z-index:600;display:none;align-items:center;justify-content:center;}
+.mo-ov.open{display:flex;}
+.mo{background:var(--card);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.2);
+  width:100%;max-width:460px;overflow:hidden;animation:moIn .3s cubic-bezier(.16,1,.3,1);}
+@keyframes moIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+.mo-stripe{height:4px;background:linear-gradient(90deg,var(--gd),var(--g),#7beba4);}
+.mo-hd{padding:18px 22px 14px;border-bottom:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-between;}
+.mo-ti{font-family:var(--serif);font-size:19px;color:var(--t1);}
+.mo-x{cursor:pointer;font-size:18px;color:var(--t3);padding:4px 7px;border-radius:5px;
+  background:none;border:none;font-family:var(--font);transition:all .15s;}
+.mo-x:hover{background:var(--rl);color:var(--r);}
+.mo-bd{padding:18px 22px;}
+.mo-ft{padding:14px 22px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px;}
+.ff{display:flex;flex-direction:column;gap:5px;margin-bottom:13px;}
+.ff label{font-size:11px;font-weight:700;color:var(--t2);}
+.ff input,.ff select,.ff textarea{padding:9px 12px;border:1.5px solid var(--bdr);
+  border-radius:8px;font-family:var(--font);font-size:12.5px;color:var(--t1);
+  background:var(--bg);outline:none;transition:all .2s;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);}
+.ff textarea{resize:vertical;min-height:80px;}
+.ff-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+
+/* ══ SECURITY PILL ══ */
+.sec-pill{display:flex;align-items:center;gap:5px;padding:5px 10px;
+  border:1.5px solid var(--gm);border-radius:6px;background:var(--gl);
+  font-size:10px;font-weight:700;color:var(--gd);flex-shrink:0;}
+.sec-pill .sp-dot{width:5px;height:5px;border-radius:50%;background:var(--g);
+  flex-shrink:0;animation:glow 2s infinite;}
+/* ══ AI HEALTH WIDGET ══ */
+.ai-widget{border-radius:12px;padding:15px 16px;margin-bottom:16px;
+  border:1.5px solid;animation:cardIn .4s .05s ease both;}
+.ai-widget.green{background:linear-gradient(135deg,rgba(26,138,74,.07),rgba(26,138,74,.02));border-color:rgba(26,138,74,.2);}
+.ai-widget.blue{background:linear-gradient(135deg,rgba(37,99,235,.07),rgba(37,99,235,.02));border-color:rgba(37,99,235,.2);}
+.ai-widget.amber{background:linear-gradient(135deg,rgba(217,119,6,.07),rgba(217,119,6,.02));border-color:rgba(217,119,6,.25);}
+.ai-widget-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
+.ai-widget-ti{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--t1);}
+.ai-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid rgba(0,0,0,.05);}
+.ai-row:last-child{border:none;padding-bottom:0;}
+.ai-row-ico{font-size:15px;flex-shrink:0;margin-top:2px;}
+.ai-row-body{flex:1;}
+.ai-row-ti{font-size:12.5px;font-weight:700;color:var(--t1);line-height:1.35;}
+.ai-row-su{font-size:11px;color:var(--t3);margin-top:3px;line-height:1.5;}
+/* ══ CONSENT PAGE ══ */
+.consent-row{display:flex;align-items:flex-start;gap:13px;padding:14px 0;
+  border-bottom:1px solid var(--bdr);}
+.consent-row:last-child{border:none;}
+.consent-ico{font-size:22px;flex-shrink:0;margin-top:2px;}
+.consent-body{flex:1;}
+.consent-ti{font-size:13px;font-weight:700;color:var(--t1);}
+.consent-su{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5;}
+.consent-date{font-family:var(--mono);font-size:10px;color:var(--t4);margin-top:5px;}
+.consent-right{flex-shrink:0;display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
+/* ══ ACCESS LOG ROW ══ */
+.access-row{display:flex;align-items:center;gap:11px;padding:10px 0;
+  border-bottom:1px solid var(--bdr);font-size:11.5px;}
+.access-row:last-child{border:none;}
+.access-ico{font-size:16px;flex-shrink:0;}
+.access-body{flex:1;}
+.access-ti{font-weight:700;color:var(--t1);}
+.access-su{font-size:10.5px;color:var(--t3);margin-top:1px;}
+.access-ts{font-family:var(--mono);font-size:10px;color:var(--t4);flex-shrink:0;}
+/* ══ TOAST ══ */
+.pat-toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--card);
+  border:1.5px solid var(--gm);border-radius:10px;padding:11px 16px;
+  box-shadow:0 8px 32px rgba(0,0,0,.14);display:none;align-items:center;gap:10px;}
+.pat-toast.show{display:flex;animation:cardIn .3s ease both;}
+.pt-ico{font-size:18px;}
+.pt-msg{font-size:12px;font-weight:700;color:var(--t1);}
+.pt-sub{font-size:10px;color:var(--t3);margin-top:1px;}
+/* ══ KDPA RIGHTS BADGE ══ */
+.kdpa-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+  background:var(--gl);border:1px solid var(--gm);border-radius:6px;
+  font-size:10px;font-weight:700;color:var(--gd);}
+
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>Patient portal</h1>
-    <p>Placeholder route after sign-in. Replace with patient health records / self-service UI.</p>
-    <p><a href="sign-in.html">← Back to sign in</a></p>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sb">
+  <div class="sb-flag"></div>
+  <div class="sb-in">
+
+    <div class="sb-brand">
+      <div class="sb-logo-row">
+        <div class="sb-ico">🏥</div>
+        <div>
+          <div class="sb-nm">UniHealth</div>
+          <div class="sb-tag">My Health Portal</div>
+        </div>
+      </div>
+      <!-- Patient identity card — UniHealth ID -->
+      <div class="sb-id-card">
+        <div class="sb-av-row">
+          <div class="sb-av">WN</div>
+          <div>
+            <div class="sb-pname">Wangui Njoroge</div>
+            <div class="sb-pid">AFL‑ID: AFL‑2024‑KE‑78841209</div>
+          </div>
+        </div>
+        <div class="afl-badge">
+          <span class="afl-dot"></span>UniHealth Active · AFL‑MBR‑884321
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-sec-lbl">My Health</div>
+      <div class="ni on"  onclick="nav('home',this)">        <span class="ni-ico">🏠</span><span class="ni-lbl">My Dashboard</span></div>
+      <div class="ni"     onclick="nav('appointments',this)"><span class="ni-ico">📅</span><span class="ni-lbl">Appointments</span><span class="ni-badge">2</span></div>
+      <div class="ni"     onclick="nav('visits',this)">      <span class="ni-ico">🏥</span><span class="ni-lbl">Visit History</span></div>
+      <div class="ni"     onclick="nav('results',this)">     <span class="ni-ico">🧪</span><span class="ni-lbl">Test Results</span></div>
+      <div class="ni"     onclick="nav('medications',this)"> <span class="ni-ico">💊</span><span class="ni-lbl">Medications</span></div>
+      <div class="ni"     onclick="nav('vitals',this)">      <span class="ni-ico">💗</span><span class="ni-lbl">Vitals &amp; Trends</span></div>
+
+      <div class="sb-sec-lbl">Payments</div>
+      <div class="ni"     onclick="nav('coverage',this)">    <span class="ni-ico">🛡️</span><span class="ni-lbl">My UniHealth Cover</span></div>
+      <div class="ni"     onclick="nav('contributions',this)"><span class="ni-ico">💳</span><span class="ni-lbl">Contributions</span></div>
+      <div class="ni"     onclick="nav('bills',this)">       <span class="ni-ico">📄</span><span class="ni-lbl">Bills &amp; Invoices</span></div>
+      <div class="ni"     onclick="nav('payments',this)">    <span class="ni-ico">📱</span><span class="ni-lbl">Make a Payment</span></div>
+
+      <div class="sb-sec-lbl">Privacy &amp; Security</div>
+      <div class="ni" onclick="nav('consent',this)"><span class="ni-ico">🔐</span><span class="ni-lbl">Privacy &amp; Consent</span></div>
+
+      <div class="sb-sec-lbl">My Records</div>
+      <div class="ni"     onclick="nav('records',this)">     <span class="ni-ico">📂</span><span class="ni-lbl">Health Records</span></div>
+      <div class="ni"     onclick="nav('documents',this)">   <span class="ni-ico">📋</span><span class="ni-lbl">Documents</span></div>
+      <div class="ni"     onclick="nav('profile',this)">     <span class="ni-ico">👤</span><span class="ni-lbl">My Profile</span></div>
+    </div>
+
+    <div class="sb-foot">
+      <button class="sb-out" onclick="signOut()">🚪 Sign Out</button>
+    </div>
   </div>
-</body>
-</html>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <header class="topbar">
+    <div>
+      <div class="tb-pg" id="tbTitle">My Dashboard</div>
+      <div class="tb-cr">UniHealth › <b id="tbCrumb">Home</b></div>
+    </div>
+    <div class="tb-gap"></div>
+    <div class="tb-srch">
+      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#93b0a0" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15-3-3"/></svg>
+      <input placeholder="Search records, results, bills…">
+    </div>
+    <div class="tb-ic">🔔<div class="tb-dot"></div></div>
+    <div class="tb-ic">❓</div>
+    <div class="tb-date" id="tbDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══════════════════════════════ HOME ═══════════════════════════════ -->
+    <div id="pg-home" class="pg on">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-in">
+          <div class="hero-top">
+            <div>
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:6px">Your health at a glance</div>
+              <div class="hero-greet">Good morning, <em>Wangui</em> 👋</div>
+              <div class="hero-sub">All your health information, in one secure place.</div>
+            </div>
+            <div class="hero-ids">
+              <div class="id-pill"><b>AFL‑ID:</b> AFL‑2024‑KE‑78841209</div>
+              <div class="id-pill"><b>Member:</b> AFL‑MBR‑884321</div>
+              <div class="id-pill"><b>Cover:</b> UniHealth Active ✅</div>
+            </div>
+          </div>
+          <div class="hero-stats">
+            <div class="hs"><div class="hs-v">7</div><div class="hs-l">Visits this year</div></div>
+            <div class="hs"><div class="hs-v" style="color:#7beba4">Ksh 0</div><div class="hs-l">Outstanding bills</div></div>
+            <div class="hs"><div class="hs-v">2</div><div class="hs-l">Upcoming appts</div></div>
+            <div class="hs"><div class="hs-v" style="color:#7beba4">Active</div><div class="hs-l">Cover status</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="qas">
+        <div class="qa" onclick="nav('appointments',null)"><span class="qa-e">📅</span><span class="qa-l">Book Appointment</span><span class="qa-dot"></span></div>
+        <div class="qa" onclick="nav('results',null)">     <span class="qa-e">🧪</span><span class="qa-l">Test Results</span></div>
+        <div class="qa" onclick="nav('payments',null)">    <span class="qa-e">📱</span><span class="qa-l">Make a Payment</span></div>
+        <div class="qa" onclick="nav('records',null)">     <span class="qa-e">📂</span><span class="qa-l">My Records</span></div>
+        <div class="qa" onclick="mo('message')">           <span class="qa-e">💬</span><span class="qa-l">Message Doctor</span></div>
+      </div>
+
+      <div class="g2">
+        <!-- Left -->
+        <div>
+          
+      <!-- AI Health Insights -->
+      <div class="ai-widget green" style="animation-delay:.1s">
+        <div class="ai-widget-hd">
+          <div>
+            <div class="ai-widget-ti">🤖 AI Health Insights — Wangui Njoroge</div>
+            <div style="font-size:10.5px;color:var(--t3);margin-top:2px">Personalised analysis based on your latest results &amp; vitals</div>
+          </div>
+          <span class="kdpa-badge">🔒 KDPA 2019</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">⚠️</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Potassium levels require follow-up</div>
+            <div class="ai-row-su">Your latest test (K⁺ 6.8 mmol/L, 2 Apr 2026) is above the safe range. Your doctor has been notified. Please attend your follow-up appointment on <strong>10 Apr 2026</strong>.</div>
+          </div>
+          <span class="tag r" style="flex-shrink:0;margin-top:2px">ACTION NEEDED</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">💊</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Medication refill due in 5 days</div>
+            <div class="ai-row-su">Amlodipine 10mg and Lisinopril 10mg are due for refill by 15 Apr 2026. You can request a repeat prescription from your nearest UniHealth facility or via this portal.</div>
+          </div>
+          <span class="tag am" style="flex-shrink:0;margin-top:2px">REMINDER</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico">💡</span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Preventive care: annual eye check overdue</div>
+            <div class="ai-row-su">As a patient with hypertension and diabetes risk factors, an annual fundoscopy is recommended. Your last eye check was 14 months ago. Book via your UniHealth cover (optical benefit: Ksh 3,500 remaining).</div>
+          </div>
+          <span class="tag b" style="flex-shrink:0;margin-top:2px">PREVENTIVE</span>
+        </div>
+        <div style="margin-top:10px;padding:8px 12px;background:rgba(10,74,38,.05);border:1px solid rgba(10,74,38,.1);border-radius:7px;font-size:10.5px;color:var(--gd);font-weight:600;display:flex;align-items:center;gap:7px">
+          🔒 AI insights are generated from your own health records only. Your data is never shared without your consent (KDPA 2019).
+        </div>
+      </div>
+<div class="panel" style="margin-bottom:16px;animation-delay:.06s">
+            <div class="pnl-hd"><div><div class="pnl-ti">Upcoming Appointments</div><div class="pnl-su">Next 30 days</div></div><span class="pnl-lk" onclick="nav('appointments',null)">Book new →</span></div>
+            <div class="pnl-bd" id="homeAppts"></div>
+          </div>
+          <div class="panel" style="margin-bottom:16px;animation-delay:.1s">
+            <div class="pnl-hd"><div><div class="pnl-ti">Active Medications</div><div class="pnl-su">Current prescriptions</div></div><span class="pnl-lk" onclick="nav('medications',null)">All meds →</span></div>
+            <div class="pnl-bd" id="homeMeds"></div>
+          </div>
+          <div class="panel" style="animation-delay:.14s">
+            <div class="pnl-hd"><div><div class="pnl-ti">Recent Test Results</div><div class="pnl-su">Latest lab work</div></div><span class="pnl-lk" onclick="nav('results',null)">All results →</span></div>
+            <div class="pnl-bd" id="homeResults"></div>
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div>
+          <!-- UniHealth Cover balance card -->
+          <div class="cover-card" style="margin-bottom:16px;animation:cardIn .45s .08s ease both">
+            <div class="cover-top">
+              <div class="cover-emblem">🛡️</div>
+              <div class="cover-in">
+                <div class="cover-lbl">UniHealth Annual Cover Balance</div>
+                <div class="cover-amt">Ksh 48,200</div>
+                <div class="cover-sub">of Ksh 50,000 remaining · FY 2025/26</div>
+                <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+                  <div class="cover-chip">✅ Cover Active</div>
+                  <div class="cover-chip">AFL‑MBR‑884321</div>
+                  <div class="cover-chip">M‑TIBA Linked</div>
+                </div>
+              </div>
+            </div>
+            <div class="cover-bot">
+              <div style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--t3);margin-bottom:4px"><span>Used: Ksh 1,800</span><span>Ksh 48,200 left</span></div>
+                <div class="pbar"><div class="pbar-f" style="width:0%;background:var(--g)" data-w="96.4"></div></div>
+              </div>
+              <div class="cover-limits">
+                <div class="cover-lim"><div class="cv-v" style="color:var(--g)">Ksh 25K</div><div class="cv-l">Inpatient limit</div><div class="pbar" style="margin-top:5px"><div class="pbar-f" style="width:0%;background:var(--g)" data-w="90"></div></div></div>
+                <div class="cover-lim"><div class="cv-v" style="color:var(--b)">Ksh 15K</div><div class="cv-l">Outpatient limit</div><div class="pbar" style="margin-top:5px"><div class="pbar-f" style="width:0%;background:var(--b)" data-w="80"></div></div></div>
+              </div>
+              <div style="margin-top:11px;display:flex;gap:7px">
+                <button class="btn-s btn-sm" onclick="nav('coverage',null)" style="flex:1;justify-content:center">View Cover</button>
+                <button class="btn-p btn-sm" onclick="nav('contributions',null)" style="flex:1;justify-content:center">Contributions</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Health score -->
+          <div class="panel" style="margin-bottom:16px;animation:cardIn .45s .12s ease both">
+            <div class="pnl-hd"><div class="pnl-ti">Health Score</div><span class="pnl-lk">About this</span></div>
+            <div class="pnl-bd">
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+                <div class="ring-wrap">
+                  <svg width="90" height="90" viewBox="0 0 90 90">
+                    <circle class="ring-track" cx="45" cy="45" r="37" stroke-dasharray="232" stroke-dashoffset="0"/>
+                    <circle class="ring-fill" id="ringFill" cx="45" cy="45" r="37" stroke-dasharray="232" stroke-dashoffset="232"/>
+                  </svg>
+                  <div class="ring-lbl"><div class="ring-num">78</div><div class="ring-max">/100</div></div>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--g);margin-bottom:5px">Good</div>
+                  <div style="font-size:11px;color:var(--t3);line-height:1.6">Based on vitals, visit history and medication adherence.</div>
+                </div>
+              </div>
+              <div class="prog-row"><span class="prog-lbl">Medication adherence</span><div class="prog-tr"><div class="prog-f" style="width:0%;background:var(--g)" data-w="90%"></div></div><span class="prog-val">90%</span></div>
+              <div class="prog-row"><span class="prog-lbl">Appointment attendance</span><div class="prog-tr"><div class="prog-f" style="width:0%;background:var(--b)" data-w="75%"></div></div><span class="prog-val">75%</span></div>
+              <div class="prog-row"><span class="prog-lbl">Screenings up to date</span><div class="prog-tr"><div class="prog-f" style="width:0%;background:var(--am)" data-w="60%"></div></div><span class="prog-val">60%</span></div>
+            </div>
+          </div>
+
+          <!-- Referral -->
+          <div class="ref-card" style="animation:cardIn .45s .16s ease both">
+            <div class="ref-ico">📋</div>
+            <div>
+              <div style="font-size:12.5px;font-weight:700;color:#1e3a8a;margin-bottom:3px">Active Referral</div>
+              <div style="font-size:11px;color:#2563eb;line-height:1.5">Dr. Amina Wanjiru referred you to <strong>KNH Cardiology</strong> on 28 Feb 2026.<br>Appointment: 15 Mar 2026 at 10:00 AM</div>
+              <div style="margin-top:8px"><button class="btn-s btn-sm" onclick="nav('appointments',null)">View referral →</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ APPOINTMENTS ═══════════════════════════ -->
+    <div id="pg-appointments" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Scheduling</div><div class="ph-ti">My Appointments</div><div class="ph-su">Book, view and manage your clinic visits</div></div>
+        <button class="btn-p" onclick="mo('bookAppt')">+ Book Appointment</button>
+      </div>
+      <div class="notice g"><span class="notice-ico">📅</span><div class="notice-txt">You have <strong>2 upcoming appointments</strong> — KNH Cardiology on 15 Mar and Coast General follow-up on 22 Mar.</div></div>
+      <div class="g2e" style="margin-bottom:16px">
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Upcoming</div></div><div class="pnl-bd" id="apptUpcoming"></div></div>
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Past Appointments</div></div><div class="pnl-bd" id="apptPast"></div></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div><div class="pnl-ti">Book at a Facility</div><div class="pnl-su">UniHealth‑accredited facilities near you</div></div></div>
+        <div class="pnl-bd" id="facList"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ VISIT HISTORY ═══════════════════════════ -->
+    <div id="pg-visits" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Clinical History</div><div class="ph-ti">Visit History</div><div class="ph-su">All hospital and clinic visits linked to your UniHealth record</div></div>
+        <button class="btn-s" onclick="mo('export')">📥 Export Records</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div><div class="pnl-ti">All Visits</div><div class="pnl-su">7 visits in 2025/26 · UniHealth verified</div></div>
+          <div style="display:flex;gap:7px">
+            <select style="padding:5px 9px;border:1.5px solid var(--bdr);border-radius:6px;font-family:var(--font);font-size:11.5px;color:var(--t2);background:var(--card);outline:none"><option>All Types</option><option>Inpatient</option><option>Outpatient</option><option>Emergency</option></select>
+            <select style="padding:5px 9px;border:1.5px solid var(--bdr);border-radius:6px;font-family:var(--font);font-size:11.5px;color:var(--t2);background:var(--card);outline:none"><option>All Facilities</option><option>KNH Nairobi</option><option>Coast General</option></select>
+          </div>
+        </div>
+        <div class="pnl-bd" id="visitList"></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ TEST RESULTS ═══════════════════════════ -->
+    <div id="pg-results" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Laboratory</div><div class="ph-ti">Test Results</div><div class="ph-su">Lab results, imaging and diagnostics</div></div>
+        <button class="btn-s" onclick="mo('export')">📥 Download</button>
+      </div>
+      <div class="notice am"><span class="notice-ico">⚠️</span><div class="notice-txt"><strong>1 result needs attention:</strong> LDL Cholesterol is above the normal range. Please discuss with your doctor at your next visit.</div></div>
+      <div class="g2e" style="margin-bottom:16px">
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Blood Panel · 4 Mar 2026</div><span class="pnl-lk">Download PDF</span></div><div class="pnl-bd" id="bloodPanel"></div></div>
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Previous Results</div></div><div class="pnl-bd" id="prevResults"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ MEDICATIONS ═══════════════════════════ -->
+    <div id="pg-medications" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Pharmacy</div><div class="ph-ti">My Medications</div><div class="ph-su">Current prescriptions, dosage schedules and refills</div></div>
+        <button class="btn-s" onclick="mo('export')">📥 Print List</button>
+      </div>
+      <div class="notice b"><span class="notice-ico">💊</span><div class="notice-txt"><strong>Refill reminder:</strong> Amlodipine 5mg is due for refill in 5 days. Request at any UniHealth‑accredited pharmacy.</div></div>
+      <div class="g2e">
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Active Prescriptions</div></div><div class="pnl-bd" id="activeMeds"></div></div>
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Completed / Archived</div></div><div class="pnl-bd" id="archivedMeds"></div></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ VITALS ═══════════════════════════ -->
+    <div id="pg-vitals" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Health Monitoring</div><div class="ph-ti">Vitals &amp; Trends</div><div class="ph-su">Recorded at your most recent visit · 4 Mar 2026 · KNH Nairobi</div></div>
+      </div>
+      <div class="g4" style="margin-bottom:16px">
+        <div class="vital" style="animation-delay:.04s"><div class="vital-e">🩸</div><div class="vital-v">120/80<span class="vital-u">mmHg</span></div><div class="vital-l">Blood Pressure</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+        <div class="vital" style="animation-delay:.08s"><div class="vital-e">💗</div><div class="vital-v">72<span class="vital-u">bpm</span></div><div class="vital-l">Heart Rate</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+        <div class="vital" style="animation-delay:.12s"><div class="vital-e">🌡️</div><div class="vital-v">36.8<span class="vital-u">°C</span></div><div class="vital-l">Temperature</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+        <div class="vital" style="animation-delay:.16s"><div class="vital-e">⚖️</div><div class="vital-v">68<span class="vital-u">kg · BMI 24.2</span></div><div class="vital-l">Weight</div><div class="vital-s"><span class="tag g dot">Healthy</span></div></div>
+        <div class="vital" style="animation-delay:.2s"><div class="vital-e">🩺</div><div class="vital-v">98.5<span class="vital-u">% SpO₂</span></div><div class="vital-l">Oxygen Saturation</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+        <div class="vital" style="animation-delay:.24s"><div class="vital-e">🩸</div><div class="vital-v">5.4<span class="vital-u">mmol/L</span></div><div class="vital-l">Blood Glucose</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+        <div class="vital" style="animation-delay:.28s"><div class="vital-e">📏</div><div class="vital-v">167<span class="vital-u">cm</span></div><div class="vital-l">Height</div><div class="vital-s"><span class="tag grey">Recorded</span></div></div>
+        <div class="vital" style="animation-delay:.32s"><div class="vital-e">🫁</div><div class="vital-v">16<span class="vital-u">breaths/min</span></div><div class="vital-l">Respiratory Rate</div><div class="vital-s"><span class="tag g dot">Normal</span></div></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Blood Pressure Trend — Last 6 Months</div></div>
+        <div class="pnl-bd">
+          <div style="display:flex;align-items:flex-end;gap:8px;height:64px;margin-bottom:8px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,var(--gd),var(--g));border-radius:3px;height:46px"></div><span style="font-size:9.5px;color:var(--t3)">Oct</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,var(--gd),var(--g));border-radius:3px;height:42px"></div><span style="font-size:9.5px;color:var(--t3)">Nov</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,var(--gd),var(--g));border-radius:3px;height:50px"></div><span style="font-size:9.5px;color:var(--t3)">Dec</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,var(--gd),var(--g));border-radius:3px;height:44px"></div><span style="font-size:9.5px;color:var(--t3)">Jan</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,var(--gd),var(--g));border-radius:3px;height:38px"></div><span style="font-size:9.5px;color:var(--t3)">Feb</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:linear-gradient(to top,#3ecf7a,#7beba4);border-radius:3px;height:34px;border:2px solid var(--g)"></div><span style="font-size:9.5px;color:var(--g);font-weight:700">Mar ✓</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--t3)">Systolic (mmHg) — trending down ✅ Improving</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ UNIHEALTH COVER ═══════════════════════ -->
+    <div id="pg-coverage" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">UniHealth Health Cover</div><div class="ph-ti">My UniHealth Cover</div><div class="ph-su">Your UniHealth Health Cover benefits, limits and claims — AFL‑MBR‑884321</div></div>
+        <button class="btn-p" onclick="mo('linkAccount')">🔗 Link Account</button>
+      </div>
+
+      <!-- 3 stat cards -->
+      <div class="g3" style="margin-bottom:16px">
+        <div class="panel" style="animation-delay:.04s">
+          <div class="pnl-bd" style="text-align:center;padding:20px">
+            <div style="font-size:28px;margin-bottom:8px">🛡️</div>
+            <div style="font-family:var(--serif);font-size:22px;color:var(--g)">Ksh 48,200</div>
+            <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Balance remaining this year</div>
+            <div style="margin-top:10px"><span class="tag g dot">Cover Active</span></div>
+          </div>
+        </div>
+        <div class="panel" style="animation-delay:.08s">
+          <div class="pnl-bd" style="text-align:center;padding:20px">
+            <div style="font-size:28px;margin-bottom:8px">💳</div>
+            <div style="font-family:var(--serif);font-size:22px;color:var(--b)">Ksh 1,800</div>
+            <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Used so far this year</div>
+            <div style="margin-top:10px"><span class="tag b">3 claims processed</span></div>
+          </div>
+        </div>
+        <div class="panel" style="animation-delay:.12s">
+          <div class="pnl-bd" style="text-align:center;padding:20px">
+            <div style="font-size:28px;margin-bottom:8px">📅</div>
+            <div style="font-family:var(--serif);font-size:22px;color:var(--am)">31 Mar 2026</div>
+            <div style="font-size:10.5px;color:var(--t3);margin-top:3px">Cover year renewal date</div>
+            <div style="margin-top:10px"><span class="tag am">21 days left</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2e" style="margin-bottom:16px">
+        <!-- Benefit breakdown -->
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Benefit Limits</div><div class="pnl-su">FY 2025/26 · AFL‑MBR‑884321</div></div>
+          <div class="pnl-bd">
+            <div style="display:flex;flex-direction:column;gap:13px">
+              <div><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:5px"><span>Inpatient Cover</span><span style="color:var(--g)">Ksh 22,500 / 25,000</span></div><div class="pbar" style="height:6px"><div class="pbar-f" style="width:0%;background:var(--g)" data-w="90"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:5px"><span>Outpatient Cover</span><span style="color:var(--b)">Ksh 13,200 / 15,000</span></div><div class="pbar" style="height:6px"><div class="pbar-f" style="width:0%;background:var(--b)" data-w="88"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:5px"><span>Maternity</span><span style="color:var(--te)">Ksh 6,000 / 6,000</span></div><div class="pbar" style="height:6px"><div class="pbar-f" style="width:0%;background:var(--te)" data-w="100"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:5px"><span>Dental</span><span style="color:var(--am)">Ksh 0 / 4,000</span></div><div class="pbar" style="height:6px"><div class="pbar-f" style="width:0%;background:var(--am)" data-w="0"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--t1);margin-bottom:5px"><span>Optical</span><span style="color:var(--pu)">Ksh 0 / 2,000</span></div><div class="pbar" style="height:6px"><div class="pbar-f" style="width:0%;background:var(--pu)" data-w="0"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Recent claims -->
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Recent UniHealth Claims</div></div>
+          <div class="pnl-bd">
+            <table class="tbl">
+              <thead><tr><th>Claim No.</th><th>Facility</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">AFL‑CLM‑2026‑0012</td><td>KNH Outpatient</td><td>Ksh 1,200</td><td><span class="tag g">Approved</span></td></tr>
+                <tr><td class="mono">AFL‑CLM‑2025‑8841</td><td>Coast General</td><td>Ksh 600</td><td><span class="tag g">Approved</span></td></tr>
+                <tr><td class="mono">AFL‑CLM‑2025‑3312</td><td>KNH Lab</td><td>Ksh 0</td><td><span class="tag te">Covered</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ CONTRIBUTIONS ═══════════════════════════ -->
+    <div id="pg-contributions" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">UniHealth Health Cover</div><div class="ph-ti">My Contributions</div><div class="ph-su">Monthly UniHealth health cover payment history</div></div>
+        <div class="ph-r">
+          <button class="btn-s" onclick="mo('export')">📥 Statement</button>
+          <button class="btn-p" onclick="mo('contribute')">+ Make Contribution</button>
+        </div>
+      </div>
+      <div class="g3" style="margin-bottom:16px">
+        <div class="panel"><div class="pnl-bd" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:6px">📊</div><div style="font-family:var(--serif);font-size:22px;color:var(--t1)">Ksh 5,500</div><div style="font-size:10.5px;color:var(--t3);margin-top:3px">Total contributions · FY 2025/26</div><div style="margin-top:8px"><span class="tag g">11 months paid</span></div></div></div>
+        <div class="panel"><div class="pnl-bd" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:6px">✅</div><div style="font-family:var(--serif);font-size:22px;color:var(--g)">Up to Date</div><div style="font-size:10.5px;color:var(--t3);margin-top:3px">Next payment: 31 March 2026</div><div style="margin-top:8px"><span class="tag g dot">Ksh 500 due</span></div></div></div>
+        <div class="panel"><div class="pnl-bd" style="text-align:center;padding:18px 12px"><div style="font-size:24px;margin-bottom:6px">📅</div><div style="font-family:var(--serif);font-size:22px;color:var(--t1)">3 years</div><div style="font-size:10.5px;color:var(--t3);margin-top:3px">Total UniHealth membership</div><div style="margin-top:8px"><span class="tag b">Since Jan 2023</span></div></div></div>
+      </div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="pnl-hd"><div><div class="pnl-ti">Contribution History</div><div class="pnl-su">Payments via M‑PESA, Payroll or Bank</div></div></div>
+        <div class="pnl-bd" id="contribList"></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div><div class="pnl-ti">Pay Your Contribution</div><div class="pnl-su">Ksh 500 due by 31 March 2026</div></div></div>
+        <div class="pnl-bd">
+          <div class="pay-m" onclick="mo('mpesa')"><div class="pay-logo" style="background:#00b300">💚</div><div><div class="pay-name">M‑PESA Paybill</div><div class="pay-desc">Paybill: 400100 · Account: UniHealth Health · USSD: *388#</div></div><span class="pay-arr">›</span></div>
+          <div class="pay-m" onclick="mo('mtiba')"><div class="pay-logo" style="background:#e8490a">🟠</div><div><div class="pay-name">M‑TIBA Wallet</div><div class="pay-desc">Pay directly from your M‑TIBA health wallet</div></div><span class="pay-arr">›</span></div>
+          <div class="pay-m" onclick="mo('bank')"><div class="pay-logo" style="background:var(--b)">🏦</div><div><div class="pay-name">Bank Transfer (PESALINK)</div><div class="pay-desc">Equity, KCB, NCBA, Co‑op — all PESALINK banks</div></div><span class="pay-arr">›</span></div>
+          <div class="pay-m" onclick="mo('payroll')"><div class="pay-logo" style="background:var(--pu)">💼</div><div><div class="pay-name">Payroll Deduction</div><div class="pay-desc">Automatic deduction from IPPD / employer payroll</div></div><span class="pay-arr">›</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ BILLS ═══════════════════════════ -->
+    <div id="pg-bills" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Finance</div><div class="ph-ti">Bills &amp; Invoices</div><div class="ph-su">All charges, cover payments and outstanding bills</div></div>
+        <button class="btn-s" onclick="mo('export')">📥 Download Statement</button>
+      </div>
+      <div class="notice g"><span class="notice-ico">✅</span><div class="notice-txt"><strong>All clear!</strong> You have no outstanding bills. Your UniHealth cover has settled all recent charges.</div></div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Billing History</div><div class="pnl-su">UniHealth‑settled and out‑of‑pocket payments</div></div>
+        <div class="pnl-bd"><table class="tbl" id="billTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ MAKE A PAYMENT ═══════════════════════════ -->
+    <div id="pg-payments" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Payments</div><div class="ph-ti">Make a Payment</div><div class="ph-su">Pay bills, contributions or top up your M‑TIBA wallet</div></div>
+      </div>
+      <div class="g2e" style="margin-bottom:16px">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Payment Methods</div></div>
+          <div class="pnl-bd">
+            <div class="pay-m" onclick="mo('mpesa')"><div class="pay-logo" style="background:#00b300">💚</div><div><div class="pay-name">M‑PESA</div><div class="pay-desc">Safaricom M‑PESA paybill or STK push</div></div><span class="pay-arr">›</span></div>
+            <div class="pay-m" onclick="mo('mtiba')"><div class="pay-logo" style="background:#e8490a">🟠</div><div><div class="pay-name">M‑TIBA Health Wallet</div><div class="pay-desc">Balance: Ksh 3,200 available</div></div><span class="pay-arr">›</span></div>
+            <div class="pay-m" onclick="mo('bank')"><div class="pay-logo" style="background:var(--b)">🏦</div><div><div class="pay-name">Bank Transfer (PESALINK)</div><div class="pay-desc">Any Kenyan bank — instant settlement</div></div><span class="pay-arr">›</span></div>
+            <div class="pay-m"><div class="pay-logo" style="background:#555">📲</div><div><div class="pay-name">USSD · *388# (UniHealth)</div><div class="pay-desc">Works on any phone, no data required</div></div><span class="pay-arr">›</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Recent Transactions</div></div>
+          <div class="pnl-bd"><table class="tbl" id="txTable"></table></div>
+        </div>
+      </div>
+      <!-- M-TIBA wallet -->
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">M‑TIBA Health Wallet</div></div>
+        <div class="pnl-bd">
+          <div style="display:flex;align-items:center;gap:16px;padding:14px;background:linear-gradient(135deg,#e8490a,#ff6b2b);border-radius:12px;margin-bottom:14px;color:#fff">
+            <div style="font-size:32px">🟠</div>
+            <div><div style="font-size:11px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.5px">M‑TIBA Balance</div><div style="font-family:var(--serif);font-size:28px;letter-spacing:-.3px">Ksh 3,200</div><div style="font-size:10.5px;opacity:.65;margin-top:2px">Linked to UniHealth Health Cover</div></div>
+            <button onclick="mo('topup')" style="margin-left:auto;padding:8px 14px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:7px;color:#fff;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer">Top Up</button>
+          </div>
+          <div style="font-size:11.5px;color:var(--t3);line-height:1.6">M‑TIBA is Kenya's health wallet. Funds are ring‑fenced and can only be spent at UniHealth‑accredited facilities. You can also send money to family members or contribute to a group health fund.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ HEALTH RECORDS ═══════════════════════════ -->
+    <div id="pg-records" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">FHIR R5 · Encrypted · KDPA 2019</div><div class="ph-ti">My Health Records</div><div class="ph-su">Complete longitudinal health record linked to AFL‑2024‑KE‑78841209</div></div>
+        <button class="btn-s" onclick="mo('export')">📥 Export Records</button>
+      </div>
+      <div class="g2e" style="margin-bottom:16px">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Diagnoses &amp; Conditions</div></div>
+          <div class="pnl-bd">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px"><span style="font-size:18px">💗</span><div><div style="font-size:12.5px;font-weight:700;color:var(--t1)">Mild Hypertension</div><div style="font-size:11px;color:var(--t3)">ICD‑10: I10 · Diagnosed Oct 2024 · Managed</div></div><span class="tag am" style="margin-left:auto">Monitoring</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px"><span style="font-size:18px">🩸</span><div><div style="font-size:12.5px;font-weight:700;color:var(--t1)">Iron‑deficiency Anaemia</div><div style="font-size:11px;color:var(--t3)">ICD‑10: D50.9 · Diagnosed Mar 2025 · Resolved</div></div><span class="tag g" style="margin-left:auto">Resolved</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px"><span style="font-size:18px">👁️</span><div><div style="font-size:12.5px;font-weight:700;color:var(--t1)">Mild Myopia</div><div style="font-size:11px;color:var(--t3)">ICD‑10: H52.1 · Diagnosed 2022 · Stable</div></div><span class="tag b" style="margin-left:auto">Stable</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Allergies &amp; Alerts</div></div>
+          <div class="pnl-bd">
+            <div class="notice r"><span class="notice-ico">🚨</span><div class="notice-txt"><strong>Allergy on file:</strong> Penicillin — Severe allergic reaction (anaphylaxis). Visible to all treating clinicians.</div></div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="padding:9px 12px;background:var(--rl);border:1px solid var(--rm);border-radius:8px;display:flex;align-items:center;gap:9px"><span style="font-size:15px">⚠️</span><div><div style="font-size:12px;font-weight:700;color:#7f1d1d">Penicillin (Amoxicillin)</div><div style="font-size:10.5px;color:#b91c1c">Severe — Anaphylaxis · Confirmed 2021</div></div></div>
+              <div style="padding:9px 12px;background:var(--al);border:1px solid var(--amm);border-radius:8px;display:flex;align-items:center;gap:9px"><span style="font-size:15px">⚠️</span><div><div style="font-size:12px;font-weight:700;color:#78350f">Sulfa drugs</div><div style="font-size:10.5px;color:#92400e">Moderate — Rash · Documented 2023</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Immunisation Record</div></div>
+        <div class="pnl-bd">
+          <table class="tbl">
+            <thead><tr><th>Vaccine</th><th>Date Given</th><th>Facility</th><th>Next Due</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>COVID‑19 (Moderna)</td><td class="mono">Feb 2022</td><td>KNH Nairobi</td><td class="mono">—</td><td><span class="tag g">Complete</span></td></tr>
+              <tr><td>Influenza (Flu)</td><td class="mono">Jul 2025</td><td>Coast General</td><td class="mono">Jul 2026</td><td><span class="tag g">Current</span></td></tr>
+              <tr><td>Tetanus (TT)</td><td class="mono">Mar 2023</td><td>KNH Nairobi</td><td class="mono">Mar 2033</td><td><span class="tag g">Current</span></td></tr>
+              <tr><td>HPV (Gardasil)</td><td class="mono">—</td><td>—</td><td class="mono">—</td><td><span class="tag am">Not received</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════ DOCUMENTS ═══════════════════════════ -->
+    <div id="pg-documents" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">My Files</div><div class="ph-ti">Documents &amp; Reports</div><div class="ph-su">Medical letters, discharge summaries and certificates</div></div>
+        <button class="btn-s">📤 Upload Document</button>
+      </div>
+      <div class="g3" id="docGrid"></div>
+    </div>
+
+    <!-- ═══════════════════════════ PROFILE ═══════════════════════════ -->
+    <div id="pg-profile" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Account</div><div class="ph-ti">My Profile</div><div class="ph-su">Personal details, contacts and notification preferences</div></div>
+        <button class="btn-p">Save Changes</button>
+      </div>
+      <div class="g2e" style="margin-bottom:16px">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Personal Details</div></div>
+          <div class="pnl-bd">
+            <div class="ff-row"><div class="ff"><label>First Name</label><input value="Wangui"></div><div class="ff"><label>Last Name</label><input value="Njoroge"></div></div>
+            <div class="ff"><label>UniHealth Patient ID</label><input value="AFL‑2024‑KE‑78841209" readonly style="font-family:var(--mono);background:#f3f7f3;color:var(--t3)"></div>
+            <div class="ff"><label>UniHealth Member Number</label><input value="AFL‑MBR‑884321" readonly style="font-family:var(--mono);background:#f3f7f3;color:var(--t3)"></div>
+            <div class="ff"><label>National ID Number</label><input value="12345678" style="font-family:var(--mono)"></div>
+            <div class="ff-row"><div class="ff"><label>Date of Birth</label><input type="date" value="1990-06-15"></div><div class="ff"><label>Blood Group</label><select><option selected>O+</option><option>A+</option><option>B+</option><option>AB+</option><option>O−</option></select></div></div>
+            <div class="ff"><label>County</label><select><option selected>Nairobi</option><option>Mombasa</option><option>Kisumu</option><option>Nakuru</option></select></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Contact Details</div></div>
+          <div class="pnl-bd">
+            <div class="ff"><label>Primary Phone</label><input type="tel" value="0712 345 678"></div>
+            <div class="ff"><label>Alternative Phone</label><input type="tel" placeholder="Optional"></div>
+            <div class="ff"><label>Email Address</label><input type="email" value="wangui.njoroge@gmail.com"></div>
+            <div class="ff"><label>Emergency Contact</label><input value="Peter Njoroge (Husband)"></div>
+            <div class="ff"><label>Emergency Phone</label><input type="tel" value="0722 567 890"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Notification Preferences</div></div>
+        <div class="pnl-bd" id="notifPrefs"></div>
+      </div>
+
+      <!-- Session Security Panel -->
+      <div class="panel" style="margin-top:16px">
+        <div class="pnl-hd"><div class="pnl-ti">🔒 Session Security &amp; Privacy</div><div class="pnl-su">Your active session · Registered devices · AI anomaly protection</div></div>
+        <div class="pnl-bd">
+          <div class="ai-widget green" style="margin-bottom:0">
+            <div class="ai-row">
+              <span class="ai-row-ico">🔐</span>
+              <div class="ai-row-body">
+                <div class="ai-row-ti">Active Session</div>
+                <div class="ai-row-su">Signed in via UniHealth PIN + Biometric MFA · TLS 1.3 encrypted · Session expires after 30 minutes of inactivity · All actions logged to append-only audit trail (KDPA 2019)</div>
+              </div>
+            </div>
+            <div class="ai-row">
+              <span class="ai-row-ico">📱</span>
+              <div class="ai-row-body">
+                <div class="ai-row-ti">Registered Devices</div>
+                <div class="ai-row-su">1 biometric device (KNH Nairobi, Fingerprint Reader) · USSD *388# linked to 0712 ••••78 · To remove a device, contact UniHealth support</div>
+              </div>
+            </div>
+            <div class="ai-row" style="padding-bottom:0;border:none">
+              <span class="ai-row-ico">🤖</span>
+              <div class="ai-row-body">
+                <div class="ai-row-ti">AI Anomaly Protection Active</div>
+                <div class="ai-row-su">UniHealth AI monitors login patterns. Unusual access (wrong time or location) triggers adaptive MFA and SMS notification to you immediately.</div>
+              </div>
+              <button class="btn-s" style="font-size:11px;padding:5px 10px;flex-shrink:0" onclick="nav('consent',null)">View Access Log →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ PRIVACY & CONSENT ═══ -->
+    <div id="pg-consent" class="pg">
+      <div class="ph">
+        <div>
+          <div class="ph-ey">Privacy · KDPA 2019</div>
+          <div class="ph-ti">Privacy &amp; Consent</div>
+          <div class="ph-su">Your data rights · Consent management · Who has accessed your records</div>
+        </div>
+        <div class="ph-r">
+          <span class="kdpa-badge" style="font-size:11px;padding:6px 12px">🔒 KDPA 2019 Protected</span>
+        </div>
+      </div>
+
+      <!-- KDPA Rights Banner -->
+      <div style="padding:14px 18px;background:var(--gl);border:1.5px solid var(--gm);border-radius:12px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px">
+        <span style="font-size:24px">🏛️</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:5px">Your Rights Under Kenya's Data Protection Act (KDPA 2019)</div>
+          <div style="font-size:11.5px;color:var(--t2);line-height:1.7">
+            You have the right to: <strong>Access</strong> your health data · <strong>Rectify</strong> incorrect information · <strong>Erase</strong> data in certain circumstances · 
+            <strong>Portability</strong> — receive your data in a usable format · <strong>Object</strong> to certain processing · <strong>Withdraw</strong> consent at any time.
+          </div>
+        </div>
+      </div>
+
+      <div class="g2e" style="margin-bottom:18px">
+        <!-- Consent Management -->
+        <div class="panel">
+          <div class="pnl-hd">
+            <div><div class="pnl-ti">Consent Management</div><div class="pnl-su">Control how your health data is used</div></div>
+            <span class="tag g dot">UniHealth Active</span>
+          </div>
+          <div class="pnl-bd">
+            <div class="consent-row">
+              <span class="consent-ico">🏥</span>
+              <div class="consent-body">
+                <div class="consent-ti">Treatment — Clinical Care</div>
+                <div class="consent-su">Allow your attending doctors and nurses at UniHealth-registered facilities to access your health records for direct treatment purposes.</div>
+                <div class="consent-date">Consented: 14 Jan 2024 · Required for UniHealth cover</div>
+              </div>
+              <div class="consent-right">
+                <span class="tag g">✓ Granted</span>
+              </div>
+            </div>
+            <div class="consent-row">
+              <span class="consent-ico">📊</span>
+              <div class="consent-body">
+                <div class="consent-ti">Public Health Research (Anonymised)</div>
+                <div class="consent-su">Allow anonymised, de-identified data to be used for MOH public health research and disease surveillance. Your name and ID are never shared.</div>
+                <div class="consent-date">Last reviewed: 10 Mar 2026</div>
+              </div>
+              <div class="consent-right">
+                <span class="tag g" id="researchConsent">✓ Granted</span>
+                <button class="btn-s" style="font-size:10.5px;padding:5px 10px;margin-top:4px" onclick="toggleConsent('researchConsent','Research consent')">Withdraw</button>
+              </div>
+            </div>
+            <div class="consent-row">
+              <span class="consent-ico">🔔</span>
+              <div class="consent-body">
+                <div class="consent-ti">Health Reminders &amp; Notifications</div>
+                <div class="consent-su">Receive SMS and portal notifications for medication reminders, appointment alerts, and UniHealth contribution reminders.</div>
+                <div class="consent-date">Consented: 14 Jan 2024</div>
+              </div>
+              <div class="consent-right">
+                <span class="tag g" id="notifConsent">✓ Granted</span>
+                <button class="btn-s" style="font-size:10.5px;padding:5px 10px;margin-top:4px" onclick="toggleConsent('notifConsent','Notification consent')">Withdraw</button>
+              </div>
+            </div>
+            <div class="consent-row">
+              <span class="consent-ico">🤖</span>
+              <div class="consent-body">
+                <div class="consent-ti">AI Health Insights</div>
+                <div class="consent-su">Allow UniHealth AI to analyse your health records and generate personalised health insights and preventive care suggestions shown on your dashboard.</div>
+                <div class="consent-date">Consented: 14 Jan 2024</div>
+              </div>
+              <div class="consent-right">
+                <span class="tag g" id="aiConsent">✓ Granted</span>
+                <button class="btn-s" style="font-size:10.5px;padding:5px 10px;margin-top:4px" onclick="toggleConsent('aiConsent','AI insights consent')">Withdraw</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KDPA Data Rights Actions -->
+        <div class="panel">
+          <div class="pnl-hd"><div><div class="pnl-ti">Exercise Your Data Rights</div><div class="pnl-su">Submit a formal KDPA request</div></div></div>
+          <div class="pnl-bd">
+            <div class="ai-widget green" style="margin-bottom:14px">
+              <div class="ai-row">
+                <span class="ai-row-ico">📥</span>
+                <div class="ai-row-body">
+                  <div class="ai-row-ti">Download Your Health Data</div>
+                  <div class="ai-row-su">Export all your UniHealth health records in FHIR R5 JSON or PDF format. Your right to data portability under KDPA 2019.</div>
+                </div>
+                <button class="btn-s" style="font-size:11px;padding:6px 11px;flex-shrink:0" onclick="showPatToast('📥','Data export requested','Your records will be ready to download within 24 hours')">Request Export</button>
+              </div>
+              <div class="ai-row">
+                <span class="ai-row-ico">✏️</span>
+                <div class="ai-row-body">
+                  <div class="ai-row-ti">Request Data Correction</div>
+                  <div class="ai-row-su">If any of your health information is incorrect, submit a correction request. A data officer will review within 14 days.</div>
+                </div>
+                <button class="btn-s" style="font-size:11px;padding:6px 11px;flex-shrink:0" onclick="showPatToast('✏️','Correction request submitted','A data officer will contact you within 14 days')">Request Correction</button>
+              </div>
+              <div class="ai-row">
+                <span class="ai-row-ico">🗑️</span>
+                <div class="ai-row-body">
+                  <div class="ai-row-ti">Request Data Erasure</div>
+                  <div class="ai-row-su">Request deletion of non-essential records. Note: clinical records required by law (UniHealth Act 2023) must be retained for 7 years.</div>
+                </div>
+                <button class="btn-s" style="font-size:11px;padding:6px 11px;flex-shrink:0" onclick="showPatToast('🗑️','Erasure request logged','A data protection officer will contact you within 30 days')">Request Erasure</button>
+              </div>
+            </div>
+            <div style="padding:9px 13px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);line-height:1.6">
+              <strong>Data Protection Officer:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f282809b8493918bb293948b9391938097dc959ddc9997">[email&#160;protected]</a><br>
+              <strong>Response time:</strong> 14 working days (KDPA 2019, Section 26)<br>
+              <strong>Escalation:</strong> Office of the Data Protection Commissioner, Kenya
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Who Accessed My Records (Audit Log) -->
+      <div class="panel">
+        <div class="pnl-hd">
+          <div><div class="pnl-ti">🔍 Who Has Accessed My Records</div><div class="pnl-su">Append-only access log · KDPA 2019 · You are always notified of access</div></div>
+          <button class="btn-s" style="font-size:11px" onclick="showPatToast('📥','Access log exported','Your record access history has been downloaded')">📥 Export Log</button>
+        </div>
+        <div style="padding:0 20px 6px">
+          <div class="access-row">
+            <span class="access-ico">🩺</span>
+            <div class="access-body">
+              <div class="access-ti">Dr. James Mutuku — Viewed clinical workup</div>
+              <div class="access-su">KNH Nairobi · Internal Medicine · KMPDC verified · Purpose: Direct treatment</div>
+            </div>
+            <span class="access-ts">Today 09:42</span>
+            <span class="tag g" style="margin-left:8px">Authorised</span>
+          </div>
+          <div class="access-row">
+            <span class="access-ico">💉</span>
+            <div class="access-body">
+              <div class="access-ti">Nurse Achieng Atieno — Viewed vitals &amp; MAR</div>
+              <div class="access-su">KNH Nairobi · Ward 4B · NCK verified · Purpose: Nursing care</div>
+            </div>
+            <span class="access-ts">Today 08:15</span>
+            <span class="tag g" style="margin-left:8px">Authorised</span>
+          </div>
+          <div class="access-row">
+            <span class="access-ico">🏛️</span>
+            <div class="access-body">
+              <div class="access-ti">UniHealth System — Automated claim processing</div>
+              <div class="access-su">UniHealth national system · Claims validation · Anonymised processing · Consent: granted</div>
+            </div>
+            <span class="access-ts">Yesterday 14:30</span>
+            <span class="tag g" style="margin-left:8px">Consented</span>
+          </div>
+          <div class="access-row">
+            <span class="access-ico">📋</span>
+            <div class="access-body">
+              <div class="access-ti">Admin M. Kamau — Viewed UniHealth cover details</div>
+              <div class="access-su">MOH HQ · System Administrator · Purpose: Claims administration</div>
+            </div>
+            <span class="access-ts">3 Apr 2026</span>
+            <span class="tag g" style="margin-left:8px">Authorised</span>
+          </div>
+          <div class="access-row">
+            <span class="access-ico">⚠️</span>
+            <div class="access-body">
+              <div class="access-ti">Unknown — Access attempt blocked</div>
+              <div class="access-su">IP 197.232.xx.xx · UniHealth Admin Portal · AI security system blocked this attempt automatically</div>
+            </div>
+            <span class="access-ts">2 Apr 2026</span>
+            <span class="tag r" style="margin-left:8px">BLOCKED</span>
+          </div>
+        </div>
+        <div style="padding:11px 20px;background:#f8faf8;border-top:1px solid var(--bdr);font-size:10.5px;color:var(--t3)">
+          ⛓️ This log is append-only and cannot be edited by anyone, including administrators. You receive an SMS notification whenever a new party accesses your records. All entries are blockchain-anchored.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="mo-ov" id="moOv" onclick="if(event.target===this)closeMo()">
+  <div class="mo">
+    <div class="mo-stripe"></div>
+    <div class="mo-hd"><div class="mo-ti" id="moTitle">Action</div><button class="mo-x" onclick="closeMo()">✕</button></div>
+    <div class="mo-bd" id="moBd"></div>
+    <div class="mo-ft"><button class="btn-s" onclick="closeMo()">Cancel</button><button class="btn-p" id="moBtn" onclick="submitMo()">Confirm</button></div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ── DATE ──
+var now=new Date();
+var DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('tbDate').textContent=DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+
+// ── NAVIGATION ──
+var TITLES={
+  home:'My Dashboard',appointments:'Appointments',visits:'Visit History',
+  results:'Test Results',medications:'Medications',vitals:'Vitals & Trends',
+  coverage:'My UniHealth Cover',contributions:'Contributions',bills:'Bills & Invoices',
+  payments:'Make a Payment',records:'Health Records',documents:'Documents',profile:'My Profile',consent:'Privacy & Consent'
+};
+var CRUMBS={
+  home:'Home',appointments:'Health › Appointments',visits:'Health › Visits',
+  results:'Health › Results',medications:'Health › Medications',vitals:'Health › Vitals',
+  coverage:'Payments › UniHealth Cover',contributions:'Payments › Contributions',
+  bills:'Payments › Bills',payments:'Payments › Pay Now',
+  records:'Records › Health Records',documents:'Records › Documents',profile:'Account › Profile'
+};
+function nav(pg,el){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.getElementById('pg-'+pg).classList.add('on');
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  if(el){el.classList.add('on');}
+  else{document.querySelectorAll('.ni').forEach(function(n){if((n.getAttribute('onclick')||'').includes("'"+pg+"'"))n.classList.add('on');});}
+  document.getElementById('tbTitle').textContent=TITLES[pg]||pg;
+  document.getElementById('tbCrumb').textContent=CRUMBS[pg]||pg;
+  animAll();
+}
+function signOut(){if(confirm('Sign out of UniHealth?'))window.location.href='unihealth-login.html';}
+
+// ── MODALS ──
+var MODALS={
+  bookAppt:{t:'Book an Appointment',s:'Book Now',b:`
+    <div class="ff"><label>Facility</label><select><option>KNH Nairobi — Outpatient</option><option>Coast General Hospital</option><option>MTRH Eldoret</option><option>Kisumu County Referral</option></select></div>
+    <div class="ff"><label>Department</label><select><option>General Outpatient</option><option>Cardiology</option><option>Gynaecology</option><option>Dental</option><option>Eye Clinic</option><option>Orthopaedics</option></select></div>
+    <div class="ff-row"><div class="ff"><label>Date</label><input type="date"></div><div class="ff"><label>Time</label><select><option>8:00 AM</option><option>9:00 AM</option><option>10:00 AM</option><option>2:00 PM</option><option>3:00 PM</option></select></div></div>
+    <div class="ff"><label>Reason for visit</label><textarea placeholder="Brief description of your symptoms…"></textarea></div>
+    <div style="padding:10px 12px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);font-weight:600">✅ This visit will be covered under your UniHealth outpatient benefit.</div>`},
+  message:{t:'Message Your Doctor',s:'Send',b:`
+    <div class="ff"><label>Doctor / Facility</label><select><option>Dr. Amina Wanjiru — KNH Nairobi</option><option>KNH Cardiology Team</option><option>Coast General Outpatient</option></select></div>
+    <div class="ff"><label>Subject</label><input placeholder="e.g. Question about my prescription"></div>
+    <div class="ff"><label>Message</label><textarea placeholder="Type your message here. A clinician will respond within 24 hours."></textarea></div>
+    <div style="font-size:11px;color:var(--t3);line-height:1.5">For emergencies call <strong>0800 723 253</strong> (MOH toll‑free) or go to the nearest A&E.</div>`},
+  mpesa:{t:'Pay via M‑PESA',s:'Send STK Push',b:`
+    <div style="text-align:center;padding:8px 0 16px"><div style="font-size:40px;margin-bottom:8px">💚</div>
+    <div style="font-family:var(--serif);font-size:18px;color:var(--t1)">UniHealth Paybill</div>
+    <div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--g);margin:8px 0">400100</div>
+    <div style="font-size:12px;color:var(--t3)">Account: <strong>UniHealth Health</strong> or your <strong>National ID</strong></div></div>
+    <div class="ff"><label>Your M‑PESA Phone</label><input type="tel" value="0712 345 678"></div>
+    <div class="ff"><label>Amount (Ksh)</label><input type="number" value="500"></div>
+    <div style="font-size:11px;color:var(--t3)">You can also dial <strong>*388#</strong> to pay via USSD without data.</div>`},
+  mtiba:{t:'Pay via M‑TIBA Wallet',s:'Confirm Payment',b:`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:linear-gradient(135deg,#e8490a,#ff6b2b);border-radius:10px;margin-bottom:14px;color:#fff">
+      <div style="font-size:28px">🟠</div><div><div style="font-size:10.5px;opacity:.8;font-weight:700">M‑TIBA Balance</div><div style="font-family:var(--serif);font-size:24px">Ksh 3,200</div></div></div>
+    <div class="ff"><label>Amount (Ksh)</label><input type="number" value="500"></div>
+    <div class="ff"><label>Purpose</label><select><option>Monthly UniHealth Contribution</option><option>Bill Payment — KNH</option><option>Pharmacy — Prescription</option></select></div>`},
+  bank:{t:'Bank Transfer (PESALINK)',s:'Generate Reference',b:`
+    <div style="font-size:12px;color:var(--t3);margin-bottom:14px;line-height:1.6">Transfer to UniHealth Health Trust Account via PESALINK:</div>
+    <div style="background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:6px">UNIHEALTH HEALTH TRUST ACCOUNT</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--t1)">Equity Bank: 0880XXX2026<br>KCB: 1250XXX9044<br>Co‑op Bank: 011002XXX2601</div></div>
+    <div class="ff"><label>Your Reference (National ID)</label><input value="12345678" style="font-family:var(--mono)"></div>
+    <div class="ff"><label>Amount (Ksh)</label><input type="number" value="500"></div>`},
+  topup:{t:'Top Up M‑TIBA Wallet',s:'Send STK Push',b:`
+    <div class="ff"><label>Top‑up Amount (Ksh)</label><input type="number" placeholder="e.g. 1000" min="100"></div>
+    <div class="ff"><label>Source</label><select><option>M‑PESA (Safaricom)</option><option>Airtel Money</option><option>Bank Transfer</option></select></div>
+    <div class="ff"><label>M‑PESA Phone</label><input type="tel" value="0712 345 678"></div>
+    <div style="font-size:11px;color:var(--t3)">Funds credited to your M‑TIBA wallet within 30 seconds.</div>`},
+  contribute:{t:'Make UniHealth Contribution',s:'Proceed to Payment',b:`
+    <div class="ff"><label>Amount</label><select><option>Ksh 500 — Standard Monthly</option><option>Ksh 1,000 — Family Cover</option><option>Ksh 1,500 — Enhanced Cover</option></select></div>
+    <div class="ff"><label>Payment Method</label><select><option>M‑PESA</option><option>M‑TIBA Wallet</option><option>Bank Transfer</option><option>Payroll Deduction</option></select></div>
+    <div style="padding:10px;background:var(--gl);border:1px solid var(--gm);border-radius:8px;font-size:11px;color:var(--gd);font-weight:600">📅 Next contribution due: 31 March 2026 (Ksh 500)</div>`},
+  payroll:{t:'Set Up Payroll Deduction',s:'Submit Request',b:`
+    <div class="ff"><label>Employer / Ministry</label><input placeholder="e.g. Nairobi City County"></div>
+    <div class="ff"><label>IPPD Number</label><input placeholder="e.g. 12345678" style="font-family:var(--mono)"></div>
+    <div class="ff"><label>Monthly Deduction</label><select><option>Ksh 500</option><option>Ksh 1,000</option><option>Ksh 1,500</option></select></div>
+    <div style="font-size:11px;color:var(--t3);line-height:1.5">Your employer's payroll officer will receive a request. Deduction starts next payroll cycle.</div>`},
+  linkAccount:{t:'Link My UniHealth Account',s:'Verify & Link',b:`
+    <div class="ff"><label>National ID Number</label><input placeholder="e.g. 12345678" style="font-family:var(--mono)"></div>
+    <div class="ff"><label>UniHealth PIN (4‑digit)</label><input type="password" maxlength="4" placeholder="Enter your 4‑digit UniHealth PIN"></div>
+    <div style="padding:10px;background:var(--bl);border:1px solid var(--bm);border-radius:8px;font-size:11px;color:#1e3a8a">Your UniHealth PIN was set when you first registered. If forgotten, visit any UniHealth Health Centre or call the UniHealth helpline.</div>`},
+  export:{t:'Export / Download',s:'Download',b:`
+    <div class="ff"><label>Document Type</label><select><option>Full Medical Summary</option><option>Visit History</option><option>Test Results</option><option>Prescription List</option><option>UniHealth Cover Statement</option><option>Contribution Statement</option></select></div>
+    <div class="ff-row"><div class="ff"><label>From</label><input type="date"></div><div class="ff"><label>To</label><input type="date"></div></div>
+    <div class="ff"><label>Format</label><select><option>PDF</option><option>CSV</option></select></div>`}
+};
+function mo(k){
+  var m=MODALS[k]||{t:'Action',s:'OK',b:'<p>Coming soon.</p>'};
+  document.getElementById('moTitle').textContent=m.t;
+  document.getElementById('moBd').innerHTML=m.b;
+  document.getElementById('moBtn').textContent=m.s;
+  document.getElementById('moBtn').style.background='var(--g)';
+  document.getElementById('moOv').classList.add('open');
+}
+function closeMo(){document.getElementById('moOv').classList.remove('open');}
+function submitMo(){var b=document.getElementById('moBtn');b.textContent='✓ Done!';b.style.background='var(--gd)';setTimeout(closeMo,700);}
+
+// ── DATA: APPOINTMENTS ──
+var APPTS=[
+  {day:'15',mon:'MAR',name:'Dr. Karimi — Cardiology',detail:'KNH Nairobi · Referral follow‑up',time:'10:00 AM',tag:'g',tagl:'Cover Active'},
+  {day:'22',mon:'MAR',name:'Dr. Oduor — General',detail:'Coast General · Hypertension review',time:'2:00 PM',tag:'b',tagl:'Outpatient'},
+];
+function mkAppts(el,list){list.forEach(function(a){el.innerHTML+='<div class="appt"><div class="appt-box"><div class="appt-day">'+a.day+'</div><div class="appt-mon">'+a.mon+'</div></div><div class="appt-info"><div class="appt-name">'+a.name+'</div><div class="appt-detail">'+a.detail+'</div></div><div class="appt-r"><div class="appt-time">'+a.time+'</div><span class="tag '+a.tag+'" style="margin-top:4px">'+a.tagl+'</span></div></div>';});}
+mkAppts(document.getElementById('homeAppts'),APPTS);
+mkAppts(document.getElementById('apptUpcoming'),APPTS);
+var PAST=[{day:'4',mon:'MAR',name:'Dr. A. Wanjiru — KNH',detail:'Blood pressure check · Prescription renewed',time:'9:30 AM',tag:'grey',tagl:'Completed'},{day:'18',mon:'JAN',name:'Dr. Oduor — Coast General',detail:'Annual checkup · Blood tests',time:'11:00 AM',tag:'grey',tagl:'Completed'}];
+mkAppts(document.getElementById('apptPast'),PAST);
+
+// Facilities
+var FACS=['KNH Nairobi — Level 6','Coast General Hospital — Level 5','Kisumu County Referral — Level 5'];
+var fl=document.getElementById('facList');
+FACS.forEach(function(f){fl.innerHTML+='<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--bdr)"><div style="width:36px;height:36px;border-radius:9px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🏥</div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:var(--t1)">'+f+'</div></div><span class="tag g">Cover ✓</span><button class="btn-p btn-sm" onclick="mo(\'bookAppt\')">Book</button></div>';});
+
+// ── DATA: MEDICATIONS ──
+var MEDS=[
+  {ico:'💊',bg:'var(--gl)',name:'Amlodipine 5mg',dose:'Once daily · Morning · With water',next:'Due today',nc:'var(--am)',ref:'5 days until refill'},
+  {ico:'💊',bg:'var(--bl)',name:'Ferrous Sulphate 200mg',dose:'Twice daily · After meals',next:'Due 1:00 PM',nc:'var(--b)',ref:'14 days until refill'},
+  {ico:'💊',bg:'var(--pul)',name:'Folic Acid 5mg',dose:'Once daily',next:'Due tomorrow',nc:'var(--pu)',ref:'10 days until refill'},
+];
+function mkMeds(el,list){list.forEach(function(m){el.innerHTML+='<div class="med"><div class="med-ico" style="background:'+m.bg+'">'+m.ico+'</div><div style="flex:1"><div class="med-name">'+m.name+'</div><div class="med-dose">'+m.dose+'</div></div><div style="text-align:right"><div class="med-next" style="color:'+m.nc+'">'+m.next+'</div><div class="med-ref">'+m.ref+'</div></div></div>';});}
+mkMeds(document.getElementById('homeMeds'),MEDS);
+mkMeds(document.getElementById('activeMeds'),MEDS);
+mkMeds(document.getElementById('archivedMeds'),[
+  {ico:'💊',bg:'#f3f4f6',name:'Ferrous Sulphate 200mg (Course 1)',dose:'Course completed Mar 2025',next:'',nc:'var(--t4)',ref:'Archived · 60‑day course'},
+  {ico:'💊',bg:'#f3f4f6',name:'Azithromycin 500mg',dose:'3‑day antibiotic course',next:'',nc:'var(--t4)',ref:'Archived · Jan 2025'},
+]);
+
+// ── DATA: RESULTS ──
+var RESULTS=[
+  {i:'norm',name:'Haemoglobin (Hb)',val:'13.2 g/dL',vc:'norm',range:'12.0–16.0 g/dL',dt:'4 Mar'},
+  {i:'high',name:'LDL Cholesterol',val:'4.1 mmol/L',vc:'high',range:'< 3.4 mmol/L',dt:'4 Mar'},
+  {i:'norm',name:'Fasting Blood Glucose',val:'5.4 mmol/L',vc:'norm',range:'3.9–5.5 mmol/L',dt:'4 Mar'},
+  {i:'norm',name:'Creatinine',val:'72 μmol/L',vc:'norm',range:'44–80 μmol/L',dt:'4 Mar'},
+  {i:'norm',name:'TSH (Thyroid)',val:'2.1 mIU/L',vc:'norm',range:'0.4–4.0 mIU/L',dt:'4 Mar'},
+];
+function mkRes(el,list){list.forEach(function(r){el.innerHTML+='<div class="res"><div class="res-ind '+r.i+'"></div><div><div class="res-name">'+r.name+'</div><div class="res-range">Ref: '+r.range+'</div></div><div style="text-align:right"><div class="res-val '+r.vc+'">'+r.val+'</div><div class="res-dt">'+r.dt+'</div></div></div>';});}
+mkRes(document.getElementById('homeResults'),RESULTS.slice(0,3));
+mkRes(document.getElementById('bloodPanel'),RESULTS);
+mkRes(document.getElementById('prevResults'),[
+  {i:'norm',name:'Full Blood Count — Jan 2026',val:'Normal',vc:'norm',range:'KNH Nairobi',dt:'21 Jan'},
+  {i:'pend',name:'Chest X‑Ray — Dec 2025',val:'Report ready',vc:'norm',range:'Coast General',dt:'12 Dec'},
+  {i:'norm',name:'Blood Panel — Oct 2025',val:'Normal',vc:'norm',range:'KNH Nairobi',dt:'3 Oct'},
+]);
+
+// ── DATA: VISITS ──
+var VISITS=[
+  {ico:'🏥',bg:'var(--gl)',name:'Outpatient — Cardiology',det:'KNH Nairobi · Dr. Karimi · Hypertension follow‑up',dt:'4 Mar 2026',cost:'UniHealth Covered',cc:'var(--g)'},
+  {ico:'🧪',bg:'var(--bl)',name:'Laboratory — Blood Panel',det:'KNH Nairobi · Full blood count, lipids, glucose · 5 tests',dt:'4 Mar 2026',cost:'UniHealth Covered',cc:'var(--g)'},
+  {ico:'🏥',bg:'var(--pul)',name:'Outpatient — General',det:'Coast General · Dr. Oduor · Annual checkup',dt:'21 Jan 2026',cost:'Ksh 600',cc:'var(--b)'},
+  {ico:'🚑',bg:'var(--rl)',name:'Emergency — A&E',det:'KNH Nairobi · Severe headache · Discharged same day',dt:'3 Nov 2025',cost:'UniHealth Covered',cc:'var(--g)'},
+  {ico:'🏥',bg:'var(--al)',name:'Outpatient — Gynaecology',det:'Coast General · Dr. Atieno · Routine check',dt:'18 Sep 2025',cost:'Ksh 1,200',cc:'var(--b)'},
+];
+var vl=document.getElementById('visitList');
+VISITS.forEach(function(v){vl.innerHTML+='<div class="visit"><div class="visit-ico" style="background:'+v.bg+'">'+v.ico+'</div><div style="flex:1"><div class="visit-name">'+v.name+'</div><div class="visit-det">'+v.det+'</div></div><div style="text-align:right"><div class="visit-date">'+v.dt+'</div><div class="visit-cost" style="color:'+v.cc+'">'+v.cost+'</div></div></div>';});
+
+// ── DATA: CONTRIBUTIONS ──
+var CONTRIBS=[
+  {mo:'March 2026 (Due)',via:'Due 31 March 2026',st:'pend',stl:'Pending',amt:'Ksh 500'},
+  {mo:'February 2026',via:'M‑PESA · REF: MPESA‑FEBB‑2026',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'January 2026',via:'M‑PESA · REF: MPESA‑JANB‑2026',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'December 2025',via:'Payroll Deduction · IPPD',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'November 2025',via:'M‑TIBA Wallet',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'October 2025',via:'M‑PESA · REF: MPESA‑OCTB‑2025',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'September 2025',via:'Bank Transfer (Equity Bank)',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'August 2025',via:'M‑PESA Paybill',st:'paid',stl:'Paid',amt:'Ksh 500'},
+  {mo:'July 2025',via:'Payroll Deduction',st:'fail',stl:'Failed',amt:'Ksh 500'},
+];
+var cl=document.getElementById('contribList');
+CONTRIBS.forEach(function(c,i){
+  var last=i===CONTRIBS.length-1;
+  cl.innerHTML+='<div class="contrib"><div class="contrib-dc"><div class="contrib-dot '+c.st+'"></div>'+(last?'':'<div class="contrib-cn"></div>')+'</div><div style="flex:1"><div class="contrib-mo">'+c.mo+'</div><div class="contrib-via">'+c.via+'</div></div><div style="text-align:right"><div class="contrib-amt">'+c.amt+'</div><div class="contrib-st '+c.st+'">'+c.stl+'</div></div></div>';
+});
+
+// ── DATA: BILLS TABLE ──
+var BILLS=[
+  ['4 Mar 2026','Blood Panel — KNH Lab','Ksh 1,200','UniHealth Covered','Ksh 0'],
+  ['4 Mar 2026','Outpatient — Cardiology','Ksh 600','UniHealth Covered','Ksh 0'],
+  ['21 Jan 2026','Outpatient — Coast General','Ksh 600','UniHealth Partial','Ksh 0'],
+  ['3 Nov 2025','Emergency A&E — KNH','Ksh 3,400','UniHealth Covered','Ksh 0'],
+  ['18 Sep 2025','Gynaecology Consult','Ksh 1,200','UniHealth Partial','Ksh 0'],
+];
+var bt=document.getElementById('billTable');
+bt.innerHTML='<thead><tr><th>Date</th><th>Description</th><th>Total</th><th>UniHealth Cover</th><th>You Pay</th><th>Status</th></tr></thead><tbody>';
+BILLS.forEach(function(b){bt.innerHTML+='<tr><td class="mono" style="color:var(--t3)">'+b[0]+'</td><td>'+b[1]+'</td><td>'+b[2]+'</td><td><span class="tag g">'+b[3]+'</span></td><td style="font-weight:700;color:var(--g)">'+b[4]+'</td><td><span class="tag g">Settled</span></td></tr>';});
+bt.innerHTML+='</tbody>';
+
+// ── DATA: TRANSACTIONS ──
+var TXS=[['4 Mar 2026','UniHealth Claim — KNH','Ksh 1,800','Settled'],['31 Jan 2026','UniHealth Contribution','Ksh 500','Paid'],['21 Jan 2026','Outpatient — Coast General','Ksh 600','Paid']];
+var tx=document.getElementById('txTable');
+tx.innerHTML='<thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+TXS.forEach(function(t){tx.innerHTML+='<tr><td class="mono" style="color:var(--t3)">'+t[0]+'</td><td>'+t[1]+'</td><td style="font-weight:700">'+t[2]+'</td><td><span class="tag g">'+t[3]+'</span></td></tr>';});
+tx.innerHTML+='</tbody>';
+
+// ── DATA: DOCUMENTS ──
+var DOCS=[
+  {ico:'📋',bg:'var(--gl)',name:'Discharge Summary',meta:'KNH Nairobi · 4 Mar 2026',tag:'Medical'},
+  {ico:'🧪',bg:'var(--bl)',name:'Blood Test Results',meta:'KNH Lab · 4 Mar 2026',tag:'Lab'},
+  {ico:'💊',bg:'var(--pul)',name:'Prescription — Amlodipine',meta:'Dr. Wanjiru · 4 Mar 2026',tag:'Pharmacy'},
+  {ico:'🛡️',bg:'var(--al)',name:'UniHealth Cover Statement',meta:'UniHealth · FY 2025/26',tag:'Cover'},
+  {ico:'📋',bg:'var(--tel)',name:'Referral Letter — Cardiology',meta:'KNH · 28 Feb 2026',tag:'Referral'},
+  {ico:'🏅',bg:'var(--pil)',name:'Immunisation Certificate',meta:'UniHealth · Updated Mar 2026',tag:'Certificate'},
+];
+var dg=document.getElementById('docGrid');
+DOCS.forEach(function(d){dg.innerHTML+='<div class="doc-c"><div class="doc-ico" style="background:'+d.bg+'">'+d.ico+'</div><div><div class="doc-name">'+d.name+'</div><div class="doc-meta">'+d.meta+'</div><div style="margin-top:6px"><span class="tag grey">'+d.tag+'</span></div></div></div>';});
+
+// ── NOTIFICATION PREFS ──
+var PREFS=[
+  ['Appointment reminders (SMS)','24‑hour and 1‑hour reminders via SMS',true],
+  ['Appointment reminders (Email)','Email notification for upcoming appointments',true],
+  ['Test results available','Notify when new lab results are ready',true],
+  ['Prescription refill reminders','Alert when medication is due for refill',true],
+  ['UniHealth contribution reminders','Monthly reminder before contribution due date',true],
+  ['UniHealth claim status updates','Notify when a claim is approved or needs action',false],
+];
+var np=document.getElementById('notifPrefs');
+PREFS.forEach(function(p,i){
+  np.innerHTML+='<div class="sw-row" onclick="toggleSw(this)"><div style="flex:1"><div class="sw-nm">'+p[0]+'</div><div class="sw-ds">'+p[1]+'</div></div><div class="sw '+(p[2]?'on':'off')+'"><div class="sw-k"></div></div></div>';
+});
+function toggleSw(el){var sw=el.querySelector('.sw');var on=sw.classList.contains('on');sw.classList.toggle('on',!on);sw.classList.toggle('off',on);}
+
+// ── ANIMATE BARS & RING ──
+function animAll(){
+  setTimeout(function(){
+    document.querySelectorAll('[data-w]').forEach(function(el){
+      el.style.width=(String(el.getAttribute('data-w')).includes('%')?el.getAttribute('data-w'):el.getAttribute('data-w')+'%');
+    });
+    var fill=document.getElementById('ringFill');
+    if(fill){var circ=2*Math.PI*37;fill.style.strokeDashoffset=(circ-(circ*0.78)).toString();}
