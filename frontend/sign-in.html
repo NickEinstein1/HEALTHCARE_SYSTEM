@@ -297,14 +297,14 @@ body{display:flex;min-height:100vh;background:var(--bg)}
         <div class="brand-sq">🏥</div>
         <div>
           <div class="brand-nm">UniHealth EHR</div>
-          <div class="brand-tg">National Digital Health Network</div>
+          <div class="brand-tg">Kenya National Health System</div>
         </div>
       </div>
-      <div class="sys-pill"><div class="dot"></div>Phase 1 Pilot &middot; UniHealth National EHR &middot; 2026</div>
+      <div class="sys-pill"><div class="dot"></div>Ministry of Health Kenya &middot; UniHealth National EHR &middot; 2026</div>
     </div>
     <div class="hero">
-      <h1 class="hl">One login.<br><em>Every patient</em><br>hospital.</h1>
-      <p class="hd">Secure, unified access to your health records across the pilot hospital network — protected by multi-factor authentication and AI-powered security.</p>
+      <h1 class="hl">One login.<br><em>Every Kenyan</em><br>hospital.</h1>
+      <p class="hd">Secure, unified access to your health records across Kenya's national hospital network — protected by multi-factor authentication and AI-powered security.</p>
     </div>
 
       <!-- AI Security Monitor -->
@@ -334,7 +334,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
         <div class="at-entry" id="at3">→ RBAC ACCESS_GRANTED ward=4B role=nurse</div>
       </div>
 
-    <div class="lfooter"><span>Data protection &middot; UniHealth Act 2023 &middot; ISO 27001</span><span>&copy; UniHealth Pilot 2026</span></div>
+    <div class="lfooter"><span>KDPA 2019 &middot; UniHealth Act 2023 &middot; ISO 27001</span><span>&copy; MOH Kenya 2026</span></div>
   </div>
 </div>
 
@@ -486,8 +486,8 @@ body{display:flex;min-height:100vh;background:var(--bg)}
           </button>
           <div class="orline"><span>or sign in with</span></div>
           <div class="alt-row">
-            <button class="altbn" onclick="doAlt('smartcard', this)">&#128179; Smart Card</button>
-            <button class="altbn" onclick="doAlt('p360', this)">&#128242; Practice 360</button>
+            <button class="altbn" onclick="doAlt('smartcard')">&#128179; Smart Card</button>
+            <button class="altbn" onclick="doAlt('p360')">&#128242; Practice 360</button>
           </div>
           </div><!-- /staffFormInner -->
         </div>
@@ -496,7 +496,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
         <div id="patForm" class="hidden">
           <div class="nbox blu">
             <span class="ni">&#127963;</span>
-            <span><strong>UniHealth Patient Portal login:</strong> Select your ID type, enter your ID number and your 4-digit UniHealth PIN, then verify via SMS OTP or fingerprint biometric.</span>
+            <span><strong>UniHealth / UniHealth Portal login:</strong> Select your ID type, enter your ID number and your 4-digit UniHealth PIN, then verify via SMS OTP or fingerprint biometric.</span>
           </div>
           <div id="patErr" class="errbanner">
             <span>&#9888;&#65039;</span><span id="patErrTxt">ID number or PIN is incorrect. Please try again.</span>
@@ -507,7 +507,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
               <div class="fw">
                 <span class="fi"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg></span>
                 <select id="idTypeIn" onchange="updateIdLabel()">
-                  <option value="national">National / Citizen ID</option>
+                  <option value="national">&#127472;&#127466; Kenyan Citizen ID</option>
                   <option value="passport">&#127757; Passport</option>
                   <option value="alien">&#128100; Foreign Resident ID (Alien ID)</option>
                   <option value="refugee">&#127987; Refugee ID</option>
@@ -535,7 +535,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p3" onkeyup="pinNav(this,'p2','p4')">
                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p4" onkeyup="pinNav(this,'p3','')">
               </div>
-              <span class="fhint">The 4-digit PIN you set when registering on UniHealth Patient Portal</span>
+              <span class="fhint">The 4-digit PIN you set when registering on UniHealth / UniHealth Portal</span>
             </div>
             <div class="field">
               <label>Registered Phone Number</label>
@@ -543,7 +543,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
                 <span class="fi"><svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg></span>
                 <input type="tel" id="patPhIn" placeholder="e.g. 0712 345 678" autocomplete="tel">
               </div>
-              <span class="fhint">Phone number linked to your UniHealth Patient Portal account</span>
+              <span class="fhint">Phone number linked to your UniHealth / UniHealth Portal account</span>
             </div>
           </div>
           <button class="btn" id="patBtn" onclick="doPat()">
@@ -553,9 +553,9 @@ body{display:flex;min-height:100vh;background:var(--bg)}
           </button>
           <div class="orline"><span>or verify with</span></div>
           <div class="alt-row">
-            <button class="altbn" onclick="doAlt('bio', this)">&#128065; Biometric</button>
-            <button class="altbn" onclick="doAlt('p360', this)">&#128242; Practice 360</button>
-            <button class="altbn" onclick="doAlt('ussd', this)">&#128223; *147# USSD</button>
+            <button class="altbn" onclick="doAlt('bio')">&#128065; Biometric</button>
+            <button class="altbn" onclick="doAlt('p360')">&#128242; Practice 360</button>
+            <button class="altbn" onclick="doAlt('ussd')">&#128223; *147# USSD</button>
           </div>
         </div>
       </div>
@@ -585,7 +585,7 @@ body{display:flex;min-height:100vh;background:var(--bg)}
             <div class="risk-signals" id="riskSignals">
               <div class="risk-sig" style="color:#166534">Known device detected</div>
               <div class="risk-sig" style="color:#166534">Login time within normal hours</div>
-              <div class="risk-sig" style="color:#166534">Location: registered region — consistent with history</div>
+              <div class="risk-sig" style="color:#166534">Location: Nairobi — consistent with history</div>
             </div>
           </div>
           <div class="shd" style="margin-bottom:10px">
@@ -663,8 +663,8 @@ body{display:flex;min-height:100vh;background:var(--bg)}
           <div class="sxcard">
             <span class="sxi" id="sxIco">&#129914;</span>
             <div>
-              <div class="sxrole" id="sxRole">Doctor &mdash; Pilot Hospital A</div>
-              <div class="sxs">UniHealth verified &middot; Data protection &middot; Session secured</div>
+              <div class="sxrole" id="sxRole">Doctor &mdash; KNH Nairobi</div>
+              <div class="sxs">UniHealth verified &middot; KDPA 2019 &middot; Session secured</div>
             </div>
           </div>
           <!-- Session Info -->
@@ -698,7 +698,7 @@ var RC={
     regPH:'e.g. A4821',regRx:/^[A-Za-z0-9\/\-]{3,12}$/,
     regErr:'Enter your registration number as printed on your licence.',
     staffNote:'Registration number + institutional email + password → SMS/email OTP',
-    successRole:'Doctor — Pilot Hospital A',successMsg:'Identity verified.\nRedirecting to clinical dashboard…'},
+    successRole:'Doctor — Kenyatta National Hospital',successMsg:'Identity verified.\nRedirecting to clinical dashboard…'},
   nurse:{ico:'💉',title:'Sign in as Nurse / Clinical Officer',sub:'Registration number + institutional email + password',
     note:'Enter your <strong>Nursing Registration Number</strong>, institutional email and password, then confirm via SMS or email OTP.',
     noteClass:'grn',noteIco:'🏥',
@@ -706,24 +706,24 @@ var RC={
     regPH:'e.g. RN/12345',regRx:/^[A-Za-z0-9\/\-]{5,15}$/,
     regErr:'Enter your nursing registration number.',
     staffNote:'Registration number + institutional email + password → SMS/email OTP',
-    successRole:'Nurse — Pilot Hospital B',successMsg:'Identity verified.\nRedirecting to nursing portal…'},
+    successRole:'Nurse — Coast General Hospital',successMsg:'Identity verified.\nRedirecting to nursing portal…'},
   admin:{ico:'🗂️',title:'Sign in as Administrator',sub:'Employee ID + institutional email + password',
     note:'Enter your <strong>Employee ID</strong>, institutional email and password, then confirm via SMS or email OTP.',
     noteClass:'grn',noteIco:'🔐',
-    regLbl:'HRIS Employee ID',regHint:'e.g. ADMIN-KE-00441 — from your organization HR system',
+    regLbl:'HRIS Employee ID',regHint:'e.g. ADMIN-KE-00441 — from your MOH/facility HR system',
     regPH:'e.g. ADMIN-KE-00441',regRx:/^[A-Za-z0-9\-]{4,20}$/,
     regErr:'Enter your HRIS Employee ID (e.g. ADMIN-KE-00441).',
     staffNote:'Employee ID + institutional email + password → SMS/email OTP',
-    successRole:'Administrator — UniHealth Pilot',successMsg:'HRIS identity verified.\nRedirecting to admin dashboard…'},
-  patient:{ico:'🙋',title:'Access Your Health Records',sub:'UniHealth Patient Portal: ID type → ID number + 4-digit PIN → OTP / Biometric',
-    note:'<strong>UniHealth Patient Portal login.</strong> Select your ID type, enter your ID number and the <strong>4-digit PIN</strong> you created during UniHealth registration, then verify via SMS OTP or fingerprint biometric.',
+    successRole:'Administrator — MOH Kenya',successMsg:'HRIS identity verified.\nRedirecting to admin dashboard…'},
+  patient:{ico:'🙋',title:'Access Your Health Records',sub:'UniHealth / UniHealth Portal: ID type → ID number + 4-digit PIN → OTP / Biometric',
+    note:'<strong>UniHealth / UniHealth Portal login.</strong> Select your ID type, enter your ID number and the <strong>4-digit PIN</strong> you created during UniHealth registration, then verify via SMS OTP or fingerprint biometric.',
     noteClass:'blu',noteIco:'🏛️',
     successRole:'Patient — UniHealth Self-Service',successMsg:'UniHealth identity verified.\nRedirecting to your health records…'}
 };
 var ID_TYPES={
-  national:{lbl:'National ID Number',ph:'e.g. 12345678',hint:'7 or 8-digit number as on your National ID card',rx:/^\d{7,8}$/,err:'Enter your 7 or 8-digit national ID number.'},
+  national:{lbl:'National ID Number',ph:'e.g. 12345678',hint:'7 or 8-digit number as on your National ID card',rx:/^\d{7,8}$/,err:'Enter your 7 or 8-digit Kenya National ID number.'},
   passport:{lbl:'Passport Number',ph:'e.g. A1234567',hint:'As printed on the data page of your passport',rx:/^[A-Z0-9]{6,12}$/i,err:'Enter a valid passport number.'},
-  alien:{lbl:'Alien ID Number',ph:'e.g. 2012345678',hint:'As printed on your Foreign Resident ID card',rx:/^[A-Z0-9\-]{5,15}$/i,err:'Enter your Alien ID number.'},
+  alien:{lbl:'Foreign Resident ID',ph:'e.g. 2012345678',hint:'Your foreign resident ID number',rx:/^[A-Z0-9\-]{5,15}$/i,err:'Enter your foreign resident ID number.'},
   refugee:{lbl:'Refugee ID Number',ph:'e.g. REF/2023/0001',hint:'UNHCR-issued Refugee ID number',rx:/^[A-Z0-9\/\-]{5,20}$/i,err:'Enter your Refugee ID number.'},
   mandate:{lbl:'Mandate Number',ph:'e.g. MND-2024-00123',hint:'UniHealth Mandate Number',rx:/^[A-Z0-9\-]{5,20}$/i,err:'Enter your UniHealth Mandate Number.'},
   temp:{lbl:'Temporary ID Number',ph:'e.g. TMP-2024-00001',hint:'Temporary ID number',rx:/^[A-Z0-9\-]{5,20}$/i,err:'Enter your Temporary ID number.'}
@@ -824,7 +824,7 @@ function computeRisk(){
     signals.innerHTML=s;
   }else{
     panel.className='risk-panel low';score.className='risk-score low';score.textContent='LOW RISK';
-    signals.innerHTML='<div class="risk-sig" style="color:#166534">Known device detected</div><div class="risk-sig" style="color:#166534">Login time within normal hours</div><div class="risk-sig" style="color:#166534">Location: registered region — consistent</div>';
+    signals.innerHTML='<div class="risk-sig" style="color:#166534">Known device detected</div><div class="risk-sig" style="color:#166534">Login time within normal hours</div><div class="risk-sig" style="color:#166534">Location: Nairobi — consistent</div>';
   }
 }
 
@@ -928,7 +928,7 @@ function doPat(){
   hideErr('patErr');
   if(!id||!ic.rx.test(id)){showErr('patErr',ic.err);return;}
   if(pin.length<4){showErr('patErr','Enter your complete 4-digit UniHealth PIN.');return;}
-  if(!ph||!/^(\+2547|\+2541|07|01)\d{8,9}$/.test(ph)){showErr('patErr','Enter your registered registered mobile phone number (e.g. 0712 345 678).');return;}
+  if(!ph||!/^(\+2547|\+2541|07|01)\d{8,9}$/.test(ph)){showErr('patErr','Enter your registered Safaricom/Airtel phone number (e.g. 0712 345 678).');return;}
   spin('patBtn','patSp','patBtnTxt','patArr','Verifying with UniHealth…');
   addAuditEntry('AUTH PATIENT_LOGIN_ATTEMPT id_type='+t);
   setTimeout(function(){stopSpin('patBtn','patSp','patBtnTxt','patArr','Verify with UniHealth');s3contact=ph;s3via='sms';goS3();},2000);
@@ -985,14 +985,12 @@ function doP360(){var sp=document.getElementById('p360Sp'),bt=document.getElemen
   addAuditEntry('AUTH P360_PUSH_SENT role='+role);
   setTimeout(function(){sp.style.display='none';bt.textContent='Awaiting App Approval…';showSuccess();},3000);}
 
-function doAlt(m, btn){
-  if(!btn){btn=window.event&&window.event.currentTarget;}
-  if(!btn){return;}
-  var orig=btn.innerHTML;
+function doAlt(m){
+  var btn=event.currentTarget,orig=btn.innerHTML;
   btn.innerHTML='⏳ Connecting…';btn.disabled=true;
   setTimeout(function(){
     btn.innerHTML=orig;btn.disabled=false;
-    if(m==='ecitizen'){alert('Redirecting to accounts.example.go.ke (Phase 2 integration)');}
+    if(m==='ecitizen'){alert('Redirecting to accounts.ecitizen.go.ke (Phase 2 integration)');}
     else if(m==='ussd'){alert('Dial *147# on your UniHealth-registered phone to verify via USSD.');}
     else{
       s3contact=role==='patient'?(document.getElementById('patPhIn').value||'07XX'):(document.getElementById('emailIn').value||'staff@hospital.go.ke');
@@ -1024,14 +1022,14 @@ function launch(){
   var btn=document.querySelector('#s4 .btn');
   btn.textContent='✓ Loading dashboard…';btn.disabled=true;
   var destinations={
-    doctor:'dashboard-doctor.html',
-    nurse:'dashboard-nurse.html',
-    admin:'dashboard-admin.html',
-    patient:'dashboard-patient.html'
+    doctor:'unihealth-doctor.html',
+    nurse:'unihealth-nurse.html',
+    admin:'unihealth-admin.html',
+    patient:'unihealth-patient.html'
   };
   addAuditEntry('AUTH DASHBOARD_LAUNCH role='+role);
   setTimeout(function(){
-    window.location.href = destinations[role] || 'dashboard-admin.html';
+    window.location.href = destinations[role] || 'unihealth-admin.html';
   },900);
 }
 
