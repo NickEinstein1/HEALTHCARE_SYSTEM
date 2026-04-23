@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniHealth EHR — Nurse Dashboard</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+  /* ----- RESET & GLOBAL ----- */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  
+  /* ----- UNIFIED COLOR PALETTE (MODEL SYSTEM) ----- */
+  :root{
+    --primary: #1a8a4a;
+    --primary-dark: #0a4a26;
+    --primary-light: #e8f5ee;
+    --primary-muted: #a8d8bc;
+    --accent-blue: #2563eb;
+    --accent-amber: #d97706;
+    --accent-red: #dc2626;
+    --accent-purple: #7c3aed;
+    --accent-rose: #e11d48;
+    --accent-teal: #0d9488;
+    --bg-page: #f4f7f4;
+    --card-bg: #ffffff;
+    --border-light: #dde5e0;
+    --text-primary: #0c1a14;
+    --text-secondary: #2d4a38;
+    --text-tertiary: #5a7a66;
+    --shadow-sm: 0 1px 4px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.06);
+    --shadow-md: 0 8px 32px rgba(0,0,0,.12);
+    --shadow-green: 0 4px 18px rgba(26,138,74,.28);
+    
+    /* legacy aliases */
+    --g: var(--primary);
+    --gd: var(--primary-dark);
+    --gl: var(--primary-light);
+    --gm: var(--primary-muted);
+    --r: var(--accent-red);
+    --b: var(--accent-blue);
+    --am: var(--accent-amber);
+    --ro: var(--accent-rose);
+    --bg: var(--bg-page);
+    --card: var(--card-bg);
+    --bdr: var(--border-light);
+    --t1: var(--text-primary);
+    --t2: var(--text-secondary);
+    --t3: var(--text-tertiary);
+    --font:'Sora',sans-serif;
+    --serif:'DM Serif Display',Georgia,serif;
+    --mono:'JetBrains Mono',monospace;
+    --sw:238px; --th:58px;
+  }
+  
+  html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg)}
+  body{display:flex;min-height:100vh;overflow:hidden}
+  
+  /* ----- SIDEBAR ----- */
+  .sb{width:var(--sw);flex-shrink:0;height:100vh;background:#1a1f3a;display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;overflow:hidden}
+  .sb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 130% 55% at -10% 100%,rgba(228,29,72,.12) 0%,transparent 55%),radial-gradient(ellipse 80% 40% at 110% 0%,rgba(79,70,229,.12) 0%,transparent 50%);pointer-events:none}
+  .sb-flag{position:absolute;top:0;left:0;right:0;height:3px;z-index:10;background:linear-gradient(90deg,#bb0000 0 33%,#111 33% 35.5%,#e8e8e8 35.5% 37%,#111 37% 39.5%,#1a8a4a 39.5% 100%)}
+  .sb-in{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+  .sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 15px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .sb-ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent-rose),#f43f5e);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 3px 12px rgba(225,29,72,.4)}
+  .sb-nm{font-family:var(--serif);font-size:15px;color:#fff;line-height:1.1}
+  .sb-sub{font-size:8.5px;color:rgba(255,255,255,.28);letter-spacing:.5px;margin-top:1px}
+  .sb-live{width:6px;height:6px;border-radius:50%;background:#f43f5e;margin-left:auto;flex-shrink:0;box-shadow:0 0 8px #f43f5e;animation:glow 2s infinite}
+  @keyframes glow{0%,100%{box-shadow:0 0 5px #f43f5e}50%{box-shadow:0 0 14px #f43f5e}}
+  
+  /* Nurse card */
+  .sb-nurse{margin:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 12px}
+  .sb-av-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .sb-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent-rose),#f43f5e);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+  .sb-nname{font-size:12px;font-weight:700;color:#fff;line-height:1.2}
+  .sb-nreg{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.38);margin-top:2px}
+  .sb-role-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(225,29,72,.2);border:1px solid rgba(225,29,72,.3);border-radius:5px;padding:3px 8px;font-size:9px;font-weight:700;color:#fda4af}
+  .sb-role-badge .dot{width:5px;height:5px;border-radius:50%;background:#f43f5e;box-shadow:0 0 5px #f43f5e;animation:glow 2s infinite}
+  
+  .sb-shift{margin:0 13px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:9px 12px;display:flex;align-items:center;gap:9px}
+  .sb-shift-e{font-size:16px}
+  .sb-shift-ti{font-size:11px;font-weight:700;color:#fff}
+  .sb-shift-su{font-size:9.5px;color:rgba(255,255,255,.38);margin-top:1px}
+  
+  .sb-nav{flex:1;padding:6px 10px;overflow-y:auto}
+  .sb-nav::-webkit-scrollbar{width:0}
+  .sb-sec{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.18);padding:7px 8px 3px;font-weight:500}
+  .ni{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;cursor:pointer;transition:all .14s;margin-bottom:2px}
+  .ni:hover{background:rgba(255,255,255,.06)}
+  .ni.on{background:rgba(225,29,72,.18);border:1px solid rgba(225,29,72,.25)}
+  .ni-e{font-size:14px;flex-shrink:0;width:17px;text-align:center;opacity:.6}
+  .ni:hover .ni-e,.ni.on .ni-e{opacity:1}
+  .ni-l{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.52);white-space:nowrap;transition:color .14s}
+  .ni:hover .ni-l,.ni.on .ni-l{color:#fff}
+  .ni-b{margin-left:auto;font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:9px;color:#fff}
+  .ni-b.r{background:var(--accent-red)}
+  .ni-b.am{background:var(--accent-amber)}
+  .ni-b.ro{background:var(--accent-rose)}
+  
+  .sb-foot{padding:11px 13px;border-top:1px solid rgba(255,255,255,.05)}
+  .sb-out{width:100%;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;font-family:var(--font);font-size:11px;font-weight:600;color:rgba(255,255,255,.38);cursor:pointer;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .sb-out:hover{background:rgba(220,38,38,.18);border-color:rgba(220,38,38,.35);color:#fca5a5}
+  
+  /* ----- MAIN ----- */
+  .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;overflow:hidden}
+  .topbar{height:var(--th);background:var(--card);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;z-index:100}
+  .tb-pg{font-family:var(--serif);font-size:16px;color:var(--t1);letter-spacing:-.2px}
+  .tb-cr{font-size:10px;color:var(--t3);margin-top:1px}
+  .tb-cr b{color:var(--accent-rose)}
+  .tb-gap{flex:1}
+  .tb-ward{background:#fff1f4;border:1.5px solid #fecdd3;border-radius:6px;padding:5px 10px;font-size:10.5px;font-weight:700;color:var(--accent-rose);display:flex;align-items:center;gap:5px;flex-shrink:0}
+  .tb-srch{display:flex;align-items:center;gap:6px;padding:6px 11px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;width:190px;transition:all .2s}
+  .tb-srch:focus-within{border-color:var(--accent-rose);background:#fff;box-shadow:0 0 0 3px rgba(225,29,72,.09)}
+  .tb-srch input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12px;color:var(--t1);width:100%}
+  .tb-srch input::placeholder{color:var(--t3)}
+  .tb-ic{width:33px;height:33px;border-radius:7px;border:1.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;position:relative;flex-shrink:0;transition:all .14s}
+  .tb-ic:hover{border-color:var(--accent-rose);background:#fff1f4}
+  .tb-dot{position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--accent-red);border:2px solid var(--card)}
+  .tb-date{font-family:var(--mono);font-size:10px;color:var(--t3);padding:5px 10px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:6px;white-space:nowrap;flex-shrink:0}
+  
+  /* Content */
+  .content{flex:1;overflow-y:auto;padding:18px 20px}
+  .content::-webkit-scrollbar{width:4px}
+  .content::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+  .pg{display:none;animation:pgIn .3s ease both}
+  .pg.on{display:block}
+  @keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+  
+  /* Layouts */
+  .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+  .ph-ey{font-family:var(--mono);font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+  .ph-ti{font-family:var(--serif);font-size:23px;color:var(--t1);letter-spacing:-.3px}
+  .ph-su{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5}
+  .ph-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .gcol2{display:grid;grid-template-columns:1fr 290px;gap:14px;margin-bottom:14px}
+  .gcol3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+  
+  /* Buttons */
+  .btn-p{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:var(--accent-rose);color:#fff;border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .16s;box-shadow:0 3px 12px rgba(225,29,72,.28);white-space:nowrap}
+  .btn-p:hover{background:#be123c;transform:translateY(-1px)}
+  .btn-pg{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;background:var(--primary);color:#fff;border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .16s;box-shadow:var(--shadow-green);white-space:nowrap}
+  .btn-pg:hover{background:var(--primary-dark)}
+  .btn-s{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap}
+  .btn-s:hover{border-color:var(--accent-rose);color:var(--accent-rose)}
+  .btn-sm{padding:4px 10px;font-size:11px}
+  .btn-g{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:var(--primary-light);color:var(--primary-dark);border:1.5px solid var(--primary-muted);border-radius:7px;font-family:var(--font);font-size:11.5px;font-weight:700;cursor:pointer;transition:all .14s}
+  .btn-g:hover{background:var(--primary);color:#fff}
+  
+  /* Panel */
+  .panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;overflow:hidden;animation:cardIn .4s ease both}
+  @keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr)}
+  .pnl-ti{font-size:13px;font-weight:700;color:var(--t1)}
+  .pnl-su{font-size:10px;color:var(--t3);margin-top:1px}
+  .pnl-lk{font-size:11px;font-weight:700;color:var(--accent-rose);cursor:pointer}
+  .pnl-lk:hover{text-decoration:underline}
+  .pnl-bd{padding:14px 16px}
+  
+  /* Tags */
+  .tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap}
+  .tag.g{background:var(--primary-light);color:var(--primary-dark);border:1px solid var(--primary-muted)}
+  .tag.r{background:#fef2f2;color:#7f1d1d;border:1px solid #fecaca}
+  .tag.b{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+  .tag.am{background:#fffbeb;color:#78350f;border:1px solid #fde68a}
+  .tag.ro{background:#fff1f4;color:#9f1239;border:1px solid #fecdd3}
+  .tag.dot::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;margin-right:1px}
+  
+  /* KPI */
+  .kpi{background:var(--card);border:1.5px solid var(--bdr);border-radius:11px;padding:14px 15px;animation:cardIn .4s ease both;transition:box-shadow .18s,transform .18s}
+  .kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+  .kpi-e{font-size:22px;margin-bottom:6px}
+  .kpi-v{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.4px;line-height:1}
+  .kpi-l{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;margin-top:4px}
+  .kpi-su{font-size:10.5px;color:var(--t3);margin-top:3px}
+  
+  /* Patient row */
+  .pt-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .14s}
+  .pt-row:hover{background:#f8fbf8;margin:0 -16px;padding:10px 16px}
+  .pt-row:last-child{border:none}
+  .pt-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+  .pt-name{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px}
+  .pt-det{font-size:10.5px;color:var(--t3)}
+  
+  /* MAR */
+  .mar-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+  .mar-row:last-child{border:none}
+  .mar-drug{flex:1}
+  .mar-name{font-size:12.5px;font-weight:700;color:var(--t1)}
+  .mar-detail{font-size:10.5px;color:var(--t3);margin-top:1px}
+  .mar-times{display:flex;gap:5px;flex-wrap:wrap}
+  .mar-time{width:36px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:700;cursor:pointer;transition:all .14s;border:1.5px solid transparent}
+  .mar-time.given{background:var(--primary-light);color:var(--primary-dark);border-color:var(--primary-muted)}
+  .mar-time.due{background:#fffbeb;color:#78350f;border-color:#fde68a}
+  .mar-time.missed{background:#fef2f2;color:#7f1d1d;border-color:#fecaca}
+  .mar-time.future{background:var(--bg);color:var(--t3);border-color:var(--bdr)}
+  
+  /* Vitals entry */
+  .vital-entry{background:var(--bg);border:1.5px solid var(--bdr);border-radius:9px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+  .vital-entry:hover{border-color:var(--accent-rose);background:#fff1f4}
+  .ve-name{font-size:12.5px;font-weight:700;color:var(--t1)}
+  .ve-time{font-family:var(--mono);font-size:10px;color:var(--t3)}
+  .ve-vals{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .ve-v{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--card);border:1px solid var(--bdr)}
+  
+  /* Task item */
+  .task{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr)}
+  .task:last-child{border:none}
+  .task-cb{width:18px;height:18px;border-radius:4px;border:2px solid var(--bdr);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .14s}
+  .task-cb:hover{border-color:var(--primary)}
+  .task-cb.done{background:var(--primary);border-color:var(--primary);color:#fff}
+  .task-ti{font-size:12.5px;font-weight:700;color:var(--t1);margin-bottom:2px}
+  .task-ti.done{text-decoration:line-through;color:var(--t3)}
+  .task-det{font-size:10.5px;color:var(--t3)}
+  .task-time{font-family:var(--mono);font-size:10.5px;color:var(--t3);margin-left:auto;flex-shrink:0;padding-top:1px}
+  
+  /* Triage dot */
+  .triage-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+  .triage-dot.red{background:#ef4444;box-shadow:0 0 6px #ef4444}
+  .triage-dot.orange{background:#f97316;box-shadow:0 0 5px #f97316}
+  .triage-dot.yellow{background:#eab308}
+  .triage-dot.green{background:var(--primary)}
+  
+  /* Notice */
+  .notice{display:flex;align-items:flex-start;gap:9px;padding:10px 13px;border-radius:7px;margin-bottom:12px}
+  .notice.r{background:#fef2f2;border:1px solid #fecaca}
+  .notice.am{background:#fffbeb;border:1px solid #fde68a}
+  .notice.g{background:var(--primary-light);border:1px solid var(--primary-muted)}
+  .notice.ro{background:#fff1f4;border:1px solid #fecdd3}
+  .notice-e{font-size:14px;flex-shrink:0;margin-top:1px}
+  .notice-tx{font-size:11.5px;color:var(--t1);line-height:1.5}
+  
+  /* Table */
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:8px 11px;text-align:left;background:#f9fbf9;border-bottom:1.5px solid var(--bdr)}
+  .tbl td{font-size:11.5px;color:var(--t2);padding:9px 11px;border-bottom:1px solid var(--bdr);vertical-align:middle}
+  .tbl tr:hover td{background:#f9fbf9}
+  .tbl tr:last-child td{border:none}
+  .mono{font-family:var(--mono);font-size:11px}
+  
+  /* AI widget */
+  .ai-widget{border-radius:12px;padding:15px 16px;margin-bottom:14px;border:1.5px solid;animation:cardIn .4s .05s ease both}
+  .ai-widget.teal{background:linear-gradient(135deg,rgba(13,148,136,.07),rgba(13,148,136,.02));border-color:rgba(13,148,136,.2)}
+  .ai-widget-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .ai-widget-ti{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--t1)}
+  .ai-row{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+  .ai-row:last-child{border:none;padding-bottom:0}
+  .ai-row-ico{font-size:14px;flex-shrink:0;margin-top:1px}
+  .ai-row-body{flex:1}
+  .ai-row-ti{font-weight:700;color:var(--t1);font-size:11.5px;line-height:1.35}
+  .ai-row-su{font-size:10.5px;color:var(--t3);margin-top:2px}
+  .ai-pri{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;flex-shrink:0}
+  .ai-pri.crit{background:#fef2f2;color:#7f1d1d}
+  .ai-pri.high{background:#fffbeb;color:#78350f}
+  
+  /* Sync bar */
+  .sync-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--primary-light);border:1px solid var(--primary-muted);border-radius:8px;font-size:11px;font-weight:600;color:var(--primary-dark);margin-bottom:14px}
+  .sync-bar.offline{background:#fffbeb;border-color:#fde68a;color:#78350f}
+  
+  /* EWS badge */
+  .ews-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800}
+  .ews-0{background:#f0fdf4;color:#14532d;border:1px solid #86efac}
+  .ews-low{background:#fffbeb;color:#78350f;border:1px solid #fde68a}
+  .ews-med{background:#fff1f2;color:#881337;border:1px solid #fecdd3}
+  .ews-high{background:#fef2f2;color:#7f1d1d;border:1px solid #fecaca;animation:glow 1.4s infinite}
+  
+  /* Handover hero */
+  .handover-hero{background:linear-gradient(135deg,#1a1f3a 0%,#2d1f4a 60%,#1f1a3a 100%);border-radius:14px;padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden}
+  .handover-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 90% 10%,rgba(225,29,72,.1) 0%,transparent 55%),radial-gradient(ellipse 50% 50% at -5% 90%,rgba(79,70,229,.12) 0%,transparent 50%);pointer-events:none}
+  .ho-in{position:relative;z-index:1}
+  .ho-ti{font-family:var(--serif);font-size:20px;color:#fff;margin-bottom:4px}
+  .ho-su{font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.5;margin-bottom:16px}
+  .ho-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.1);border-radius:9px;overflow:hidden}
+  .ho-stat{background:rgba(0,0,0,.18);padding:10px 12px;text-align:center}
+  .ho-v{font-family:var(--serif);font-size:18px;color:#fff;line-height:1}
+  .ho-l{font-size:9px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+  
+  /* ===== IMPROVED NOTES SECTION ===== */
+  .notes-panel .pnl-bd{ padding: 20px; }
+  .notes-field{ margin-bottom: 20px; }
+  .notes-field label{ display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.2px; }
+  .notes-field textarea{ width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-light); border-radius: 10px; font-family: var(--font); font-size: 13px; line-height: 1.6; color: var(--text-primary); background: var(--bg-page); resize: vertical; min-height: 100px; transition: border 0.2s, box-shadow 0.2s; }
+  .notes-field textarea:focus{ outline: none; border-color: var(--accent-rose); box-shadow: 0 0 0 3px rgba(225,29,72,0.08); background: #fff; }
+  .notes-field textarea::placeholder{ color: var(--text-tertiary); font-size: 12px; }
+  .notes-actions{ display: flex; justify-content: flex-end; margin-top: 10px; }
+  .btn-p.notes-submit{ padding: 12px 24px; font-size: 13px; gap: 8px; }
+  
+  /* Modal */
+  .mo-ov{position:fixed;inset:0;background:rgba(10,8,30,.55);backdrop-filter:blur(5px);z-index:600;display:none;align-items:center;justify-content:center}
+  .mo-ov.open{display:flex}
+  .mo{background:var(--card);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.22);width:100%;max-width:480px;overflow:hidden;animation:moIn .3s cubic-bezier(.16,1,.3,1)}
+  @keyframes moIn{from{opacity:0;transform:scale(.93) translateY(12px)}to{opacity:1;transform:none}}
+  .mo-stripe{height:4px;background:linear-gradient(90deg,#be123c,#e11d48,#fb7185)}
+  .mo-hd{padding:16px 20px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+  .mo-ti{font-family:var(--serif);font-size:18px;color:var(--t1)}
+  .mo-x{cursor:pointer;font-size:17px;color:var(--t3);padding:4px 6px;border-radius:5px;background:none;border:none;transition:all .15s}
+  .mo-x:hover{background:#fef2f2;color:var(--accent-red)}
+  .mo-bd{padding:16px 20px}
+  .mo-ft{padding:12px 20px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px}
+  
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--card);border:1.5px solid var(--primary-muted);border-radius:10px;padding:11px 16px;box-shadow:var(--shadow-md);display:none;align-items:center;gap:10px}
+  .toast.show{display:flex;animation:cardIn .3s ease both}
+  .toast-ico{font-size:18px}
+  .toast-msg{font-size:12px;font-weight:700;color:var(--t1)}
+  .toast-sub{font-size:10px;color:var(--t3);margin-top:1px}
+  
+  /* Field for forms */
+  .field{display:flex;flex-direction:column;gap:4px;margin-bottom:11px}
+  .field label{font-size:11px;font-weight:700;color:var(--t2)}
+  .field input,.field select,.field textarea{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-family:var(--font);font-size:12px;color:var(--t1);background:var(--bg);outline:none;transition:all .18s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-rose);background:#fff;box-shadow:0 0 0 3px rgba(225,29,72,.09)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sb">
+  <div class="sb-flag"></div>
+  <div class="sb-in">
+    <div class="sb-brand">
+      <div class="sb-ico"><i data-feather="activity" style="color:#fff"></i></div>
+      <div>
+        <div class="sb-nm">UniHealth EHR</div>
+        <div class="sb-sub">Nursing Station</div>
+      </div>
+      <div class="sb-live"></div>
+    </div>
+
+    <div class="sb-nurse">
+      <div class="sb-av-row">
+        <div class="sb-av">AA</div>
+        <div>
+          <div class="sb-nname">Nurse Achieng Atieno</div>
+          <div class="sb-nreg">MNC/RN/2021/08432</div>
+        </div>
+      </div>
+      <div class="sb-role-badge"><span class="dot"></span>Registered Nurse · Ward 4B</div>
+    </div>
+
+    <div class="sb-shift">
+      <div class="sb-shift-e"><i data-feather="sun"></i></div>
+      <div>
+        <div class="sb-shift-ti">Morning Shift</div>
+        <div class="sb-shift-su">07:00 – 15:00 · 3h 22m remaining</div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-sec">Nursing Care</div>
+      <div class="ni on" onclick="go('home',this)"><span class="ni-e"><i data-feather="home"></i></span><span class="ni-l">Shift Overview</span></div>
+      <div class="ni" onclick="go('patients',this)"><span class="ni-e"><i data-feather="grid"></i></span><span class="ni-l">My Patients</span><span class="ni-b ro">12</span></div>
+      <div class="ni" onclick="go('triage',this)"><span class="ni-e"><i data-feather="truck"></i></span><span class="ni-l">Triage Queue</span><span class="ni-b r">3</span></div>
+      <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Record Vitals</span><span class="ni-b am">4</span></div>
+      <div class="ni" onclick="go('mar',this)"><span class="ni-e"><i data-feather="package"></i></span><span class="ni-l">Medication Admin (MAR)</span></div>
+      <div class="ni" onclick="go('tasks',this)"><span class="ni-e"><i data-feather="check-square"></i></span><span class="ni-l">Tasks &amp; Care Plans</span><span class="ni-b am">5</span></div>
+      <div class="ni" onclick="go('fluids',this)"><span class="ni-e"><i data-feather="droplet"></i></span><span class="ni-l">Fluid Balance</span></div>
+      <div class="ni" onclick="go('wounds',this)"><span class="ni-e"><i data-feather="bandage"></i></span><span class="ni-l">Wound Care</span></div>
+
+      <div class="sb-sec">Documentation</div>
+      <div class="ni" onclick="go('handover',this)"><span class="ni-e"><i data-feather="clipboard"></i></span><span class="ni-l">Shift Handover</span></div>
+      <div class="ni" onclick="go('incidents',this)"><span class="ni-e"><i data-feather="alert-triangle"></i></span><span class="ni-l">Incident Reports</span></div>
+      <div class="ni" onclick="go('supplies',this)"><span class="ni-e"><i data-feather="package"></i></span><span class="ni-l">Supplies &amp; Inventory</span></div>
+    </div>
+
+    <div class="sb-foot">
+      <button class="sb-out" onclick="signOut()"><i data-feather="log-out"></i> Sign Out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+  <header class="topbar">
+    <div>
+      <div class="tb-pg" id="tbTitle">Shift Overview</div>
+      <div class="tb-cr">UniHealth EHR › <b id="tbCrumb">Home</b></div>
+    </div>
+    <div class="tb-gap"></div>
+    <div class="tb-ward"><i data-feather="home"></i> Ward 4B · Central Referral Hospital</div>
+    <div class="tb-srch">
+      <i data-feather="search" style="width:12px;height:12px;color:var(--t3)"></i>
+      <input placeholder="Search patients, tasks…">
+    </div>
+    <div class="tb-ic"><i data-feather="bell"></i><div class="tb-dot"></div></div>
+    <div class="tb-ic"><i data-feather="alert-circle"></i></div>
+    <div class="tb-date" id="tbDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- SHIFT OVERVIEW (HOME) -->
+    <div id="pg-home" class="pg on">
+      <div class="ph">
+        <div>
+          <div class="ph-ey">Morning Shift · Ward 4B</div>
+          <div class="ph-ti">Good morning, Nurse Atieno</div>
+          <div class="ph-su">07:00–15:00 · <strong>12 patients</strong> assigned · <strong>5 tasks pending</strong> · <strong>4 vitals due</strong></div>
+        </div>
+        <div class="ph-r">
+          <button class="btn-s btn-sm" onclick="go('handover',null)"><i data-feather="clipboard"></i> Handover Notes</button>
+          <button class="btn-p" onclick="go('vitals',null)"><i data-feather="activity"></i> Record Vitals</button>
+        </div>
+      </div>
+
+      <!-- Offline & Data Integrity Status -->
+      <div class="sync-bar" id="syncBar">
+        <i data-feather="check-circle" style="color:var(--primary)"></i>
+        <span>UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready for offline</span>
+        <button style="margin-left:auto;font-size:10px;font-weight:700;padding:4px 9px;background:none;border:1px solid var(--primary-muted);border-radius:5px;color:var(--primary-dark);cursor:pointer;font-family:var(--font)" onclick="showToast('refresh-cw','Manual sync triggered','Syncing with UniHealth FHIR server…')"><i data-feather="refresh-cw"></i> Sync Now</button>
+      </div>
+
+      <!-- AI Early Warning Score (NEWS2) Panel -->
+      <div class="ai-widget teal" style="animation-delay:.08s">
+        <div class="ai-widget-hd">
+          <div>
+            <div class="ai-widget-ti"><i data-feather="cpu"></i> AI Early Warning Score (NEWS2)</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:1px">Automated vital-sign analysis · Real-time risk escalation</div>
+          </div>
+          <button style="font-size:11px;font-weight:700;padding:5px 11px;background:none;border:1.5px solid rgba(13,148,136,.3);border-radius:7px;color:var(--accent-teal);cursor:pointer;font-family:var(--font)" onclick="showToast('alert-triangle','NEWS2 escalation report sent to Dr. Mutuku','All scores logged to FHIR')">Escalate All →</button>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--accent-red)"></i></span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Bed 01 — Wangui Njoroge &nbsp;<span class="ews-badge ews-high">NEWS2: 7 — HIGH</span></div>
+            <div class="ai-row-su">AI alert: RR 24, SpO₂ 91%, HR 118. Deterioration trend over 2h. <strong>Immediate medical review required.</strong> Consider ICU escalation.</div>
+          </div>
+          <span class="ai-pri crit">ESCALATE</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico"><i data-feather="alert-triangle" style="color:var(--accent-amber)"></i></span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Bed 04 — Adhiambo Grace &nbsp;<span class="ews-badge ews-med">NEWS2: 4 — MEDIUM</span></div>
+            <div class="ai-row-su">BP rising trend (158/96 → 166/102 over 3h). AI recommends 30-minute vital checks and inform doctor if BP ≥170 systolic.</div>
+          </div>
+          <span class="ai-pri high">MONITOR</span>
+        </div>
+        <div class="ai-row">
+          <span class="ai-row-ico"><i data-feather="check-circle" style="color:var(--primary)"></i></span>
+          <div class="ai-row-body">
+            <div class="ai-row-ti">Remaining 10 patients &nbsp;<span class="ews-badge ews-0">NEWS2: 0–2 — LOW</span></div>
+            <div class="ai-row-su">All other patients stable. AI predicts no deterioration risk in next 4 hours. Continue 4-hourly vital checks per protocol.</div>
+          </div>
+          <span class="ai-pri" style="background:#eff6ff;color:#1e40af">STABLE</span>
+        </div>
+        <div style="margin-top:10px;padding:8px 12px;background:rgba(10,74,38,.05);border:1px solid rgba(10,74,38,.12);border-radius:7px;font-size:10.5px;color:var(--primary-dark);font-weight:600;display:flex;align-items:center;gap:7px">
+          <i data-feather="link"></i> All NEWS2 scores logged to FHIR · Escalations recorded in append-only shift audit trail
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="g4" style="margin-bottom:14px">
+        <div class="kpi" style="animation-delay:.03s;border-top:3px solid var(--accent-rose)"><div class="kpi-e"><i data-feather="grid"></i></div><div class="kpi-v">12</div><div class="kpi-l">My Patients</div><div class="kpi-su">Ward 4B assigned</div></div>
+        <div class="kpi" style="animation-delay:.06s;border-top:3px solid var(--accent-red)"><div class="kpi-e"><i data-feather="alert-triangle"></i></div><div class="kpi-v" style="color:var(--accent-red)">2</div><div class="kpi-l">Critical Alerts</div><div class="kpi-su">Bed 01, Bed 04</div></div>
+        <div class="kpi" style="animation-delay:.09s;border-top:3px solid var(--accent-amber)"><div class="kpi-e"><i data-feather="clock"></i></div><div class="kpi-v" style="color:var(--accent-amber)">5</div><div class="kpi-l">Pending Tasks</div><div class="kpi-su">3 vitals · 2 meds due</div></div>
+        <div class="kpi" style="animation-delay:.12s;border-top:3px solid var(--primary)"><div class="kpi-e"><i data-feather="check-circle"></i></div><div class="kpi-v" style="color:var(--primary)">18</div><div class="kpi-l">Completed Today</div><div class="kpi-su">Since shift start</div></div>
+      </div>
+
+      <!-- Critical alert -->
+      <div class="notice r" style="animation:cardIn .4s .06s ease both">
+        <span class="notice-e"><i data-feather="alert-triangle"></i></span>
+        <div class="notice-tx"><strong>CRITICAL — Bed 01 (Wangui Njoroge):</strong> K⁺ 6.8 mmol/L. Dr. Mutuku has been notified. Please ensure IV Calcium Gluconate is prepared and administer per order. <strong>ECG monitoring must be continuous.</strong></div>
+      </div>
+
+      <div class="gcol2">
+        <!-- Left: patients + tasks -->
+        <div>
+          <div class="panel" style="margin-bottom:14px;animation-delay:.08s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">My Patients — Ward 4B</div><div class="pnl-su">12 assigned this shift</div></div>
+              <span class="pnl-lk" onclick="go('patients',null)">All patients →</span>
+            </div>
+            <div class="pnl-bd" id="homePts"></div>
+          </div>
+
+          <div class="panel" style="animation-delay:.12s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Shift Tasks</div><div class="pnl-su">5 pending · 18 complete</div></div>
+              <span class="pnl-lk" onclick="go('tasks',null)">All tasks →</span>
+            </div>
+            <div class="pnl-bd" id="homeTasks"></div>
+          </div>
+        </div>
+
+        <!-- Right: MAR preview + vitals due -->
+        <div>
+          <div class="panel" style="margin-bottom:14px;animation-delay:.1s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Medications Due</div><div class="pnl-su">Next 2 hours</div></div>
+              <span class="pnl-lk" onclick="go('mar',null)">Full MAR →</span>
+            </div>
+            <div class="pnl-bd" id="homeMeds"></div>
+          </div>
+
+          <div class="panel" style="margin-bottom:14px;animation-delay:.14s">
+            <div class="pnl-hd">
+              <div><div class="pnl-ti">Vitals Due</div><div class="pnl-su">Scheduled observations</div></div>
+              <span class="pnl-lk" onclick="go('vitals',null)">Record →</span>
+            </div>
+            <div class="pnl-bd" id="homeVitalsDue"></div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="panel" style="animation-delay:.16s">
+            <div class="pnl-hd"><div class="pnl-ti">Quick Actions</div></div>
+            <div class="pnl-bd">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <button class="btn-p" style="justify-content:center" onclick="mo('vitalsEntry')"><i data-feather="activity"></i> Record Vitals</button>
+                <button class="btn-pg" style="justify-content:center" onclick="mo('marGive')"><i data-feather="package"></i> Give Medication</button>
+                <button class="btn-s" style="justify-content:center" onclick="go('fluids',null)"><i data-feather="droplet"></i> Update Fluids</button>
+                <button class="btn-s" style="justify-content:center" onclick="mo('incident')"><i data-feather="alert-triangle"></i> Report Incident</button>
+                <button class="btn-s" style="justify-content:center" onclick="mo('callDoc')"><i data-feather="phone"></i> Call Doctor</button>
+                <button class="btn-s" style="justify-content:center" onclick="mo('transfer')"><i data-feather="truck"></i> Request Transfer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY PATIENTS -->
+    <div id="pg-patients" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Ward 4B</div><div class="ph-ti">My Patients</div><div class="ph-su">12 assigned · Morning Shift · Nurse Atieno</div></div>
+        <button class="btn-p" onclick="mo('admitPt')"><i data-feather="plus"></i> Admit Patient</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Patient List — Ward 4B</div></div>
+        <div class="pnl-bd"><table class="tbl" id="ptTable"></table></div>
+      </div>
+    </div>
+
+    <!-- TRIAGE -->
+    <div id="pg-triage" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">A&amp;E / Emergency</div><div class="ph-ti">Triage Queue</div><div class="ph-su">Emergency and walk-in patients awaiting triage assessment</div></div>
+        <button class="btn-p" onclick="mo('triageNew')"><i data-feather="plus"></i> Triage New Patient</button>
+      </div>
+      <div class="g4" style="margin-bottom:14px">
+        <div class="kpi" style="border-top:3px solid #ef4444"><div class="kpi-e"><i data-feather="alert-circle"></i></div><div class="kpi-v" style="color:#ef4444">1</div><div class="kpi-l">Red — Immediate</div></div>
+        <div class="kpi" style="border-top:3px solid #f97316"><div class="kpi-e"><i data-feather="alert-triangle"></i></div><div class="kpi-v" style="color:#f97316">1</div><div class="kpi-l">Orange — Urgent</div></div>
+        <div class="kpi" style="border-top:3px solid #eab308"><div class="kpi-e"><i data-feather="clock"></i></div><div class="kpi-v" style="color:#eab308">1</div><div class="kpi-l">Yellow — Semi-urgent</div></div>
+        <div class="kpi" style="border-top:3px solid var(--primary)"><div class="kpi-e"><i data-feather="check-circle"></i></div><div class="kpi-v" style="color:var(--primary)">3</div><div class="kpi-l">Green — Non-urgent</div></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Current Triage Queue</div></div>
+        <div class="pnl-bd"><table class="tbl" id="triageTable"></table></div>
+      </div>
+    </div>
+
+    <!-- VITALS -->
+    <div id="pg-vitals" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Observation Chart</div><div class="ph-ti">Record Vitals</div><div class="ph-su">Ward 4B · 4-hourly observations schedule</div></div>
+        <button class="btn-p" onclick="mo('vitalsEntry')"><i data-feather="plus"></i> Record Vitals</button>
+      </div>
+      <div class="notice am" style="margin-bottom:14px">
+        <span class="notice-e"><i data-feather="clock"></i></span>
+        <div class="notice-tx"><strong>4 patients have vitals due now:</strong> Bed 01, Bed 04, Bed 07, Bed 10. Next scheduled round: 12:00.</div>
+      </div>
+      <div class="gcol3">
+        <div class="panel">
+          <div class="pnl-hd"><div><div class="pnl-ti">Recent Vital Entries</div><div class="pnl-su">Today · 4B · All patients</div></div></div>
+          <div class="pnl-bd" id="recentVitals"></div>
+        </div>
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Quick Vitals Entry</div></div>
+          <div class="pnl-bd">
+            <div class="field"><label>Patient</label><select><option>Wangui Njoroge — Bed 01</option></select></div>
+            <div class="field-row"><div class="field"><label>BP (mmHg)</label><input placeholder="120/80"></div><div class="field"><label>HR (bpm)</label><input type="number" placeholder="72"></div></div>
+            <div class="field-row"><div class="field"><label>Temp (°C)</label><input type="number" step="0.1" placeholder="36.8"></div><div class="field"><label>SpO₂ (%)</label><input type="number" placeholder="98"></div></div>
+            <div class="field-row"><div class="field"><label>RR</label><input type="number" placeholder="16"></div><div class="field"><label>Glucose</label><input type="number" step="0.1" placeholder="5.4"></div></div>
+            <div class="field"><label>AVPU / GCS</label><select><option>A — Alert</option></select></div>
+            <div class="field"><label>Pain Score (0–10)</label><input type="number" min="0" max="10" placeholder="0"></div>
+            <div class="field"><label>Notes</label><textarea placeholder="Any concerns…"></textarea></div>
+            <button class="btn-p" style="width:100%;justify-content:center">Save Vitals to EHR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAR -->
+    <div id="pg-mar" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Medication Administration Record</div><div class="ph-ti">MAR — Medication Admin</div><div class="ph-su">Tap a time slot to mark as given · Verified with UniHealth biometric</div></div>
+      </div>
+      <div class="notice ro" style="margin-bottom:14px">
+        <span class="notice-e"><i data-feather="alert-triangle"></i></span>
+        <div class="notice-tx"><strong>Allergy on file — Wangui Njoroge:</strong> Penicillin (Anaphylaxis), Sulfa drugs (Rash). System will alert if contraindicated drug is administered.</div>
+      </div>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="pnl-hd">
+          <div><div class="pnl-ti">Wangui Njoroge — Bed 01</div><div class="pnl-su">ModelCover-78841209 · Internal Medicine</div></div>
+          <span class="tag r">⚠ Allergy: Penicillin</span>
+        </div>
+        <div class="pnl-bd" id="mar1"></div>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd">
+          <div><div class="pnl-ti">Omar Abdullahi — Bed 02</div><div class="pnl-su">ModelCover-87654321 · Surgical Ward</div></div>
+        </div>
+        <div class="pnl-bd" id="mar2"></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div id="pg-tasks" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Care Management</div><div class="ph-ti">Tasks &amp; Care Plans</div><div class="ph-su">Nursing tasks for this shift — Ward 4B</div></div>
+        <button class="btn-p" onclick="mo('addTask')"><i data-feather="plus"></i> Add Task</button>
+      </div>
+      <div class="g2">
+        <div class="panel"><div class="pnl-hd"><div><div class="pnl-ti">Pending Tasks</div><div class="pnl-su">5 remaining this shift</div></div></div><div class="pnl-bd" id="pendingTasks"></div></div>
+        <div class="panel"><div class="pnl-hd"><div><div class="pnl-ti">Completed Tasks</div><div class="pnl-su">18 done today</div></div></div><div class="pnl-bd" id="doneTasks"></div></div>
+      </div>
+    </div>
+
+    <!-- FLUID BALANCE -->
+    <div id="pg-fluids" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">24-hr Fluid Chart</div><div class="ph-ti">Fluid Balance</div><div class="ph-su">Intake vs output monitoring — Ward 4B</div></div>
+        <button class="btn-p" onclick="mo('addFluid')"><i data-feather="plus"></i> Record Entry</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Wangui Njoroge — Bed 01</div></div>
+        <div class="pnl-bd">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+            <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:9px;padding:12px;text-align:center"><div style="font-size:22px"><i data-feather="arrow-down-circle"></i></div><div style="font-family:var(--serif);font-size:22px;color:var(--accent-blue)">920 ml</div><div style="font-size:10px;font-weight:700;color:var(--t3)">TOTAL INTAKE</div></div>
+            <div style="background:var(--primary-light);border:1.5px solid var(--primary-muted);border-radius:9px;padding:12px;text-align:center"><div style="font-size:22px"><i data-feather="arrow-up-circle"></i></div><div style="font-family:var(--serif);font-size:22px;color:var(--primary)">740 ml</div><div style="font-size:10px;font-weight:700;color:var(--t3)">TOTAL OUTPUT</div></div>
+          </div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:9px 12px;font-size:11.5px;margin-bottom:12px"><strong>Balance: +180 ml</strong> · Target: 1,500 ml / day · Remaining today: 580 ml</div>
+          <table class="tbl"><thead><tr><th>Time</th><th>Type</th><th>Volume</th></tr></thead><tbody><tr><td>07:00</td><td>IV Saline</td><td>500 ml</td></tr><tr><td>09:15</td><td>Urine output</td><td style="color:var(--primary)">−240 ml</td></tr></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WOUND CARE -->
+    <div id="pg-wounds" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Wound Management</div><div class="ph-ti">Wound Care &amp; Dressings</div></div>
+        <button class="btn-p" onclick="mo('woundNote')"><i data-feather="plus"></i> Record Dressing</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Active Wound Care Plans</div></div>
+        <div class="pnl-bd"><table class="tbl"><thead><tr><th>Patient</th><th>Wound Site</th><th>Next Due</th></tr></thead><tbody><tr><td>Omar Abdullahi</td><td>Surgical — Abdomen</td><td>TODAY 14:00</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- SHIFT HANDOVER -->
+    <div id="pg-handover" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Shift Documentation</div><div class="ph-ti">Shift Handover</div><div class="ph-su">Morning handover notes — Ward 4B · 07:00 to 15:00</div></div>
+        <button class="btn-p" onclick="mo('signHandover')"><i data-feather="edit-3"></i> Sign Handover</button>
+      </div>
+
+      <div class="handover-hero">
+        <div class="ho-in">
+          <div class="ho-ti">Morning Shift Handover — Ward 4B</div>
+          <div class="ho-su">Nurse Atieno Achieng (MNC/RN/2021/08432) · Handing over to Nurse Omondi (Night) · 15:00</div>
+          <div class="ho-grid">
+            <div class="ho-stat"><div class="ho-v">12</div><div class="ho-l">Patients</div></div>
+            <div class="ho-stat"><div class="ho-v" style="color:#f87171">2</div><div class="ho-l">Critical</div></div>
+            <div class="ho-stat"><div class="ho-v" style="color:#fbbf24">3</div><div class="ho-l">Pending Tasks</div></div>
+            <div class="ho-stat"><div class="ho-v" style="color:#86efac">18</div><div class="ho-l">Completed</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g2">
+        <div class="panel">
+          <div class="pnl-hd"><div class="pnl-ti">Incoming Handover Notes</div><div class="pnl-su">From Night Shift — Nurse Osei</div></div>
+          <div class="pnl-bd"><div style="font-size:12px;color:var(--t2);line-height:1.8;background:var(--bg);border-radius:9px;padding:14px;border:1.5px solid var(--bdr)">Bed 01 — Wangui Njoroge: Critical. K⁺ 6.8 on 03:00 bloods. Dr. Mutuku notified. IV Calcium Gluconate started 03:30. Continuous ECG monitoring.</div></div>
+        </div>
+        <div class="panel notes-panel">
+          <div class="pnl-hd"><div class="pnl-ti">My Outgoing Notes</div></div>
+          <div class="pnl-bd">
+            <!-- IMPROVED NOTES SECTION -->
+            <div class="notes-field">
+              <label><i data-feather="clipboard"></i> Ward Summary</label>
+              <textarea placeholder="Overall ward status, atmosphere, concerns…">Ward 4B — 12 patients stable except Bed 01 (critical K⁺). ECG continuous. Repeat K⁺ collected at 07:00 — awaiting results.</textarea>
+            </div>
+            <div class="notes-field">
+              <label><i data-feather="alert-circle"></i> Patients Requiring Special Attention</label>
+              <textarea placeholder="Key handover points per patient…">BED 01: K⁺ repeat due at 13:00. Strict fluid restriction 1.5L.
+BED 02: Keep NBM. Theatre booking expected AM.
+BED 04: 2-hourly neuro obs. CSF result — check with lab.</textarea>
+            </div>
+            <div class="notes-field">
+              <label><i data-feather="clock"></i> Pending Tasks for Incoming Shift</label>
+              <textarea placeholder="Outstanding tasks to hand over…">1. K⁺ repeat bloods at 13:00 for Wangui
+2. IV bag change — Bed 07 at 14:00
+3. Dressing change — Omar (Bed 02) at 14:00</textarea>
+            </div>
+            <div class="notes-actions">
+              <button class="btn-p notes-submit" onclick="showToast('check-circle','Handover notes saved','Shift handover updated')"><i data-feather="save"></i> Sign & Submit Handover</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div id="pg-incidents" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Safety</div><div class="ph-ti">Incident Reports</div></div>
+        <button class="btn-p" onclick="mo('incident')"><i data-feather="plus"></i> Report Incident</button>
+      </div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Recent Incident Reports</div></div>
+        <div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Incident Type</th><th>Patient</th></tr></thead><tbody><tr><td>03 Mar</td><td>Near-miss — medication</td><td>Kamau J.</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- SUPPLIES -->
+    <div id="pg-supplies" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Ward 4B</div><div class="ph-ti">Supplies &amp; Inventory</div></div>
+        <button class="btn-p" onclick="mo('orderSupplies')"><i data-feather="plus"></i> Request Supplies</button>
+      </div>
+      <div class="notice am"><span class="notice-e"><i data-feather="alert-triangle"></i></span><div class="notice-tx"><strong>Low stock alert:</strong> Normal Saline 0.9% (500ml) — only 4 bags remaining.</div></div>
+      <div class="panel">
+        <div class="pnl-hd"><div class="pnl-ti">Current Stock</div></div>
+        <div class="pnl-bd"><table class="tbl"><thead><tr><th>Item</th><th>In Stock</th></tr></thead><tbody><tr><td>Normal Saline 0.9%</td><td style="color:var(--accent-red)">4</td></tr><tr><td>Nitrile Gloves (M)</td><td>120</td></tr></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo-ov" id="moOv" onclick="if(event.target===this)closeMo()">
+  <div class="mo">
+    <div class="mo-stripe"></div>
+    <div class="mo-hd"><div class="mo-ti" id="moTi">Action</div><button class="mo-x" onclick="closeMo()"><i data-feather="x"></i></button></div>
+    <div class="mo-bd" id="moBd"></div>
+    <div class="mo-ft"><button class="btn-s" onclick="closeMo()">Cancel</button><button class="btn-p" id="moBtn" onclick="submitMo()">Confirm</button></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="nToast">
+  <span class="toast-ico" id="nToastIco"><i data-feather="check-circle"></i></span>
+  <div><div class="toast-msg" id="nToastMsg">Done</div><div class="toast-sub" id="nToastSub"></div></div>
+</div>
+
+<script>
+  // ----- DATA & NAVIGATION -----
+  const now = new Date();
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('tbDate').textContent = DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
+  
+  const TITLES = {
+    home:'Shift Overview',patients:'My Patients',triage:'Triage Queue',vitals:'Record Vitals',
+    mar:'Medication Admin (MAR)',tasks:'Tasks & Care Plans',fluids:'Fluid Balance',wounds:'Wound Care',
+    handover:'Shift Handover',incidents:'Incident Reports',supplies:'Supplies & Inventory'
+  };
+  const CRUMBS = {
+    home:'Home',patients:'Nursing › Patients',triage:'Nursing › Triage',vitals:'Nursing › Vitals',
+    mar:'Nursing › MAR',tasks:'Nursing › Tasks',fluids:'Nursing › Fluids',wounds:'Nursing › Wounds',
+    handover:'Docs › Handover',incidents:'Docs › Incidents',supplies:'Docs › Supplies'
+  };
+  
+  function go(pg,el){
+    document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+    document.getElementById('pg-'+pg).classList.add('on');
+    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+    if(el) el.classList.add('on');
+    else document.querySelectorAll('.ni').forEach(n=>{ if((n.getAttribute('onclick')||'').includes("'"+pg+"'")) n.classList.add('on'); });
+    document.getElementById('tbTitle').textContent = TITLES[pg]||pg;
+    document.getElementById('tbCrumb').textContent = CRUMBS[pg]||pg;
+    feather.replace();
+  }
+  
+  function signOut(){ if(confirm('Sign out of UniHealth EHR?')) window.location.href='unihealth-login.html'; }
+  
+  // ----- MODAL & TOAST -----
+  const MO = {
+    vitalsEntry:{t:'Record Vitals',s:'Save to EHR',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge — Bed 01</option></select></div><div class="field-row"><div class="field"><label>BP</label><input placeholder="120/80"></div><div class="field"><label>HR</label><input type="number" placeholder="72"></div></div>'},
+    marGive:{t:'Administer Medication',s:'Confirm',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge — Bed 01</option></select></div><div class="field"><label>Drug</label><select><option>Amlodipine 5mg Oral</option></select></div>'},
+    addTask:{t:'Add Task',s:'Add Task',b:'<div class="field"><label>Task</label><input placeholder="e.g. 12-lead ECG"></div>'},
+    incident:{t:'Report Incident',s:'Submit',b:'<div class="field"><label>Incident Type</label><select><option>Medication error</option></select></div><div class="field"><label>Description</label><textarea></textarea></div>'},
+    callDoc:{t:'Call / Bleep Doctor',s:'Send Alert',b:'<div class="field"><label>Doctor</label><select><option>Dr. James Mutuku</option></select></div><div class="field"><label>SBAR Message</label><textarea></textarea></div>'},
+    transfer:{t:'Request Transfer',s:'Submit',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Transfer To</label><select><option>ICU</option></select></div>'},
+    triageNew:{t:'Triage New Patient',s:'Complete',b:'<div class="field-row"><div class="field"><label>First Name</label><input></div><div class="field"><label>Last Name</label><input></div></div><div class="field"><label>Chief Complaint</label><textarea></textarea></div>'},
+    addFluid:{t:'Record Fluid Entry',s:'Save',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Volume (ml)</label><input type="number"></div>'},
+    woundNote:{t:'Record Wound Dressing',s:'Save',b:'<div class="field"><label>Patient</label><select><option>Omar Abdullahi</option></select></div><div class="field"><label>Wound Appearance</label><select><option>Clean, healing well</option></select></div>'},
+    signHandover:{t:'Sign Shift Handover',s:'Sign',b:'<div class="field"><label>Handing Over To</label><select><option>Nurse Omondi</option></select></div><div class="field"><label>Your UniHealth PIN</label><input type="password"></div>'},
+    admitPt:{t:'Admit Patient',s:'Confirm',b:'<div class="field"><label>ModelCover Patient ID</label><input></div><div class="field"><label>Bed</label><select><option>Bed 03</option></select></div>'},
+    orderSupplies:{t:'Request Supplies',s:'Submit',b:'<div class="field"><label>Item</label><select><option>Normal Saline 0.9%</option></select></div><div class="field"><label>Quantity</label><input type="number"></div>'}
+  };
+  function mo(k){ const m=MO[k]||{t:'Action',s:'OK',b:''}; document.getElementById('moTi').textContent=m.t; document.getElementById('moBd').innerHTML=m.b; document.getElementById('moBtn').textContent=m.s; document.getElementById('moOv').classList.add('open'); feather.replace(); }
+  function closeMo(){ document.getElementById('moOv').classList.remove('open'); }
+  function submitMo(){ setTimeout(closeMo,700); showToast('check-circle','Action completed','Logged to audit trail'); }
+  
+  function showToast(ico,msg,sub){
+    const t=document.getElementById('nToast');
+    document.getElementById('nToastIco').innerHTML = `<i data-feather="${ico}"></i>`;
+    document.getElementById('nToastMsg').textContent=msg;
+    document.getElementById('nToastSub').textContent=sub||'';
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),3000);
+    feather.replace();
+  }
+  
+  // ----- POPULATE DATA -----
+  // Home patients
+  const PTS = [
+    {av:'WN',ac:'#e11d48',name:'Wangui Njoroge',det:'Bed 01 · Hyperkalaemia · K⁺ CRITICAL',tag:'r',tl:'⚠ Critical'},
+    {av:'OA',ac:'#2563eb',name:'Omar Abdullahi',det:'Bed 02 · Acute abdomen · NBM',tag:'am',tl:'Monitoring'},
+    {av:'AG',ac:'#7c3aed',name:'Adhiambo Grace',det:'Bed 04 · Viral meningitis',tag:'b',tl:'Stable'},
+    {av:'KM',ac:'#059669',name:'Kipchoge Mutai',det:'Bed 05 · Hypertension',tag:'g',tl:'Stable'},
+  ];
+  const hp=document.getElementById('homePts');
+  PTS.forEach(p=>{ hp.innerHTML+=`<div class="pt-row"><div class="pt-av" style="background:${p.ac}20;color:${p.ac}">${p.av}</div><div style="flex:1"><div class="pt-name">${p.name}</div><div class="pt-det">${p.det}</div></div><span class="tag ${p.tag}">${p.tl}</span></div>`; });
+  
+  // Full patient table
+  const ptt=document.getElementById('ptTable');
+  ptt.innerHTML='<thead><tr><th>Bed</th><th>Patient</th><th>ModelCover ID</th><th>Diagnosis</th><th>Vitals Due</th></tr></thead><tbody>';
+  PTS.forEach((p,i)=>{ ptt.innerHTML+=`<tr><td class="mono">Bed 0${i+1}</td><td>${p.name}</td><td class="mono">ModelCover-${i}8841209</td><td>${p.det.split('·')[1]?.trim()||''}</td><td>${i%2===0?'<span class="tag am dot">Due now</span>':'<span class="tag g">Done</span>'}</td></tr>`; });
+  ptt.innerHTML+='</tbody>';
+  
+  // Triage table
+  const triage = [
+    {pri:'red',tag:'r',tl:'Immediate',name:'James Otieno',id:'ModelCover-45678901',complaint:'Chest pain, SOB',wait:'8 min'},
+    {pri:'orange',tag:'am',tl:'Urgent',name:'Mary Kamau',id:'ModelCover-56789012',complaint:'Severe abdominal pain',wait:'15 min'},
+  ];
+  const tt=document.getElementById('triageTable');
+  tt.innerHTML='<thead><tr><th>Priority</th><th>Patient</th><th>ModelCover ID</th><th>Chief Complaint</th><th>Wait</th></tr></thead><tbody>';
+  triage.forEach(t=>{ tt.innerHTML+=`<tr><td><span class="triage-dot ${t.pri}" style="display:inline-block;margin-right:5px"></span><span class="tag ${t.tag}">${t.tl}</span></td><td>${t.name}</td><td class="mono">${t.id}</td><td>${t.complaint}</td><td>${t.wait}</td></tr>`; });
+  tt.innerHTML+='</tbody>';
+  
+  // Recent vitals
+  const rv=document.getElementById('recentVitals');
+  const RVITALS = [{name:'Wangui Njoroge · Bed 01',time:'08:30',bp:'132/88',hr:'86',temp:'37.1',spo2:'96'}];
+  RVITALS.forEach(v=>{ rv.innerHTML+=`<div class="vital-entry"><div style="display:flex;justify-content:space-between"><div class="ve-name">${v.name}</div><div class="ve-time">${v.time}</div></div><div class="ve-vals"><span class="ve-v">BP: ${v.bp}</span><span class="ve-v">HR: ${v.hr}</span><span class="ve-v">T: ${v.temp}°C</span><span class="ve-v">SpO₂: ${v.spo2}%</span></div></div>`; });
+  
+  // MAR
+  const marMeds1 = [{name:'Amlodipine 5mg Oral',det:'OD · Hypertension',times:[{st:'given',label:'08:00'},{st:'due',label:'12:00'}]},{name:'Furosemide 40mg IV',det:'BD',times:[{st:'given',label:'08:00'},{st:'due',label:'12:00'}]}];
+  const m1=document.getElementById('mar1');
+  marMeds1.forEach(m=>{ let timesHtml=m.times.map(t=>`<div class="mar-time ${t.st}">${t.label}</div>`).join(''); m1.innerHTML+=`<div class="mar-row"><div class="mar-drug"><div class="mar-name">${m.name}</div><div class="mar-detail">${m.det}</div></div><div class="mar-times">${timesHtml}</div><button class="btn-g btn-sm" onclick="mo('marGive')">Give</button></div>`; });
+  
+  const marMeds2 = [{name:'Morphine 5mg IV',det:'PRN 4h',times:[{st:'given',label:'06:00'},{st:'given',label:'10:00'}]}];
+  const m2=document.getElementById('mar2');
+  marMeds2.forEach(m=>{ let timesHtml=m.times.map(t=>`<div class="mar-time ${t.st}">${t.label}</div>`).join(''); m2.innerHTML+=`<div class="mar-row"><div class="mar-drug"><div class="mar-name">${m.name}</div><div class="mar-detail">${m.det}</div></div><div class="mar-times">${timesHtml}</div><button class="btn-g btn-sm" onclick="mo('marGive')">Give</button></div>`; });
+  
+  // Tasks - FIXED SYNTAX
+  const TASKS = [{ti:'12-lead ECG — Wangui Njoroge',det:'Dr. Mutuku ordered',time:'11:30',pri:'r'},{ti:'Repeat K⁺ blood draw',det:'STAT — Wangui Njoroge',time:'11:00',pri:'r'},{ti:'Insulin sliding scale — Fatuma Ali',det:'Before lunch',time:'12:00',pri:'am'}];
+  const DONE = [{ti:'Morning vitals — all 12 patients',det:'07:00–08:30',time:'08:30',pri:'g'},{ti:'Medications 08:00 round',det:'9 of 12 patients',time:'08:45',pri:'g'}];
+  function mkTasks(el,list,isDone){
+    list.forEach(t=>{
+      el.innerHTML+=`<div class="task">
+        <div class="task-cb ${isDone?'done':''}" onclick="this.classList.toggle('done')">${isDone?'<i data-feather="check"></i>':''}</div>
+        <div style="flex:1"><div class="task-ti ${isDone?'done':''}">${t.ti}</div><div class="task-det">${t.det}</div></div>
+        <div class="task-time">${t.time}</div>
+      </div>`;
+    });
+    feather.replace();
+  }
+  mkTasks(document.getElementById('homeTasks'),TASKS,false);
+  mkTasks(document.getElementById('pendingTasks'),TASKS,false);
+  mkTasks(document.getElementById('doneTasks'),DONE,true);
+  
+  // Meds due
+  const MEDS_DUE = [{drug:'Calcium Gluconate 10% IV',det:'Wangui Njoroge · STAT',tag:'r',tl:'STAT Now'},{drug:'Furosemide 40mg IV',det:'Wangui Njoroge · 12:00',tag:'am',tl:'12:00'}];
+  const hm=document.getElementById('homeMeds');
+  MEDS_DUE.forEach(m=>{ hm.innerHTML+=`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1"><div style="font-size:12px;font-weight:700">${m.drug}</div><div style="font-size:10px;color:var(--t3)">${m.det}</div></div><span class="tag ${m.tag}">${m.tl}</span></div>`; });
+  
+  // Vitals due
+  const VITALS_DUE = [{name:'Wangui Njoroge',bed:'01',next:'11:00',tag:'r',tl:'Overdue'},{name:'Adhiambo Grace',bed:'04',next:'11:30',tag:'am',tl:'Due soon'}];
+  const hvd=document.getElementById('homeVitalsDue');
+  VITALS_DUE.forEach(v=>{ hvd.innerHTML+=`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1"><div style="font-size:12px;font-weight:700">${v.name} — Bed ${v.bed}</div></div><span class="tag ${v.tag}">${v.tl}</span><button class="btn-p btn-sm" onclick="go('vitals',null)">Record</button></div>`; });
+  
+  feather.replace();
+</script>
+</body>
+</html>
