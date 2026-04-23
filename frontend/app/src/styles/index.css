@@ -1,4 +1,9 @@
 @import "./unihealth.css";
+@import "./dashboard-shell.css";
+@import "./admin-dashboard.css";
+@import "./doctor-dashboard.css";
+@import "./nurse-dashboard.css";
+@import "./patient-dashboard.css";
 
 #root {
   display: flex;
