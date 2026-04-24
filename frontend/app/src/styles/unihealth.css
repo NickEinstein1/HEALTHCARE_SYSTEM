@@ -1,13 +1,23 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --g:#1a8a4a;--gd:#0a4a26;--gl:#e6f5ed;--gm:#b6dfc8;
-  --r:#c0392b;--b:#1d4ed8;--bl:#dbeafe;--am:#d97706;--al:#fef3c7;
+  --r:#c0392b;--rl:#fff1f2;--rm:#fecaca;
+  --b:#1d4ed8;--bl:#dbeafe;--bm:#bfdbfe;
+  --am:#d97706;--al:#fef3c7;--amm:#fde68a;
+  /* Teal accent (doctor UI) */
+  --te:#0d9488;--tel:#ccfbf1;--tem:#5eead4;
+  /* Purple accent (admin/others) */
+  --pu:#7c3aed;--pul:#ede9fe;--pm:#c4b5fd;
+  /* Rose accent (used heavily in nurse UI) */
+  --ro:#e11d48;--rol:#fff1f2;--rom:#fecdd3;
   --w:#fff;--bg:#f4f7f4;--card:#fff;
   --bdr:#dde3dd;--bdr2:#c5cec5;
-  --t1:#14201a;--t2:#3d5245;--t3:#7a9485;
+  --t1:#14201a;--t2:#31463a;--t3:#5f776a;--t4:#9bb0a5;
   --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
   --sh:0 24px 64px rgba(10,74,38,.1),0 4px 16px rgba(10,74,38,.07);
   --sh-g:0 8px 28px rgba(26,138,74,.28);
+  --shg:0 10px 28px rgba(26,138,74,.22);
+  --sh2:0 18px 50px rgba(10,74,38,.14),0 6px 18px rgba(10,74,38,.08);
 }
 html,body{height:100%;-webkit-font-smoothing:antialiased;font-family:var(--font)}
 body{display:flex;min-height:100vh;background:var(--bg)}

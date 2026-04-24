@@ -5,29 +5,29 @@
 @keyframes pgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 
 .doc .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
-.doc .ph-ey{font-family:var(--mono);font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3px;}
+.doc .ph-ey{font-family:var(--mono);font-size:9px;letter-spacing:2.6px;text-transform:uppercase;color:var(--t2);margin-bottom:4px;font-weight:800;}
 .doc .ph-ti{font-family:var(--serif);font-size:23px;color:var(--t1);letter-spacing:-.3px;}
-.doc .ph-su{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.5;}
+.doc .ph-su{font-size:13px;color:var(--t1);margin-top:6px;line-height:1.6;max-width:74ch;font-weight:700;}
 .doc .ph-r{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
-.doc .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-.doc .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
-.doc .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.doc .gcol2{display:grid;grid-template-columns:1fr 300px;gap:14px;margin-bottom:14px;}
-.doc .gcol3{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px;}
+.doc .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;align-items:start;}
+.doc .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;align-items:start;}
+.doc .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;align-items:stretch;}
+.doc .gcol2{display:grid;grid-template-columns:minmax(520px,1fr) minmax(360px,460px);gap:16px;margin-bottom:16px;align-items:start;}
+.doc .gcol3{display:grid;grid-template-columns:minmax(520px,2fr) minmax(340px,1fr);gap:16px;margin-bottom:16px;align-items:start;}
 
 .doc .btn-p{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;background:var(--te);color:#fff;border:none;border-radius:7px;
-  font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;transition:all .16s;box-shadow:0 3px 12px rgba(13,148,136,.28);white-space:nowrap;}
+  font-family:var(--font);font-size:13px;font-weight:900;letter-spacing:.1px;cursor:pointer;transition:all .16s;box-shadow:0 3px 12px rgba(13,148,136,.28);white-space:nowrap;}
 .doc .btn-p:hover{background:#0e7270;transform:translateY(-1px);}
-.doc .btn-s{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);
-  border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;transition:all .14s;white-space:nowrap;}
-.doc .btn-s:hover{border-color:var(--te);color:var(--te);}
-.doc .btn-sm{padding:4px 10px;font-size:11px;}
+.doc .btn-s{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;background:#fff;color:var(--t1);border:1.5px solid var(--bdr);
+  border-radius:7px;font-family:var(--font);font-size:13px;font-weight:850;cursor:pointer;transition:all .14s;white-space:nowrap;}
+.doc .btn-s:hover{border-color:var(--te);color:var(--t1);background:var(--tel);}
+.doc .btn-sm{padding:6px 11px;font-size:12px;font-weight:900;}
 
-.doc .panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;overflow:hidden;}
+.doc .panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;overflow:hidden;box-shadow:0 1px 0 rgba(20,32,26,.02);}
 .doc .pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bdr);}
-.doc .pnl-ti{font-size:13px;font-weight:700;color:var(--t1);}
-.doc .pnl-su{font-size:10px;color:var(--t3);margin-top:1px;}
+.doc .pnl-ti{font-size:13.5px;font-weight:850;color:var(--t1);}
+.doc .pnl-su{font-size:11.5px;color:var(--t2);margin-top:3px;line-height:1.45;}
 .doc .pnl-bd{padding:14px 16px;}
 .doc .pnl-lk{font-size:11px;font-weight:700;color:var(--te);cursor:pointer;}
 .doc .pnl-lk:hover{text-decoration:underline;}
@@ -95,5 +95,11 @@
   .doc .g4{grid-template-columns:repeat(2,1fr)}
   .doc .pt-stats{grid-template-columns:repeat(2,1fr)}
   .doc .bed-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+@media (min-width: 1280px){
+  .doc .panel{border-radius:14px;}
+  .doc .pnl-hd{padding:14px 18px;}
+  .doc .pnl-bd{padding:16px 18px;}
 }
 

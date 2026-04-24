@@ -5,16 +5,16 @@
 @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap;}
-.ph-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.ph-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.6px;text-transform:uppercase;color:var(--t2);margin-bottom:4px;font-weight:800;}
 .ph-title{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.3px;line-height:1.1;}
-.ph-sub{font-size:12.5px;color:var(--t3);margin-top:5px;line-height:1.5;}
+.ph-sub{font-size:13px;color:var(--t1);margin-top:6px;line-height:1.6;max-width:74ch;font-weight:700;}
 .ph-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 
 .btn-p{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:var(--g);color:#fff;border:none;border-radius:8px;
-  font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:var(--shg);white-space:nowrap;}
+  font-family:var(--font);font-size:13px;font-weight:900;letter-spacing:.1px;cursor:pointer;transition:all .18s;box-shadow:var(--shg);white-space:nowrap;}
 .btn-p:hover{background:var(--gd);transform:translateY(-1px);box-shadow:0 8px 24px rgba(26,138,74,.35);}
-.btn-s{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);border-radius:8px;
-  font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-s{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;background:#fff;color:var(--t1);border:1.5px solid var(--bdr);border-radius:8px;
+  font-family:var(--font);font-size:13px;font-weight:850;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .btn-s:hover{border-color:var(--g);color:var(--gd);background:var(--gl);}
 
 .alert-strip{display:flex;align-items:center;gap:10px;padding:11px 16px;background:linear-gradient(90deg,rgba(220,38,38,.07),rgba(220,38,38,.02));
@@ -176,5 +176,12 @@
   .qa{grid-template-columns:repeat(4,1fr)}
   .g2{grid-template-columns:1fr}
   .g3{grid-template-columns:1fr}
+}
+
+@media (min-width: 1280px){
+  .g2{grid-template-columns:minmax(520px,1fr) minmax(360px,460px);}
+  .panel{box-shadow:0 1px 0 rgba(20,32,26,.02);}
+  .pnl-hd{padding:15px 22px;}
+  .pnl-body{padding:18px 22px;}
 }
 
