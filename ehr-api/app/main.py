@@ -43,6 +43,361 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# ----- Generic action log (remove "demo" placeholders) -----
+_ui_actions: list[dict] = []
+
+# ----- Admin: User management (Phase 1 UI, in-memory) -----
+_admin_users: list[dict] = [
+    {
+        "id": "USR-0001",
+        "name": "M. Kamau",
+        "email": "m.kamau@moh.go.ke",
+        "role": "System Admin",
+        "reg": "ADM-0142",
+        "facility": "MOH HQ",
+        "auth": "Biometric",
+        "status": "Active",
+        "last_login": "Today 08:12",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+    {
+        "id": "USR-0002",
+        "name": "S. Njeri",
+        "email": "s.njeri@unihealth.ke",
+        "role": "Security Admin",
+        "reg": "SEC-0081",
+        "facility": "UniHealth SecOps",
+        "auth": "Practice 360",
+        "status": "Active",
+        "last_login": "Today 07:51",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+    {
+        "id": "USR-0003",
+        "name": "J. Odhiambo",
+        "email": "j.odhiambo@unihealth.ke",
+        "role": "Data Manager",
+        "reg": "DM-2210",
+        "facility": "Data Hub",
+        "auth": "OTP",
+        "status": "Pending",
+        "last_login": "Yesterday 19:02",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+]
+
+# ----- Admin: Facilities (Phase 1 UI, in-memory) -----
+_admin_facilities: list[dict] = [
+    {
+        "id": "FAC-0001",
+        "name": "KNH Nairobi",
+        "level": "Level 6",
+        "county": "Nairobi",
+        "status": "ONLINE",
+        "latency": "22ms",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+    {
+        "id": "FAC-0002",
+        "name": "Nakuru Level 5",
+        "level": "Level 5",
+        "county": "Nakuru",
+        "status": "DEGRADED",
+        "latency": "88ms",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+    {
+        "id": "FAC-0003",
+        "name": "MTRH Eldoret",
+        "level": "Level 6",
+        "county": "Uasin Gishu",
+        "status": "ONLINE",
+        "latency": "31ms",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    },
+]
+
+# ----- Admin: Patient Registry (Phase 1 UI, in-memory) -----
+_admin_patients: list[dict] = [
+    {
+        "id": "PAT-0001",
+        "afl_id": "AFL-2026-KE-00312",
+        "name": "Wangui Njoroge",
+        "email": "wangui.njoroge@example.com",
+        "phone": "+254700000312",
+        "facility": "KNH Nairobi",
+        "status": "Active",
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    }
+]
+
+
+@app.post("/ui/actions", status_code=200, summary="Record a UI action (Phase 1 UI).")
+async def ui_record_action(payload: dict = Body(...)):
+    action_id = payload.get("id") or f"ACT-{int(time.time() * 1000)}"
+    row = {"id": action_id, **payload, "created_at": time.time()}
+    _ui_actions.insert(0, row)
+    return {"status": "recorded", "id": action_id}
+
+
+@app.get("/ui/actions", status_code=200, summary="List UI actions (Phase 1 UI).")
+async def ui_list_actions(limit: int = Query(default=100, ge=1, le=500)):
+    return _ui_actions[:limit]
+
+
+@app.get("/admin/users", status_code=200, summary="List admin-managed users (Phase 1 UI).")
+async def admin_list_users(
+    q: str | None = Query(default=None, description="Optional search across name/email/reg/facility/role"),
+    role: str | None = Query(default=None),
+    facility: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    limit: int = Query(default=200, ge=1, le=500),
+):
+    rows = list(_admin_users)
+    if q:
+        qq = q.strip().lower()
+        if qq:
+            rows = [
+                r
+                for r in rows
+                if qq in str(r.get("name", "")).lower()
+                or qq in str(r.get("email", "")).lower()
+                or qq in str(r.get("reg", "")).lower()
+                or qq in str(r.get("facility", "")).lower()
+                or qq in str(r.get("role", "")).lower()
+            ]
+    if role:
+        rows = [r for r in rows if str(r.get("role", "")).lower() == role.strip().lower()]
+    if facility:
+        rows = [r for r in rows if str(r.get("facility", "")).lower() == facility.strip().lower()]
+    if status:
+        rows = [r for r in rows if str(r.get("status", "")).lower() == status.strip().lower()]
+    return rows[:limit]
+
+
+@app.post("/admin/users", status_code=200, summary="Create a user (Phase 1 UI).")
+async def admin_create_user(payload: dict = Body(...)):
+    name = (payload.get("name") or "").strip()
+    email = (payload.get("email") or "").strip().lower()
+    role = (payload.get("role") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if not email:
+        raise HTTPException(status_code=400, detail="email is required")
+    if not role:
+        raise HTTPException(status_code=400, detail="role is required")
+    if any(str(u.get("email", "")).lower() == email for u in _admin_users):
+        raise HTTPException(status_code=409, detail="email already exists")
+    user_id = payload.get("id") or f"USR-{int(time.time() * 1000)}"
+    now = time.time()
+    row = {
+        "id": user_id,
+        "name": name,
+        "email": email,
+        "role": role,
+        "reg": (payload.get("reg") or "").strip() or None,
+        "facility": (payload.get("facility") or "").strip() or None,
+        "auth": (payload.get("auth") or "").strip() or "OTP",
+        "status": (payload.get("status") or "").strip() or "Pending",
+        "last_login": payload.get("last_login") or "Never",
+        "created_at": now,
+        "updated_at": now,
+    }
+    _admin_users.insert(0, row)
+    return {"status": "created", "id": user_id, "user": row}
+
+
+@app.put("/admin/users/{user_id}", status_code=200, summary="Update a user (Phase 1 UI).")
+async def admin_update_user(user_id: str, payload: dict = Body(...)):
+    now = time.time()
+    for u in _admin_users:
+        if str(u.get("id")) == user_id:
+            if "email" in payload:
+                new_email = (payload.get("email") or "").strip().lower()
+                if not new_email:
+                    raise HTTPException(status_code=400, detail="email cannot be empty")
+                if any(str(x.get("email", "")).lower() == new_email and str(x.get("id")) != user_id for x in _admin_users):
+                    raise HTTPException(status_code=409, detail="email already exists")
+                u["email"] = new_email
+            for k in ["name", "role", "reg", "facility", "auth", "status", "last_login"]:
+                if k in payload:
+                    val = payload.get(k)
+                    u[k] = val.strip() if isinstance(val, str) else val
+            u["updated_at"] = now
+            return {"status": "updated", "id": user_id, "user": u}
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+@app.delete("/admin/users/{user_id}", status_code=200, summary="Delete a user (Phase 1 UI).")
+async def admin_delete_user(user_id: str):
+    for i, u in enumerate(_admin_users):
+        if str(u.get("id")) == user_id:
+            _admin_users.pop(i)
+            return {"status": "deleted", "id": user_id}
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+@app.get("/admin/facilities", status_code=200, summary="List facilities (Phase 1 UI).")
+async def admin_list_facilities(
+    q: str | None = Query(default=None),
+    county: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    limit: int = Query(default=300, ge=1, le=1000),
+):
+    rows = list(_admin_facilities)
+    if q:
+        qq = q.strip().lower()
+        if qq:
+            rows = [r for r in rows if qq in str(r.get("name", "")).lower() or qq in str(r.get("id", "")).lower()]
+    if county:
+        rows = [r for r in rows if str(r.get("county", "")).lower() == county.strip().lower()]
+    if status:
+        rows = [r for r in rows if str(r.get("status", "")).lower() == status.strip().lower()]
+    return rows[:limit]
+
+
+@app.post("/admin/facilities", status_code=200, summary="Create a facility (Phase 1 UI).")
+async def admin_create_facility(payload: dict = Body(...)):
+    name = (payload.get("name") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if any(str(f.get("name", "")).strip().lower() == name.lower() for f in _admin_facilities):
+        raise HTTPException(status_code=409, detail="facility name already exists")
+    fac_id = payload.get("id") or f"FAC-{int(time.time() * 1000)}"
+    now = time.time()
+    row = {
+        "id": fac_id,
+        "name": name,
+        "level": (payload.get("level") or "").strip() or None,
+        "county": (payload.get("county") or "").strip() or None,
+        "status": (payload.get("status") or "").strip() or "ONLINE",
+        "latency": (payload.get("latency") or "").strip() or None,
+        "created_at": now,
+        "updated_at": now,
+    }
+    _admin_facilities.insert(0, row)
+    return {"status": "created", "id": fac_id, "facility": row}
+
+
+@app.put("/admin/facilities/{facility_id}", status_code=200, summary="Update a facility (Phase 1 UI).")
+async def admin_update_facility(facility_id: str, payload: dict = Body(...)):
+    now = time.time()
+    for f in _admin_facilities:
+        if str(f.get("id")) == facility_id:
+            if "name" in payload:
+                new_name = (payload.get("name") or "").strip()
+                if not new_name:
+                    raise HTTPException(status_code=400, detail="name cannot be empty")
+                if any(str(x.get("name", "")).strip().lower() == new_name.lower() and str(x.get("id")) != facility_id for x in _admin_facilities):
+                    raise HTTPException(status_code=409, detail="facility name already exists")
+                f["name"] = new_name
+            for k in ["level", "county", "status", "latency"]:
+                if k in payload:
+                    val = payload.get(k)
+                    f[k] = val.strip() if isinstance(val, str) else val
+            f["updated_at"] = now
+            return {"status": "updated", "id": facility_id, "facility": f}
+    raise HTTPException(status_code=404, detail="Facility not found")
+
+
+@app.delete("/admin/facilities/{facility_id}", status_code=200, summary="Delete a facility (Phase 1 UI).")
+async def admin_delete_facility(facility_id: str):
+    for i, f in enumerate(_admin_facilities):
+        if str(f.get("id")) == facility_id:
+            _admin_facilities.pop(i)
+            return {"status": "deleted", "id": facility_id}
+    raise HTTPException(status_code=404, detail="Facility not found")
+
+
+@app.get("/admin/patients", status_code=200, summary="List patients (Phase 1 UI).")
+async def admin_list_patients(
+    q: str | None = Query(default=None),
+    facility: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    limit: int = Query(default=300, ge=1, le=1000),
+):
+    rows = list(_admin_patients)
+    if q:
+        qq = q.strip().lower()
+        if qq:
+            rows = [
+                r
+                for r in rows
+                if qq in str(r.get("name", "")).lower()
+                or qq in str(r.get("afl_id", "")).lower()
+                or qq in str(r.get("email", "")).lower()
+                or qq in str(r.get("phone", "")).lower()
+            ]
+    if facility:
+        rows = [r for r in rows if str(r.get("facility", "")).lower() == facility.strip().lower()]
+    if status:
+        rows = [r for r in rows if str(r.get("status", "")).lower() == status.strip().lower()]
+    return rows[:limit]
+
+
+@app.post("/admin/patients", status_code=200, summary="Register a patient (Phase 1 UI).")
+async def admin_create_patient(payload: dict = Body(...)):
+    name = (payload.get("name") or "").strip()
+    afl_id = (payload.get("afl_id") or "").strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if not afl_id:
+        raise HTTPException(status_code=400, detail="afl_id is required")
+    if any(str(p.get("afl_id", "")).strip().lower() == afl_id.lower() for p in _admin_patients):
+        raise HTTPException(status_code=409, detail="afl_id already exists")
+    pat_id = payload.get("id") or f"PAT-{int(time.time() * 1000)}"
+    now = time.time()
+    row = {
+        "id": pat_id,
+        "afl_id": afl_id,
+        "name": name,
+        "email": (payload.get("email") or "").strip().lower() or None,
+        "phone": (payload.get("phone") or "").strip() or None,
+        "facility": (payload.get("facility") or "").strip() or None,
+        "status": (payload.get("status") or "").strip() or "Active",
+        "created_at": now,
+        "updated_at": now,
+    }
+    _admin_patients.insert(0, row)
+    return {"status": "created", "id": pat_id, "patient": row}
+
+
+@app.put("/admin/patients/{patient_id}", status_code=200, summary="Update a patient (Phase 1 UI).")
+async def admin_update_patient(patient_id: str, payload: dict = Body(...)):
+    now = time.time()
+    for p in _admin_patients:
+        if str(p.get("id")) == patient_id:
+            if "afl_id" in payload:
+                new_afl = (payload.get("afl_id") or "").strip()
+                if not new_afl:
+                    raise HTTPException(status_code=400, detail="afl_id cannot be empty")
+                if any(str(x.get("afl_id", "")).strip().lower() == new_afl.lower() and str(x.get("id")) != patient_id for x in _admin_patients):
+                    raise HTTPException(status_code=409, detail="afl_id already exists")
+                p["afl_id"] = new_afl
+            for k in ["name", "email", "phone", "facility", "status"]:
+                if k in payload:
+                    val = payload.get(k)
+                    p[k] = val.strip() if isinstance(val, str) else val
+            p["updated_at"] = now
+            return {"status": "updated", "id": patient_id, "patient": p}
+    raise HTTPException(status_code=404, detail="Patient not found")
+
+
+@app.delete("/admin/patients/{patient_id}", status_code=200, summary="Delete a patient (Phase 1 UI).")
+async def admin_delete_patient(patient_id: str):
+    for i, p in enumerate(_admin_patients):
+        if str(p.get("id")) == patient_id:
+            _admin_patients.pop(i)
+            return {"status": "deleted", "id": patient_id}
+    raise HTTPException(status_code=404, detail="Patient not found")
+
 # ----- Nurse action endpoints (Phase 1 UI) -----
 _nurse_incidents: list[dict] = []
 _nurse_supply_requests: list[dict] = []
