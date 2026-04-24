@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type DocPage =
   | "home"
+  | "chart"
   | "queue"
   | "patient"
   | "ward"
@@ -19,6 +20,7 @@ type DocPage =
 
 const DOC_TITLES: Record<DocPage, string> = {
   home: "Today's Overview",
+  chart: "Patient Chart",
   queue: "Patient Queue",
   patient: "Patient Workup",
   ward: "Ward / Beds",
@@ -42,11 +44,70 @@ export function DoctorDashboard() {
 
   const apiErr = summary.error ?? obs.error ?? meds.error;
 
+  type AdmittedRow = { bed: string; name: string; aflId: string; team: string; fhirId: string };
+  type LabOrderRow = { id: string; when: string; patientFhirId: string; panel: string; priority: string; notes: string };
+
+  const [admitted, setAdmitted] = useState<AdmittedRow[]>(() => {
+    try {
+      const raw = localStorage.getItem("doc.admitted.v1");
+      if (!raw) {
+        return [
+          { bed: "01", name: "Wangui Njoroge", aflId: "AFL-78841209", team: "IM", fhirId: "P001" },
+          { bed: "02", name: "Omar Abdullahi", aflId: "AFL-87654321", team: "Surgery", fhirId: "P002" },
+        ];
+      }
+      const parsed = JSON.parse(raw) as AdmittedRow[];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [
+        { bed: "01", name: "Wangui Njoroge", aflId: "AFL-78841209", team: "IM", fhirId: "P001" },
+        { bed: "02", name: "Omar Abdullahi", aflId: "AFL-87654321", team: "Surgery", fhirId: "P002" },
+      ];
+    }
+  });
+
+  const [labOrders, setLabOrders] = useState<LabOrderRow[]>(() => {
+    try {
+      const raw = localStorage.getItem("doc.labOrders.v1");
+      const parsed = raw ? (JSON.parse(raw) as LabOrderRow[]) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("doc.admitted.v1", JSON.stringify(admitted));
+    } catch {
+      // ignore
+    }
+  }, [admitted]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("doc.labOrders.v1", JSON.stringify(labOrders));
+    } catch {
+      // ignore
+    }
+  }, [labOrders]);
+
+  const [showAdmit, setShowAdmit] = useState(false);
+  const [admitForm, setAdmitForm] = useState<AdmittedRow>({ bed: "", name: "", aflId: "", team: "IM", fhirId: patientId });
+
+  const [showLab, setShowLab] = useState(false);
+  const [labForm, setLabForm] = useState<{ panel: string; priority: string; notes: string; patientFhirId: string }>({
+    panel: "U&E",
+    priority: "Routine",
+    notes: "",
+    patientFhirId: patientId,
+  });
+
   const queueRows = useMemo(
     () => [
-      { t: "09:15", name: "Wangui Njoroge", id: "AFL-78841209", reason: "Follow-up HTN", status: "Waiting", pri: "am" as const },
-      { t: "09:40", name: "Omar Abdullahi", id: "AFL-87654321", reason: "Post-op review", status: "In consult", pri: "g" as const },
-      { t: "10:05", name: "Mary K.", id: "AFL-90123456", reason: "Chest tightness", status: "Waiting", pri: "r" as const },
+      { t: "09:15", name: "Wangui Njoroge", id: "AFL-78841209", fhirId: "P001", reason: "Follow-up HTN", status: "Waiting", pri: "am" as const },
+      { t: "09:40", name: "Omar Abdullahi", id: "AFL-87654321", fhirId: "P002", reason: "Post-op review", status: "In consult", pri: "g" as const },
+      { t: "10:05", name: "Mary K.", id: "AFL-90123456", fhirId: "P005", reason: "Chest tightness", status: "Waiting", pri: "r" as const },
     ],
     []
   );
@@ -124,6 +185,18 @@ export function DoctorDashboard() {
               <div className="kpi-su">gateway</div>
             </div>
           </div>
+        </div>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 12 }}>
+          <button
+            className="btn-s btn-sm"
+            type="button"
+            onClick={() => {
+              setPage("chart");
+              toast(`Opened patient chart for ${patientId}.`);
+            }}
+          >
+            🗂️ Open Patient Chart →
+          </button>
         </div>
       </div>
     </div>
@@ -321,6 +394,7 @@ export function DoctorDashboard() {
           label: "Clinical",
           items: [
             { id: "home", icon: "🏠", label: "Today's Overview" },
+            { id: "chart", icon: "🗂️", label: "Patient Chart", badge: { text: patientId, tone: "amber" } },
             { id: "queue", icon: "👥", label: "Patient Queue", badge: { text: "8", tone: "red" } },
             { id: "patient", icon: "🩺", label: "Patient Workup" },
             { id: "ward", icon: "🛏️", label: "Ward / Beds", badge: { text: "3", tone: "amber" } },
@@ -342,6 +416,210 @@ export function DoctorDashboard() {
       ]}
     >
       <div className="doc">
+        {(showAdmit || showLab) && (
+          <div
+            role="presentation"
+            onClick={() => {
+              setShowAdmit(false);
+              setShowLab(false);
+            }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(2,6,23,.38)",
+              zIndex: 999,
+            }}
+          />
+        )}
+
+        {showAdmit && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%,-50%)",
+              width: "min(760px, calc(100vw - 28px))",
+              background: "#fff",
+              border: "1.5px solid var(--bdr)",
+              borderRadius: 14,
+              zIndex: 1000,
+              boxShadow: "0 20px 60px rgba(2,6,23,.25)",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--bdr)", display: "flex", justifyContent: "space-between" }}>
+              <div style={{ fontWeight: 950, color: "var(--t1)" }}>Admit patient</div>
+              <button className="btn-s btn-sm" type="button" onClick={() => setShowAdmit(false)}>
+                Close
+              </button>
+            </div>
+            <div style={{ padding: 16 }}>
+              <div className="g2">
+                <div className="ff">
+                  <label>FHIR Patient ID</label>
+                  <input
+                    className="mono"
+                    value={admitForm.fhirId}
+                    onChange={(e) => setAdmitForm((s) => ({ ...s, fhirId: e.target.value }))}
+                    placeholder="e.g. P001"
+                  />
+                </div>
+                <div className="ff">
+                  <label>Bed</label>
+                  <input value={admitForm.bed} onChange={(e) => setAdmitForm((s) => ({ ...s, bed: e.target.value }))} placeholder="e.g. 12" />
+                </div>
+              </div>
+              <div className="g2">
+                <div className="ff">
+                  <label>Patient name</label>
+                  <input value={admitForm.name} onChange={(e) => setAdmitForm((s) => ({ ...s, name: e.target.value }))} placeholder="Full name" />
+                </div>
+                <div className="ff">
+                  <label>AFL ID</label>
+                  <input
+                    className="mono"
+                    value={admitForm.aflId}
+                    onChange={(e) => setAdmitForm((s) => ({ ...s, aflId: e.target.value }))}
+                    placeholder="e.g. AFL-12345678"
+                  />
+                </div>
+              </div>
+              <div className="ff">
+                <label>Team</label>
+                <select value={admitForm.team} onChange={(e) => setAdmitForm((s) => ({ ...s, team: e.target.value }))}>
+                  <option value="IM">Internal Medicine</option>
+                  <option value="Surgery">Surgery</option>
+                  <option value="Paeds">Paediatrics</option>
+                  <option value="OBGYN">OB/GYN</option>
+                </select>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 14 }}>
+                <button className="btn-s" type="button" onClick={() => setShowAdmit(false)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-p"
+                  type="button"
+                  onClick={() => {
+                    const bed = admitForm.bed.trim();
+                    const name = admitForm.name.trim();
+                    const aflId = admitForm.aflId.trim();
+                    const fhirId = admitForm.fhirId.trim();
+                    if (!bed || !name || !aflId || !fhirId) {
+                      toast("Please fill Bed, Name, AFL ID and FHIR Patient ID.");
+                      return;
+                    }
+                    setAdmitted((cur) => [{ ...admitForm, bed, name, aflId, fhirId }, ...cur]);
+                    setShowAdmit(false);
+                    toast(`Admitted ${name} to bed ${bed}.`);
+                  }}
+                >
+                  Admit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showLab && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+              position: "fixed",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%,-50%)",
+              width: "min(760px, calc(100vw - 28px))",
+              background: "#fff",
+              border: "1.5px solid var(--bdr)",
+              borderRadius: 14,
+              zIndex: 1000,
+              boxShadow: "0 20px 60px rgba(2,6,23,.25)",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--bdr)", display: "flex", justifyContent: "space-between" }}>
+              <div style={{ fontWeight: 950, color: "var(--t1)" }}>Order lab test</div>
+              <button className="btn-s btn-sm" type="button" onClick={() => setShowLab(false)}>
+                Close
+              </button>
+            </div>
+            <div style={{ padding: 16 }}>
+              <div className="g2">
+                <div className="ff">
+                  <label>FHIR Patient ID</label>
+                  <input
+                    className="mono"
+                    value={labForm.patientFhirId}
+                    onChange={(e) => setLabForm((s) => ({ ...s, patientFhirId: e.target.value }))}
+                    placeholder="e.g. P001"
+                  />
+                </div>
+                <div className="ff">
+                  <label>Priority</label>
+                  <select value={labForm.priority} onChange={(e) => setLabForm((s) => ({ ...s, priority: e.target.value }))}>
+                    <option>Routine</option>
+                    <option>Urgent</option>
+                    <option>STAT</option>
+                  </select>
+                </div>
+              </div>
+              <div className="g2">
+                <div className="ff">
+                  <label>Test panel</label>
+                  <select value={labForm.panel} onChange={(e) => setLabForm((s) => ({ ...s, panel: e.target.value }))}>
+                    <option>U&amp;E</option>
+                    <option>FBC</option>
+                    <option>LFT</option>
+                    <option>CRP</option>
+                    <option>HbA1c</option>
+                  </select>
+                </div>
+                <div className="ff">
+                  <label>Notes</label>
+                  <input value={labForm.notes} onChange={(e) => setLabForm((s) => ({ ...s, notes: e.target.value }))} placeholder="Clinical indication (optional)" />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 14 }}>
+                <button className="btn-s" type="button" onClick={() => setShowLab(false)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-p"
+                  type="button"
+                  onClick={() => {
+                    const pid = labForm.patientFhirId.trim();
+                    if (!pid) {
+                      toast("Please provide a FHIR Patient ID.");
+                      return;
+                    }
+                    const now = new Date();
+                    const row: LabOrderRow = {
+                      id: `LAB-${now.getTime()}`,
+                      when: now.toISOString(),
+                      patientFhirId: pid,
+                      panel: labForm.panel,
+                      priority: labForm.priority,
+                      notes: labForm.notes.trim(),
+                    };
+                    setLabOrders((cur) => [row, ...cur]);
+                    setShowLab(false);
+                    toast(`Lab order created for ${pid}: ${labForm.panel} (${labForm.priority}).`);
+                  }}
+                >
+                  Create order
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className={`pg${page === "home" ? " on" : ""}`} id="pg-home">
           <div className="ph">
             <div>
@@ -355,6 +633,31 @@ export function DoctorDashboard() {
               </button>
               <button className="btn-p" type="button" onClick={() => toast("Order entry coming soon (demo).")}>
                 + New Order
+              </button>
+            </div>
+          </div>
+          {patientIdPanel}
+          {liveChart}
+        </div>
+
+        <div className={`pg${page === "chart" ? " on" : ""}`} id="pg-chart">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Unified Patient Record</div>
+              <div className="ph-ti">Patient Chart</div>
+              <div className="ph-su">
+                Linked to FHIR Patient ID <span className="mono">{patientId}</span> · Summary, encounters, vitals and medications
+              </div>
+            </div>
+            <div className="ph-r">
+              <button className="btn-s btn-sm" type="button" onClick={() => setPage("queue")}>
+                ← Queue
+              </button>
+              <button className="btn-s btn-sm" type="button" onClick={() => setPage("ward")}>
+                🛏️ Ward
+              </button>
+              <button className="btn-p btn-sm" type="button" onClick={() => setPage("patient")}>
+                🩺 Workup
               </button>
             </div>
           </div>
@@ -472,6 +775,7 @@ export function DoctorDashboard() {
                     <th className="mono">ID</th>
                     <th>Reason</th>
                     <th>Status</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
@@ -483,6 +787,19 @@ export function DoctorDashboard() {
                       <td>{r.reason}</td>
                       <td>
                         <span className={`tag ${r.pri} dot`}>{r.status}</span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-s btn-sm"
+                          type="button"
+                          onClick={() => {
+                            setPatientId(r.fhirId);
+                            setPage("chart");
+                            toast(`Opened chart for ${r.name} (${r.fhirId}).`);
+                          }}
+                        >
+                          Open chart →
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -499,7 +816,14 @@ export function DoctorDashboard() {
               <div className="ph-ti">Ward 4B — Internal Medicine</div>
               <div className="ph-su">KNH Nairobi · Floor 4 · 16 beds total</div>
             </div>
-            <button className="btn-p" type="button">
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                setAdmitForm({ bed: "", name: "", aflId: "", team: "IM", fhirId: patientId });
+                setShowAdmit(true);
+              }}
+            >
               + Admit Patient
             </button>
           </div>
@@ -564,21 +888,31 @@ export function DoctorDashboard() {
                       <th>Patient</th>
                       <th className="mono">ID</th>
                       <th>Team</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="mono">01</td>
-                      <td style={{ fontWeight: 800 }}>Wangui Njoroge</td>
-                      <td className="mono">AFL-78841209</td>
-                      <td>IM</td>
-                    </tr>
-                    <tr>
-                      <td className="mono">02</td>
-                      <td style={{ fontWeight: 800 }}>Omar Abdullahi</td>
-                      <td className="mono">AFL-87654321</td>
-                      <td>Surgery</td>
-                    </tr>
+                    {admitted.map((p) => (
+                      <tr key={`${p.bed}-${p.aflId}`}>
+                        <td className="mono">{p.bed}</td>
+                        <td style={{ fontWeight: 800 }}>{p.name}</td>
+                        <td className="mono">{p.aflId}</td>
+                        <td>{p.team}</td>
+                        <td>
+                          <button
+                            className="btn-s btn-sm"
+                            type="button"
+                            onClick={() => {
+                              setPatientId(p.fhirId);
+                              setPage("chart");
+                              toast(`Opened chart for ${p.name} (${p.fhirId}).`);
+                            }}
+                          >
+                            Open chart →
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -593,7 +927,14 @@ export function DoctorDashboard() {
               <div className="ph-ti">Lab Orders &amp; Results</div>
               <div className="ph-su">Order, track and review investigations — observation stream below is live from gateway</div>
             </div>
-            <button className="btn-p" type="button">
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                setLabForm((s) => ({ ...s, patientFhirId: patientId }));
+                setShowLab(true);
+              }}
+            >
               + Order Lab Test
             </button>
           </div>
@@ -672,6 +1013,55 @@ export function DoctorDashboard() {
                   Submit Lab Order
                 </button>
               </div>
+            </div>
+          </div>
+
+          <div className="panel" style={{ marginTop: 14 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-ti">Created lab orders</div>
+                <div className="pnl-su">Stored locally (until backend order endpoints are added)</div>
+              </div>
+              <button className="btn-s btn-sm" type="button" onClick={() => setShowLab(true)}>
+                + New
+              </button>
+            </div>
+            <div className="pnl-bd" style={{ padding: 0 }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th className="mono">Order</th>
+                    <th className="mono">When</th>
+                    <th className="mono">Patient</th>
+                    <th>Panel</th>
+                    <th>Priority</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {labOrders.slice(0, 12).map((o) => (
+                    <tr key={o.id}>
+                      <td className="mono">{o.id}</td>
+                      <td className="mono" style={{ color: "var(--t3)" }}>
+                        {o.when.replace("T", " ").slice(0, 19)}
+                      </td>
+                      <td className="mono">{o.patientFhirId}</td>
+                      <td style={{ fontWeight: 700 }}>{o.panel}</td>
+                      <td>
+                        <span className={`tag ${o.priority === "STAT" ? "r" : o.priority === "Urgent" ? "am" : "g"}`}>{o.priority}</span>
+                      </td>
+                      <td style={{ color: "var(--t2)" }}>{o.notes || "—"}</td>
+                    </tr>
+                  ))}
+                  {labOrders.length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                        No lab orders created yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
