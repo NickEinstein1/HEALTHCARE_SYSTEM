@@ -11,9 +11,21 @@ import signal
 import sys
 from datetime import date, datetime
 
-import psycopg2
-import redis
-from confluent_kafka import Consumer, KafkaException
+try:
+    import psycopg2  # type: ignore
+except Exception:  # pragma: no cover
+    psycopg2 = None
+
+try:
+    import redis  # type: ignore
+except Exception:  # pragma: no cover
+    redis = None
+
+try:
+    from confluent_kafka import Consumer, KafkaException  # type: ignore
+except Exception:  # pragma: no cover
+    Consumer = None
+    KafkaException = Exception
 
 POSTGRES_DSN = os.environ.get(
     "EHR_POSTGRES_DSN",
@@ -41,6 +53,18 @@ def parse_datetime(v):
     if isinstance(v, str):
         return datetime.fromisoformat(v.replace("Z", "+00:00"))
     return None
+
+
+def _require_runtime_deps():
+    missing = []
+    if psycopg2 is None:
+        missing.append("psycopg2")
+    if redis is None:
+        missing.append("redis")
+    if Consumer is None:
+        missing.append("confluent_kafka")
+    if missing:
+        raise RuntimeError(f"Missing runtime dependencies: {', '.join(missing)}")
 
 
 def process_patient(payload: dict, conn, redis_client):
@@ -238,6 +262,7 @@ def process_medication_request(payload: dict, conn, redis_client):
 
 
 def run():
+    _require_runtime_deps()
     print(f"Edge consumer starting. bootstrap={KAFKA_BOOTSTRAP}", flush=True)
     group_id = os.environ.get("EDGE_CONSUMER_GROUP_ID", "edge-pipeline-consumer")
     auto_offset_reset = os.environ.get("EDGE_CONSUMER_AUTO_OFFSET_RESET", "earliest")
