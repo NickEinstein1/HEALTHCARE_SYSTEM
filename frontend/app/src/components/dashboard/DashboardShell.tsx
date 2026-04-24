@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type ToastFn = (message: string) => void;
 const DashboardToastContext = createContext<null | ToastFn>(null);
@@ -43,6 +44,7 @@ export function DashboardShell(props: {
   onTopbarSearchKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onTopbarNotificationsClick?: () => void;
   onTopbarStatusClick?: () => void;
+  onSignOutClick?: () => void;
   children: React.ReactNode;
 }) {
   const {
@@ -62,8 +64,11 @@ export function DashboardShell(props: {
     onTopbarSearchKeyDown,
     onTopbarNotificationsClick,
     onTopbarStatusClick,
+    onSignOutClick,
     children,
   } = props;
+
+  const navigate = useNavigate();
 
   const [dateText, setDateText] = useState("");
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -172,7 +177,21 @@ export function DashboardShell(props: {
               <div className="sb-un">{userName}</div>
               <div className="sb-ue">{userEmail}</div>
             </div>
-            <button className="sb-signout" type="button">
+            <button
+              className="sb-signout"
+              type="button"
+              onClick={() => {
+                try {
+                  // clear any local demo state used by dashboards
+                  localStorage.removeItem("doc.admitted.v1");
+                  localStorage.removeItem("doc.labOrders.v1");
+                } catch {
+                  // ignore
+                }
+                onSignOutClick?.();
+                if (!onSignOutClick) navigate("/");
+              }}
+            >
               Sign Out
             </button>
           </div>
