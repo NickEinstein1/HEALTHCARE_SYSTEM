@@ -1,7 +1,155 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell } from "../../components/dashboard/DashboardShell";
+
+function fmtWhen(d: Date, hhmm: string) {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()} · ${hhmm}`;
+}
+
+function parseWhenToDate(when: string): Date | null {
+  // Expected formats in demo data: "15 Mar 2026 · 09:00"
+  const m = when.match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})/);
+  if (!m) return null;
+  const day = Number(m[1]);
+  const mon = m[2].toLowerCase();
+  const year = Number(m[3]);
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  const idx = months.indexOf(mon);
+  if (idx < 0) return null;
+  const d = new Date(year, idx, day);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function ymd(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+
+function isSameMonth(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+}
+
+function addDays(d: Date, days: number) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + days);
+}
+
+function nextWeekday(from: Date, weekday: number) {
+  // weekday: 0=Sun..6=Sat. Returns a date >= from (but typically in future).
+  const base = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  const delta = (weekday - base.getDay() + 7) % 7;
+  return addDays(base, delta === 0 ? 7 : delta);
+}
+
+function pickDefaultSelectedDay(now: Date, apptDates: Date[]) {
+  const todayKey = ymd(now);
+  const upcoming = apptDates
+    .slice()
+    .sort((a, b) => a.getTime() - b.getTime())
+    .find((d) => ymd(d) >= todayKey);
+  return upcoming ?? now;
+}
+
+function MonthCalendar(props: {
+  monthCursor: Date;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  appointmentDates: Date[];
+  onSelectDay?: (day: Date) => void;
+}) {
+  const { monthCursor, onPrevMonth, onNextMonth, appointmentDates, onSelectDay } = props;
+  const year = monthCursor.getFullYear();
+  const month = monthCursor.getMonth();
+
+  const monthLabel = useMemo(() => {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    return `${months[month]} ${year}`;
+  }, [month, year]);
+
+  const apptSet = useMemo(() => new Set(appointmentDates.map((d) => ymd(d))), [appointmentDates]);
+
+  const firstOfMonth = useMemo(() => new Date(year, month, 1), [year, month]);
+  const startDow = firstOfMonth.getDay(); // 0=Sun
+  const gridStart = useMemo(() => {
+    const d = new Date(firstOfMonth);
+    d.setDate(d.getDate() - startDow);
+    return d;
+  }, [firstOfMonth, startDow]);
+
+  const cells = useMemo(() => Array.from({ length: 42 }, (_, i) => new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i)), [gridStart]);
+
+  const todayKey = useMemo(() => ymd(new Date()), []);
+
+  return (
+    <div className="cal">
+      <div className="cal-hd">
+        <button type="button" className="btn-s btn-sm" onClick={onPrevMonth} aria-label="Previous month">
+          ‹
+        </button>
+        <div className="cal-mo">{monthLabel}</div>
+        <button type="button" className="btn-s btn-sm" onClick={onNextMonth} aria-label="Next month">
+          ›
+        </button>
+      </div>
+      <div className="cal-dow">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div key={d} className="cal-dow-it">
+            {d}
+          </div>
+        ))}
+      </div>
+      <div className="cal-grid" role="grid" aria-label="Appointments calendar">
+        {cells.map((d) => {
+          const inMonth = d.getMonth() === month;
+          const key = ymd(d);
+          const hasAppt = apptSet.has(key);
+          const isToday = key === todayKey;
+          return (
+            <button
+              key={key}
+              type="button"
+              className={`cal-day${inMonth ? "" : " dim"}${hasAppt ? " appt" : ""}${isToday ? " today" : ""}`}
+              onClick={() => onSelectDay?.(d)}
+              aria-label={`${key}${hasAppt ? " has appointment" : ""}`}
+            >
+              <span>{d.getDate()}</span>
+              {hasAppt ? <i className="cal-dot" aria-hidden /> : null}
+            </button>
+          );
+        })}
+      </div>
+      <div className="cal-ft">
+        <span className="cal-legend">
+          <i className="cal-dot" aria-hidden /> Appointment day
+        </span>
+        <span className="cal-legend">
+          <i className="cal-today" aria-hidden /> Today
+        </span>
+      </div>
+    </div>
+  );
+}
 
 type PatientPage =
   | "home"
@@ -64,12 +212,20 @@ export function PatientDashboard() {
   const obs = usePolling(() => api.observations(patientId, 30), { intervalMs: 6000 });
 
   const [page, setPage] = useState<PatientPage>("home");
+  const [topPanel, setTopPanel] = useState<"none" | "search" | "notifications">("none");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const appts = useMemo(
-    () => [
-      { when: "15 Mar 2026 · 09:00", where: "KNH Nairobi", dept: "Cardiology", tag: "g" as const },
-      { when: "22 Mar 2026 · 14:00", where: "Coast General Hospital", dept: "Follow-up", tag: "am" as const },
-    ],
+    () => {
+      // Demo schedule generator: always show the next two realistic appointments relative to "now".
+      const now = new Date();
+      const d1 = nextWeekday(now, 3); // next Wednesday
+      const d2 = addDays(d1, 7); // following week
+      return [
+        { when: fmtWhen(d1, "09:00"), where: "KNH Nairobi", dept: "Cardiology", tag: "g" as const },
+        { when: fmtWhen(d2, "14:00"), where: "Coast General Hospital", dept: "Follow-up", tag: "am" as const },
+      ];
+    },
     []
   );
 
@@ -90,6 +246,64 @@ export function PatientDashboard() {
 
   const displayAflId = `AFL-2024-KE-${patientId.replace(/\W/g, "").toUpperCase() || "78841209"}`;
 
+  const apptDates = useMemo(() => appts.map((a) => parseWhenToDate(a.when)).filter((d): d is Date => !!d), [appts]);
+  const [apptMonthCursor, setApptMonthCursor] = useState<Date>(() => startOfMonth(new Date()));
+  const [selectedApptDay, setSelectedApptDay] = useState<Date | null>(() => pickDefaultSelectedDay(new Date(), apptDates));
+
+  useEffect(() => {
+    if (page !== "appointments") return;
+    const now = new Date();
+    const defaultSelected = pickDefaultSelectedDay(now, apptDates);
+    setSelectedApptDay((cur) => cur ?? defaultSelected);
+    setApptMonthCursor((cur) => {
+      // Keep calendar grounded: if user hasn't navigated away from the current period,
+      // default to the month containing the upcoming appointment (or current month).
+      const desired = startOfMonth(defaultSelected);
+      if (isSameMonth(cur, desired)) return cur;
+      // If current cursor month is neither now nor the desired appointment month, snap to desired.
+      const curIsNow = isSameMonth(cur, now);
+      const curIsDesired = isSameMonth(cur, desired);
+      if (curIsNow || curIsDesired) return cur;
+      return desired;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, apptDates.length]);
+
+  const searchItems = useMemo(
+    () =>
+      [
+        { key: "appointments", label: "Appointments", sub: "Scheduling · Book, view and manage appointments", page: "appointments" as PatientPage, icon: "📅" },
+        { key: "visits", label: "Visit History", sub: "Clinical history · Encounters and facilities", page: "visits" as PatientPage, icon: "🏥" },
+        { key: "results", label: "Test Results", sub: "Laboratory · Observations and diagnostics", page: "results" as PatientPage, icon: "🧪" },
+        { key: "medications", label: "Medications", sub: "Pharmacy · Active prescriptions", page: "medications" as PatientPage, icon: "💊" },
+        { key: "vitals", label: "Vitals & Trends", sub: "Monitoring · Latest vitals and charts", page: "vitals" as PatientPage, icon: "💗" },
+        { key: "coverage", label: "My UniHealth Cover", sub: "Payments · Benefits and claims", page: "coverage" as PatientPage, icon: "🛡️" },
+        { key: "contributions", label: "Contributions", sub: "Payments · Monthly payment history", page: "contributions" as PatientPage, icon: "💳" },
+        { key: "bills", label: "Bills & Invoices", sub: "Finance · Statements and invoices", page: "bills" as PatientPage, icon: "📄" },
+        { key: "payments", label: "Make a Payment", sub: "Payments · Methods and recent transactions", page: "payments" as PatientPage, icon: "📱" },
+        { key: "records", label: "Health Records", sub: "Records · Longitudinal record", page: "records" as PatientPage, icon: "📂" },
+        { key: "documents", label: "Documents", sub: "Records · Reports and files", page: "documents" as PatientPage, icon: "📋" },
+        { key: "profile", label: "My Profile", sub: "Account · Personal details", page: "profile" as PatientPage, icon: "👤" },
+        { key: "consent", label: "Privacy & Consent", sub: "Privacy · KDPA 2019 controls", page: "consent" as PatientPage, icon: "🔐" },
+      ] as const,
+    []
+  );
+
+  const filteredSearchItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return searchItems;
+    return searchItems.filter((x) => (x.label + " " + x.sub).toLowerCase().includes(q));
+  }, [searchItems, searchQuery]);
+
+  const notifications = useMemo(
+    () => [
+      { icon: "🧪", title: "New lab result posted", sub: "Potassium (K⁺) flagged high · Review details in Test Results", go: "results" as PatientPage, time: "2m" },
+      { icon: "📅", title: "Appointment reminder", sub: "KNH Cardiology · 15 Mar 2026 · 09:00", go: "appointments" as PatientPage, time: "1h" },
+      { icon: "💳", title: "Contribution due", sub: "Ksh 500 due by 31 Mar 2026", go: "contributions" as PatientPage, time: "2d" },
+    ],
+    []
+  );
+
   return (
     <DashboardShell
       title={PATIENT_TITLES[page]}
@@ -100,6 +314,25 @@ export function PatientDashboard() {
       userEmail="p.mutiso@example.com"
       activeNavId={page}
       onNavSelect={(id) => setPage(id as PatientPage)}
+      topbarSearchPlaceholder="Search records, results, bills…"
+      topbarSearchValue={searchQuery}
+      onTopbarSearchChange={(v) => {
+        setSearchQuery(v);
+        if (topPanel !== "search") setTopPanel("search");
+      }}
+      onTopbarSearchFocus={() => setTopPanel("search")}
+      onTopbarSearchKeyDown={(e) => {
+        if (e.key === "Escape") setTopPanel("none");
+        if (e.key === "Enter") {
+          const first = filteredSearchItems[0];
+          if (first) {
+            setPage(first.page);
+            setTopPanel("none");
+          }
+        }
+      }}
+      onTopbarNotificationsClick={() => setTopPanel((p) => (p === "notifications" ? "none" : "notifications"))}
+      onTopbarStatusClick={() => setPage("coverage")}
       nav={[
         {
           label: "My Health",
@@ -136,6 +369,96 @@ export function PatientDashboard() {
       ]}
     >
       <div className="patient">
+        {topPanel !== "none" && (
+          <div className="overlay-panel" aria-live="polite">
+            <div className="overlay-panel-in">
+              <div className="overlay-hd">
+                <div className="overlay-ti">{topPanel === "search" ? "Search" : "Notifications"}</div>
+                <button className="btn-s btn-sm" type="button" onClick={() => setTopPanel("none")}>
+                  Close
+                </button>
+              </div>
+              <div className="overlay-bd">
+                {topPanel === "search" ? (
+                  <>
+                    <div style={{ marginBottom: 10, fontSize: 11, color: "var(--t3)" }}>
+                      Tip: press <span className="mono">Enter</span> to open the first match, <span className="mono">Esc</span> to close.
+                    </div>
+                    {filteredSearchItems.slice(0, 10).map((x) => (
+                      <div
+                        key={x.key}
+                        className="ov-row"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          setPage(x.page);
+                          setTopPanel("none");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            setPage(x.page);
+                            setTopPanel("none");
+                          }
+                        }}
+                      >
+                        <div className="ov-ico" aria-hidden>
+                          {x.icon}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="ov-title">{x.label}</div>
+                          <div className="ov-sub">{x.sub}</div>
+                        </div>
+                        <div className="ov-k">Go →</div>
+                      </div>
+                    ))}
+                    {filteredSearchItems.length === 0 && (
+                      <div style={{ fontSize: 11.5, color: "var(--t3)" }}>No matches. Try “results”, “bills”, or “consent”.</div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {notifications.map((n, idx) => (
+                      <div
+                        key={idx}
+                        className="ov-row"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          setPage(n.go);
+                          setTopPanel("none");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            setPage(n.go);
+                            setTopPanel("none");
+                          }
+                        }}
+                      >
+                        <div className="ov-ico" aria-hidden>
+                          {n.icon}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="ov-title">{n.title}</div>
+                          <div className="ov-sub">{n.sub}</div>
+                        </div>
+                        <div className="ov-k">{n.time}</div>
+                      </div>
+                    ))}
+                    <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                      <button className="btn-s btn-sm" type="button" onClick={() => setTopPanel("none")}>
+                        Mark all as read
+                      </button>
+                      <button className="btn-p btn-sm" type="button" onClick={() => setPage("results")}>
+                        Review results
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className={pgOn(page === "home")} id="pg-home">
           <div className="hero">
             <div className="hero-in">
@@ -557,49 +880,124 @@ export function PatientDashboard() {
           <div className="notice g">
             <span className="notice-ico">📅</span>
             <div className="notice-txt">
-              You have <strong>2 upcoming appointments</strong> — KNH Cardiology on 15 Mar and Coast General follow-up on 22 Mar.
+              You have <strong>{appts.length} upcoming appointment{appts.length === 1 ? "" : "s"}</strong> — next on{" "}
+              <strong>{appts[0]?.when ?? "—"}</strong>.
             </div>
           </div>
-          <div className="g2e" style={{ marginBottom: 16 }}>
-            <div className="panel">
-              <div className="pnl-hd">
-                <div className="pnl-ti">Upcoming</div>
-              </div>
-              <div className="pnl-bd">
-                {appts.map((a) => (
-                  <div
-                    key={a.when}
-                    style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "10px 0", borderBottom: "1px solid var(--bdr)" }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 800 }}>{a.dept}</div>
-                      <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>
-                        {a.where} · <span className="mono">{a.when}</span>
-                      </div>
-                    </div>
-                    <span className={`tag ${a.tag}`}>{a.tag === "g" ? "Confirmed" : "Pending"}</span>
+          <div className="g2">
+            <div>
+              <div className="g2e" style={{ marginBottom: 16 }}>
+                <div className="panel">
+                  <div className="pnl-hd">
+                    <div className="pnl-ti">Upcoming</div>
                   </div>
-                ))}
+                  <div className="pnl-bd">
+                    {appts.map((a) => (
+                      <div
+                        key={a.when}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const d = parseWhenToDate(a.when);
+                          if (d) {
+                            setSelectedApptDay(d);
+                            setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Enter" && e.key !== " ") return;
+                          const d = parseWhenToDate(a.when);
+                          if (d) {
+                            setSelectedApptDay(d);
+                            setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+                          }
+                        }}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 10,
+                          padding: "10px 0",
+                          borderBottom: "1px solid var(--bdr)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 800 }}>{a.dept}</div>
+                          <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>
+                            {a.where} · <span className="mono">{a.when}</span>
+                          </div>
+                        </div>
+                        <span className={`tag ${a.tag}`}>{a.tag === "g" ? "Confirmed" : "Pending"}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="panel">
+                  <div className="pnl-hd">
+                    <div className="pnl-ti">Past Appointments</div>
+                  </div>
+                  <div className="pnl-bd">
+                    <div style={{ fontSize: 11.5, color: "var(--t3)" }}>No past appointments in the selected range (demo).</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="panel">
+                <div className="pnl-hd">
+                  <div>
+                    <div className="pnl-ti">Book at a Facility</div>
+                    <div className="pnl-su">UniHealth-accredited facilities near you</div>
+                  </div>
+                </div>
+                <div className="pnl-bd">
+                  <div style={{ fontSize: 12.5, color: "var(--t2)" }}>
+                    KNH Nairobi · Coast General Hospital · Aga Khan University Hospital (demo list).
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="panel">
-              <div className="pnl-hd">
-                <div className="pnl-ti">Past Appointments</div>
+
+            <div>
+              <div className="panel" style={{ position: "sticky", top: 10 }}>
+                <div className="pnl-hd">
+                  <div>
+                    <div className="pnl-ti">Calendar</div>
+                    <div className="pnl-su">Appointment dates highlighted</div>
+                  </div>
+                  {selectedApptDay ? <span className="tag g dot">{selectedApptDay.toDateString().slice(4, 10)}</span> : null}
+                </div>
+                <div className="pnl-bd">
+                  <MonthCalendar
+                    monthCursor={apptMonthCursor}
+                    onPrevMonth={() => setApptMonthCursor((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
+                    onNextMonth={() => setApptMonthCursor((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
+                    appointmentDates={apptDates}
+                    onSelectDay={(d) => setSelectedApptDay(d)}
+                  />
+
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: "var(--t2)", marginBottom: 6 }}>Selected day</div>
+                    <div style={{ fontSize: 12.5, color: "var(--t1)", lineHeight: 1.5 }}>
+                      {selectedApptDay ? (
+                        <>
+                          <span className="mono">{ymd(selectedApptDay)}</span>
+                          <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 4 }}>
+                            {(appts.filter((a) => {
+                              const d = parseWhenToDate(a.when);
+                              return d ? ymd(d) === ymd(selectedApptDay) : false;
+                            }) ?? []
+                            ).length > 0
+                              ? "Appointments available for this date."
+                              : "No appointments on this date."}
+                          </div>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: 11.5, color: "var(--t3)" }}>Pick a day in the calendar.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="pnl-bd">
-                <div style={{ fontSize: 11.5, color: "var(--t3)" }}>No past appointments in the selected range (demo).</div>
-              </div>
-            </div>
-          </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div>
-                <div className="pnl-ti">Book at a Facility</div>
-                <div className="pnl-su">UniHealth-accredited facilities near you</div>
-              </div>
-            </div>
-            <div className="pnl-bd">
-              <div style={{ fontSize: 12.5, color: "var(--t2)" }}>KNH Nairobi · Coast General Hospital · Aga Khan University Hospital (demo list).</div>
             </div>
           </div>
         </div>
