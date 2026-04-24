@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
-import { DashboardShell } from "../../components/dashboard/DashboardShell";
+import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 function fmtWhen(d: Date, hhmm: string) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -28,6 +28,249 @@ function ymd(d: Date) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+function timeLabel(d: Date) {
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+function toNumberish(s: string | null | undefined): number | null {
+  if (!s) return null;
+  const n = Number(String(s).replace(/[^\d.+-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+function bmiKgM2(weightKg: number | null, heightCm: number | null) {
+  if (!weightKg || !heightCm) return null;
+  const m = heightCm / 100;
+  if (m <= 0) return null;
+  return weightKg / (m * m);
+}
+
+function BodyVitalsFigure(props: {
+  vitals: Array<{
+    key: string;
+    label: string;
+    icon: string;
+    unit: string;
+    range: string;
+    value: string | null;
+    measuredAt: string | null;
+  }>;
+}) {
+  const { vitals } = props;
+
+  const byKey = useMemo(() => new Map(vitals.map((v) => [v.key, v])), [vitals]);
+  const val = (k: string, fallback: string) =>
+    byKey.get(k)?.value ? `${byKey.get(k)!.value}${byKey.get(k)!.unit ? ` ${byKey.get(k)!.unit}` : ""}` : fallback;
+
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
+
+  const hoverMeta = useMemo(
+    () =>
+      ({
+        bp: { title: "Blood pressure", sub: "Measured on upper arm cuff" },
+        hr: { title: "Heart rate", sub: "Pulse / cardiac rate" },
+        rr: { title: "Respiratory rate", sub: "Breaths per minute" },
+        temp: { title: "Temperature", sub: "Core temperature" },
+        spo2: { title: "SpO₂", sub: "Pulse oximetry (finger)" },
+        glucose: { title: "Random glucose", sub: "Capillary blood glucose" },
+        bmi: { title: "BMI", sub: "Weight / Height²" },
+      }) as const,
+    []
+  );
+
+  return (
+    <div className="body-fig">
+      <div className="body-fig-hd">
+        <div>
+          <div className="body-fig-ti">Body Vitals Map</div>
+          <div className="body-fig-su">Interactive anatomy view (hover body regions)</div>
+        </div>
+        <span className="tag g dot">LIVE</span>
+      </div>
+
+      <div className="body-fig-in">
+        <svg className="body-svg" viewBox="0 0 240 620" role="img" aria-label="Human skeleton vitals figure">
+          <defs>
+            <linearGradient id="core" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="rgba(26,138,74,.14)" />
+              <stop offset="1" stopColor="rgba(26,138,74,.03)" />
+            </linearGradient>
+            <linearGradient id="bone" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#f8fafc" />
+              <stop offset="1" stopColor="#e9eef5" />
+            </linearGradient>
+            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="12" stdDeviation="10" floodColor="rgba(10,74,38,.18)" />
+            </filter>
+            <filter id="glow">
+              <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="rgba(26,138,74,.35)" />
+            </filter>
+          </defs>
+
+          {/* skeleton */}
+          <g filter="url(#softShadow)" opacity="1">
+            {/* skull */}
+            <ellipse cx="120" cy="72" rx="40" ry="46" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
+            <path d="M95 70c6-14 18-22 25-22s19 8 25 22" fill="none" stroke="rgba(20,32,26,.08)" strokeWidth="2" strokeLinecap="round" />
+            {/* cervical + spine */}
+            <path d="M120 118v250" stroke="rgba(20,32,26,.14)" strokeWidth="5" strokeLinecap="round" />
+            {/* ribcage */}
+            <path
+              d="M78 210c10-56 34-78 42-78s32 22 42 78c8 44-6 78-42 78s-50-34-42-78z"
+              fill="url(#core)"
+              stroke="rgba(20,32,26,.10)"
+              strokeWidth="2"
+            />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <path
+                key={i}
+                d={`M88 ${174 + i * 16}c10-10 20-14 32-14s22 4 32 14`}
+                fill="none"
+                stroke="rgba(20,32,26,.08)"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            ))}
+            {/* clavicle */}
+            <path d="M86 148c14 10 26 14 34 14s20-4 34-14" fill="none" stroke="rgba(20,32,26,.10)" strokeWidth="4" strokeLinecap="round" />
+
+            {/* pelvis */}
+            <path
+              d="M90 330c10-22 20-30 30-30s20 8 30 30c6 14 2 38-30 38s-36-24-30-38z"
+              fill="url(#bone)"
+              stroke="rgba(20,32,26,.10)"
+              strokeWidth="2"
+            />
+
+            {/* arms */}
+            <path d="M86 155L54 235" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
+            <path d="M54 235L72 306" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
+            <path d="M154 155L186 235" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
+            <path d="M186 235L166 310" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
+            {/* hands */}
+            <circle cx="72" cy="306" r="12" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
+            <circle cx="166" cy="310" r="12" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
+
+            {/* legs */}
+            <path d="M110 368L96 510" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
+            <path d="M130 368L144 510" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
+            <path d="M96 510L90 594" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
+            <path d="M144 510L150 594" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
+            {/* feet */}
+            <path d="M78 598c16-10 30-10 44 0" stroke="rgba(20,32,26,.12)" strokeWidth="7" strokeLinecap="round" />
+            <path d="M118 598c16-10 30-10 44 0" stroke="rgba(20,32,26,.12)" strokeWidth="7" strokeLinecap="round" />
+          </g>
+
+          {/* interactive hotspots (invisible but hoverable) */}
+          <g
+            className="hotspots"
+            onMouseMove={(e) => {
+              const svg = (e.currentTarget.ownerSVGElement ?? e.currentTarget) as SVGSVGElement;
+              const pt = svg.createSVGPoint();
+              pt.x = e.clientX;
+              pt.y = e.clientY;
+              const ctm = svg.getScreenCTM();
+              if (!ctm) return;
+              const loc = pt.matrixTransform(ctm.inverse());
+              setTip({ x: loc.x, y: loc.y });
+            }}
+            onMouseLeave={() => {
+              setHovered(null);
+              setTip(null);
+            }}
+          >
+            <circle className={`hs hs-bp${hovered === "bp" ? " on" : ""}`} cx="60" cy="250" r="22" onMouseEnter={() => setHovered("bp")} />
+            <circle className={`hs hs-hr${hovered === "hr" ? " on" : ""}`} cx="120" cy="210" r="22" onMouseEnter={() => setHovered("hr")} />
+            <circle className={`hs hs-rr${hovered === "rr" ? " on" : ""}`} cx="130" cy="235" r="24" onMouseEnter={() => setHovered("rr")} />
+            <circle className={`hs hs-temp${hovered === "temp" ? " on" : ""}`} cx="120" cy="160" r="22" onMouseEnter={() => setHovered("temp")} />
+            <circle className={`hs hs-spo2${hovered === "spo2" ? " on" : ""}`} cx="166" cy="310" r="22" onMouseEnter={() => setHovered("spo2")} />
+            <circle className={`hs hs-glu${hovered === "glucose" ? " on" : ""}`} cx="120" cy="300" r="24" onMouseEnter={() => setHovered("glucose")} />
+            <circle className={`hs hs-bmi${hovered === "bmi" ? " on" : ""}`} cx="120" cy="520" r="28" onMouseEnter={() => setHovered("bmi")} />
+          </g>
+
+          {/* highlight ring for hovered hotspot */}
+          {hovered && (
+            <circle
+              cx={hovered === "bp" ? 60 : hovered === "hr" ? 120 : hovered === "rr" ? 130 : hovered === "temp" ? 120 : hovered === "spo2" ? 166 : hovered === "glucose" ? 120 : 120}
+              cy={hovered === "bp" ? 250 : hovered === "hr" ? 210 : hovered === "rr" ? 235 : hovered === "temp" ? 160 : hovered === "spo2" ? 310 : hovered === "glucose" ? 300 : 520}
+              r={hovered === "bmi" ? 30 : 24}
+              fill="none"
+              stroke="rgba(26,138,74,.85)"
+              strokeWidth="3"
+              filter="url(#glow)"
+            />
+          )}
+        </svg>
+
+        {/* callouts */}
+        <div className={`body-callout bp${hovered === "bp" ? " on" : ""}`}>
+          <div className="bc-k">BP</div>
+          <div className="bc-v">{val("bp", "120/80 mmHg")}</div>
+          <div className="bc-l">Blood pressure (arm)</div>
+        </div>
+
+        <div className={`body-callout hr${hovered === "hr" ? " on" : ""}`}>
+          <div className="bc-k">HR</div>
+          <div className="bc-v">{val("hr", "72 bpm")}</div>
+          <div className="bc-l">Pulse (heart)</div>
+        </div>
+
+        <div className={`body-callout rr${hovered === "rr" ? " on" : ""}`}>
+          <div className="bc-k">RR</div>
+          <div className="bc-v">{val("rr", "16 breaths/min")}</div>
+          <div className="bc-l">Respiration (lungs)</div>
+        </div>
+
+        <div className={`body-callout temp${hovered === "temp" ? " on" : ""}`}>
+          <div className="bc-k">Temp</div>
+          <div className="bc-v">{val("temp", "36.8 °C")}</div>
+          <div className="bc-l">Temperature</div>
+        </div>
+
+        <div className={`body-callout spo2${hovered === "spo2" ? " on" : ""}`}>
+          <div className="bc-k">SpO₂</div>
+          <div className="bc-v">{val("spo2", "98 %")}</div>
+          <div className="bc-l">Oxygen (finger)</div>
+        </div>
+
+        <div className={`body-callout glu${hovered === "glucose" ? " on" : ""}`}>
+          <div className="bc-k">RBG</div>
+          <div className="bc-v">{val("glucose", "5.4 mmol/L")}</div>
+          <div className="bc-l">Glucose (capillary)</div>
+        </div>
+
+        <div className={`body-callout bmi${hovered === "bmi" ? " on" : ""}`}>
+          <div className="bc-k">BMI</div>
+          <div className="bc-v">{val("bmi", "24.4 kg/m²")}</div>
+          <div className="bc-l">Weight/height</div>
+        </div>
+
+        {hovered && tip && (
+          <div className="body-tip" style={{ left: tip.x + 12, top: tip.y + 12 }}>
+            <div className="bt-h">
+              <span className="bt-ico" aria-hidden>
+                {byKey.get(hovered)?.icon ?? "🧬"}
+              </span>
+              <div className="bt-ti">{hoverMeta[hovered as keyof typeof hoverMeta]?.title ?? "Vital"}</div>
+            </div>
+            <div className="bt-v">{val(hovered, "—")}</div>
+            <div className="bt-su">{hoverMeta[hovered as keyof typeof hoverMeta]?.sub ?? ""}</div>
+          </div>
+        )}
+      </div>
+
+      <div className="body-fig-ft">
+        <div style={{ fontSize: 10.5, color: "var(--t3)", lineHeight: 1.55 }}>
+          This visualization is a UI aid. Clinical interpretation depends on context (age, symptoms, comorbidities, and repeat measurements).
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function startOfMonth(d: Date) {
@@ -206,6 +449,7 @@ function pgOn(active: boolean) {
 }
 
 export function PatientDashboard() {
+  const toast = useDashboardToast();
   const [patientId, setPatientId] = useState("P001");
   const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 7000 });
   const meds = usePolling(() => api.medicationRequests(patientId, 20), { intervalMs: 10000 });
@@ -245,6 +489,82 @@ export function PatientDashboard() {
   }, [summary.data?.patient.given_name]);
 
   const displayAflId = `AFL-2024-KE-${patientId.replace(/\W/g, "").toUpperCase() || "78841209"}`;
+
+  const vitalsCatalog = useMemo(
+    () =>
+      [
+        { key: "bp", label: "Blood Pressure", unit: "mmHg", icon: "🩸", range: "90–120 / 60–80", match: ["blood pressure", "bp"] },
+        { key: "hr", label: "Heart Rate", unit: "bpm", icon: "💗", range: "60–100", match: ["heart rate", "pulse", "hr"] },
+        { key: "rr", label: "Respiratory Rate", unit: "breaths/min", icon: "🫁", range: "12–20", match: ["respiratory", "rr"] },
+        { key: "temp", label: "Temperature", unit: "°C", icon: "🌡️", range: "36.1–37.2", match: ["temperature", "temp"] },
+        { key: "spo2", label: "SpO₂", unit: "%", icon: "🩺", range: "≥ 95", match: ["spo2", "oxygen", "o2"] },
+        { key: "weight", label: "Weight", unit: "kg", icon: "⚖️", range: "—", match: ["weight"] },
+        { key: "height", label: "Height", unit: "cm", icon: "📏", range: "—", match: ["height"] },
+        { key: "bmi", label: "BMI", unit: "kg/m²", icon: "🧮", range: "18.5–24.9", match: ["bmi"] },
+        { key: "glucose", label: "Random Glucose", unit: "mmol/L", icon: "🩸", range: "3.9–7.8", match: ["glucose", "rbg"] },
+        { key: "pain", label: "Pain Score", unit: "/10", icon: "😖", range: "0–10", match: ["pain"] },
+      ] as const,
+    []
+  );
+
+  const latestVitals = useMemo(() => {
+    // Very lightweight mapping: match by code substring. For the demo we’ll also fall back to defaults.
+    const rows = vitalsCatalog.map((v) => {
+      const match = (obs.data ?? []).find((o) => {
+        const c = (o.code ?? "").toLowerCase();
+        return v.match.some((m) => c.includes(m));
+      });
+      return {
+        key: v.key,
+        label: v.label,
+        icon: v.icon,
+        unit: v.unit,
+        range: v.range,
+        value: match?.value_text ?? null,
+        measuredAt: match?.effective_time ?? null,
+      };
+    });
+
+    const weight = toNumberish(rows.find((r) => r.key === "weight")?.value);
+    const height = toNumberish(rows.find((r) => r.key === "height")?.value);
+    const bmi = bmiKgM2(weight, height);
+    const bmiRow = rows.find((r) => r.key === "bmi");
+    if (bmiRow && bmiRow.value == null && bmi != null) {
+      bmiRow.value = bmi.toFixed(1);
+      bmiRow.measuredAt = rows.find((r) => r.key === "weight")?.measuredAt ?? rows.find((r) => r.key === "height")?.measuredAt ?? null;
+    }
+
+    const hasAny = rows.some((r) => r.value != null);
+    if (!hasAny) {
+      const now = new Date();
+      const demo = new Map<string, { value: string; at: string }>([
+        ["bp", { value: "120/80", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["hr", { value: "72", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["rr", { value: "16", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["temp", { value: "36.8", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["spo2", { value: "98", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["weight", { value: "68", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["height", { value: "167", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["glucose", { value: "5.4", at: `${ymd(now)} ${timeLabel(now)}` }],
+        ["pain", { value: "0", at: `${ymd(now)} ${timeLabel(now)}` }],
+      ]);
+      for (const r of rows) {
+        const d = demo.get(r.key);
+        if (d) {
+          r.value = d.value;
+          r.measuredAt = d.at;
+        }
+      }
+      const bmi2 = bmiKgM2(68, 167);
+      const bmiR = rows.find((r) => r.key === "bmi");
+      if (bmiR && bmi2 != null) {
+        bmiR.value = bmi2.toFixed(1);
+        bmiR.measuredAt = `${ymd(now)} ${timeLabel(now)}`;
+      }
+    }
+
+    return rows;
+  }, [obs.data, vitalsCatalog]);
 
   const apptDates = useMemo(() => appts.map((a) => parseWhenToDate(a.when)).filter((d): d is Date => !!d), [appts]);
   const [apptMonthCursor, setApptMonthCursor] = useState<Date>(() => startOfMonth(new Date()));
@@ -536,7 +856,13 @@ export function PatientDashboard() {
               <span className="qa-e">📂</span>
               <span className="qa-l">My Records</span>
             </button>
-            <button type="button" className="qa">
+            <button
+              type="button"
+              className="qa"
+              onClick={() => {
+                toast("Messaging coming soon in this demo.");
+              }}
+            >
               <span className="qa-e">💬</span>
               <span className="qa-l">Message Doctor</span>
             </button>
@@ -873,7 +1199,13 @@ export function PatientDashboard() {
               <div className="ph-ti">My Appointments</div>
               <div className="ph-su">Book, view and manage your clinic visits</div>
             </div>
-            <button className="btn-p" type="button">
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                toast("Booking flow coming soon (demo).");
+              }}
+            >
               + Book Appointment
             </button>
           </div>
@@ -1009,7 +1341,13 @@ export function PatientDashboard() {
               <div className="ph-ti">Visit History</div>
               <div className="ph-su">All hospital and clinic visits linked to your UniHealth record</div>
             </div>
-            <button className="btn-s" type="button">
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                toast("Export coming soon (demo).");
+              }}
+            >
               📥 Export Records
             </button>
           </div>
@@ -1054,7 +1392,13 @@ export function PatientDashboard() {
               <div className="ph-ti">Test Results</div>
               <div className="ph-su">Lab results, imaging and diagnostics</div>
             </div>
-            <button className="btn-s" type="button">
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                toast("Download coming soon (demo).");
+              }}
+            >
               📥 Download
             </button>
           </div>
@@ -1182,30 +1526,42 @@ export function PatientDashboard() {
             <div>
               <div className="ph-ey">Health Monitoring</div>
               <div className="ph-ti">Vitals & Trends</div>
-              <div className="ph-su">Live observations for {patientId} · polled every 6s</div>
+              <div className="ph-su">A complete vitals panel typically recorded at triage and during inpatient/outpatient reviews.</div>
             </div>
           </div>
           <div className="panel" style={{ marginBottom: 16 }}>
             <div className="pnl-hd">
-              <div className="pnl-ti">Patient ID</div>
+              <div>
+                <div className="pnl-ti">Vitals Capture Context</div>
+                <div className="pnl-su">Patient identity + data source (gateway)</div>
+              </div>
+              <span className="tag g dot">LIVE</span>
             </div>
             <div className="pnl-bd">
-              <input
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                placeholder="e.g. P001"
-                autoComplete="off"
-                className="mono"
-                style={{
-                  width: "100%",
-                  maxWidth: 320,
-                  padding: "9px 12px",
-                  borderRadius: 8,
-                  border: "1.5px solid var(--bdr)",
-                  background: "var(--bg)",
-                  outline: "none",
-                }}
-              />
+              <div className="ff-row">
+                <div className="ff">
+                  <label>Gateway patient ID</label>
+                  <input
+                    value={patientId}
+                    onChange={(e) => setPatientId(e.target.value)}
+                    placeholder="e.g. P001"
+                    autoComplete="off"
+                    className="mono"
+                  />
+                </div>
+                <div className="ff">
+                  <label>Encounter type</label>
+                  <select defaultValue="triage">
+                    <option value="triage">Walk-in / Triage</option>
+                    <option value="opd">Outpatient review</option>
+                    <option value="ipd">Inpatient ward round</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--t3)", lineHeight: 1.6 }}>
+                This page shows the typical full set of vitals recorded on arrival (triage) and during ongoing monitoring: BP, HR, RR, Temp,
+                SpO₂, Weight, Height, BMI, Glucose and Pain score.
+              </div>
             </div>
           </div>
           {obs.error && (
@@ -1214,68 +1570,150 @@ export function PatientDashboard() {
               <span>{obs.error}</span>
             </div>
           )}
-          <div className="g4" style={{ marginBottom: 16 }}>
-            {(obs.data ?? []).slice(0, 8).map((o) => (
-              <div key={o.id} className="vital">
-                <div className="vital-e">📊</div>
-                <div className="vital-v">
-                  {o.value_text ?? "—"}
-                  {o.unit ? <span className="vital-u">{o.unit}</span> : null}
-                </div>
-                <div className="vital-l">{o.code ?? "Observation"}</div>
-                <div className="vital-s">
-                  <span className="tag g dot">Recorded</span>
-                </div>
-              </div>
-            ))}
-            {(obs.data?.length ?? 0) === 0 && !obs.loading && (
-              <>
-                {[
-                  { e: "🩸", v: "120/80", u: "mmHg", l: "Blood Pressure" },
-                  { e: "💗", v: "72", u: "bpm", l: "Heart Rate" },
-                  { e: "🌡️", v: "36.8", u: "°C", l: "Temperature" },
-                  { e: "🩺", v: "98.5", u: "% SpO₂", l: "Oxygen" },
-                ].map((x) => (
-                  <div key={x.l} className="vital">
-                    <div className="vital-e">{x.e}</div>
+          <div className="g2" style={{ marginBottom: 16 }}>
+            <div>
+              <div className="g4" style={{ marginBottom: 16 }}>
+                {latestVitals.slice(0, 8).map((v) => (
+                  <div key={v.key} className="vital">
+                    <div className="vital-e">{v.icon}</div>
                     <div className="vital-v">
-                      {x.v}
-                      <span className="vital-u">{x.u}</span>
+                      {v.value ?? "—"}
+                      <span className="vital-u">{v.unit}</span>
                     </div>
-                    <div className="vital-l">{x.l}</div>
+                    <div className="vital-l">{v.label}</div>
                     <div className="vital-s">
-                      <span className="tag g dot">Normal</span>
+                      <span className="tag g dot">{v.measuredAt ? "Recorded" : "Pending"}</span>
                     </div>
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div className="pnl-ti">Blood Pressure Trend — Last 6 Months</div>
-            </div>
-            <div className="pnl-bd">
-              <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 64, marginBottom: 8 }}>
-                {["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"].map((m, i) => (
-                  <div key={m} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                    <div
-                      style={{
-                        width: "100%",
-                        background: "linear-gradient(to top, var(--gd), var(--g))",
-                        borderRadius: 3,
-                        height: 46 - i * 2,
-                        ...(m === "Mar" ? { border: "2px solid var(--g)" } : {}),
-                      }}
-                    />
-                    <span style={{ fontSize: 9.5, color: m === "Mar" ? "var(--g)" : "var(--t3)", fontWeight: m === "Mar" ? 700 : 400 }}>
-                      {m}
-                      {m === "Mar" ? " ✓" : ""}
-                    </span>
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize: 11, color: "var(--t3)" }}>Systolic (mmHg) — trending down · Improving</div>
+
+              <div className="g2e" style={{ marginBottom: 16 }}>
+                <div className="panel">
+              <div className="pnl-hd">
+                <div>
+                  <div className="pnl-ti">Full Vitals Checklist</div>
+                  <div className="pnl-su">Everything typically captured at triage</div>
+                </div>
+                <button
+                  className="btn-s btn-sm"
+                  type="button"
+                  onClick={() => {
+                    toast("Export is coming soon (demo).");
+                  }}
+                >
+                  Export
+                </button>
+              </div>
+              <div className="pnl-bd" style={{ padding: 0 }}>
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th>Vital</th>
+                      <th>Latest</th>
+                      <th>Range</th>
+                      <th className="mono">Measured</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {latestVitals.map((v) => (
+                      <tr key={v.key}>
+                        <td style={{ fontWeight: 800 }}>
+                          {v.icon} {v.label}
+                        </td>
+                        <td className="mono" style={{ fontWeight: 800 }}>
+                          {(v.value ?? "—") + (v.unit ? ` ${v.unit}` : "")}
+                        </td>
+                        <td style={{ color: "var(--t3)" }}>{v.range}</td>
+                        <td className="mono" style={{ color: "var(--t3)" }}>
+                          {v.measuredAt ?? "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+                </div>
+
+                <div className="panel">
+              <div className="pnl-hd">
+                <div>
+                  <div className="pnl-ti">Triage Notes (Example)</div>
+                  <div className="pnl-su">What clinicians usually record alongside vitals</div>
+                </div>
+              </div>
+              <div className="pnl-bd">
+                <div className="ff">
+                  <label>Chief complaint</label>
+                  <input placeholder="e.g. headache, fever, chest pain…" defaultValue="Routine follow-up, no acute complaints." />
+                </div>
+                <div className="ff-row">
+                  <div className="ff">
+                    <label>AVPU / GCS</label>
+                    <select defaultValue="a">
+                      <option value="a">A — Alert</option>
+                      <option value="v">V — Voice</option>
+                      <option value="p">P — Pain</option>
+                      <option value="u">U — Unresponsive</option>
+                    </select>
+                  </div>
+                  <div className="ff">
+                    <label>Allergies</label>
+                    <input placeholder="e.g. Penicillin" defaultValue="Penicillin (anaphylaxis)" />
+                  </div>
+                </div>
+                <div className="ff">
+                  <label>Clinical notes</label>
+                  <textarea
+                    style={{ minHeight: 90 }}
+                    defaultValue="Patient appears well. No respiratory distress. Counselled on hydration and medication adherence. Safety-net advice given."
+                  />
+                </div>
+                <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }}>
+                  Save triage note (demo)
+                </button>
+              </div>
+                </div>
+              </div>
+
+              <div className="panel">
+                <div className="pnl-hd">
+                  <div>
+                    <div className="pnl-ti">Blood Pressure Trend — Last 6 Months</div>
+                    <div className="pnl-su">Demo trend view (will later bind to time-series observations)</div>
+                  </div>
+                </div>
+                <div className="pnl-bd">
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 64, marginBottom: 8 }}>
+                    {["Oct", "Nov", "Dec", "Jan", "Feb", "Mar"].map((m, i) => (
+                      <div key={m} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                        <div
+                          style={{
+                            width: "100%",
+                            background: "linear-gradient(to top, var(--gd), var(--g))",
+                            borderRadius: 3,
+                            height: 46 - i * 2,
+                            ...(m === "Mar" ? { border: "2px solid var(--g)" } : {}),
+                          }}
+                        />
+                        <span style={{ fontSize: 9.5, color: m === "Mar" ? "var(--g)" : "var(--t3)", fontWeight: m === "Mar" ? 700 : 400 }}>
+                          {m}
+                          {m === "Mar" ? " ✓" : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--t3)" }}>Systolic (mmHg) — trending down · Improving</div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="panel" style={{ position: "sticky", top: 10 }}>
+                <div className="pnl-bd" style={{ padding: 0 }}>
+                  <BodyVitalsFigure vitals={latestVitals} />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1394,10 +1832,22 @@ export function PatientDashboard() {
               <div className="ph-su">Monthly UniHealth health cover payment history</div>
             </div>
             <div className="ph-r">
-              <button className="btn-s" type="button">
+              <button
+                className="btn-s"
+                type="button"
+                onClick={() => {
+                  toast("Statement download coming soon (demo).");
+                }}
+              >
                 📥 Statement
               </button>
-              <button className="btn-p" type="button">
+              <button
+                className="btn-p"
+                type="button"
+                onClick={() => {
+                  toast("Contribution payment flow coming soon (demo).");
+                }}
+              >
                 + Make Contribution
               </button>
             </div>
@@ -1659,7 +2109,13 @@ export function PatientDashboard() {
               <div className="ph-ti">My Health Records</div>
               <div className="ph-su">Longitudinal health record linked to your AFL ID</div>
             </div>
-            <button className="btn-s" type="button">
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                toast("Export coming soon (demo).");
+              }}
+            >
               📥 Export Records
             </button>
           </div>
@@ -1735,7 +2191,13 @@ export function PatientDashboard() {
               <div className="ph-ti">Documents & Reports</div>
               <div className="ph-su">Medical letters, discharge summaries and certificates</div>
             </div>
-            <button className="btn-s" type="button">
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                toast("Upload coming soon (demo).");
+              }}
+            >
               📤 Upload Document
             </button>
           </div>
@@ -1750,7 +2212,14 @@ export function PatientDashboard() {
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{doc.ico}</div>
                   <div style={{ fontWeight: 800 }}>{doc.n}</div>
                   <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 6 }}>{doc.d}</div>
-                  <button className="btn-s btn-sm" type="button" style={{ marginTop: 12 }}>
+                  <button
+                    className="btn-s btn-sm"
+                    type="button"
+                    style={{ marginTop: 12 }}
+                    onClick={() => {
+                      toast("Document viewer coming soon (demo).");
+                    }}
+                  >
                     Open
                   </button>
                 </div>
@@ -1766,7 +2235,13 @@ export function PatientDashboard() {
               <div className="ph-ti">My Profile</div>
               <div className="ph-su">Personal details, contacts and notification preferences</div>
             </div>
-            <button className="btn-p" type="button">
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                toast("Profile save coming soon (demo).");
+              }}
+            >
               Save Changes
             </button>
           </div>
@@ -1890,7 +2365,14 @@ export function PatientDashboard() {
                   </div>
                   <div className="consent-right">
                     <span className="tag g">✓ Granted</span>
-                    <button className="btn-s" style={{ fontSize: 10.5, padding: "5px 10px", marginTop: 4 }} type="button">
+                    <button
+                      className="btn-s"
+                      style={{ fontSize: 10.5, padding: "5px 10px", marginTop: 4 }}
+                      type="button"
+                      onClick={() => {
+                        toast("Consent changes coming soon (demo).");
+                      }}
+                    >
                       Withdraw
                     </button>
                   </div>
@@ -1912,7 +2394,14 @@ export function PatientDashboard() {
                       <div className="ai-row-ti">Download Your Health Data</div>
                       <div className="ai-row-su">Export records in FHIR R5 JSON or PDF. Right to data portability under KDPA 2019.</div>
                     </div>
-                    <button className="btn-s" style={{ fontSize: 11, padding: "6px 11px", flexShrink: 0 }} type="button">
+                    <button
+                      className="btn-s"
+                      style={{ fontSize: 11, padding: "6px 11px", flexShrink: 0 }}
+                      type="button"
+                      onClick={() => {
+                        toast("Export request submitted (demo).");
+                      }}
+                    >
                       Request Export
                     </button>
                   </div>
