@@ -43,6 +43,144 @@ app = FastAPI(
     version="0.1.0",
 )
 
+# ----- Nurse action endpoints (Phase 1 UI) -----
+_nurse_incidents: list[dict] = []
+_nurse_supply_requests: list[dict] = []
+_nurse_tasks: list[dict] = []
+_nurse_fluid_entries: list[dict] = []
+_nurse_wound_entries: list[dict] = []
+_nurse_handover_notes: list[dict] = []
+
+
+@app.post("/nurse/incidents", status_code=200, summary="Create a nurse incident report (Phase 1 UI).")
+async def nurse_create_incident(payload: dict = Body(...)):
+    """
+    Minimal endpoint for the nurse UI to submit an incident report.
+    Stored in-memory for Phase 1; can be moved to Postgres + Kafka later.
+    """
+    incident_id = payload.get("id") or f"INC-{int(time.time() * 1000)}"
+    row = {"id": incident_id, **payload, "created_at": time.time()}
+    _nurse_incidents.insert(0, row)
+    return {"status": "created", "id": incident_id}
+
+
+@app.get("/nurse/incidents", status_code=200, summary="List nurse incident reports (Phase 1 UI).")
+async def nurse_list_incidents(limit: int = Query(default=50, ge=1, le=200)):
+    return _nurse_incidents[:limit]
+
+
+@app.post("/nurse/supplies", status_code=200, summary="Create a nurse supply request (Phase 1 UI).")
+async def nurse_create_supply(payload: dict = Body(...)):
+    req_id = payload.get("id") or f"SUP-{int(time.time() * 1000)}"
+    row = {"id": req_id, **payload, "created_at": time.time()}
+    _nurse_supply_requests.insert(0, row)
+    return {"status": "created", "id": req_id}
+
+
+@app.get("/nurse/supplies", status_code=200, summary="List nurse supply requests (Phase 1 UI).")
+async def nurse_list_supplies(limit: int = Query(default=50, ge=1, le=200)):
+    return _nurse_supply_requests[:limit]
+
+
+@app.post("/nurse/tasks", status_code=200, summary="Create a nurse task (Phase 1 UI).")
+async def nurse_create_task(payload: dict = Body(...)):
+    task_id = payload.get("id") or f"TASK-{int(time.time() * 1000)}"
+    row = {
+        "id": task_id,
+        "patient_id": payload.get("patient_id"),
+        "title": payload.get("title"),
+        "due": payload.get("due"),
+        "status": payload.get("status", "pending"),
+        "created_at": time.time(),
+    }
+    _nurse_tasks.insert(0, row)
+    return {"status": "created", "id": task_id}
+
+
+@app.get("/nurse/tasks", status_code=200, summary="List nurse tasks (Phase 1 UI).")
+async def nurse_list_tasks(limit: int = Query(default=100, ge=1, le=500)):
+    return _nurse_tasks[:limit]
+
+
+@app.post("/nurse/tasks/complete", status_code=200, summary="Complete a nurse task (Phase 1 UI).")
+async def nurse_complete_task(payload: dict = Body(...)):
+    task_id = payload.get("id")
+    if not task_id:
+        raise HTTPException(status_code=400, detail="id is required")
+    for t in _nurse_tasks:
+        if t.get("id") == task_id:
+            t["status"] = "complete"
+            t["completed_at"] = time.time()
+            return {"status": "completed", "id": task_id}
+    raise HTTPException(status_code=404, detail="Task not found")
+
+
+@app.post("/nurse/fluids", status_code=200, summary="Create a fluid balance entry (Phase 1 UI).")
+async def nurse_create_fluid(payload: dict = Body(...)):
+    entry_id = payload.get("id") or f"FLD-{int(time.time() * 1000)}"
+    row = {
+        "id": entry_id,
+        "patient_id": payload.get("patient_id"),
+        "type": payload.get("type"),  # intake|output
+        "route": payload.get("route"),
+        "volume_ml": payload.get("volume_ml"),
+        "time": payload.get("time") or time.time(),
+        "notes": payload.get("notes"),
+        "created_at": time.time(),
+    }
+    _nurse_fluid_entries.insert(0, row)
+    return {"status": "created", "id": entry_id}
+
+
+@app.get("/nurse/fluids", status_code=200, summary="List fluid balance entries (Phase 1 UI).")
+async def nurse_list_fluids(limit: int = Query(default=200, ge=1, le=500)):
+    return _nurse_fluid_entries[:limit]
+
+
+@app.post("/nurse/wounds", status_code=200, summary="Create a wound/dressing entry (Phase 1 UI).")
+async def nurse_create_wound(payload: dict = Body(...)):
+    entry_id = payload.get("id") or f"WND-{int(time.time() * 1000)}"
+    row = {
+        "id": entry_id,
+        "patient_id": payload.get("patient_id"),
+        "site": payload.get("site"),
+        "wound_type": payload.get("wound_type"),
+        "dressing": payload.get("dressing"),
+        "notes": payload.get("notes"),
+        "time": payload.get("time") or time.time(),
+        "created_at": time.time(),
+    }
+    _nurse_wound_entries.insert(0, row)
+    return {"status": "created", "id": entry_id}
+
+
+@app.get("/nurse/wounds", status_code=200, summary="List wound/dressing entries (Phase 1 UI).")
+async def nurse_list_wounds(limit: int = Query(default=200, ge=1, le=500)):
+    return _nurse_wound_entries[:limit]
+
+
+@app.post("/nurse/handover", status_code=200, summary="Submit/sign handover notes (Phase 1 UI).")
+async def nurse_submit_handover(payload: dict = Body(...)):
+    note_id = payload.get("id") or f"HND-{int(time.time() * 1000)}"
+    row = {
+        "id": note_id,
+        "ward": payload.get("ward"),
+        "shift": payload.get("shift"),
+        "author": payload.get("author"),
+        "summary": payload.get("summary"),
+        "special_attention": payload.get("special_attention"),
+        "signed": bool(payload.get("signed", True)),
+        "signed_at": time.time() if payload.get("signed", True) else None,
+        "created_at": time.time(),
+    }
+    _nurse_handover_notes.insert(0, row)
+    return {"status": "submitted", "id": note_id}
+
+
+@app.get("/nurse/handover", status_code=200, summary="List handover submissions (Phase 1 UI).")
+async def nurse_list_handover(limit: int = Query(default=50, ge=1, le=200)):
+    return _nurse_handover_notes[:limit]
+
 # Lightweight in-memory metrics for Phase 1 validation.
 _metrics_counts = defaultdict(int)
 _metrics_latency_sum_ms = defaultdict(float)
