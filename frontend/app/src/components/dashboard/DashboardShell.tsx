@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+
+const DashboardToastContext = createContext<null | ((message: string) => void)>(null);
+
+export function useDashboardToast() {
+  const ctx = useContext(DashboardToastContext);
+  if (!ctx) throw new Error("useDashboardToast must be used within DashboardShell");
+  return ctx;
+}
 
 export type DashboardNavItem = {
   id: string;
@@ -52,6 +60,7 @@ export function DashboardShell(props: {
   } = props;
 
   const [dateText, setDateText] = useState("");
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const fmt = () => {
@@ -88,8 +97,17 @@ export function DashboardShell(props: {
     []
   );
 
+  const toast = useMemo(
+    () => (message: string) => {
+      setToastMsg(message);
+      window.setTimeout(() => setToastMsg((cur) => (cur === message ? null : cur)), 3200);
+    },
+    []
+  );
+
   return (
-    <div className="dash-shell">
+    <DashboardToastContext.Provider value={toast}>
+      <div className="dash-shell">
       <nav className="sb" aria-label="Dashboard sidebar">
         <div className="sb-flag" />
         <div className="sb-in">
@@ -174,9 +192,24 @@ export function DashboardShell(props: {
           <div className="tb-datepill">{dateText}</div>
         </header>
 
+        {toastMsg ? (
+          <div className="ds-toast" role="status" aria-live="polite">
+            <div className="ds-toast-in">
+              <span className="ds-toast-ico" aria-hidden>
+                ✅
+              </span>
+              <span>{toastMsg}</span>
+              <button className="ds-toast-x" type="button" onClick={() => setToastMsg(null)} aria-label="Dismiss">
+                ✕
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <main className="content">{children}</main>
       </div>
-    </div>
+      </div>
+    </DashboardToastContext.Provider>
   );
 }
 
