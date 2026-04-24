@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
-import { DashboardShell } from "../../components/dashboard/DashboardShell";
+import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type DocPage =
   | "home"
@@ -33,6 +33,7 @@ const DOC_TITLES: Record<DocPage, string> = {
 };
 
 export function DoctorDashboard() {
+  const toast = useDashboardToast();
   const [page, setPage] = useState<DocPage>("home");
   const [patientId, setPatientId] = useState("P001");
   const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 5000 });
@@ -349,10 +350,10 @@ export function DoctorDashboard() {
               <div className="ph-su">Live view (polling) from the UniHealth edge gateway.</div>
             </div>
             <div className="ph-r">
-              <button className="btn-s" type="button">
+              <button className="btn-s" type="button" onClick={() => { setPage("notes"); toast("Opening note composer (demo)."); }}>
                 📋 New Note
               </button>
-              <button className="btn-p" type="button">
+              <button className="btn-p" type="button" onClick={() => toast("Order entry coming soon (demo).")}>
                 + New Order
               </button>
             </div>
@@ -368,13 +369,13 @@ export function DoctorDashboard() {
               <div className="ph-ti">Patient Workup</div>
             </div>
             <div className="ph-r">
-              <button className="btn-s btn-sm" type="button">
+              <button className="btn-s btn-sm" type="button" onClick={() => toast("Discharge workflow coming soon (demo).")}>
                 🏠 Discharge
               </button>
-              <button className="btn-s btn-sm" type="button">
+              <button className="btn-s btn-sm" type="button" onClick={() => { setPage("referrals"); toast("Opening referral form (demo)."); }}>
                 📋 Refer
               </button>
-              <button className="btn-p" type="button">
+              <button className="btn-p" type="button" onClick={() => { setPage("notes"); toast("Add clinical note (demo)."); }}>
                 📝 Add Note
               </button>
             </div>
@@ -392,7 +393,7 @@ export function DoctorDashboard() {
             <div className="panel">
               <div className="pnl-hd">
                 <div className="pnl-ti">Care Plan</div>
-                <button className="btn-s btn-sm" type="button">
+                <button className="btn-s btn-sm" type="button" onClick={() => toast("Edit care plan coming soon (demo).")}>
                   Edit
                 </button>
               </div>
@@ -413,7 +414,7 @@ export function DoctorDashboard() {
             <div className="panel">
               <div className="pnl-hd">
                 <div className="pnl-ti">Diagnoses</div>
-                <button className="btn-s btn-sm" type="button">
+                <button className="btn-s btn-sm" type="button" onClick={() => toast("Add diagnosis coming soon (demo).")}>
                   + Add
                 </button>
               </div>
@@ -431,7 +432,7 @@ export function DoctorDashboard() {
               <div className="ph-ti">Patient Queue</div>
               <div className="ph-su">Today · Dr. James Mutuku · Ward 4B</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Walk-in registration coming soon (demo).")}>
               + Add Walk-in
             </button>
           </div>
@@ -667,7 +668,7 @@ export function DoctorDashboard() {
                   <label>Clinical Notes</label>
                   <textarea placeholder="Clinical indication…" style={{ minHeight: 70 }} />
                 </div>
-                <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }}>
+                <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }} onClick={() => toast("Lab order submitted (demo).")}>
                   Submit Lab Order
                 </button>
               </div>
@@ -698,7 +699,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">Pharmacy</div>
               <div className="ph-ti">Prescriptions &amp; Medication Orders</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Create prescription coming soon (demo).")}>
               + New Prescription
             </button>
           </div>
@@ -713,7 +714,7 @@ export function DoctorDashboard() {
               <div className="ph-ti">Imaging &amp; Reports</div>
               <div className="ph-su">Radiology orders and report inbox (demo layout)</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Imaging order created (demo).")}>
               + Order Imaging
             </button>
           </div>
@@ -758,7 +759,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">Documentation</div>
               <div className="ph-ti">Clinical Notes</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("New note created (demo).")}>
               + New Note
             </button>
           </div>
@@ -780,7 +781,7 @@ export function DoctorDashboard() {
                 <label>Note</label>
                 <textarea placeholder="SOAP note, assessment, plan…" style={{ minHeight: 90 }} />
               </div>
-              <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }}>
+              <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }} onClick={() => toast("Note saved to record (demo).")}>
                 Save Note to FHIR Record
               </button>
             </div>
@@ -793,7 +794,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">Referral Management</div>
               <div className="ph-ti">Referrals</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Referral created (demo).")}>
               + New Referral
             </button>
           </div>
@@ -834,7 +835,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">Theatre / Procedures</div>
               <div className="ph-ti">Procedures</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Procedure scheduled (demo).")}>
               + Schedule Procedure
             </button>
           </div>
@@ -851,7 +852,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">UniHealth</div>
               <div className="ph-ti">Claims &amp; Authorisations</div>
             </div>
-            <button className="btn-s" type="button">
+            <button className="btn-s" type="button" onClick={() => toast("Claims synced (demo).")}>
               ↺ Sync
             </button>
           </div>
@@ -883,7 +884,7 @@ export function DoctorDashboard() {
               <div className="ph-ey">Calendar</div>
               <div className="ph-ti">My Schedule</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Blocking time coming soon (demo).")}>
               + Block Time
             </button>
           </div>
