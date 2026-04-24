@@ -1,11 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const DashboardToastContext = createContext<null | ((message: string) => void)>(null);
+type ToastFn = (message: string) => void;
+const DashboardToastContext = createContext<null | ToastFn>(null);
 
 export function useDashboardToast() {
   const ctx = useContext(DashboardToastContext);
-  if (!ctx) throw new Error("useDashboardToast must be used within DashboardShell");
-  return ctx;
+  // Important: dashboards call this hook at the page component level, which is rendered
+  // before any DashboardShell in the tree. So we provide a safe fallback that dispatches
+  // a global event listened to by DashboardShell instances.
+  if (ctx) return ctx;
+  return (message: string) => {
+    window.dispatchEvent(new CustomEvent("dash:toast", { detail: { message } }));
+  };
 }
 
 export type DashboardNavItem = {
@@ -97,13 +103,22 @@ export function DashboardShell(props: {
     []
   );
 
-  const toast = useMemo(
-    () => (message: string) => {
+  const toast: ToastFn = useMemo(() => {
+    return (message: string) => {
       setToastMsg(message);
       window.setTimeout(() => setToastMsg((cur) => (cur === message ? null : cur)), 3200);
-    },
-    []
-  );
+    };
+  }, []);
+
+  useEffect(() => {
+    const onToast = (e: Event) => {
+      const ce = e as CustomEvent<{ message?: string }>;
+      const message = ce.detail?.message;
+      if (typeof message === "string" && message.trim()) toast(message);
+    };
+    window.addEventListener("dash:toast", onToast as EventListener);
+    return () => window.removeEventListener("dash:toast", onToast as EventListener);
+  }, [toast]);
 
   return (
     <DashboardToastContext.Provider value={toast}>
@@ -206,7 +221,9 @@ export function DashboardShell(props: {
           </div>
         ) : null}
 
-        <main className="content">{children}</main>
+        <main className="content">
+          <div className="content-in">{children}</div>
+        </main>
       </div>
       </div>
     </DashboardToastContext.Provider>
