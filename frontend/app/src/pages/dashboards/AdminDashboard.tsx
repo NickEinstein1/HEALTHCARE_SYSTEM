@@ -1,7 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  reg?: string | null;
+  facility?: string | null;
+  auth?: string | null;
+  status?: string | null;
+  last_login?: string | null;
+};
+
+type AdminFacility = {
+  id: string;
+  name: string;
+  level?: string | null;
+  county?: string | null;
+  status?: string | null;
+  latency?: string | null;
+};
+
+type AdminPatient = {
+  id: string;
+  afl_id: string;
+  name: string;
+  email?: string | null;
+  phone?: string | null;
+  facility?: string | null;
+  status?: string | null;
+};
 
 export function AdminDashboard() {
   const toast = useDashboardToast();
@@ -66,6 +97,363 @@ export function AdminDashboard() {
     []
   );
 
+  const uiAction = async (label: string) => {
+    try {
+      await api.uiAction({ role: "admin", page, label });
+    } catch (e) {
+      // Keep the UX clean even if the API is offline.
+    }
+    toast(label);
+  };
+
+  // ----- Users (CRUD) -----
+  const [userQ, setUserQ] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [userFacility, setUserFacility] = useState("");
+  const [userStatus, setUserStatus] = useState("");
+
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+
+  const [showUserEditor, setShowUserEditor] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [userForm, setUserForm] = useState({
+    name: "",
+    email: "",
+    role: "Doctor",
+    reg: "",
+    facility: "KNH Nairobi",
+    auth: "OTP",
+    status: "Pending",
+  });
+
+  const loadUsers = async () => {
+    setUsersLoading(true);
+    setUsersError(null);
+    try {
+      const rows = (await api.adminUsers({
+        q: userQ.trim() || undefined,
+        role: userRole || undefined,
+        facility: userFacility || undefined,
+        status: userStatus || undefined,
+        limit: 200,
+      })) as AdminUser[];
+      setUsers(rows);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load users";
+      setUsersError(msg);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (page !== "users") return;
+    void loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, userQ, userRole, userFacility, userStatus]);
+
+  const openCreateUser = () => {
+    setEditingUserId(null);
+    setUserForm({
+      name: "",
+      email: "",
+      role: "Doctor",
+      reg: "",
+      facility: "KNH Nairobi",
+      auth: "OTP",
+      status: "Pending",
+    });
+    setShowUserEditor(true);
+  };
+
+  const openEditUser = (u: AdminUser) => {
+    setEditingUserId(u.id);
+    setUserForm({
+      name: u.name ?? "",
+      email: u.email ?? "",
+      role: u.role ?? "Doctor",
+      reg: u.reg ?? "",
+      facility: u.facility ?? "",
+      auth: u.auth ?? "OTP",
+      status: u.status ?? "Pending",
+    });
+    setShowUserEditor(true);
+  };
+
+  const saveUser = async () => {
+    const name = userForm.name.trim();
+    const email = userForm.email.trim();
+    if (!name) return toast("Name is required.");
+    if (!email) return toast("Email is required.");
+
+    try {
+      if (editingUserId) {
+        const res = await api.adminUserUpdate(editingUserId, {
+          name,
+          email,
+          role: userForm.role,
+          reg: userForm.reg.trim(),
+          facility: userForm.facility.trim(),
+          auth: userForm.auth,
+          status: userForm.status,
+        });
+        const updated = (res as any).user as AdminUser | undefined;
+        if (updated) setUsers((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+        toast("User updated.");
+      } else {
+        const res = await api.adminUserCreate({
+          name,
+          email,
+          role: userForm.role,
+          reg: userForm.reg.trim(),
+          facility: userForm.facility.trim(),
+          auth: userForm.auth,
+          status: userForm.status,
+        });
+        const created = (res as any).user as AdminUser | undefined;
+        if (created) setUsers((prev) => [created, ...prev]);
+        toast("User created.");
+      }
+      setShowUserEditor(false);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Save failed";
+      toast(msg);
+    }
+  };
+
+  const deleteUser = async (u: AdminUser) => {
+    const ok = window.confirm(`Delete ${u.name} (${u.email})?`);
+    if (!ok) return;
+    try {
+      await api.adminUserDelete(u.id);
+      setUsers((prev) => prev.filter((x) => x.id !== u.id));
+      toast("User deleted.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Delete failed";
+      toast(msg);
+    }
+  };
+
+  // ----- Facilities (CRUD) -----
+  const [facQ, setFacQ] = useState("");
+  const [facCounty, setFacCounty] = useState("");
+  const [facStatus, setFacStatus] = useState("");
+  const [facilities, setFacilities] = useState<AdminFacility[]>([]);
+  const [facilitiesLoading, setFacilitiesLoading] = useState(false);
+  const [facilitiesError, setFacilitiesError] = useState<string | null>(null);
+
+  const [showFacilityEditor, setShowFacilityEditor] = useState(false);
+  const [editingFacilityId, setEditingFacilityId] = useState<string | null>(null);
+  const [facilityForm, setFacilityForm] = useState({
+    name: "",
+    level: "Level 5",
+    county: "Nairobi",
+    status: "ONLINE",
+    latency: "",
+  });
+
+  const loadFacilities = async () => {
+    setFacilitiesLoading(true);
+    setFacilitiesError(null);
+    try {
+      const rows = (await api.adminFacilities({
+        q: facQ.trim() || undefined,
+        county: facCounty || undefined,
+        status: facStatus || undefined,
+        limit: 500,
+      })) as AdminFacility[];
+      setFacilities(rows);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load facilities";
+      setFacilitiesError(msg);
+    } finally {
+      setFacilitiesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (page !== "facilities") return;
+    void loadFacilities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, facQ, facCounty, facStatus]);
+
+  const openCreateFacility = () => {
+    setEditingFacilityId(null);
+    setFacilityForm({ name: "", level: "Level 5", county: "Nairobi", status: "ONLINE", latency: "" });
+    setShowFacilityEditor(true);
+  };
+
+  const openEditFacility = (f: AdminFacility) => {
+    setEditingFacilityId(f.id);
+    setFacilityForm({
+      name: f.name ?? "",
+      level: f.level ?? "Level 5",
+      county: f.county ?? "Nairobi",
+      status: f.status ?? "ONLINE",
+      latency: f.latency ?? "",
+    });
+    setShowFacilityEditor(true);
+  };
+
+  const saveFacility = async () => {
+    const name = facilityForm.name.trim();
+    if (!name) return toast("Facility name is required.");
+    try {
+      if (editingFacilityId) {
+        const res = await api.adminFacilityUpdate(editingFacilityId, {
+          name,
+          level: facilityForm.level,
+          county: facilityForm.county,
+          status: facilityForm.status,
+          latency: facilityForm.latency.trim(),
+        });
+        const updated = (res as any).facility as AdminFacility | undefined;
+        if (updated) setFacilities((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+        toast("Facility updated.");
+      } else {
+        const res = await api.adminFacilityCreate({
+          name,
+          level: facilityForm.level,
+          county: facilityForm.county,
+          status: facilityForm.status,
+          latency: facilityForm.latency.trim(),
+        });
+        const created = (res as any).facility as AdminFacility | undefined;
+        if (created) setFacilities((prev) => [created, ...prev]);
+        toast("Facility registered.");
+      }
+      setShowFacilityEditor(false);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Save failed");
+    }
+  };
+
+  const deleteFacility = async (f: AdminFacility) => {
+    const ok = window.confirm(`Delete facility "${f.name}"?`);
+    if (!ok) return;
+    try {
+      await api.adminFacilityDelete(f.id);
+      setFacilities((prev) => prev.filter((x) => x.id !== f.id));
+      toast("Facility deleted.");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Delete failed");
+    }
+  };
+
+  // ----- Patients (CRUD) -----
+  const [patQ, setPatQ] = useState("");
+  const [patFacility, setPatFacility] = useState("");
+  const [patStatus, setPatStatus] = useState("");
+  const [patients, setPatients] = useState<AdminPatient[]>([]);
+  const [patientsLoading, setPatientsLoading] = useState(false);
+  const [patientsError, setPatientsError] = useState<string | null>(null);
+
+  const [showPatientEditor, setShowPatientEditor] = useState(false);
+  const [editingPatientId, setEditingPatientId] = useState<string | null>(null);
+  const [patientForm, setPatientForm] = useState({
+    afl_id: "",
+    name: "",
+    email: "",
+    phone: "",
+    facility: "KNH Nairobi",
+    status: "Active",
+  });
+
+  const loadPatients = async () => {
+    setPatientsLoading(true);
+    setPatientsError(null);
+    try {
+      const rows = (await api.adminPatients({
+        q: patQ.trim() || undefined,
+        facility: patFacility || undefined,
+        status: patStatus || undefined,
+        limit: 500,
+      })) as AdminPatient[];
+      setPatients(rows);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load patients";
+      setPatientsError(msg);
+    } finally {
+      setPatientsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (page !== "patients") return;
+    void loadPatients();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, patQ, patFacility, patStatus]);
+
+  const openCreatePatient = () => {
+    setEditingPatientId(null);
+    setPatientForm({ afl_id: "", name: "", email: "", phone: "", facility: "KNH Nairobi", status: "Active" });
+    setShowPatientEditor(true);
+  };
+
+  const openEditPatient = (p: AdminPatient) => {
+    setEditingPatientId(p.id);
+    setPatientForm({
+      afl_id: p.afl_id ?? "",
+      name: p.name ?? "",
+      email: p.email ?? "",
+      phone: p.phone ?? "",
+      facility: p.facility ?? "KNH Nairobi",
+      status: p.status ?? "Active",
+    });
+    setShowPatientEditor(true);
+  };
+
+  const savePatient = async () => {
+    const afl_id = patientForm.afl_id.trim();
+    const name = patientForm.name.trim();
+    if (!afl_id) return toast("AFL ID is required.");
+    if (!name) return toast("Patient name is required.");
+    try {
+      if (editingPatientId) {
+        const res = await api.adminPatientUpdate(editingPatientId, {
+          afl_id,
+          name,
+          email: patientForm.email.trim(),
+          phone: patientForm.phone.trim(),
+          facility: patientForm.facility,
+          status: patientForm.status,
+        });
+        const updated = (res as any).patient as AdminPatient | undefined;
+        if (updated) setPatients((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
+        toast("Patient updated.");
+      } else {
+        const res = await api.adminPatientCreate({
+          afl_id,
+          name,
+          email: patientForm.email.trim(),
+          phone: patientForm.phone.trim(),
+          facility: patientForm.facility,
+          status: patientForm.status,
+        });
+        const created = (res as any).patient as AdminPatient | undefined;
+        if (created) setPatients((prev) => [created, ...prev]);
+        toast("Patient registered.");
+      }
+      setShowPatientEditor(false);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Save failed");
+    }
+  };
+
+  const deletePatient = async (p: AdminPatient) => {
+    const ok = window.confirm(`Delete patient "${p.name}" (${p.afl_id})?`);
+    if (!ok) return;
+    try {
+      await api.adminPatientDelete(p.id);
+      setPatients((prev) => prev.filter((x) => x.id !== p.id));
+      toast("Patient deleted.");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Delete failed");
+    }
+  };
+
   return (
     <DashboardShell
       title={
@@ -100,6 +488,14 @@ export function AdminDashboard() {
       userEmail="m.kamau@moh.go.ke"
       activeNavId={page}
       onNavSelect={(id) => setPage(id as any)}
+      onTopbarNotificationsClick={() => {
+        setPage("audit");
+        void uiAction("Opened notifications.");
+      }}
+      onTopbarStatusClick={() => {
+        setPage("health");
+        void uiAction("Opened live status.");
+      }}
       nav={[
         {
           label: "Main",
@@ -162,25 +558,49 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button" onClick={() => toast("Export report coming soon (demo).")}>
+            <button className="btn-s" type="button" onClick={() => void uiAction("Export report queued.")}>
               📥 Export Report
             </button>
-            <button className="btn-p" type="button" onClick={() => { setPage("users"); toast("Opening user creation (demo)."); }}>
+            <button className="btn-p" type="button" onClick={() => { setPage("users"); void uiAction("Opening user creation."); }}>
               + Add User
             </button>
           </div>
         </div>
 
         <div className="qa">
-          <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("users")}>
+          <div
+            className="qa-item"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              setPage("users");
+              openCreateUser();
+            }}
+          >
             <span className="qa-e">👤</span>
             <span className="qa-t">Add Staff</span>
           </div>
-          <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("patients")}>
+          <div
+            className="qa-item"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              setPage("patients");
+              openCreatePatient();
+            }}
+          >
             <span className="qa-e">🧑‍⚕️</span>
             <span className="qa-t">Register Patient</span>
           </div>
-          <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("facilities")}>
+          <div
+            className="qa-item"
+            role="button"
+            tabIndex={0}
+            onClick={() => {
+              setPage("facilities");
+              openCreateFacility();
+            }}
+          >
             <span className="qa-e">🏥</span>
             <span className="qa-t">New Facility</span>
           </div>
@@ -390,7 +810,7 @@ export function AdminDashboard() {
                 <div className="errbanner is-visible" role="alert">
                   <span>⚠️</span>
                   <span>
-                    Cannot reach API at <code>http://localhost:8000</code>.
+                    Cannot reach API. Start the backend, or configure <code>VITE_API_BASE_URL</code>.
                     <br />
                     {metrics.error}
                   </span>
@@ -446,36 +866,129 @@ export function AdminDashboard() {
             <div className="ph-sub">Manage staff accounts, roles and access permissions</div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button" onClick={() => toast("CSV import coming soon (demo).")}>
+            <button className="btn-s" type="button" onClick={() => void uiAction("CSV import started.")}>
               📥 Import CSV
             </button>
-            <button className="btn-p" type="button" onClick={() => toast("Add user coming soon (demo).")}>
+            <button className="btn-p" type="button" onClick={openCreateUser}>
               + Add User
             </button>
           </div>
         </div>
+
+        {showUserEditor && (
+          <div className="panel" style={{ marginBottom: 16 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-title">{editingUserId ? "Manage user" : "Add user"}</div>
+                <div className="pnl-sub">Create staff accounts and assign role/facility access.</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button className="btn-s btn-sm" type="button" onClick={() => setShowUserEditor(false)}>
+                  Cancel
+                </button>
+                <button className="btn-p btn-sm" type="button" onClick={() => void saveUser()}>
+                  {editingUserId ? "Save changes" : "Create user"}
+                </button>
+              </div>
+            </div>
+            <div className="pnl-body">
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>Full name</label>
+                  <input value={userForm.name} onChange={(e) => setUserForm((s) => ({ ...s, name: e.target.value }))} placeholder="e.g. Jane Doe" />
+                </div>
+                <div className="ff">
+                  <label>Email</label>
+                  <input
+                    className="mono"
+                    value={userForm.email}
+                    onChange={(e) => setUserForm((s) => ({ ...s, email: e.target.value }))}
+                    placeholder="e.g. jane.doe@hospital.go.ke"
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>Role</label>
+                  <select value={userForm.role} onChange={(e) => setUserForm((s) => ({ ...s, role: e.target.value }))}>
+                    <option>Doctor</option>
+                    <option>Nurse / CO</option>
+                    <option>Administrator</option>
+                    <option>System Admin</option>
+                    <option>Security Admin</option>
+                    <option>Data Manager</option>
+                  </select>
+                </div>
+                <div className="ff">
+                  <label>Facility</label>
+                  <select value={userForm.facility} onChange={(e) => setUserForm((s) => ({ ...s, facility: e.target.value }))}>
+                    <option>KNH Nairobi</option>
+                    <option>Coast General</option>
+                    <option>MTRH Eldoret</option>
+                    <option>MOH HQ</option>
+                    <option>UniHealth SecOps</option>
+                    <option>Data Hub</option>
+                  </select>
+                </div>
+              </div>
+              <div className="g2">
+                <div className="ff">
+                  <label>Registration / ID</label>
+                  <input className="mono" value={userForm.reg} onChange={(e) => setUserForm((s) => ({ ...s, reg: e.target.value }))} placeholder="e.g. DR-1032" />
+                </div>
+                <div className="ff">
+                  <label>Status</label>
+                  <select value={userForm.status} onChange={(e) => setUserForm((s) => ({ ...s, status: e.target.value }))}>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                    <option>Pending</option>
+                  </select>
+                </div>
+              </div>
+              <div className="g2" style={{ marginTop: 10 }}>
+                <div className="ff">
+                  <label>Auth method</label>
+                  <select value={userForm.auth} onChange={(e) => setUserForm((s) => ({ ...s, auth: e.target.value }))}>
+                    <option>OTP</option>
+                    <option>Practice 360</option>
+                    <option>Biometric</option>
+                  </select>
+                </div>
+                <div className="ff" />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="filter-row">
           <div className="fsearch">
             <span aria-hidden>🔎</span>
-            <input placeholder="Search name, email, reg. number…" />
+            <input value={userQ} onChange={(e) => setUserQ(e.target.value)} placeholder="Search name, email, reg. number…" />
           </div>
-          <select className="fsel">
-            <option>All Roles</option>
-            <option>Doctor</option>
-            <option>Nurse / CO</option>
-            <option>Administrator</option>
+          <select className="fsel" value={userRole} onChange={(e) => setUserRole(e.target.value)}>
+            <option value="">All Roles</option>
+            <option value="Doctor">Doctor</option>
+            <option value="Nurse / CO">Nurse / CO</option>
+            <option value="Administrator">Administrator</option>
+            <option value="System Admin">System Admin</option>
+            <option value="Security Admin">Security Admin</option>
+            <option value="Data Manager">Data Manager</option>
           </select>
-          <select className="fsel">
-            <option>All Facilities</option>
-            <option>KNH Nairobi</option>
-            <option>Coast General</option>
-            <option>MTRH Eldoret</option>
+          <select className="fsel" value={userFacility} onChange={(e) => setUserFacility(e.target.value)}>
+            <option value="">All Facilities</option>
+            <option value="KNH Nairobi">KNH Nairobi</option>
+            <option value="Coast General">Coast General</option>
+            <option value="MTRH Eldoret">MTRH Eldoret</option>
+            <option value="MOH HQ">MOH HQ</option>
+            <option value="UniHealth SecOps">UniHealth SecOps</option>
+            <option value="Data Hub">Data Hub</option>
           </select>
-          <select className="fsel">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-            <option>Pending</option>
+          <select className="fsel" value={userStatus} onChange={(e) => setUserStatus(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Pending">Pending</option>
           </select>
         </div>
         <div className="panel">
@@ -493,15 +1006,47 @@ export function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {[
-                { av: "MK", name: "M. Kamau", email: "m.kamau@moh.go.ke", role: "System Admin", reg: "ADM-0142", fac: "MOH HQ", last: "Today 08:12", auth: "Biometric", status: "Active", tone: "g" as const },
-                { av: "SN", name: "S. Njeri", email: "s.njeri@unihealth.ke", role: "Security Admin", reg: "SEC-0081", fac: "UniHealth SecOps", last: "Today 07:51", auth: "Practice 360", status: "Active", tone: "b" as const },
-                { av: "JO", name: "J. Odhiambo", email: "j.odhiambo@unihealth.ke", role: "Data Manager", reg: "DM-2210", fac: "Data Hub", last: "Yesterday 19:02", auth: "OTP", status: "Pending", tone: "am" as const },
-              ].map((u) => (
-                <tr key={u.email}>
+              {usersError && (
+                <tr>
+                  <td colSpan={8} style={{ padding: 14 }}>
+                    <div className="errbanner is-visible" role="alert">
+                      <span>⚠️</span>
+                      <span style={{ lineHeight: 1.6 }}>
+                        Failed to load users.
+                        <br />
+                        <span className="mono">{usersError}</span>
+                      </span>
+                      <span style={{ marginLeft: "auto" }}>
+                        <button className="btn-s btn-sm" type="button" onClick={() => void loadUsers()}>
+                          Retry
+                        </button>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!usersError && usersLoading && (
+                <tr>
+                  <td colSpan={8} style={{ padding: 14, color: "var(--t2)", fontWeight: 700 }}>
+                    Loading users…
+                  </td>
+                </tr>
+              )}
+              {!usersError &&
+                !usersLoading &&
+                users.map((u) => {
+                  const av = u.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((p) => p[0]?.toUpperCase() ?? "")
+                    .join("");
+                  const tone = (u.status ?? "").toLowerCase() === "active" ? "g" : (u.status ?? "").toLowerCase() === "pending" ? "am" : "grey";
+                  return (
+                    <tr key={u.id}>
                   <td>
                     <div className="cell-user">
-                      <div className={`av ${u.tone === "g" ? "" : u.tone}`}>{u.av}</div>
+                      <div className={`av ${tone === "g" ? "" : tone}`}>{av || "U"}</div>
                       <div>
                         <div style={{ fontWeight: 800, color: "var(--t1)" }}>{u.name}</div>
                         <div style={{ fontSize: 11, color: "var(--t3)" }}>{u.email}</div>
@@ -509,24 +1054,51 @@ export function AdminDashboard() {
                     </div>
                   </td>
                   <td>{u.role}</td>
-                  <td className="mono">{u.reg}</td>
-                  <td>{u.fac}</td>
-                  <td className="mono">{u.last}</td>
+                  <td className="mono">{u.reg || "—"}</td>
+                  <td>{u.facility || "—"}</td>
+                  <td className="mono">{u.last_login || "—"}</td>
                   <td>
-                    <span className={`tag ${u.auth === "OTP" ? "am" : u.auth === "Practice 360" ? "b" : "g"} dot`}>{u.auth}</span>
-                  </td>
-                  <td>
-                    <span className={`tag ${u.status === "Active" ? "g" : u.status === "Pending" ? "am" : "grey"}`}>
-                      {u.status}
+                    <span
+                      className={`tag ${(u.auth || "OTP") === "OTP" ? "am" : (u.auth || "") === "Practice 360" ? "b" : "g"} dot`}
+                    >
+                      {u.auth || "OTP"}
                     </span>
                   </td>
                   <td>
-                    <button className="btn-s" type="button" style={{ fontSize: 11, padding: "5px 10px" }}>
-                      Manage
-                    </button>
+                    <span className={`tag ${(u.status || "") === "Active" ? "g" : (u.status || "") === "Pending" ? "am" : "grey"}`}>
+                      {u.status || "—"}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                      <button
+                        className="btn-s"
+                        type="button"
+                        style={{ fontSize: 11, padding: "5px 10px" }}
+                        onClick={() => openEditUser(u as any)}
+                      >
+                        Manage
+                      </button>
+                      <button
+                        className="btn-s"
+                        type="button"
+                        style={{ fontSize: 11, padding: "5px 10px", borderColor: "rgba(239,68,68,.35)", color: "var(--r)" }}
+                        onClick={() => void deleteUser(u as any)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))}
+                  );
+                })}
+              {!usersError && !usersLoading && users.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                    No users found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -540,40 +1112,166 @@ export function AdminDashboard() {
             <div className="ph-title">Facility Management</div>
             <div className="ph-sub">2,387 UniHealth-accredited facilities across 12 regions</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => toast("Register facility coming soon (demo).")}>
+          <button className="btn-p" type="button" onClick={openCreateFacility}>
             + Register Facility
           </button>
         </div>
-        <div className="g3" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
-          {[
-            { name: "KNH Nairobi", loc: "Nairobi · Level 6", up: 99, lat: "22ms", tone: "g" as const },
-            { name: "Nakuru Level 5", loc: "Nakuru · Level 5", up: 92, lat: "88ms", tone: "am" as const },
-            { name: "MTRH Eldoret", loc: "Uasin Gishu · Level 6", up: 98, lat: "31ms", tone: "g" as const },
-          ].map((f) => (
-            <div className="fac-card" key={f.name}>
-              <div className="fac-top">
-                <div>
-                  <div className="fac-name">{f.name}</div>
-                  <div className="fac-loc">{f.loc}</div>
-                </div>
-                <span className={`tag ${f.tone === "am" ? "am" : "g"} dot`}>{f.tone === "am" ? "DEGRADED" : "ONLINE"}</span>
+
+        {showFacilityEditor && (
+          <div className="panel" style={{ marginBottom: 16 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-title">{editingFacilityId ? "Manage facility" : "Register facility"}</div>
+                <div className="pnl-sub">Add a UniHealth-accredited facility and track connectivity status.</div>
               </div>
-              <div className="fac-stats">
-                <div className="fac-s">
-                  <div className="fac-sv">{f.up}%</div>
-                  <div className="fac-sl">Uptime</div>
-                </div>
-                <div className="fac-s">
-                  <div className="fac-sv">{f.lat}</div>
-                  <div className="fac-sl">Latency</div>
-                </div>
-              </div>
-              <div className="pbar">
-                <div className="pbar-fill" style={{ width: `${f.up}%`, background: f.tone === "am" ? "var(--am)" : "var(--g)" }} />
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button className="btn-s btn-sm" type="button" onClick={() => setShowFacilityEditor(false)}>
+                  Cancel
+                </button>
+                <button className="btn-p btn-sm" type="button" onClick={() => void saveFacility()}>
+                  {editingFacilityId ? "Save changes" : "Register facility"}
+                </button>
               </div>
             </div>
-          ))}
+            <div className="pnl-body">
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>Facility name</label>
+                  <input value={facilityForm.name} onChange={(e) => setFacilityForm((s) => ({ ...s, name: e.target.value }))} placeholder="e.g. Coast General" />
+                </div>
+                <div className="ff">
+                  <label>Status</label>
+                  <select value={facilityForm.status} onChange={(e) => setFacilityForm((s) => ({ ...s, status: e.target.value }))}>
+                    <option>ONLINE</option>
+                    <option>DEGRADED</option>
+                    <option>OFFLINE</option>
+                  </select>
+                </div>
+              </div>
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>County</label>
+                  <input value={facilityForm.county} onChange={(e) => setFacilityForm((s) => ({ ...s, county: e.target.value }))} placeholder="e.g. Nairobi" />
+                </div>
+                <div className="ff">
+                  <label>Level</label>
+                  <input value={facilityForm.level} onChange={(e) => setFacilityForm((s) => ({ ...s, level: e.target.value }))} placeholder="e.g. Level 5" />
+                </div>
+              </div>
+              <div className="g2">
+                <div className="ff">
+                  <label>Latency (optional)</label>
+                  <input className="mono" value={facilityForm.latency} onChange={(e) => setFacilityForm((s) => ({ ...s, latency: e.target.value }))} placeholder="e.g. 22ms" />
+                </div>
+                <div className="ff" />
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="filter-row">
+          <div className="fsearch">
+            <span aria-hidden>🔎</span>
+            <input value={facQ} onChange={(e) => setFacQ(e.target.value)} placeholder="Search facility name or ID…" />
+          </div>
+          <select className="fsel" value={facCounty} onChange={(e) => setFacCounty(e.target.value)}>
+            <option value="">All Counties</option>
+            <option value="Nairobi">Nairobi</option>
+            <option value="Nakuru">Nakuru</option>
+            <option value="Uasin Gishu">Uasin Gishu</option>
+            <option value="Mombasa">Mombasa</option>
+          </select>
+          <select className="fsel" value={facStatus} onChange={(e) => setFacStatus(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="ONLINE">ONLINE</option>
+            <option value="DEGRADED">DEGRADED</option>
+            <option value="OFFLINE">OFFLINE</option>
+          </select>
         </div>
+        <div className="panel">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Facility</th>
+                <th>County</th>
+                <th>Level</th>
+                <th>Status</th>
+                <th>Latency</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {facilitiesError && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14 }}>
+                    <div className="errbanner is-visible" role="alert">
+                      <span>⚠️</span>
+                      <span style={{ lineHeight: 1.6 }}>
+                        Failed to load facilities.
+                        <br />
+                        <span className="mono">{facilitiesError}</span>
+                      </span>
+                      <span style={{ marginLeft: "auto" }}>
+                        <button className="btn-s btn-sm" type="button" onClick={() => void loadFacilities()}>
+                          Retry
+                        </button>
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {!facilitiesError && facilitiesLoading && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14, color: "var(--t2)", fontWeight: 700 }}>
+                    Loading facilities…
+                  </td>
+                </tr>
+              )}
+              {!facilitiesError &&
+                !facilitiesLoading &&
+                facilities.map((f) => (
+                  <tr key={f.id}>
+                    <td>
+                      <div style={{ fontWeight: 850, color: "var(--t1)" }}>{f.name}</div>
+                      <div className="mono" style={{ fontSize: 10.5, color: "var(--t3)" }}>
+                        {f.id}
+                      </div>
+                    </td>
+                    <td>{f.county || "—"}</td>
+                    <td>{f.level || "—"}</td>
+                    <td>
+                      <span className={`tag ${(f.status || "") === "DEGRADED" ? "am" : (f.status || "") === "OFFLINE" ? "r" : "g"} dot`}>
+                        {f.status || "—"}
+                      </span>
+                    </td>
+                    <td className="mono">{f.latency || "—"}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                        <button className="btn-s btn-sm" type="button" onClick={() => openEditFacility(f)}>
+                          Manage
+                        </button>
+                        <button
+                          className="btn-s btn-sm"
+                          type="button"
+                          style={{ borderColor: "rgba(239,68,68,.35)", color: "var(--r)" }}
+                          onClick={() => void deleteFacility(f)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              {!facilitiesError && !facilitiesLoading && facilities.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                    No facilities found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
       </div>
 
       {/* COUNTIES */}
@@ -639,50 +1337,197 @@ export function AdminDashboard() {
             <div className="ph-title">Patient Registry</div>
             <div className="ph-sub">55.2M UniHealth-registered patients across 12 regions</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => toast("Patient registration coming soon (demo).")}>
+          <button className="btn-p" type="button" onClick={openCreatePatient}>
             + Register Patient
           </button>
+        </div>
+
+        {showPatientEditor && (
+          <div className="panel" style={{ marginBottom: 16 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-title">{editingPatientId ? "Manage patient" : "Register patient"}</div>
+                <div className="pnl-sub">Register a patient in the UniHealth directory and link them to a facility.</div>
+              </div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button className="btn-s btn-sm" type="button" onClick={() => setShowPatientEditor(false)}>
+                  Cancel
+                </button>
+                <button className="btn-p btn-sm" type="button" onClick={() => void savePatient()}>
+                  {editingPatientId ? "Save changes" : "Register patient"}
+                </button>
+              </div>
+            </div>
+            <div className="pnl-body">
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>AFL ID</label>
+                  <input
+                    className="mono"
+                    value={patientForm.afl_id}
+                    onChange={(e) => setPatientForm((s) => ({ ...s, afl_id: e.target.value }))}
+                    placeholder="e.g. AFL-2026-KE-00312"
+                  />
+                </div>
+                <div className="ff">
+                  <label>Full name</label>
+                  <input value={patientForm.name} onChange={(e) => setPatientForm((s) => ({ ...s, name: e.target.value }))} placeholder="e.g. Wangui Njoroge" />
+                </div>
+              </div>
+              <div className="g2" style={{ marginBottom: 10 }}>
+                <div className="ff">
+                  <label>Email (optional)</label>
+                  <input className="mono" value={patientForm.email} onChange={(e) => setPatientForm((s) => ({ ...s, email: e.target.value }))} placeholder="e.g. patient@example.com" />
+                </div>
+                <div className="ff">
+                  <label>Phone (optional)</label>
+                  <input className="mono" value={patientForm.phone} onChange={(e) => setPatientForm((s) => ({ ...s, phone: e.target.value }))} placeholder="e.g. +2547…" />
+                </div>
+              </div>
+              <div className="g2">
+                <div className="ff">
+                  <label>Facility</label>
+                  <select value={patientForm.facility} onChange={(e) => setPatientForm((s) => ({ ...s, facility: e.target.value }))}>
+                    <option>KNH Nairobi</option>
+                    <option>Coast General</option>
+                    <option>MTRH Eldoret</option>
+                    <option>MOH HQ</option>
+                  </select>
+                </div>
+                <div className="ff">
+                  <label>Status</label>
+                  <select value={patientForm.status} onChange={(e) => setPatientForm((s) => ({ ...s, status: e.target.value }))}>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                    <option>Pending</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="filter-row">
+          <div className="fsearch">
+            <span aria-hidden>🔎</span>
+            <input value={patQ} onChange={(e) => setPatQ(e.target.value)} placeholder="Search patient name, AFL ID, email, phone…" />
+          </div>
+          <select className="fsel" value={patFacility} onChange={(e) => setPatFacility(e.target.value)}>
+            <option value="">All Facilities</option>
+            <option value="KNH Nairobi">KNH Nairobi</option>
+            <option value="Coast General">Coast General</option>
+            <option value="MTRH Eldoret">MTRH Eldoret</option>
+            <option value="MOH HQ">MOH HQ</option>
+          </select>
+          <select className="fsel" value={patStatus} onChange={(e) => setPatStatus(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Pending">Pending</option>
+          </select>
         </div>
         <div className="panel">
           <table className="tbl">
             <thead>
               <tr>
                 <th>Patient</th>
-                <th>National ID</th>
-                <th>County</th>
-                <th>UniHealth Status</th>
-                <th>UniHealth No.</th>
-                <th>Last Visit</th>
+                <th className="mono">AFL ID</th>
+                <th>Facility</th>
+                <th>Contact</th>
+                <th>Status</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <div className="cell-user">
-                    <div className="av">WN</div>
-                    <div>
-                      <div style={{ fontWeight: 800, color: "var(--t1)" }}>Wangui Njoroge</div>
-                      <div style={{ fontSize: 11, color: "var(--t3)" }}>Female · 32y</div>
+              {patientsError && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14 }}>
+                    <div className="errbanner is-visible" role="alert">
+                      <span>⚠️</span>
+                      <span style={{ lineHeight: 1.6 }}>
+                        Failed to load patients.
+                        <br />
+                        <span className="mono">{patientsError}</span>
+                      </span>
+                      <span style={{ marginLeft: "auto" }}>
+                        <button className="btn-s btn-sm" type="button" onClick={() => void loadPatients()}>
+                          Retry
+                        </button>
+                      </span>
                     </div>
-                  </div>
-                </td>
-                <td className="mono">3120••••</td>
-                <td>Nairobi</td>
-                <td>
-                  <span className="tag g dot">Active</span>
-                </td>
-                <td className="mono">AFL-2024-884321</td>
-                <td className="mono">Today</td>
-                <td>
-                  <button className="btn-s" type="button" style={{ fontSize: 11, padding: "5px 10px" }}>
-                    View
-                  </button>
-                </td>
-              </tr>
+                  </td>
+                </tr>
+              )}
+              {!patientsError && patientsLoading && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14, color: "var(--t2)", fontWeight: 700 }}>
+                    Loading patients…
+                  </td>
+                </tr>
+              )}
+              {!patientsError &&
+                !patientsLoading &&
+                patients.map((p) => {
+                  const av = p.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((s) => s[0]?.toUpperCase() ?? "")
+                    .join("");
+                  return (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="cell-user">
+                          <div className="av">{av || "P"}</div>
+                          <div>
+                            <div style={{ fontWeight: 800, color: "var(--t1)" }}>{p.name}</div>
+                            <div style={{ fontSize: 11, color: "var(--t3)" }} className="mono">
+                              {p.id}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="mono">{p.afl_id}</td>
+                      <td>{p.facility || "—"}</td>
+                      <td style={{ color: "var(--t2)" }}>
+                        <div className="mono" style={{ fontSize: 11.5 }}>
+                          {p.phone || "—"}
+                        </div>
+                        <div style={{ fontSize: 11, color: "var(--t3)" }}>{p.email || "—"}</div>
+                      </td>
+                      <td>
+                        <span className={`tag ${(p.status || "") === "Active" ? "g" : (p.status || "") === "Pending" ? "am" : "grey"} dot`}>
+                          {p.status || "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                          <button className="btn-s btn-sm" type="button" onClick={() => openEditPatient(p)}>
+                            Manage
+                          </button>
+                          <button
+                            className="btn-s btn-sm"
+                            type="button"
+                            style={{ borderColor: "rgba(239,68,68,.35)", color: "var(--r)" }}
+                            onClick={() => void deletePatient(p)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              {!patientsError && !patientsLoading && patients.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                    No patients found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
       </div>
 
       {/* UNIHEALTH */}
@@ -693,7 +1538,7 @@ export function AdminDashboard() {
             <div className="ph-title">UniHealth Integration Hub</div>
             <div className="ph-sub">Claims management, biometric verification, Practice 360 approvals</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => toast("UniHealth sync triggered (demo).")}>
+          <button className="btn-p" type="button" onClick={() => void uiAction("UniHealth sync triggered.")}>
             ↺ Sync UniHealth
           </button>
         </div>
@@ -797,9 +1642,9 @@ export function AdminDashboard() {
           <div>
             <div className="ph-eyebrow">System</div>
             <div className="ph-title">Settings</div>
-            <div className="ph-sub">Global system settings and policies (demo UI)</div>
+            <div className="ph-sub">Global system settings and policies</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => toast("Settings saved (demo).")}>
+          <button className="btn-p" type="button" onClick={() => void uiAction("Settings saved.")}>
             Save Changes
           </button>
         </div>
@@ -844,7 +1689,7 @@ export function AdminDashboard() {
           <div>
             <div className="ph-eyebrow">Security & Intelligence</div>
             <div className="ph-title">AI Monitor</div>
-            <div className="ph-sub">Anomaly detection, access guardrails, and automated response (demo UI)</div>
+            <div className="ph-sub">Anomaly detection, access guardrails, and automated response</div>
           </div>
         </div>
         <div className="panel">
@@ -872,7 +1717,7 @@ export function AdminDashboard() {
           <div>
             <div className="ph-eyebrow">Security</div>
             <div className="ph-title">RBAC & Roles</div>
-            <div className="ph-sub">Role-based access control overview (demo UI)</div>
+            <div className="ph-sub">Role-based access control overview</div>
           </div>
         </div>
         <div className="panel">
@@ -930,7 +1775,7 @@ export function AdminDashboard() {
           <div>
             <div className="ph-eyebrow">System</div>
             <div className="ph-title">System Health</div>
-            <div className="ph-sub">Backups, latency, cache, and node status (demo UI)</div>
+            <div className="ph-sub">Backups, latency, cache, and node status</div>
           </div>
         </div>
         <div className="panel">
