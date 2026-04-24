@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
-import { DashboardShell } from "../../components/dashboard/DashboardShell";
+import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 export function AdminDashboard() {
+  const toast = useDashboardToast();
   const metrics = usePolling(() => api.metricsJson(), { intervalMs: 5000 });
   const top = (metrics.data?.routes ?? [])
     .slice()
@@ -161,10 +162,10 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button">
+            <button className="btn-s" type="button" onClick={() => toast("Export report coming soon (demo).")}>
               📥 Export Report
             </button>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => { setPage("users"); toast("Opening user creation (demo)."); }}>
               + Add User
             </button>
           </div>
@@ -445,10 +446,10 @@ export function AdminDashboard() {
             <div className="ph-sub">Manage staff accounts, roles and access permissions</div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button">
+            <button className="btn-s" type="button" onClick={() => toast("CSV import coming soon (demo).")}>
               📥 Import CSV
             </button>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Add user coming soon (demo).")}>
               + Add User
             </button>
           </div>
@@ -539,7 +540,7 @@ export function AdminDashboard() {
             <div className="ph-title">Facility Management</div>
             <div className="ph-sub">2,387 UniHealth-accredited facilities across 12 regions</div>
           </div>
-          <button className="btn-p" type="button">
+          <button className="btn-p" type="button" onClick={() => toast("Register facility coming soon (demo).")}>
             + Register Facility
           </button>
         </div>
@@ -638,7 +639,7 @@ export function AdminDashboard() {
             <div className="ph-title">Patient Registry</div>
             <div className="ph-sub">55.2M UniHealth-registered patients across 12 regions</div>
           </div>
-          <button className="btn-p" type="button">
+          <button className="btn-p" type="button" onClick={() => toast("Patient registration coming soon (demo).")}>
             + Register Patient
           </button>
         </div>
@@ -692,7 +693,7 @@ export function AdminDashboard() {
             <div className="ph-title">UniHealth Integration Hub</div>
             <div className="ph-sub">Claims management, biometric verification, Practice 360 approvals</div>
           </div>
-          <button className="btn-p" type="button">
+          <button className="btn-p" type="button" onClick={() => toast("UniHealth sync triggered (demo).")}>
             ↺ Sync UniHealth
           </button>
         </div>
@@ -798,7 +799,7 @@ export function AdminDashboard() {
             <div className="ph-title">Settings</div>
             <div className="ph-sub">Global system settings and policies (demo UI)</div>
           </div>
-          <button className="btn-p" type="button">
+          <button className="btn-p" type="button" onClick={() => toast("Settings saved (demo).")}>
             Save Changes
           </button>
         </div>
