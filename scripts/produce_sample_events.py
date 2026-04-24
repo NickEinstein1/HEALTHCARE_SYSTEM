@@ -15,8 +15,6 @@ import json
 import os
 from datetime import datetime, timedelta, timezone
 
-from confluent_kafka import Producer, KafkaException
-
 KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 
 def to_zulu(dt: datetime) -> str:
@@ -25,6 +23,8 @@ def to_zulu(dt: datetime) -> str:
 
 
 def main():
+    from confluent_kafka import Producer, KafkaException  # type: ignore
+
     delivery_errors = []
 
     def delivery_report(err, msg):
