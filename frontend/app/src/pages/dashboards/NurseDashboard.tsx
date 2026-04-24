@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
-import { DashboardShell } from "../../components/dashboard/DashboardShell";
+import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type NursePage =
   | "home"
@@ -58,6 +58,7 @@ function initialsFromName(name: string) {
 }
 
 export function NurseDashboard() {
+  const toast = useDashboardToast();
   const [patientId, setPatientId] = useState("P001");
   const obs = usePolling(() => api.observations(patientId, 20), { intervalMs: 4000 });
 
@@ -208,7 +209,9 @@ export function NurseDashboard() {
               UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready
               for offline
             </span>
-            <button type="button">Sync Now</button>
+            <button type="button" onClick={() => toast("Sync triggered (demo).")}>
+              Sync Now
+            </button>
           </div>
 
           <div className="ai-widget teal" style={{ animationDelay: ".08s" }}>
@@ -445,10 +448,10 @@ export function NurseDashboard() {
                     <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("incidents")}>
                       ⚠️ Report Incident
                     </button>
-                    <button className="btn-s" style={{ justifyContent: "center" }} type="button">
+                    <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => toast("Call doctor workflow coming soon (demo).")}>
                       📞 Call Doctor
                     </button>
-                    <button className="btn-s" style={{ justifyContent: "center" }} type="button">
+                    <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => toast("Transfer request workflow coming soon (demo).")}>
                       🚑 Request Transfer
                     </button>
                   </div>
@@ -542,7 +545,7 @@ export function NurseDashboard() {
               <div className="ph-ti">My Patients</div>
               <div className="ph-su">12 assigned · Morning Shift · Nurse Atieno</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Admit patient coming soon (demo).")}>
               + Admit Patient
             </button>
           </div>
@@ -573,7 +576,7 @@ export function NurseDashboard() {
                         <span className={`tag ${p.tag}`}>{p.tagL}</span>
                       </td>
                       <td>
-                        <button className="btn-s btn-sm" type="button">
+                        <button className="btn-s btn-sm" type="button" onClick={() => toast("Opening patient chart (demo).")}>
                           Open →
                         </button>
                       </td>
@@ -592,7 +595,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Triage Queue</div>
               <div className="ph-su">Emergency and walk-in patients awaiting triage assessment</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Triage new patient coming soon (demo).")}>
               + Triage New Patient
             </button>
           </div>
@@ -698,7 +701,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Record Vitals</div>
               <div className="ph-su">Ward 4B · 4-hourly observations schedule</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Record vitals coming soon (demo).")}>
               + Record Vitals
             </button>
           </div>
@@ -833,7 +836,7 @@ export function NurseDashboard() {
                   <label>Notes</label>
                   <textarea placeholder="Any concerns or observations…" style={{ minHeight: 60 }} />
                 </div>
-                <button className="btn-p" style={{ width: "100%", justifyContent: "center" }} type="button">
+                <button className="btn-p" style={{ width: "100%", justifyContent: "center" }} type="button" onClick={() => toast("Vitals saved (demo).")}>
                   Save Vitals to EHR
                 </button>
               </div>
@@ -951,7 +954,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Tasks & Care Plans</div>
               <div className="ph-su">Nursing tasks for this shift — Ward 4B</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Add task coming soon (demo).")}>
               + Add Task
             </button>
           </div>
@@ -1007,7 +1010,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Fluid Balance</div>
               <div className="ph-su">Intake vs output monitoring — Ward 4B</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Record fluid entry coming soon (demo).")}>
               + Record Entry
             </button>
           </div>
@@ -1135,7 +1138,7 @@ export function NurseDashboard() {
               <div className="ph-ey">Wound Management</div>
               <div className="ph-ti">Wound Care & Dressings</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Record dressing coming soon (demo).")}>
               + Record Dressing
             </button>
           </div>
@@ -1173,7 +1176,7 @@ export function NurseDashboard() {
                       <span className="tag am">Due Soon</span>
                     </td>
                     <td>
-                      <button className="btn-p btn-sm" type="button">
+                      <button className="btn-p btn-sm" type="button" onClick={() => toast("Wound dressing recorded (demo).")}>
                         Record
                       </button>
                     </td>
@@ -1193,7 +1196,7 @@ export function NurseDashboard() {
                       <span className="tag g">Current</span>
                     </td>
                     <td>
-                      <button className="btn-s btn-sm" type="button">
+                      <button className="btn-s btn-sm" type="button" onClick={() => toast("Wound dressing recorded (demo).")}>
                         Record
                       </button>
                     </td>
@@ -1211,7 +1214,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Shift Handover</div>
               <div className="ph-su">Morning handover notes — Ward 4B · 07:00 to 15:00</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Handover signing coming soon (demo).")}>
               ✍ Sign Handover
             </button>
           </div>
@@ -1307,7 +1310,7 @@ export function NurseDashboard() {
                   <label>Patients Requiring Special Attention</label>
                   <textarea style={{ minHeight: 80 }} defaultValue="BED 01: K⁺ repeat due at 13:00. Strict fluid restriction 1.5L." />
                 </div>
-                <button className="btn-p" style={{ width: "100%", justifyContent: "center", marginTop: 4 }} type="button">
+                <button className="btn-p" style={{ width: "100%", justifyContent: "center", marginTop: 4 }} type="button" onClick={() => toast("Handover submitted (demo).")}>
                   Sign & Submit Handover
                 </button>
               </div>
@@ -1321,7 +1324,7 @@ export function NurseDashboard() {
               <div className="ph-ey">Safety</div>
               <div className="ph-ti">Incident Reports</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Report incident coming soon (demo).")}>
               + Report Incident
             </button>
           </div>
@@ -1383,7 +1386,7 @@ export function NurseDashboard() {
               <div className="ph-ti">Supplies & Inventory</div>
               <div className="ph-su">Stock levels and reorder requests</div>
             </div>
-            <button className="btn-p" type="button">
+            <button className="btn-p" type="button" onClick={() => toast("Supply request coming soon (demo).")}>
               + Request Supplies
             </button>
           </div>
@@ -1419,7 +1422,7 @@ export function NurseDashboard() {
                       <span className="tag r">Critical Low</span>
                     </td>
                     <td>
-                      <button className="btn-p btn-sm" type="button">
+                      <button className="btn-p btn-sm" type="button" onClick={() => toast("Order placed (demo).")}>
                         Order
                       </button>
                     </td>
@@ -1433,7 +1436,7 @@ export function NurseDashboard() {
                       <span className="tag g">Adequate</span>
                     </td>
                     <td>
-                      <button className="btn-s btn-sm" type="button">
+                      <button className="btn-s btn-sm" type="button" onClick={() => toast("Inventory view coming soon (demo).")}>
                         View
                       </button>
                     </td>
