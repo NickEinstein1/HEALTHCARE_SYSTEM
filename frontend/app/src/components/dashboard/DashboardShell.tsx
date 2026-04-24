@@ -22,6 +22,13 @@ export function DashboardShell(props: {
   nav: DashboardNavSection[];
   activeNavId?: string;
   onNavSelect?: (id: string) => void;
+  topbarSearchPlaceholder?: string;
+  topbarSearchValue?: string;
+  onTopbarSearchChange?: (value: string) => void;
+  onTopbarSearchFocus?: () => void;
+  onTopbarSearchKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onTopbarNotificationsClick?: () => void;
+  onTopbarStatusClick?: () => void;
   children: React.ReactNode;
 }) {
   const {
@@ -34,6 +41,13 @@ export function DashboardShell(props: {
     nav,
     activeNavId,
     onNavSelect,
+    topbarSearchPlaceholder,
+    topbarSearchValue,
+    onTopbarSearchChange,
+    onTopbarSearchFocus,
+    onTopbarSearchKeyDown,
+    onTopbarNotificationsClick,
+    onTopbarStatusClick,
     children,
   } = props;
 
@@ -143,12 +157,18 @@ export function DashboardShell(props: {
           <div className="tb-gap" />
           <div className="tb-search">
             {searchIcon}
-            <input placeholder="Search patients, staff, facilities…" />
+            <input
+              placeholder={topbarSearchPlaceholder ?? "Search patients, staff, facilities…"}
+              value={topbarSearchValue ?? ""}
+              onChange={(e) => onTopbarSearchChange?.(e.target.value)}
+              onFocus={() => onTopbarSearchFocus?.()}
+              onKeyDown={(e) => onTopbarSearchKeyDown?.(e)}
+            />
           </div>
-          <div className="tb-btn" title="Notifications">
+          <div className="tb-btn" title="Notifications" role="button" tabIndex={0} onClick={onTopbarNotificationsClick}>
             🔔<div className="tb-dot" />
           </div>
-          <div className="tb-btn" title="UniHealth Live Status">
+          <div className="tb-btn" title="UniHealth Live Status" role="button" tabIndex={0} onClick={onTopbarStatusClick}>
             🛡️
           </div>
           <div className="tb-datepill">{dateText}</div>
