@@ -11,6 +11,7 @@ export default defineConfig({
       "/nurse": "http://localhost:8000",
       "/fhir": "http://localhost:8000",
       "/metrics": "http://localhost:8000",
+      "/integrations": "http://localhost:8000",
     },
   },
   build: { outDir: "dist", sourcemap: true },

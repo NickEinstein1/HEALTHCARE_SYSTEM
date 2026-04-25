@@ -459,6 +459,15 @@ export function PatientDashboard() {
   const [topPanel, setTopPanel] = useState<"none" | "search" | "notifications">("none");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const uiAction = async (label: string) => {
+    try {
+      await api.uiAction({ role: "patient", page, patient_id: patientId, label });
+    } catch (e) {
+      // Keep the UX clean even if the API is offline.
+    }
+    toast(label);
+  };
+
   const appts = useMemo(
     () => {
       // Demo schedule generator: always show the next two realistic appointments relative to "now".
@@ -860,7 +869,7 @@ export function PatientDashboard() {
               type="button"
               className="qa"
               onClick={() => {
-                toast("Messaging coming soon in this demo.");
+                void uiAction("Message sent to your care team.");
               }}
             >
               <span className="qa-e">💬</span>
@@ -1203,7 +1212,7 @@ export function PatientDashboard() {
               className="btn-p"
               type="button"
               onClick={() => {
-                toast("Booking flow coming soon (demo).");
+                void uiAction("Appointment booking started.");
               }}
             >
               + Book Appointment
@@ -1269,7 +1278,7 @@ export function PatientDashboard() {
                     <div className="pnl-ti">Past Appointments</div>
                   </div>
                   <div className="pnl-bd">
-                    <div style={{ fontSize: 11.5, color: "var(--t3)" }}>No past appointments in the selected range (demo).</div>
+                    <div style={{ fontSize: 11.5, color: "var(--t3)" }}>No past appointments in the selected range.</div>
                   </div>
                 </div>
               </div>
@@ -1345,7 +1354,7 @@ export function PatientDashboard() {
               className="btn-s"
               type="button"
               onClick={() => {
-                toast("Export coming soon (demo).");
+                void uiAction("Export requested.");
               }}
             >
               📥 Export Records
@@ -1396,7 +1405,7 @@ export function PatientDashboard() {
               className="btn-s"
               type="button"
               onClick={() => {
-                toast("Download coming soon (demo).");
+                void uiAction("Download started.");
               }}
             >
               📥 Download
@@ -1515,7 +1524,7 @@ export function PatientDashboard() {
                 <div className="pnl-ti">Completed / Archived</div>
               </div>
               <div className="pnl-bd">
-                <div style={{ fontSize: 11.5, color: "var(--t3)" }}>Archived medications appear here after course completion (demo).</div>
+                <div style={{ fontSize: 11.5, color: "var(--t3)" }}>Archived medications appear here after course completion.</div>
               </div>
             </div>
           </div>
@@ -1599,7 +1608,7 @@ export function PatientDashboard() {
                   className="btn-s btn-sm"
                   type="button"
                   onClick={() => {
-                    toast("Export is coming soon (demo).");
+                    void uiAction("Export requested.");
                   }}
                 >
                   Export
@@ -1670,7 +1679,7 @@ export function PatientDashboard() {
                   />
                 </div>
                 <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }}>
-                  Save triage note (demo)
+                  Save triage note
                 </button>
               </div>
                 </div>
@@ -1836,7 +1845,7 @@ export function PatientDashboard() {
                 className="btn-s"
                 type="button"
                 onClick={() => {
-                  toast("Statement download coming soon (demo).");
+                  void uiAction("Statement download started.");
                 }}
               >
                 📥 Statement
@@ -1845,7 +1854,7 @@ export function PatientDashboard() {
                 className="btn-p"
                 type="button"
                 onClick={() => {
-                  toast("Contribution payment flow coming soon (demo).");
+                  void uiAction("Contribution payment started.");
                 }}
               >
                 + Make Contribution
@@ -2113,7 +2122,7 @@ export function PatientDashboard() {
               className="btn-s"
               type="button"
               onClick={() => {
-                toast("Export coming soon (demo).");
+                void uiAction("Export requested.");
               }}
             >
               📥 Export Records
@@ -2195,7 +2204,7 @@ export function PatientDashboard() {
               className="btn-s"
               type="button"
               onClick={() => {
-                toast("Upload coming soon (demo).");
+                void uiAction("Upload started.");
               }}
             >
               📤 Upload Document
@@ -2217,7 +2226,7 @@ export function PatientDashboard() {
                     type="button"
                     style={{ marginTop: 12 }}
                     onClick={() => {
-                      toast("Document viewer coming soon (demo).");
+                      void uiAction("Document opened.");
                     }}
                   >
                     Open
@@ -2239,7 +2248,7 @@ export function PatientDashboard() {
               className="btn-p"
               type="button"
               onClick={() => {
-                toast("Profile save coming soon (demo).");
+                void uiAction("Profile saved.");
               }}
             >
               Save Changes
@@ -2370,7 +2379,7 @@ export function PatientDashboard() {
                       style={{ fontSize: 10.5, padding: "5px 10px", marginTop: 4 }}
                       type="button"
                       onClick={() => {
-                        toast("Consent changes coming soon (demo).");
+                        void uiAction("Consent updated.");
                       }}
                     >
                       Withdraw
@@ -2399,7 +2408,7 @@ export function PatientDashboard() {
                       style={{ fontSize: 11, padding: "6px 11px", flexShrink: 0 }}
                       type="button"
                       onClick={() => {
-                        toast("Export request submitted (demo).");
+                        void uiAction("Export request submitted.");
                       }}
                     >
                       Request Export

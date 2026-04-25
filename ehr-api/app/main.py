@@ -7,12 +7,14 @@ Pilot EMRs POST Patient/Encounter to Kafka via ingestion API.
 """
 
 import asyncpg
+import os
 import time
 from collections import defaultdict
 
 from fastapi import Body, FastAPI, HTTPException, Header, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+import httpx
 
 from app.config import settings
 from app.ingestion import send_encounter, send_medication_request, send_observation, send_patient
@@ -45,6 +47,65 @@ app = FastAPI(
 
 # ----- Generic action log (remove "demo" placeholders) -----
 _ui_actions: list[dict] = []
+
+# ----- Integration: Kenya MOH Master Facility List (KMHFL) -----
+_kmhfl_cache: dict[str, tuple[float, dict]] = {}
+_KMHFL_TTL_S = 300.0
+
+
+def _kmhfl_base_url() -> str:
+    # Pick a stable default, but allow override.
+    return (os.getenv("KMHFL_BASE_URL") or "https://kmhfl.health.go.ke").rstrip("/")
+
+
+@app.get("/integrations/kmhfl/facilities", status_code=200, summary="Proxy Kenya KMHFL facilities with caching.")
+async def kmhfl_facilities(
+    search: str | None = Query(default=None),
+    name: str | None = Query(default=None),
+    code: str | None = Query(default=None, description="Comma-separated facility codes"),
+    is_published: bool | None = Query(default=True),
+    is_classified: bool | None = Query(default=False),
+    limit: int = Query(default=50, ge=1, le=200),
+    page: int = Query(default=1, ge=1, le=5000),
+):
+    """
+    Proxies the KMHFL API so the frontend can call it without CORS issues.
+    Response is cached briefly to reduce load and improve perceived speed.
+    """
+    base = _kmhfl_base_url()
+    url = f"{base}/api/facilities/facilities/"
+    params: dict[str, str] = {"page": str(page), "page_size": str(limit)}
+    if search:
+        params["search"] = search
+    if name:
+        params["name"] = name
+    if code:
+        params["code"] = code
+    if is_published is not None:
+        params["is_published"] = "true" if is_published else "false"
+    if is_classified is not None:
+        params["is_classified"] = "true" if is_classified else "false"
+
+    key = f"{url}?{sorted(params.items())}"
+    now = time.time()
+    cached = _kmhfl_cache.get(key)
+    if cached and (now - cached[0]) < _KMHFL_TTL_S:
+        return {"source": "kmhfl", "cached": True, "base_url": base, **cached[1]}
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+            resp = await client.get(url, params=params, headers={"Accept": "application/json"})
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"KMHFL fetch failed: {e}")
+
+    if resp.status_code >= 400:
+        raise HTTPException(status_code=502, detail=f"KMHFL returned {resp.status_code}: {resp.text[:400]}")
+
+    data = resp.json()
+    if not isinstance(data, dict):
+        data = {"results": data}
+    _kmhfl_cache[key] = (now, data)
+    return {"source": "kmhfl", "cached": False, "base_url": base, **data}
 
 # ----- Admin: User management (Phase 1 UI, in-memory) -----
 _admin_users: list[dict] = [

@@ -70,6 +70,15 @@ export function NurseDashboard() {
   const [page, setPage] = useState<NursePage>("home");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const uiAction = async (label: string, extra?: Record<string, unknown>) => {
+    try {
+      await api.uiAction({ role: "nurse", page, label, ...extra });
+    } catch (e) {
+      // Keep the UX clean even if the API is offline.
+    }
+    toast(label);
+  };
+
   const [showTask, setShowTask] = useState(false);
   const [taskForm, setTaskForm] = useState<{ patient_id: string; title: string; due: string }>({ patient_id: patientId, title: "", due: "" });
 
@@ -1596,7 +1605,7 @@ export function NurseDashboard() {
                         <button
                           className={`${r.primary ? "btn-p" : "btn-s"} btn-sm`}
                           type="button"
-                          onClick={() => toast(`Triage workflow for ${r.name} coming soon (demo).`)}
+                          onClick={() => void uiAction("Triage opened.", { triage_patient: r.name, triage_id: r.id })}
                         >
                           Triage →
                         </button>

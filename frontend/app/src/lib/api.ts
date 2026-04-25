@@ -171,5 +171,26 @@ export const api = {
   adminPatientDelete(patientId: string): Promise<{ status: string; id?: string }> {
     return postJson(`/admin/patients/${encodeURIComponent(patientId)}`, {}, { method: "DELETE" });
   },
+  kmhflKenyaFacilities(params?: {
+    search?: string;
+    name?: string;
+    code?: string;
+    is_published?: boolean;
+    is_classified?: boolean;
+    limit?: number;
+    page?: number;
+  }): Promise<any> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.search) qs.set("search", p.search);
+    if (p.name) qs.set("name", p.name);
+    if (p.code) qs.set("code", p.code);
+    if (p.is_published !== undefined) qs.set("is_published", String(p.is_published));
+    if (p.is_classified !== undefined) qs.set("is_classified", String(p.is_classified));
+    if (p.limit) qs.set("limit", String(p.limit));
+    if (p.page) qs.set("page", String(p.page));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/integrations/kmhfl/facilities${suffix}`);
+  },
 };
 

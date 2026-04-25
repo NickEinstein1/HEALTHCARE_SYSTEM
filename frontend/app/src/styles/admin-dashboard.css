@@ -23,7 +23,7 @@
 .alert-x{cursor:pointer;font-size:15px;padding:3px 6px;border-radius:4px;color:var(--t3);transition:all .15s;background:none;border:none;font-family:var(--font);}
 .alert-x:hover{background:var(--rl);color:var(--r);}
 
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;align-items:stretch;}
 .kpi{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;
   transition:box-shadow .2s,transform .2s;cursor:default;}
 .kpi:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
@@ -41,7 +41,7 @@
 .kpi-meta.dn{color:var(--r);}
 .kpi-meta.fl{color:var(--t3);}
 
-.qa{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:22px;}
+.qa{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px;margin-bottom:22px;}
 .qa-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 8px;background:var(--card);border:1.5px solid var(--bdr);
   border-radius:10px;cursor:pointer;transition:all .15s;text-align:center;}
 .qa-item:hover{border-color:var(--g);background:var(--gl);transform:translateY(-2px);box-shadow:var(--sh);}
@@ -50,7 +50,7 @@
 .qa-t{font-size:10.5px;font-weight:700;color:var(--t2);}
 .qa-item:hover .qa-t{color:var(--gd);}
 
-.g2{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:18px;}
+.g2{display:grid;grid-template-columns:minmax(560px,1fr) minmax(380px,520px);gap:16px;margin-bottom:18px;align-items:start;}
 .g2e{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
 
@@ -179,9 +179,18 @@
 }
 
 @media (min-width: 1280px){
-  .g2{grid-template-columns:minmax(520px,1fr) minmax(360px,460px);}
+  .g2{grid-template-columns:minmax(620px,1fr) minmax(420px,560px);}
   .panel{box-shadow:0 1px 0 rgba(20,32,26,.02);}
   .pnl-hd{padding:15px 22px;}
   .pnl-body{padding:18px 22px;}
+}
+
+@media (min-width: 1440px){
+  /* Let Admin dashboards breathe on large monitors */
+  .kpis{gap:16px}
+  .kpi{padding:20px 22px}
+  .qa{gap:12px}
+  .g2{grid-template-columns:minmax(720px,1fr) minmax(480px,620px);gap:18px}
+  .g3{gap:16px}
 }
 

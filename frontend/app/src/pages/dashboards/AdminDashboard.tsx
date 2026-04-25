@@ -273,6 +273,38 @@ export function AdminDashboard() {
     }
   };
 
+  const [kmhflLoading, setKmhflLoading] = useState(false);
+  const [kmhflError, setKmhflError] = useState<string | null>(null);
+  const [kmhflPage, setKmhflPage] = useState(1);
+  const [kmhflCount, setKmhflCount] = useState<number | null>(null);
+  const [kmhflNext, setKmhflNext] = useState<string | null>(null);
+  const [kmhflResults, setKmhflResults] = useState<any[]>([]);
+
+  const loadKMHFL = async (opts?: { reset?: boolean }) => {
+    const reset = opts?.reset ?? false;
+    const nextPage = reset ? 1 : kmhflPage;
+    setKmhflLoading(true);
+    setKmhflError(null);
+    try {
+      const res = await api.kmhflKenyaFacilities({
+        search: facQ.trim() || undefined,
+        limit: 50,
+        page: nextPage,
+        is_published: true,
+        is_classified: false,
+      });
+      const rows: any[] = Array.isArray(res?.results) ? res.results : [];
+      setKmhflCount(typeof res?.count === "number" ? res.count : null);
+      setKmhflNext(typeof res?.next === "string" ? res.next : null);
+      setKmhflResults((prev) => (reset ? rows : [...prev, ...rows]));
+      setKmhflPage(nextPage + 1);
+    } catch (e) {
+      setKmhflError(e instanceof Error ? e.message : "KMHFL fetch failed");
+    } finally {
+      setKmhflLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (page !== "facilities") return;
     void loadFacilities();
@@ -283,6 +315,9 @@ export function AdminDashboard() {
     setEditingFacilityId(null);
     setFacilityForm({ name: "", level: "Level 5", county: "Nairobi", status: "ONLINE", latency: "" });
     setShowFacilityEditor(true);
+    setKmhflResults([]);
+    setKmhflPage(1);
+    void loadKMHFL({ reset: true });
   };
 
   const openEditFacility = (f: AdminFacility) => {
@@ -1112,58 +1147,181 @@ export function AdminDashboard() {
             <div className="ph-title">Facility Management</div>
             <div className="ph-sub">2,387 UniHealth-accredited facilities across 12 regions</div>
           </div>
-          <button className="btn-p" type="button" onClick={openCreateFacility}>
-            + Register Facility
-          </button>
+          <div className="ph-right">
+            <button className="btn-p" type="button" onClick={openCreateFacility}>
+              + Register Facility
+            </button>
+          </div>
         </div>
 
         {showFacilityEditor && (
-          <div className="panel" style={{ marginBottom: 16 }}>
-            <div className="pnl-hd">
-              <div>
-                <div className="pnl-title">{editingFacilityId ? "Manage facility" : "Register facility"}</div>
-                <div className="pnl-sub">Add a UniHealth-accredited facility and track connectivity status.</div>
+          <div className="g2e" style={{ marginBottom: 16 }}>
+            <div className="panel">
+              <div className="pnl-hd">
+                <div>
+                  <div className="pnl-title">{editingFacilityId ? "Manage facility" : "Add facility manually"}</div>
+                  <div className="pnl-sub">Use this if the facility is not yet in KMHFL.</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button className="btn-s btn-sm" type="button" onClick={() => setShowFacilityEditor(false)}>
+                    Close
+                  </button>
+                  <button className="btn-p btn-sm" type="button" onClick={() => void saveFacility()}>
+                    {editingFacilityId ? "Save changes" : "Register facility"}
+                  </button>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button className="btn-s btn-sm" type="button" onClick={() => setShowFacilityEditor(false)}>
-                  Cancel
-                </button>
-                <button className="btn-p btn-sm" type="button" onClick={() => void saveFacility()}>
-                  {editingFacilityId ? "Save changes" : "Register facility"}
-                </button>
+              <div className="pnl-body">
+                <div className="g2" style={{ marginBottom: 10 }}>
+                  <div className="ff">
+                    <label>Facility name</label>
+                    <input value={facilityForm.name} onChange={(e) => setFacilityForm((s) => ({ ...s, name: e.target.value }))} placeholder="e.g. Coast General" />
+                  </div>
+                  <div className="ff">
+                    <label>Status</label>
+                    <select value={facilityForm.status} onChange={(e) => setFacilityForm((s) => ({ ...s, status: e.target.value }))}>
+                      <option>ONLINE</option>
+                      <option>DEGRADED</option>
+                      <option>OFFLINE</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="g2" style={{ marginBottom: 10 }}>
+                  <div className="ff">
+                    <label>County</label>
+                    <input value={facilityForm.county} onChange={(e) => setFacilityForm((s) => ({ ...s, county: e.target.value }))} placeholder="e.g. Nairobi" />
+                  </div>
+                  <div className="ff">
+                    <label>Level</label>
+                    <input value={facilityForm.level} onChange={(e) => setFacilityForm((s) => ({ ...s, level: e.target.value }))} placeholder="e.g. Level 5" />
+                  </div>
+                </div>
+                <div className="g2">
+                  <div className="ff">
+                    <label>Latency (optional)</label>
+                    <input className="mono" value={facilityForm.latency} onChange={(e) => setFacilityForm((s) => ({ ...s, latency: e.target.value }))} placeholder="e.g. 22ms" />
+                  </div>
+                  <div className="ff" />
+                </div>
               </div>
             </div>
-            <div className="pnl-body">
-              <div className="g2" style={{ marginBottom: 10 }}>
-                <div className="ff">
-                  <label>Facility name</label>
-                  <input value={facilityForm.name} onChange={(e) => setFacilityForm((s) => ({ ...s, name: e.target.value }))} placeholder="e.g. Coast General" />
+
+            <div className="panel">
+              <div className="pnl-hd">
+                <div>
+                  <div className="pnl-title">KMHFL Kenya directory</div>
+                  <div className="pnl-sub">
+                    {kmhflCount !== null ? (
+                      <>
+                        {kmhflCount.toLocaleString()} facilities · showing {kmhflResults.length.toLocaleString()}
+                      </>
+                    ) : (
+                      <>Browse and select a facility from the national registry.</>
+                    )}
+                  </div>
                 </div>
-                <div className="ff">
-                  <label>Status</label>
-                  <select value={facilityForm.status} onChange={(e) => setFacilityForm((s) => ({ ...s, status: e.target.value }))}>
-                    <option>ONLINE</option>
-                    <option>DEGRADED</option>
-                    <option>OFFLINE</option>
-                  </select>
-                </div>
-              </div>
-              <div className="g2" style={{ marginBottom: 10 }}>
-                <div className="ff">
-                  <label>County</label>
-                  <input value={facilityForm.county} onChange={(e) => setFacilityForm((s) => ({ ...s, county: e.target.value }))} placeholder="e.g. Nairobi" />
-                </div>
-                <div className="ff">
-                  <label>Level</label>
-                  <input value={facilityForm.level} onChange={(e) => setFacilityForm((s) => ({ ...s, level: e.target.value }))} placeholder="e.g. Level 5" />
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button className="btn-s btn-sm" type="button" onClick={() => void loadKMHFL({ reset: true })} disabled={kmhflLoading}>
+                    {kmhflLoading ? "Loading…" : "Refresh"}
+                  </button>
                 </div>
               </div>
-              <div className="g2">
-                <div className="ff">
-                  <label>Latency (optional)</label>
-                  <input className="mono" value={facilityForm.latency} onChange={(e) => setFacilityForm((s) => ({ ...s, latency: e.target.value }))} placeholder="e.g. 22ms" />
+              <div className="pnl-body" style={{ paddingTop: 12 }}>
+                <div className="fsearch" style={{ maxWidth: "none", marginBottom: 10 }}>
+                  <span aria-hidden>🔎</span>
+                  <input
+                    value={facQ}
+                    onChange={(e) => setFacQ(e.target.value)}
+                    placeholder="Search KMHFL by facility name, code, or keyword…"
+                  />
                 </div>
-                <div className="ff" />
+
+                {kmhflError ? (
+                  <div className="errbanner is-visible" role="alert">
+                    <span>⚠️</span>
+                    <span style={{ lineHeight: 1.6 }}>
+                      KMHFL lookup failed.
+                      <br />
+                      <span className="mono">{kmhflError}</span>
+                    </span>
+                  </div>
+                ) : (
+                  <div style={{ border: "1.5px solid var(--bdr)", borderRadius: 12, overflow: "hidden" }}>
+                    <table className="tbl">
+                      <thead>
+                        <tr>
+                          <th>Facility</th>
+                          <th>County</th>
+                          <th>Level</th>
+                          <th className="mono">Code</th>
+                          <th />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {kmhflResults.slice(0, 50).map((r, idx) => {
+                          const name = String(r.name ?? r.official_name ?? r.display_name ?? "Facility");
+                          const county =
+                            r.county?.name ??
+                            r.county_name ??
+                            r.county ??
+                            r.sub_county?.county?.name ??
+                            r.sub_county?.name ??
+                            "—";
+                          const level =
+                            r.keph_level_name ??
+                            r.keph_level?.name ??
+                            r.facility_type_name ??
+                            r.facility_type?.name ??
+                            r.facility_type?.category_name ??
+                            "—";
+                          const code = String(r.code ?? "—");
+                          return (
+                            <tr key={`${code}-${idx}`}>
+                              <td style={{ fontWeight: 850, color: "var(--t1)" }}>{name}</td>
+                              <td>{county}</td>
+                              <td>{level}</td>
+                              <td className="mono">{code}</td>
+                              <td style={{ textAlign: "right" }}>
+                                <button
+                                  className="btn-s btn-sm"
+                                  type="button"
+                                  onClick={() => {
+                                    setFacilityForm((s) => ({
+                                      ...s,
+                                      name,
+                                      county: typeof county === "string" ? county : s.county,
+                                      level: typeof level === "string" ? level : s.level,
+                                      status: "ONLINE",
+                                    }));
+                                    toast("Facility selected from KMHFL.");
+                                  }}
+                                >
+                                  Use →
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {kmhflResults.length === 0 && (
+                          <tr>
+                            <td colSpan={5} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                              {kmhflLoading ? "Loading facilities…" : "No results. Try a different search."}
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+                  <div style={{ fontSize: 11.5, color: "var(--t3)" }}>
+                    KMHFL paging is loaded in batches to keep the UI fast.
+                  </div>
+                  <button className="btn-s btn-sm" type="button" onClick={() => void loadKMHFL()} disabled={kmhflLoading || !kmhflNext}>
+                    {kmhflLoading ? "Loading…" : kmhflNext ? "Load more" : "End"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
