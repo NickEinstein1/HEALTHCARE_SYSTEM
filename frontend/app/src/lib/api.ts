@@ -113,6 +113,9 @@ export const api = {
   uiAction(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/ui/actions", payload);
   },
+  uiActionsList(limit = 200): Promise<any[]> {
+    return getJson(`/ui/actions?limit=${encodeURIComponent(String(limit))}`);
+  },
   adminUsers(params?: { q?: string; role?: string; facility?: string; status?: string; limit?: number }): Promise<any[]> {
     const p = params ?? {};
     const qs = new URLSearchParams();
@@ -132,6 +135,14 @@ export const api = {
   },
   adminUserDelete(userId: string): Promise<{ status: string; id?: string }> {
     return postJson(`/admin/users/${encodeURIComponent(userId)}`, {}, { method: "DELETE" });
+  },
+  adminUsersBulk(users: unknown[]): Promise<{
+    status: string;
+    created_count?: number;
+    created?: any[];
+    errors?: { index?: number; email?: string; detail?: string }[];
+  }> {
+    return postJson("/admin/users/bulk", { users });
   },
   adminFacilities(params?: { q?: string; county?: string; status?: string; limit?: number }): Promise<any[]> {
     const p = params ?? {};
