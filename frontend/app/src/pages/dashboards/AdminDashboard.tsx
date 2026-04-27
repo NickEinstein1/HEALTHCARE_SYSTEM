@@ -34,6 +34,14 @@ type AdminPatient = {
   status?: string | null;
 };
 
+const ADMIN_POLICY_KEY = "admin.policyToggles.v1";
+
+const POLICY_DEFS: { name: string; desc: string }[] = [
+  { name: "Require biometric at L4–L6", desc: "OTP disallowed at high-level facilities" },
+  { name: "Audit all admin actions", desc: "Append to blockchain ledger (Hyperledger)" },
+  { name: "Strict RBAC guard", desc: "Block access to AI Monitor without Security Admin role" },
+];
+
 export function AdminDashboard() {
   const toast = useDashboardToast();
   const metrics = usePolling(() => api.metricsJson(), { intervalMs: 5000 });
@@ -41,6 +49,21 @@ export function AdminDashboard() {
     .slice()
     .sort((a, b) => b.requests - a.requests)
     .slice(0, 5);
+
+  const [policyToggles, setPolicyToggles] = useState<boolean[]>(() => {
+    try {
+      const raw = localStorage.getItem(ADMIN_POLICY_KEY);
+      if (raw) {
+        const p = JSON.parse(raw) as unknown;
+        if (Array.isArray(p) && p.length === POLICY_DEFS.length && p.every((x) => typeof x === "boolean")) {
+          return p as boolean[];
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return POLICY_DEFS.map(() => true);
+  });
 
   const [page, setPage] = useState<
     | "overview"
@@ -106,6 +129,64 @@ export function AdminDashboard() {
     toast(label);
   };
 
+  const downloadJsonFile = (baseName: string, data: unknown) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${baseName}-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportMetricsReport = async () => {
+    try {
+      const data = await api.metricsJson();
+      downloadJsonFile("unihealth-operational-summary", data);
+      void uiAction("Operational report downloaded (metrics JSON).");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Export failed — is the API running?");
+    }
+  };
+
+  const exportSecurityReport = async () => {
+    try {
+      const actions = await api.uiActionsList(300);
+      downloadJsonFile("unihealth-ui-audit-trail", { exported_at: new Date().toISOString(), actions });
+      void uiAction("Security & RBAC report downloaded (UI actions).");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Export failed — is the API running?");
+    }
+  };
+
+  const exportLedgerReport = async () => {
+    try {
+      const actions = await api.uiActionsList(500);
+      downloadJsonFile("unihealth-ledger-export", {
+        exported_at: new Date().toISOString(),
+        note: "Phase 1: in-memory action log; not a full blockchain export.",
+        events: actions,
+      });
+      void uiAction("Audit ledger package downloaded (action log).");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Export failed — is the API running?");
+    }
+  };
+
+  const exportOverviewHeader = async () => {
+    try {
+      const data = await api.metricsJson();
+      downloadJsonFile("admin-overview-export", {
+        exported_at: new Date().toISOString(),
+        page: "overview",
+        metrics: data,
+      });
+      void uiAction("Overview export downloaded.");
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Export failed — is the API running?");
+    }
+  };
+
   // ----- Users (CRUD) -----
   const [userQ, setUserQ] = useState("");
   const [userRole, setUserRole] = useState("");
@@ -127,6 +208,59 @@ export function AdminDashboard() {
     auth: "OTP",
     status: "Pending",
   });
+
+  const [showCsvImport, setShowCsvImport] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [csvBusy, setCsvBusy] = useState(false);
+
+  const parseUserCsv = (text: string) => {
+    const lines = text
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (!lines.length) return [] as Array<Record<string, string>>;
+    let start = 0;
+    const h = lines[0].toLowerCase();
+    if (h.includes("email") && h.includes("role") && (h.includes("name") || h.includes("full"))) start = 1;
+    const out: Array<Record<string, string>> = [];
+    for (let i = start; i < lines.length; i++) {
+      const parts = lines[i].split(",").map((s) => s.replace(/^"|"$/g, "").trim());
+      if (parts.length < 3) continue;
+      const [name, email, role, facility, reg, status, auth] = parts;
+      if (!name || !email || !role) continue;
+      const row: Record<string, string> = { name, email, role };
+      if (facility) row.facility = facility;
+      if (reg) row.reg = reg;
+      if (status) row.status = status;
+      if (auth) row.auth = auth;
+      out.push(row);
+    }
+    return out;
+  };
+
+  const runCsvImport = async () => {
+    const rows = parseUserCsv(csvText);
+    if (!rows.length) {
+      toast("No valid rows. Expected columns: name,email,role[,facility,reg,status,auth] (optional header row).");
+      return;
+    }
+    setCsvBusy(true);
+    try {
+      const res = await api.adminUsersBulk(rows);
+      const n = res.created_count ?? res.created?.length ?? 0;
+      const errN = res.errors?.length ?? 0;
+      if (n) void loadUsers();
+      toast(`Import finished: ${n} created${errN ? `, ${errN} skipped/errors` : ""}.`);
+      if (n) {
+        setCsvText("");
+        setShowCsvImport(false);
+      }
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Bulk import failed");
+    } finally {
+      setCsvBusy(false);
+    }
+  };
 
   const loadUsers = async () => {
     setUsersLoading(true);
@@ -491,6 +625,7 @@ export function AdminDashboard() {
 
   return (
     <DashboardShell
+      shellVariant="admin"
       title={
         page === "overview"
           ? "Overview"
@@ -593,7 +728,7 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button" onClick={() => void uiAction("Export report queued.")}>
+            <button className="btn-s" type="button" onClick={() => void exportOverviewHeader()}>
               📥 Export Report
             </button>
             <button className="btn-p" type="button" onClick={() => { setPage("users"); void uiAction("Opening user creation."); }}>
@@ -901,7 +1036,12 @@ export function AdminDashboard() {
             <div className="ph-sub">Manage staff accounts, roles and access permissions</div>
           </div>
           <div className="ph-right">
-            <button className="btn-s" type="button" onClick={() => void uiAction("CSV import started.")}>
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => setShowCsvImport((s) => !s)}
+              aria-expanded={showCsvImport}
+            >
               📥 Import CSV
             </button>
             <button className="btn-p" type="button" onClick={openCreateUser}>
@@ -909,6 +1049,40 @@ export function AdminDashboard() {
             </button>
           </div>
         </div>
+
+        {showCsvImport && (
+          <div className="panel" style={{ marginBottom: 16 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-title">Import users from CSV</div>
+                <div className="pnl-sub">
+                  One row per user. Columns: <span className="mono">name,email,role</span> and optionally{" "}
+                  <span className="mono">facility,reg,status,auth</span>. First row may be a header.
+                </div>
+              </div>
+              <button className="btn-s btn-sm" type="button" onClick={() => setShowCsvImport(false)}>
+                Close
+              </button>
+            </div>
+            <div className="pnl-body">
+              <textarea
+                className="mono"
+                rows={8}
+                style={{ width: "100%", fontSize: 12, padding: 10, borderRadius: 8, border: "1.5px solid var(--bdr)" }}
+                placeholder={`Dr Example,dr@hospital.go.ke,Doctor,KNH Nairobi,,Pending,OTP`}
+                value={csvText}
+                onChange={(e) => setCsvText(e.target.value)}
+                disabled={csvBusy}
+              />
+              <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <button className="btn-p btn-sm" type="button" disabled={csvBusy} onClick={() => void runCsvImport()}>
+                  {csvBusy ? "Importing…" : "Run import"}
+                </button>
+                <span style={{ fontSize: 11, color: "var(--t3)" }}>Duplicates (same email) are skipped and reported in the toast.</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showUserEditor && (
           <div className="panel" style={{ marginBottom: 16 }}>
@@ -1696,7 +1870,18 @@ export function AdminDashboard() {
             <div className="ph-title">UniHealth Integration Hub</div>
             <div className="ph-sub">Claims management, biometric verification, Practice 360 approvals</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => void uiAction("UniHealth sync triggered.")}>
+          <button
+            className="btn-p"
+            type="button"
+            onClick={async () => {
+              try {
+                await api.metricsJson();
+                void uiAction("UniHealth gateway sync OK (metrics reachable).");
+              } catch (e) {
+                toast(e instanceof Error ? e.message : "Sync failed — API unreachable.");
+              }
+            }}
+          >
             ↺ Sync UniHealth
           </button>
         </div>
@@ -1736,11 +1921,42 @@ export function AdminDashboard() {
         </div>
         <div className="g3" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
           {[
-            { ico: "📊", name: "Operational Summary", desc: "Facility uptime, KPIs, service volumes", tone: "g" as const },
-            { ico: "🔐", name: "Security & RBAC", desc: "Role changes, access audits, AI alerts", tone: "b" as const },
-            { ico: "⛓️", name: "Blockchain Audit Export", desc: "Append-only ledger events (KDPA compliant)", tone: "am" as const },
+            {
+              ico: "📊",
+              name: "Operational Summary",
+              desc: "Facility uptime, KPIs, service volumes",
+              tone: "g" as const,
+              onExport: () => void exportMetricsReport(),
+            },
+            {
+              ico: "🔐",
+              name: "Security & RBAC",
+              desc: "Role changes, access audits, AI alerts",
+              tone: "b" as const,
+              onExport: () => void exportSecurityReport(),
+            },
+            {
+              ico: "⛓️",
+              name: "Blockchain Audit Export",
+              desc: "Append-only ledger events (KDPA compliant)",
+              tone: "am" as const,
+              onExport: () => void exportLedgerReport(),
+            },
           ].map((r) => (
-            <div className="rep-card" key={r.name}>
+            <div
+              className="rep-card"
+              key={r.name}
+              role="button"
+              tabIndex={0}
+              style={{ cursor: "pointer" }}
+              onClick={() => r.onExport()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  r.onExport();
+                }
+              }}
+            >
               <div className="rep-ico" style={{ background: r.tone === "g" ? "var(--gl)" : r.tone === "b" ? "var(--bl)" : "var(--al)" }}>
                 {r.ico}
               </div>
@@ -1748,8 +1964,8 @@ export function AdminDashboard() {
                 <div className="rep-name">{r.name}</div>
                 <div className="rep-desc">{r.desc}</div>
                 <div className="rep-meta">
-                  <span className="tag g">PDF</span>
-                  <span className="tag grey">CSV</span>
+                  <span className="tag g">JSON</span>
+                  <span className="tag grey">Click to download</span>
                 </div>
               </div>
             </div>
@@ -1802,7 +2018,18 @@ export function AdminDashboard() {
             <div className="ph-title">Settings</div>
             <div className="ph-sub">Global system settings and policies</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => void uiAction("Settings saved.")}>
+          <button
+            className="btn-p"
+            type="button"
+            onClick={() => {
+              try {
+                localStorage.setItem(ADMIN_POLICY_KEY, JSON.stringify(policyToggles));
+                void uiAction("Settings saved.");
+              } catch {
+                toast("Could not save settings to this browser.");
+              }
+            }}
+          >
             Save Changes
           </button>
         </div>
@@ -1812,11 +2039,7 @@ export function AdminDashboard() {
             <span className="tag g">ENFORCED</span>
           </div>
           <div className="pnl-body">
-            {[
-              { name: "Require biometric at L4–L6", desc: "OTP disallowed at high-level facilities", on: true },
-              { name: "Audit all admin actions", desc: "Append to blockchain ledger (Hyperledger)", on: true },
-              { name: "Strict RBAC guard", desc: "Block access to AI Monitor without Security Admin role", on: true },
-            ].map((t) => (
+            {POLICY_DEFS.map((t, idx) => (
               <div
                 key={t.name}
                 style={{
@@ -1834,7 +2057,16 @@ export function AdminDashboard() {
                   <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--t1)" }}>{t.name}</div>
                   <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>{t.desc}</div>
                 </div>
-                <span className={`tag ${t.on ? "g" : "grey"}`}>{t.on ? "ON" : "OFF"}</span>
+                <button
+                  type="button"
+                  className={`tag ${policyToggles[idx] ? "g" : "grey"}`}
+                  style={{ cursor: "pointer", border: "none", font: "inherit" }}
+                  onClick={() =>
+                    setPolicyToggles((prev) => prev.map((on, i) => (i === idx ? !on : on)))
+                  }
+                >
+                  {policyToggles[idx] ? "ON" : "OFF"}
+                </button>
               </div>
             ))}
           </div>
@@ -1897,7 +2129,12 @@ export function AdminDashboard() {
                 <td className="mono">3</td>
                 <td style={{ fontSize: 11, color: "var(--t3)" }}>Full access</td>
                 <td>
-                  <button className="btn-s" type="button" style={{ fontSize: 11, padding: "5px 10px" }}>
+                  <button
+                    className="btn-s"
+                    type="button"
+                    style={{ fontSize: 11, padding: "5px 10px" }}
+                    onClick={() => void uiAction("Edit role: System Administrator (policy editor opens in Phase 2).")}
+                  >
                     Edit Role
                   </button>
                 </td>
@@ -1907,7 +2144,12 @@ export function AdminDashboard() {
                 <td className="mono">2</td>
                 <td style={{ fontSize: 11, color: "var(--t3)" }}>Audit, RBAC, blocks</td>
                 <td>
-                  <button className="btn-s" type="button" style={{ fontSize: 11, padding: "5px 10px" }}>
+                  <button
+                    className="btn-s"
+                    type="button"
+                    style={{ fontSize: 11, padding: "5px 10px" }}
+                    onClick={() => void uiAction("Edit role: Security Administrator (policy editor opens in Phase 2).")}
+                  >
                     Edit Role
                   </button>
                 </td>
@@ -1917,7 +2159,12 @@ export function AdminDashboard() {
                 <td className="mono">5</td>
                 <td style={{ fontSize: 11, color: "var(--t3)" }}>Data exports, reports</td>
                 <td>
-                  <button className="btn-s" type="button" style={{ fontSize: 11, padding: "5px 10px" }}>
+                  <button
+                    className="btn-s"
+                    type="button"
+                    style={{ fontSize: 11, padding: "5px 10px" }}
+                    onClick={() => void uiAction("Edit role: Data Manager (policy editor opens in Phase 2).")}
+                  >
                     Edit Role
                   </button>
                 </td>
