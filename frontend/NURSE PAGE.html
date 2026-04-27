@@ -361,6 +361,16 @@
       <div class="ni" onclick="go('fluids',this)"><span class="ni-e"><i data-feather="droplet"></i></span><span class="ni-l">Fluid Balance</span></div>
       <div class="ni" onclick="go('wounds',this)"><span class="ni-e"><i data-feather="bandage"></i></span><span class="ni-l">Wound Care</span></div>
 
+      <div class="sb-sec">Inpatient Care</div>
+      <div class="ni" onclick="go('patients',this)"><span class="ni-e"><i data-feather="layout"></i></span><span class="ni-l">Ward Patient List</span></div>
+      <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Inpatient Vitals</span></div>
+      <div class="ni" onclick="go('fluids',this)"><span class="ni-e"><i data-feather="droplet"></i></span><span class="ni-l">Fluid Charts</span></div>
+
+      <div class="sb-sec">Outpatient Care</div>
+      <div class="ni" onclick="go('triage',this)"><span class="ni-e"><i data-feather="truck"></i></span><span class="ni-l">Walk&#8209;in Triage</span></div>
+      <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Outpatient Vitals</span></div>
+      <div class="ni" onclick="mo('outpatientNote')"><span class="ni-e"><i data-feather="edit-3"></i></span><span class="ni-l">Quick Outpatient Note</span></div>
+
       <div class="sb-sec">Documentation</div>
       <div class="ni" onclick="go('handover',this)"><span class="ni-e"><i data-feather="clipboard"></i></span><span class="ni-l">Shift Handover</span></div>
       <div class="ni" onclick="go('incidents',this)"><span class="ni-e"><i data-feather="alert-triangle"></i></span><span class="ni-l">Incident Reports</span></div>
@@ -790,7 +800,8 @@ BED 04: 2-hourly neuro obs. CSF result — check with lab.</textarea>
     woundNote:{t:'Record Wound Dressing',s:'Save',b:'<div class="field"><label>Patient</label><select><option>Omar Abdullahi</option></select></div><div class="field"><label>Wound Appearance</label><select><option>Clean, healing well</option></select></div>'},
     signHandover:{t:'Sign Shift Handover',s:'Sign',b:'<div class="field"><label>Handing Over To</label><select><option>Nurse Omondi</option></select></div><div class="field"><label>Your UniHealth PIN</label><input type="password"></div>'},
     admitPt:{t:'Admit Patient',s:'Confirm',b:'<div class="field"><label>ModelCover Patient ID</label><input></div><div class="field"><label>Bed</label><select><option>Bed 03</option></select></div>'},
-    orderSupplies:{t:'Request Supplies',s:'Submit',b:'<div class="field"><label>Item</label><select><option>Normal Saline 0.9%</option></select></div><div class="field"><label>Quantity</label><input type="number"></div>'}
+    orderSupplies:{t:'Request Supplies',s:'Submit',b:'<div class="field"><label>Item</label><select><option>Normal Saline 0.9%</option></select></div><div class="field"><label>Quantity</label><input type="number"></div>'},
+    outpatientNote:{t:'Outpatient Quick Note',s:'Save Note',b:'<div class="field"><label>Patient Name / ID</label><input placeholder="e.g. Jane Doe or MCR-2024-00312"></div><div class="field"><label>Chief Complaint</label><input placeholder="e.g. Headache, 2 days"></div><div class="field"><label>Vitals (optional)</label><input placeholder="e.g. BP 120/80, HR 76, Temp 36.8°C"></div><div class="field"><label>Clinical Note</label><textarea placeholder="Assessment, plan and instructions given…" style="min-height:80px"></textarea></div>'}
   };
   function mo(k){ const m=MO[k]||{t:'Action',s:'OK',b:''}; document.getElementById('moTi').textContent=m.t; document.getElementById('moBd').innerHTML=m.b; document.getElementById('moBtn').textContent=m.s; document.getElementById('moOv').classList.add('open'); feather.replace(); }
   function closeMo(){ document.getElementById('moOv').classList.remove('open'); }
