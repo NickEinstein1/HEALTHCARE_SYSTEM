@@ -27,6 +27,8 @@ export type DashboardNavSection = {
   items: DashboardNavItem[];
 };
 
+export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient";
+
 export function DashboardShell(props: {
   title: string;
   crumb: string;
@@ -35,6 +37,8 @@ export function DashboardShell(props: {
   userName: string;
   userEmail: string;
   nav: DashboardNavSection[];
+  /** Sidebar / accent theme aligned with legacy HTML dashboards */
+  shellVariant?: DashboardShellVariant;
   activeNavId?: string;
   onNavSelect?: (id: string) => void;
   topbarSearchPlaceholder?: string;
@@ -55,6 +59,7 @@ export function DashboardShell(props: {
     userName,
     userEmail,
     nav,
+    shellVariant,
     activeNavId,
     onNavSelect,
     topbarSearchPlaceholder,
@@ -67,6 +72,16 @@ export function DashboardShell(props: {
     onSignOutClick,
     children,
   } = props;
+
+  const shellClass = shellVariant ? `dash-shell dash-shell--${shellVariant}` : "dash-shell";
+
+  const topbarBtnKey = (e: React.KeyboardEvent, fn?: () => void) => {
+    if (!fn) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fn();
+    }
+  };
 
   const navigate = useNavigate();
 
@@ -127,7 +142,7 @@ export function DashboardShell(props: {
 
   return (
     <DashboardToastContext.Provider value={toast}>
-      <div className="dash-shell">
+      <div className={shellClass}>
       <nav className="sb" aria-label="Dashboard sidebar">
         <div className="sb-flag" />
         <div className="sb-in">
@@ -185,6 +200,8 @@ export function DashboardShell(props: {
                   // clear any local demo state used by dashboards
                   localStorage.removeItem("doc.admitted.v1");
                   localStorage.removeItem("doc.labOrders.v1");
+                  localStorage.removeItem("doc.imagingOrders.v1");
+                  localStorage.removeItem("doc.rxDrafts.v1");
                 } catch {
                   // ignore
                 }
@@ -217,10 +234,24 @@ export function DashboardShell(props: {
               onKeyDown={(e) => onTopbarSearchKeyDown?.(e)}
             />
           </div>
-          <div className="tb-btn" title="Notifications" role="button" tabIndex={0} onClick={onTopbarNotificationsClick}>
+          <div
+            className="tb-btn"
+            title="Notifications"
+            role="button"
+            tabIndex={0}
+            onClick={() => onTopbarNotificationsClick?.()}
+            onKeyDown={(e) => topbarBtnKey(e, onTopbarNotificationsClick)}
+          >
             🔔<div className="tb-dot" />
           </div>
-          <div className="tb-btn" title="UniHealth Live Status" role="button" tabIndex={0} onClick={onTopbarStatusClick}>
+          <div
+            className="tb-btn"
+            title="UniHealth Live Status"
+            role="button"
+            tabIndex={0}
+            onClick={() => onTopbarStatusClick?.()}
+            onKeyDown={(e) => topbarBtnKey(e, onTopbarStatusClick)}
+          >
             🛡️
           </div>
           <div className="tb-datepill">{dateText}</div>
