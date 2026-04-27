@@ -121,7 +121,7 @@
   .ssub{font-size:12px;color:var(--text-tertiary);line-height:1.5}
   
   /* role grid */
-  .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
   .rc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 9px;border:2px solid var(--border-light);border-radius:11px;cursor:pointer;transition:all .18s;background:var(--card-bg);text-align:center;position:relative}
   .rc:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,138,74,.1)}
   .rc.sel{border-color:var(--primary);background:var(--primary-light);box-shadow:var(--shadow-green);transform:translateY(-2px)}
@@ -282,6 +282,20 @@
             <div class="rchk"><i data-feather="check"></i></div>
             <div class="remi"><i data-feather="user"></i></div>
             <div class="rnm">Patient</div><div class="rds">View health records</div>
+          </div>
+          <!-- Pharmacy role -->
+          <div class="rc" onclick="pickRole('pharmacy',this)">
+            <div class="rchk"><i data-feather="check"></i></div>
+            <div class="remi"><i data-feather="package"></i></div>
+            <div class="rnm">Pharmacy</div>
+            <div class="rds">Medication dispensing</div>
+          </div>
+          <!-- Lab role -->
+          <div class="rc" onclick="pickRole('lab',this)">
+            <div class="rchk"><i data-feather="check"></i></div>
+            <div class="remi"><i data-feather="droplet"></i></div>
+            <div class="rnm">Laboratory</div>
+            <div class="rds">Sample processing &amp; results</div>
           </div>
         </div>
         <div id="roleNote" class="nbox grn hidden">
@@ -541,6 +555,32 @@
       noteClass:'blu',noteIco:'shield',
       successRole:'Patient — ModelCover Self‑Service',successMsg:'ModelCover identity verified.\nRedirecting to your health records…'}
   };
+
+  // Pharmacy role configuration
+  RC.pharmacy = {
+    ico:'package', title:'Pharmacy Portal', sub:'Dispensing ID + facility code + password',
+    note:'Enter your <strong>Pharmacy Dispensing ID</strong>, facility code and password, then confirm via SMS or email OTP.',
+    noteClass:'grn', noteIco:'package',
+    regLbl:'Dispensing ID', regHint:'e.g. PHARM-00441',
+    regPH:'e.g. PHARM-00441', regRx:/^[A-Z0-9\-]{4,20}$/,
+    regErr:'Enter your Pharmacy Dispensing ID (e.g. PHARM-00441).',
+    staffNote:'Dispensing ID + facility code + password → SMS/email OTP',
+    successRole:'Pharmacy — Central Referral Hospital',
+    successMsg:'Identity verified.\nRedirecting to pharmacy portal…'
+  };
+
+  // Lab role configuration
+  RC.lab = {
+    ico:'droplet', title:'Laboratory Portal', sub:'Lab Technician ID + facility code + password',
+    note:'Enter your <strong>Lab Technician ID</strong>, facility code and password, then confirm via SMS or email OTP.',
+    noteClass:'grn', noteIco:'droplet',
+    regLbl:'Technician ID', regHint:'e.g. LAB-8821',
+    regPH:'e.g. LAB-8821', regRx:/^[A-Z0-9\-]{4,20}$/,
+    regErr:'Enter your Lab Technician ID (e.g. LAB-8821).',
+    staffNote:'Technician ID + facility code + password → SMS/email OTP',
+    successRole:'Laboratory — Central Referral Hospital',
+    successMsg:'Identity verified.\nRedirecting to lab portal…'
+  };
   
   const ID_TYPES = {
     national:{lbl:'National ID Number',ph:'e.g. 12345678',hint:'7 or 8‑digit number as on your National ID card',rx:/^\d{7,8}$/},
@@ -719,7 +759,9 @@
       doctor:'unihealth-doctor.html',
       nurse:'unihealth-nurse.html',
       admin:'unihealth-admin.html',
-      patient:'unihealth-patient.html'
+      patient:'unihealth-patient.html',
+      pharmacy:'unihealth-pharmacy.html',
+      lab:'unihealth-lab.html'
     };
     addAuditEntry('AUTH DASHBOARD_LAUNCH role='+role);
     setTimeout(()=>{ window.location.href = destinations[role] || 'unihealth-admin.html'; },900);
