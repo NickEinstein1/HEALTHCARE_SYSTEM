@@ -70,7 +70,7 @@ export function SignInPage() {
   }
 
   return (
-    <>
+    <div className="sign-in-root">
       <BrandPanel aiAttempts={aiAttempts} auditLines={auditLines} />
       <div className="rp">
         <div className="card">
@@ -118,6 +118,6 @@ export function SignInPage() {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
