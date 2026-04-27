@@ -305,6 +305,47 @@ async def admin_delete_user(user_id: str):
     raise HTTPException(status_code=404, detail="User not found")
 
 
+@app.post("/admin/users/bulk", status_code=200, summary="Create multiple users (CSV import, Phase 1 UI).")
+async def admin_bulk_users(payload: dict = Body(...)):
+    raw = payload.get("users")
+    if not isinstance(raw, list):
+        raise HTTPException(status_code=400, detail="users must be a non-empty list")
+    created: list[dict] = []
+    errors: list[dict] = []
+    batch_ts = int(time.time() * 1000)
+    for idx, item in enumerate(raw):
+        if not isinstance(item, dict):
+            errors.append({"index": idx, "detail": "row must be an object"})
+            continue
+        name = (item.get("name") or "").strip()
+        email = (item.get("email") or "").strip().lower()
+        role = (item.get("role") or "").strip()
+        if not name or not email or not role:
+            errors.append({"index": idx, "detail": "name, email, and role are required"})
+            continue
+        if any(str(u.get("email", "")).lower() == email for u in _admin_users):
+            errors.append({"index": idx, "email": email, "detail": "email already exists"})
+            continue
+        user_id = item.get("id") or f"USR-{batch_ts}-{idx}"
+        now = time.time()
+        row = {
+            "id": user_id,
+            "name": name,
+            "email": email,
+            "role": role,
+            "reg": (item.get("reg") or "").strip() or None,
+            "facility": (item.get("facility") or "").strip() or None,
+            "auth": (item.get("auth") or "").strip() or "OTP",
+            "status": (item.get("status") or "").strip() or "Pending",
+            "last_login": item.get("last_login") or "Never",
+            "created_at": now,
+            "updated_at": now,
+        }
+        _admin_users.insert(0, row)
+        created.append(row)
+    return {"status": "ok", "created_count": len(created), "created": created, "errors": errors}
+
+
 @app.get("/admin/facilities", status_code=200, summary="List facilities (Phase 1 UI).")
 async def admin_list_facilities(
     q: str | None = Query(default=None),
