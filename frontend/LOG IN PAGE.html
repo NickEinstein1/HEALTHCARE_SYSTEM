@@ -4,14 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UniHealth EHR — Secure Sign In</title>
-<!-- Fonts & Icons -->
+<!-- Fonts & Feather Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/feather-icons"></script>
 <style>
-  /* ----- RESET & GLOBAL ----- */
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  
-  /* ----- UNIFIED COLOR PALETTE (MODEL SYSTEM) ----- */
   :root{
     --primary: #1a8a4a;
     --primary-dark: #0a4a26;
@@ -31,7 +28,7 @@
     --shadow-md: 0 8px 32px rgba(0,0,0,.12);
     --shadow-green: 0 4px 18px rgba(26,138,74,.28);
     
-    /* legacy aliases for existing classes */
+    /* legacy aliases (used in existing CSS) */
     --g: var(--primary);
     --gd: var(--primary-dark);
     --gl: var(--primary-light);
@@ -42,6 +39,7 @@
     --pu: var(--accent-purple);
     --w: var(--card-bg);
     --bg: var(--bg-page);
+    --card: var(--card-bg);
     --bdr: var(--border-light);
     --t1: var(--text-primary);
     --t2: var(--text-secondary);
@@ -50,11 +48,10 @@
     --serif:'DM Serif Display',Georgia,serif;
     --mono:'JetBrains Mono',monospace;
   }
-  
   html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg)}
   body{display:flex;min-height:100vh}
-  
-  /* ----- LEFT BRAND PANEL ----- */
+
+  /* LEFT PANEL */
   .lp{width:420px;flex-shrink:0;background:var(--primary-dark);display:flex;flex-direction:column;position:relative;overflow:hidden}
   .lp::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 10% 90%,rgba(38,180,80,.18) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 95% 5%,rgba(26,138,74,.3) 0%,transparent 55%),linear-gradient(148deg,#061510 0%,#0a3d1e 45%,#1a6635 100%);z-index:0}
   .lp::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:28px 28px;z-index:1}
@@ -74,8 +71,143 @@
   .hl{font-family:var(--serif);font-size:32px;color:#fff;line-height:1.18;letter-spacing:-.2px;margin-bottom:13px}
   .hl em{font-style:italic;color:#7beba4}
   .hd{font-size:13px;color:rgba(255,255,255,.48);line-height:1.72;max-width:320px}
-  
-  /* AI Monitor (left panel) */
+  .sys-cards{display:flex;flex-direction:column;gap:8px;margin-top:26px;animation:fu .8s .35s ease both}
+  .sys-card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11);border-radius:9px;padding:10px 13px}
+  .sys-logo{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .sys-logo.afl{background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.3)}
+  .sys-logo.ec{background:rgba(29,78,216,.25);border:1px solid rgba(29,78,216,.35)}
+  .sys-name{font-size:11px;font-weight:700;color:rgba(255,255,255,.8);line-height:1.2}
+  .sys-desc{font-size:9.5px;color:rgba(255,255,255,.4);margin-top:1px;line-height:1.3}
+  .sys-tag{margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;flex-shrink:0}
+  .sys-tag.live{background:rgba(46,204,113,.2);color:#7beba4;border:1px solid rgba(46,204,113,.25)}
+  .sys-tag.sso{background:rgba(29,78,216,.2);color:#93c5fd;border:1px solid rgba(29,78,216,.3)}
+  .lfooter{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.22);animation:fu .8s .45s ease both}
+
+  /* RIGHT CARD */
+  .rp{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden}
+  .rp::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(26,138,74,.045) 1.5px,transparent 1.5px);background-size:20px 20px;pointer-events:none}
+  .card{background:var(--card-bg);border:1.5px solid var(--border-light);border-radius:20px;box-shadow:var(--shadow-md);width:100%;max-width:448px;position:relative;z-index:1;overflow:hidden;animation:ci .6s cubic-bezier(.16,1,.3,1) .1s both}
+  @keyframes ci{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .cstripe{height:3px;background:linear-gradient(90deg,var(--primary-dark),var(--primary),#7beba4)}
+  .cbody{padding:28px 30px 22px}
+  .cfoot{padding:13px 30px;border-top:1px solid var(--bdr);background:#f9fbf9;display:flex;align-items:center;justify-content:space-between}
+
+  /* stepper */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
+  .sdot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--t3);background:var(--w);transition:all .3s;position:relative;z-index:1}
+  .sdot.act{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.14)}
+  .sdot.done{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+  .sline{flex:1;max-width:42px;height:2px;background:var(--bdr);transition:background .4s}
+  .sline.done{background:var(--primary)}
+
+  /* step header */
+  .shd{text-align:center;margin-bottom:20px}
+  .sico{width:50px;height:50px;border-radius:50%;background:var(--primary-light);border:2px solid var(--primary-muted);margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:21px;transition:all .3s}
+  .stitle{font-family:var(--serif);font-size:21px;color:var(--text-primary);letter-spacing:-.2px;margin-bottom:4px}
+  .ssub{font-size:12px;color:var(--text-tertiary);line-height:1.5}
+
+  /* role grid (now 3 columns for 6 roles) */
+  .rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+  .rc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 9px;border:2px solid var(--bdr);border-radius:11px;cursor:pointer;transition:all .18s cubic-bezier(.16,1,.3,1);background:var(--w);text-align:center;position:relative}
+  .rc:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,138,74,.1)}
+  .rc.sel{border-color:var(--primary);background:var(--primary-light);box-shadow:var(--shadow-green);transform:translateY(-2px)}
+  .rchk{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;opacity:0;transform:scale(.4);transition:all .2s}
+  .rc.sel .rchk{opacity:1;transform:scale(1)}
+  .remi{font-size:22px;transition:transform .2s;display:flex;align-items:center;justify-content:center;width:28px;height:28px;color:var(--t2)}
+  .rc:hover .remi,.rc.sel .remi{transform:scale(1.08);color:var(--primary-dark)}
+  .rnm{font-size:11.5px;font-weight:700;color:var(--text-primary)}
+  .rc.sel .rnm{color:var(--primary-dark)}
+  .rds{font-size:9.5px;color:var(--text-tertiary);line-height:1.3}
+
+  /* notice boxes */
+  .nbox{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:8px;margin-bottom:16px;font-size:11.5px;line-height:1.5;font-weight:500;animation:sd .3s ease}
+  @keyframes sd{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+  .nbox.grn{background:var(--primary-light);border:1px solid var(--primary-muted);color:var(--primary-dark)}
+  .nbox.blu{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
+  .nbox.amb{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
+  .nbox .ni{font-size:14px;flex-shrink:0;margin-top:1px}
+
+  /* fields */
+  .fields{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field label{font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:.1px}
+  .fw{position:relative;display:flex;align-items:center}
+  .fi{position:absolute;left:12px;color:var(--text-tertiary);font-size:14px;pointer-events:none;display:flex;align-items:center;transition:color .2s}
+  .fw:focus-within .fi{color:var(--primary)}
+  .fw input,.fw select{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--border-light);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
+  .fw input::placeholder{color:var(--text-tertiary);font-size:12px}
+  .fw input:focus,.fw select:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09)}
+  .fhint{font-size:10px;color:var(--text-tertiary);padding-left:1px;line-height:1.4}
+  .eyebn{position:absolute;right:11px;background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:3px;display:flex;align-items:center;transition:color .15s}
+  .eyebn:hover{color:var(--primary)}
+  .lbl-row{display:flex;justify-content:space-between;align-items:center}
+  .lbl-row label{font-size:11px;font-weight:700;color:var(--text-secondary)}
+  .fgt{font-size:11px;font-weight:600;color:var(--primary);cursor:pointer;text-decoration:none;background:none;border:none;font-family:var(--font)}
+  .fgt:hover{text-decoration:underline}
+
+  /* PIN grid */
+  .pin-grid{display:flex;gap:9px;justify-content:center;margin:4px 0 0}
+  .pin-box{width:50px;height:54px;text-align:center;border:2px solid var(--bdr);border-radius:9px;font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
+  .pin-box:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.04)}
+  .pin-box.f{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
+
+  /* OTP grid */
+  .otp-grid{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
+  .obox{width:44px;height:52px;text-align:center;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--mono);font-size:19px;font-weight:700;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
+  .obox:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.05)}
+  .obox.f{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
+  .resend-row{text-align:center;font-size:11.5px;color:var(--text-tertiary);margin-top:8px}
+  .resend-row button{color:var(--primary);font-weight:600;background:none;border:none;font-family:var(--font);font-size:11.5px;cursor:pointer}
+  .resend-row button:disabled{color:var(--text-tertiary);cursor:default}
+
+  /* verify tabs */
+  .vtabs{display:flex;gap:6px;margin-bottom:14px}
+  .vtab{flex:1;padding:8px;border:1.5px solid var(--bdr);border-radius:8px;background:#fff;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text-tertiary);cursor:pointer;text-align:center;transition:all .2s;line-height:1.4}
+  .vtab:hover:not(.act){border-color:var(--primary-muted);color:var(--text-secondary)}
+  .vtab.act{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
+
+  /* biometric panel */
+  .bio{text-align:center;padding:8px 0}
+  .bio-ring{width:88px;height:88px;border-radius:50%;margin:0 auto 14px;border:2.5px solid var(--primary-muted);background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:36px;animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,138,74,.18)}50%{box-shadow:0 0 0 14px rgba(26,138,74,0)}}
+  .bio-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:5px}
+  .bio-desc{font-size:11.5px;color:var(--text-tertiary);line-height:1.6;margin-bottom:14px;max-width:280px;margin-left:auto;margin-right:auto}
+
+  /* divider */
+  .orline{display:flex;align-items:center;gap:10px;margin:14px 0}
+  .orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--bdr)}
+  .orline span{font-size:10.5px;color:var(--text-tertiary);white-space:nowrap;font-weight:500}
+
+  /* alt buttons */
+  .alt-row{display:flex;gap:7px}
+  .altbn{flex:1;padding:8px 7px;border:1.5px solid var(--bdr);border-radius:8px;background:#fff;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text-secondary);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .altbn:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-light)}
+  .altbn:disabled{opacity:.4;cursor:default}
+
+  /* primary button */
+  .btn{width:100%;padding:12.5px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-green);display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+  .bkbn{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--text-tertiary);cursor:pointer;padding:3px 0;margin-bottom:14px;background:none;border:none;font-family:var(--font);transition:color .15s}
+  .bkbn:hover{color:var(--primary)}
+
+  /* error banner */
+  .errbanner{display:none;align-items:center;gap:9px;padding:9px 12px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;font-size:11.5px;color:#991b1b;font-weight:500;margin-bottom:13px;animation:shk .38s ease}
+  @keyframes shk{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+
+  /* success */
+  .sxwrap{text-align:center;padding:4px 0}
+  .sxring{width:74px;height:74px;border-radius:50%;background:var(--primary-light);border:2.5px solid var(--primary-muted);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;animation:pop .5s cubic-bezier(.16,1,.3,1)}
+  @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+  .sxtitle{font-family:var(--serif);font-size:21px;color:var(--text-primary);margin-bottom:4px}
+  .sxsub{font-size:12.5px;color:var(--text-tertiary);line-height:1.6;margin-bottom:16px}
+  .sxcard{display:inline-flex;align-items:center;gap:10px;background:var(--primary-light);border:1.5px solid var(--primary-muted);border-radius:9px;padding:9px 16px;margin-bottom:16px}
+
+  .hidden{display:none!important}
+  .fade{animation:fu .32s cubic-bezier(.16,1,.3,1) both}
+  @media(max-width:820px){.lp{display:none}}
+
+  /* ── AI Security Monitor (left panel) ── */
   .ai-monitor{margin-top:22px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 14px;animation:fu .8s .4s ease both}
   .ai-hd{display:flex;align-items:center;gap:7px;margin-bottom:10px}
   .ai-pulse{width:8px;height:8px;border-radius:50%;background:#2ecc71;flex-shrink:0;box-shadow:0 0 7px #2ecc71;animation:gl 2.1s infinite}
@@ -85,117 +217,90 @@
   .ai-lbl{font-size:10px;color:rgba(255,255,255,.38);font-weight:500}
   .ai-val{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px}
   .ai-val.ok{background:rgba(46,204,113,.18);color:#7beba4;border:1px solid rgba(46,204,113,.22)}
+  .ai-val.warn{background:rgba(217,119,6,.18);color:#fbbf24;border:1px solid rgba(217,119,6,.22)}
+  .ai-val.live{background:rgba(29,78,216,.18);color:#93c5fd;border:1px solid rgba(29,78,216,.22)}
   .ai-bar-row{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.07)}
   .ai-bar-lbl{font-size:9.5px;color:rgba(255,255,255,.4);margin-bottom:4px;display:flex;justify-content:space-between}
+  .ai-bar-lbl span{font-family:var(--mono);color:#7beba4}
   .ai-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
-  .ai-bar-f{height:100%;border-radius:2px;background:linear-gradient(90deg,#2ecc71,#7beba4)}
-  
+  .ai-bar-f{height:100%;border-radius:2px;background:linear-gradient(90deg,#2ecc71,#7beba4);animation:aibarIn 2s ease both}
+  @keyframes aibarIn{from{width:0}to{width:var(--w,100%)}}
+
+  /* ── Audit log ticker ── */
   .audit-ticker{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:7px 11px;margin-top:10px;overflow:hidden;position:relative;animation:fu .8s .5s ease both}
   .audit-ticker::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#2ecc71,#1a8a4a)}
   .at-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:rgba(255,255,255,.22);text-transform:uppercase;margin-bottom:4px}
-  .at-entry{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6}
-  
-  .lfooter{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.22);animation:fu .8s .45s ease both}
-  
-  /* ----- RIGHT CARD ----- */
-  .rp{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden}
-  .rp::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(26,138,74,.045) 1.5px,transparent 1.5px);background-size:20px 20px;pointer-events:none}
-  .card{background:var(--card-bg);border:1.5px solid var(--border-light);border-radius:20px;box-shadow:var(--shadow-md);width:100%;max-width:448px;position:relative;z-index:1;overflow:hidden;animation:ci .6s cubic-bezier(.16,1,.3,1) .1s both}
-  @keyframes ci{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-  .cstripe{height:3px;background:linear-gradient(90deg,var(--primary-dark),var(--primary),#7beba4)}
-  .cbody{padding:28px 30px 22px}
-  .cfoot{padding:13px 30px;border-top:1px solid var(--border-light);background:#f9fbf9;display:flex;align-items:center;justify-content:space-between}
-  
-  /* stepper */
-  .stepper{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
-  .sdot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border-light);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--text-tertiary);background:var(--card-bg);transition:all .3s;position:relative;z-index:1}
-  .sdot.act{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.14)}
-  .sdot.done{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
-  .sline{flex:1;max-width:42px;height:2px;background:var(--border-light);transition:background .4s}
-  .sline.done{background:var(--primary)}
-  
-  /* step header */
-  .shd{text-align:center;margin-bottom:20px}
-  .sico{width:50px;height:50px;border-radius:50%;background:var(--primary-light);border:2px solid var(--primary-muted);margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:21px;transition:all .3s}
-  .stitle{font-family:var(--serif);font-size:21px;color:var(--text-primary);letter-spacing:-.2px;margin-bottom:4px}
-  .ssub{font-size:12px;color:var(--text-tertiary);line-height:1.5}
-  
-  /* role grid */
-  .rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
-  .rc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 9px;border:2px solid var(--border-light);border-radius:11px;cursor:pointer;transition:all .18s;background:var(--card-bg);text-align:center;position:relative}
-  .rc:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,138,74,.1)}
-  .rc.sel{border-color:var(--primary);background:var(--primary-light);box-shadow:var(--shadow-green);transform:translateY(-2px)}
-  .rchk{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;opacity:0;transform:scale(.4);transition:all .2s}
-  .rc.sel .rchk{opacity:1;transform:scale(1)}
-  .remi{font-size:22px;transition:transform .2s}
-  .rc:hover .remi,.rc.sel .remi{transform:scale(1.08)}
-  .rnm{font-size:11.5px;font-weight:700;color:var(--text-primary)}
-  .rc.sel .rnm{color:var(--primary-dark)}
-  .rds{font-size:9.5px;color:var(--text-tertiary);line-height:1.3}
-  
-  /* notice boxes */
-  .nbox{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:8px;margin-bottom:16px;font-size:11.5px;line-height:1.5;font-weight:500}
-  .nbox.grn{background:var(--primary-light);border:1px solid var(--primary-muted);color:var(--primary-dark)}
-  .nbox.blu{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
-  .nbox.amb{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
-  
-  /* fields */
-  .fields{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
-  .field{display:flex;flex-direction:column;gap:4px}
-  .field label{font-size:11px;font-weight:700;color:var(--text-secondary);letter-spacing:.1px}
-  .fw{position:relative;display:flex;align-items:center}
-  .fi{position:absolute;left:12px;color:var(--text-tertiary);font-size:14px;pointer-events:none;display:flex;align-items:center}
-  .fw:focus-within .fi{color:var(--primary)}
-  .fw input,.fw select{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--border-light);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
-  .fw input::placeholder{color:var(--text-tertiary);font-size:12px}
-  .fw input:focus,.fw select:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09)}
-  .eyebn{position:absolute;right:11px;background:none;border:none;color:var(--text-tertiary);cursor:pointer;padding:3px}
-  .eyebn:hover{color:var(--primary)}
-  
-  /* PIN grid */
-  .pin-grid{display:flex;gap:9px;justify-content:center;margin:4px 0 0}
-  .pin-box{width:50px;height:54px;text-align:center;border:2px solid var(--border-light);border-radius:9px;font-family:var(--mono);font-size:24px;font-weight:700;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
-  .pin-box:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.04)}
-  
-  /* OTP grid */
-  .otp-grid{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
-  .obox{width:44px;height:52px;text-align:center;border:1.5px solid var(--border-light);border-radius:8px;font-family:var(--mono);font-size:19px;font-weight:700;color:var(--text-primary);background:#fbfdfb;outline:none;transition:all .2s}
-  .obox:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.05)}
-  
-  /* verify tabs */
-  .vtabs{display:flex;gap:6px;margin-bottom:14px}
-  .vtab{flex:1;padding:8px;border:1.5px solid var(--border-light);border-radius:8px;background:#fff;font-family:var(--font);font-size:11px;font-weight:700;color:var(--text-tertiary);cursor:pointer;text-align:center;transition:all .2s;line-height:1.4}
-  .vtab.act{border-color:var(--primary);background:var(--primary-light);color:var(--primary-dark)}
-  
-  /* biometric panel */
-  .bio{text-align:center;padding:8px 0}
-  .bio-ring{width:88px;height:88px;border-radius:50%;margin:0 auto 14px;border:2.5px solid var(--primary-muted);background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:36px;animation:pulse 2.2s ease-in-out infinite}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,138,74,.18)}50%{box-shadow:0 0 0 14px rgba(26,138,74,0)}}
-  .bio-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:5px}
-  .bio-desc{font-size:11.5px;color:var(--text-tertiary);line-height:1.6;margin-bottom:14px;max-width:280px;margin-left:auto;margin-right:auto}
-  
-  /* primary button */
-  .btn{width:100%;padding:12.5px;background:var(--primary);color:#fff;border:none;border-radius:9px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:var(--shadow-green);display:flex;align-items:center;justify-content:center;gap:8px}
-  .btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  
-  /* success */
-  .sxwrap{text-align:center;padding:4px 0}
-  .sxring{width:74px;height:74px;border-radius:50%;background:var(--primary-light);border:2.5px solid var(--primary-muted);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px;animation:pop .5s cubic-bezier(.16,1,.3,1)}
-  @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
-  .sxtitle{font-family:var(--serif);font-size:21px;color:var(--text-primary);margin-bottom:4px}
-  .sxsub{font-size:12.5px;color:var(--text-tertiary);line-height:1.6;margin-bottom:16px}
-  .sxcard{display:inline-flex;align-items:center;gap:10px;background:var(--primary-light);border:1.5px solid var(--primary-muted);border-radius:9px;padding:9px 16px;margin-bottom:16px}
-  
-  .hidden{display:none!important}
-  .fade{animation:fu .32s cubic-bezier(.16,1,.3,1) both}
-  
-  @media(max-width:820px){.lp{display:none}}
+  .at-entry{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6;animation:scrollIn .5s ease both}
+  @keyframes scrollIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── Password strength meter ── */
+  .pw-strength{margin-top:5px}
+  .pw-bars{display:flex;gap:3px;margin-bottom:4px}
+  .pw-bar{flex:1;height:3px;border-radius:2px;background:var(--bdr);transition:background .3s}
+  .pw-bar.weak{background:#ef4444}
+  .pw-bar.fair{background:#f97316}
+  .pw-bar.good{background:#eab308}
+  .pw-bar.strong{background:var(--primary)}
+  .pw-lbl{font-size:10px;font-weight:600;color:var(--text-tertiary);transition:color .3s}
+  .pw-reqs{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+  .req{font-size:10px;display:flex;align-items:center;gap:5px;color:var(--text-tertiary);transition:color .2s}
+  .req::before{content:'○';font-size:9px;transition:content .2s}
+  .req.met{color:var(--primary)}
+  .req.met::before{content:'✓';color:var(--primary)}
+
+  /* ── Lockout banner ── */
+  .lockout{display:none;flex-direction:column;align-items:center;gap:10px;padding:20px 16px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;text-align:center;margin-bottom:14px;animation:sd .3s ease}
+  .lockout-ico{font-size:32px}
+  .lockout-ti{font-size:14px;font-weight:700;color:#991b1b}
+  .lockout-su{font-size:11.5px;color:#b91c1c;line-height:1.5}
+  .lockout-cd{font-family:var(--mono);font-size:22px;font-weight:700;color:#dc2626;letter-spacing:2px}
+
+  /* ── CAPTCHA widget ── */
+  .captcha-wrap{background:#f8faff;border:1.5px solid #bfdbfe;border-radius:9px;padding:13px 14px;margin-bottom:14px;animation:sd .3s ease}
+  .captcha-lbl{font-size:11px;font-weight:700;color:#1e3a8a;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .captcha-q{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--text-primary);text-align:center;padding:10px;background:#fff;border:1.5px solid #bfdbfe;border-radius:7px;margin-bottom:8px;letter-spacing:2px;user-select:none}
+  .captcha-row{display:flex;gap:8px;align-items:center}
+  .captcha-row input{flex:1;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:7px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text-primary);background:#fbfdfb;outline:none;text-align:center;transition:all .2s}
+  .captcha-row input:focus{border-color:var(--accent-blue);background:#fff;box-shadow:0 0 0 3px rgba(29,78,216,.08)}
+  .captcha-refresh{padding:8px 10px;border:1.5px solid var(--bdr);border-radius:7px;background:#fff;cursor:pointer;font-size:14px;transition:all .15s}
+  .captcha-refresh:hover{border-color:var(--primary);background:var(--primary-light)}
+
+  /* ── AI Risk panel (Step 3) ── */
+  .risk-panel{border:1.5px solid var(--bdr);border-radius:9px;padding:11px 13px;margin-bottom:14px;animation:sd .3s ease}
+  .risk-panel.low{background:#f0fdf4;border-color:#86efac}
+  .risk-panel.med{background:#fffbeb;border-color:#fde68a}
+  .risk-panel.high{background:#fff1f2;border-color:#fecdd3}
+  .risk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+  .risk-lbl{font-size:10.5px;font-weight:700;display:flex;align-items:center;gap:5px}
+  .risk-lbl.low{color:#166534}
+  .risk-lbl.med{color:#92400e}
+  .risk-lbl.high{color:#9f1239}
+  .risk-score{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 8px;border-radius:5px}
+  .risk-score.low{background:#bbf7d0;color:#14532d}
+  .risk-score.med{background:#fde68a;color:#78350f}
+  .risk-score.high{background:#fecdd3;color:#881337}
+  .risk-signals{display:flex;flex-direction:column;gap:3px}
+  .risk-sig{font-size:10.5px;color:var(--text-secondary);display:flex;align-items:center;gap:5px;line-height:1.4}
+  .risk-sig::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+  /* ── Attempts counter ── */
+  .attempts-row{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:6px;font-size:10.5px;color:var(--text-tertiary)}
+  .att-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:1.5px solid var(--primary-muted);transition:all .3s;flex-shrink:0}
+  .att-dot.used{background:#ef4444;border-color:#dc2626;box-shadow:0 0 5px rgba(220,38,38,.4)}
+
+  /* ── Session countdown (step 4) ── */
+  .session-info{background:var(--primary-light);border:1px solid var(--primary-muted);border-radius:8px;padding:9px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .session-info .si-ico{font-size:16px}
+  .session-info .si-tx{font-size:11px;color:var(--primary-dark);line-height:1.5}
+  .session-info .si-tx strong{color:var(--primary-dark)}
+
+  /* ── Smooth lockout form blur ── */
+  .form-locked{pointer-events:none;opacity:.35;filter:blur(1px);transition:all .3s}
 </style>
 </head>
 <body>
 
-<!-- LEFT BRAND PANEL (model agnostic) -->
+<!-- LEFT BRAND PANEL -->
 <div class="lp">
   <div class="flag"></div>
   <div class="li">
@@ -214,7 +319,7 @@
       <p class="hd">Secure, unified access to your health records across the national health network — protected by multi‑factor authentication and AI‑powered security.</p>
     </div>
 
-    <!-- AI Security Monitor (left panel) -->
+    <!-- AI Security Monitor -->
     <div class="ai-monitor">
       <div class="ai-hd">
         <div class="ai-pulse"></div>
@@ -228,7 +333,7 @@
       </div>
       <div class="ai-bar-row">
         <div class="ai-bar-lbl">System Security Score <span id="secScore">98.4%</span></div>
-        <div class="ai-bar"><div class="ai-bar-f" style="width:98.4%"></div></div>
+        <div class="ai-bar"><div class="ai-bar-f" style="--w:98.4%;width:98.4%"></div></div>
       </div>
     </div>
 
@@ -283,19 +388,15 @@
             <div class="remi"><i data-feather="user"></i></div>
             <div class="rnm">Patient</div><div class="rds">View health records</div>
           </div>
-          <!-- Pharmacy role -->
           <div class="rc" onclick="pickRole('pharmacy',this)">
             <div class="rchk"><i data-feather="check"></i></div>
             <div class="remi"><i data-feather="package"></i></div>
-            <div class="rnm">Pharmacy</div>
-            <div class="rds">Medication dispensing</div>
+            <div class="rnm">Pharmacy</div><div class="rds">Medication dispensing</div>
           </div>
-          <!-- Lab role -->
           <div class="rc" onclick="pickRole('lab',this)">
             <div class="rchk"><i data-feather="check"></i></div>
             <div class="remi"><i data-feather="droplet"></i></div>
-            <div class="rnm">Laboratory</div>
-            <div class="rds">Sample processing &amp; results</div>
+            <div class="rnm">Laboratory</div><div class="rds">Sample processing &amp; results</div>
           </div>
         </div>
         <div id="roleNote" class="nbox grn hidden">
@@ -324,51 +425,96 @@
 
         <!-- STAFF FORM -->
         <div id="staffForm">
-          <div id="staffFormInner">
-            <div class="nbox grn" id="staffNote">
-              <span class="ni"><i data-feather="lock"></i></span>
-              <span id="staffNoteTxt">Registration number + institutional email + password, then SMS/email OTP.</span>
-            </div>
-            <div class="fields">
-              <div class="field">
-                <label id="regLbl">Medical Registration No.</label>
-                <div class="fw">
-                  <span class="fi"><i data-feather="user"></i></span>
-                  <input type="text" id="regIn" placeholder="e.g. A4821" autocomplete="username">
-                </div>
-                <span class="fhint" id="regHint">As printed on your professional licence</span>
-              </div>
-              <div class="field">
-                <label>Institutional Email</label>
-                <div class="fw">
-                  <span class="fi"><i data-feather="mail"></i></span>
-                  <input type="email" id="emailIn" placeholder="you@hospital.health" autocomplete="email">
-                </div>
-              </div>
-              <div class="field">
-                <div class="lbl-row">
-                  <label>Password</label>
-                  <button class="fgt">Forgot password?</button>
-                </div>
-                <div class="fw">
-                  <span class="fi"><i data-feather="key"></i></span>
-                  <input type="password" id="pwIn" placeholder="········" autocomplete="current-password">
-                  <button class="eyebn" type="button" onclick="togglePw()">
-                    <i data-feather="eye" id="eyeico"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <button class="btn" id="staffBtn" onclick="doStaff()" style="margin-top:10px">
-              <span id="staffBtnTxt">Sign In</span>
-              <i data-feather="arrow-right"></i>
-            </button>
-            <div class="orline"><span>or sign in with</span></div>
-            <div class="alt-row">
-              <button class="altbn" onclick="doAlt('smartcard')"><i data-feather="credit-card"></i> Smart Card</button>
-              <button class="altbn" onclick="doAlt('p360')"><i data-feather="smartphone"></i> Practice 360</button>
+          <!-- Account Lockout Banner -->
+          <div id="lockoutBanner" class="lockout">
+            <div class="lockout-ico"><i data-feather="lock"></i></div>
+            <div class="lockout-ti">Account Temporarily Locked</div>
+            <div class="lockout-su">Too many failed attempts. Account locked for security.<br>Your attempt has been logged in the audit trail.</div>
+            <div class="lockout-cd" id="lockoutTimer">00:30</div>
+            <div style="font-size:10.5px;color:#b91c1c">AI anomaly detection has been notified. Contact your facility administrator if this wasn't you.</div>
+          </div>
+          <!-- CAPTCHA (shown after 2 failed attempts) -->
+          <div id="captchaWrap" class="captcha-wrap hidden">
+            <div class="captcha-lbl"><i data-feather="cpu"></i> Security Check — Confirm you are human</div>
+            <div class="captcha-q" id="captchaQ">12 + 7 = ?</div>
+            <div class="captcha-row">
+              <input type="text" id="captchaIn" inputmode="numeric" placeholder="Your answer" maxlength="4" autocomplete="off">
+              <button class="captcha-refresh" onclick="refreshCaptcha()" title="New question"><i data-feather="refresh-cw"></i></button>
             </div>
           </div>
+
+          <div id="staffFormInner">
+          <div class="nbox grn" id="staffNote">
+            <span class="ni"><i data-feather="lock"></i></span>
+            <span id="staffNoteTxt">Registration number + institutional email + password, then SMS/email OTP.</span>
+          </div>
+          <div id="staffErr" class="errbanner">
+            <span><i data-feather="alert-triangle"></i></span><span>Please check your credentials and try again.</span>
+          </div>
+          <div class="fields">
+            <div class="field">
+              <label id="regLbl">Medical Registration No.</label>
+              <div class="fw">
+                <span class="fi"><i data-feather="user"></i></span>
+                <input type="text" id="regIn" placeholder="e.g. A4821" autocomplete="username">
+              </div>
+              <span class="fhint" id="regHint">As printed on your professional licence</span>
+            </div>
+            <div class="field">
+              <label>Institutional Email</label>
+              <div class="fw">
+                <span class="fi"><i data-feather="mail"></i></span>
+                <input type="email" id="emailIn" placeholder="you@hospital.health" autocomplete="email">
+              </div>
+            </div>
+            <div class="field">
+              <div class="lbl-row">
+                <label>Password</label>
+                <button class="fgt">Forgot password?</button>
+              </div>
+              <div class="fw">
+                <span class="fi"><i data-feather="key"></i></span>
+                <input type="password" id="pwIn" placeholder="········" autocomplete="current-password" oninput="checkPwStrength(this.value)">
+                <button class="eyebn" type="button" onclick="togglePw()">
+                  <i data-feather="eye" id="eyeico"></i>
+                </button>
+              </div>
+              <!-- Password Strength Meter -->
+              <div class="pw-strength" id="pwStrengthWrap" style="display:none">
+                <div class="pw-bars">
+                  <div class="pw-bar" id="pb1"></div>
+                  <div class="pw-bar" id="pb2"></div>
+                  <div class="pw-bar" id="pb3"></div>
+                  <div class="pw-bar" id="pb4"></div>
+                </div>
+                <div class="pw-lbl" id="pwStrengthLbl">Enter a password</div>
+                <div class="pw-reqs" id="pwReqs">
+                  <div class="req" id="req-len">At least 8 characters</div>
+                  <div class="req" id="req-upper">Uppercase letter (A–Z)</div>
+                  <div class="req" id="req-num">Number (0–9)</div>
+                  <div class="req" id="req-sym">Special character (!@#$…)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Attempt dots -->
+          <div class="attempts-row" id="attemptsRow" style="display:none">
+            <span style="font-size:10px">Attempts:</span>
+            <div class="att-dot" id="ad1"></div>
+            <div class="att-dot" id="ad2"></div>
+            <div class="att-dot" id="ad3"></div>
+            <span id="attemptsLeft" style="font-size:10px;color:var(--accent-red);font-weight:700"></span>
+          </div>
+          <button class="btn" id="staffBtn" onclick="doStaff()" style="margin-top:10px">
+            <span id="staffBtnTxt">Sign In</span>
+            <i data-feather="arrow-right"></i>
+          </button>
+          <div class="orline"><span>or sign in with</span></div>
+          <div class="alt-row">
+            <button class="altbn" onclick="doAlt('smartcard')"><i data-feather="credit-card"></i> Smart Card</button>
+            <button class="altbn" onclick="doAlt('p360')"><i data-feather="smartphone"></i> Practice 360</button>
+          </div>
+          </div><!-- /staffFormInner -->
         </div>
 
         <!-- PATIENT FORM (ModelCover) -->
@@ -376,6 +522,9 @@
           <div class="nbox blu">
             <span class="ni"><i data-feather="shield"></i></span>
             <span><strong>ModelCover Portal login:</strong> Select your ID type, enter your ID number and your 4‑digit ModelCover PIN, then verify via SMS OTP or fingerprint biometric.</span>
+          </div>
+          <div id="patErr" class="errbanner">
+            <span><i data-feather="alert-triangle"></i></span><span id="patErrTxt">ID number or PIN is incorrect. Please try again.</span>
           </div>
           <div class="fields">
             <div class="field">
@@ -451,6 +600,18 @@
 
         <!-- OTP panel -->
         <div id="pan-otp">
+          <!-- AI Risk Assessment Panel -->
+          <div class="risk-panel low" id="riskPanel">
+            <div class="risk-hd">
+              <div class="risk-lbl low"><i data-feather="cpu"></i> AI Risk Assessment</div>
+              <div class="risk-score low" id="riskScore">LOW RISK</div>
+            </div>
+            <div class="risk-signals" id="riskSignals">
+              <div class="risk-sig" style="color:#166534">Known device detected</div>
+              <div class="risk-sig" style="color:#166534">Login time within normal hours</div>
+              <div class="risk-sig" style="color:#166534">Location: Capital Region — consistent with history</div>
+            </div>
+          </div>
           <div class="shd" style="margin-bottom:10px">
             <div class="sico"><i data-feather="message-square"></i></div>
             <div class="stitle">Enter OTP</div>
@@ -508,6 +669,14 @@
               <div class="sxs">ModelCover verified · Model Data Protection Act · Session secured</div>
             </div>
           </div>
+          <!-- Session Info -->
+          <div class="session-info">
+            <span class="si-ico"><i data-feather="clock"></i></span>
+            <div class="si-tx">
+              <strong>Session expires in 30 minutes</strong> of inactivity (Model Data Protection Act).<br>
+              TLS 1.3 encrypted · Append-only audit log active · Login recorded.
+            </div>
+          </div>
           <button class="btn" onclick="launch()">Launch Dashboard <i data-feather="arrow-right"></i></button>
         </div>
       </div>
@@ -526,14 +695,20 @@
   let timerRef = null;
   let s3contact = '';
   let s3via = '';
-  
-  // Role configuration (model agnostic)
+  let failedAttempts = 0;
+  const MAX_ATTEMPTS = 3;
+  let lockoutRef = null;
+  const LOCKOUT_SECS = 30;
+  let captchaAnswer = 0;
+
+  // Role configuration
   const RC = {
     doctor:{ico:'stethoscope',title:'Sign in as Doctor',sub:'Registration number + institutional email + password',
       note:'Enter your <strong>Medical Registration Number</strong>, institutional email and password, then confirm via SMS or email OTP.',
       noteClass:'grn',noteIco:'home',
       regLbl:'Medical Registration No.',regHint:'e.g. A4821 or M/12345',
       regPH:'e.g. A4821',regRx:/^[A-Za-z0-9\/\-]{3,12}$/,
+      regErr:'Enter your registration number as printed on your licence.',
       staffNote:'Registration number + institutional email + password → SMS/email OTP',
       successRole:'Doctor — Central Referral Hospital',successMsg:'Identity verified.\nRedirecting to clinical dashboard…'},
     nurse:{ico:'heart',title:'Sign in as Nurse / Clinical Officer',sub:'Registration number + institutional email + password',
@@ -541,6 +716,7 @@
       noteClass:'grn',noteIco:'home',
       regLbl:'Nursing Registration No.',regHint:'e.g. RN/12345 or CO/7890',
       regPH:'e.g. RN/12345',regRx:/^[A-Za-z0-9\/\-]{5,15}$/,
+      regErr:'Enter your nursing registration number.',
       staffNote:'Registration number + institutional email + password → SMS/email OTP',
       successRole:'Nurse — Coastal Regional Hospital',successMsg:'Identity verified.\nRedirecting to nursing portal…'},
     admin:{ico:'shield',title:'Sign in as Administrator',sub:'Employee ID + institutional email + password',
@@ -548,61 +724,52 @@
       noteClass:'grn',noteIco:'lock',
       regLbl:'HRIS Employee ID',regHint:'e.g. ADMIN-XX-00441',
       regPH:'e.g. ADMIN-XX-00441',regRx:/^[A-Za-z0-9\-]{4,20}$/,
+      regErr:'Enter your HRIS Employee ID (e.g. ADMIN-XX-00441).',
       staffNote:'Employee ID + institutional email + password → SMS/email OTP',
       successRole:'Administrator — Central Health Authority',successMsg:'HRIS identity verified.\nRedirecting to admin dashboard…'},
     patient:{ico:'user',title:'Access Your Health Records',sub:'ModelCover Portal: ID type → ID number + 4‑digit PIN → OTP / Biometric',
       note:'<strong>ModelCover Portal login.</strong> Select your ID type, enter your ID number and the <strong>4‑digit PIN</strong> you created during registration, then verify via SMS OTP or fingerprint biometric.',
       noteClass:'blu',noteIco:'shield',
-      successRole:'Patient — ModelCover Self‑Service',successMsg:'ModelCover identity verified.\nRedirecting to your health records…'}
+      successRole:'Patient — ModelCover Self‑Service',successMsg:'ModelCover identity verified.\nRedirecting to your health records…'},
+    pharmacy:{ico:'package',title:'Pharmacy Portal',sub:'Dispensing ID + facility code + password',
+      note:'Enter your <strong>Pharmacy Dispensing ID</strong>, facility code and password, then confirm via SMS or email OTP.',
+      noteClass:'grn',noteIco:'package',
+      regLbl:'Dispensing ID',regHint:'e.g. PHARM-00441',
+      regPH:'e.g. PHARM-00441',regRx:/^[A-Z0-9\-]{4,20}$/,
+      regErr:'Enter your Pharmacy Dispensing ID (e.g. PHARM-00441).',
+      staffNote:'Dispensing ID + facility code + password → SMS/email OTP',
+      successRole:'Pharmacy — Central Referral Hospital',successMsg:'Identity verified.\nRedirecting to pharmacy portal…'},
+    lab:{ico:'droplet',title:'Laboratory Portal',sub:'Lab Technician ID + facility code + password',
+      note:'Enter your <strong>Lab Technician ID</strong>, facility code and password, then confirm via SMS or email OTP.',
+      noteClass:'grn',noteIco:'droplet',
+      regLbl:'Technician ID',regHint:'e.g. LAB-8821',
+      regPH:'e.g. LAB-8821',regRx:/^[A-Z0-9\-]{4,20}$/,
+      regErr:'Enter your Lab Technician ID (e.g. LAB-8821).',
+      staffNote:'Technician ID + facility code + password → SMS/email OTP',
+      successRole:'Laboratory — Central Referral Hospital',successMsg:'Identity verified.\nRedirecting to lab portal…'}
   };
 
-  // Pharmacy role configuration
-  RC.pharmacy = {
-    ico:'package', title:'Pharmacy Portal', sub:'Dispensing ID + facility code + password',
-    note:'Enter your <strong>Pharmacy Dispensing ID</strong>, facility code and password, then confirm via SMS or email OTP.',
-    noteClass:'grn', noteIco:'package',
-    regLbl:'Dispensing ID', regHint:'e.g. PHARM-00441',
-    regPH:'e.g. PHARM-00441', regRx:/^[A-Z0-9\-]{4,20}$/,
-    regErr:'Enter your Pharmacy Dispensing ID (e.g. PHARM-00441).',
-    staffNote:'Dispensing ID + facility code + password → SMS/email OTP',
-    successRole:'Pharmacy — Central Referral Hospital',
-    successMsg:'Identity verified.\nRedirecting to pharmacy portal…'
-  };
-
-  // Lab role configuration
-  RC.lab = {
-    ico:'droplet', title:'Laboratory Portal', sub:'Lab Technician ID + facility code + password',
-    note:'Enter your <strong>Lab Technician ID</strong>, facility code and password, then confirm via SMS or email OTP.',
-    noteClass:'grn', noteIco:'droplet',
-    regLbl:'Technician ID', regHint:'e.g. LAB-8821',
-    regPH:'e.g. LAB-8821', regRx:/^[A-Z0-9\-]{4,20}$/,
-    regErr:'Enter your Lab Technician ID (e.g. LAB-8821).',
-    staffNote:'Technician ID + facility code + password → SMS/email OTP',
-    successRole:'Laboratory — Central Referral Hospital',
-    successMsg:'Identity verified.\nRedirecting to lab portal…'
-  };
-  
   const ID_TYPES = {
-    national:{lbl:'National ID Number',ph:'e.g. 12345678',hint:'7 or 8‑digit number as on your National ID card',rx:/^\d{7,8}$/},
-    passport:{lbl:'Passport Number',ph:'e.g. A1234567',hint:'As printed on the data page of your passport',rx:/^[A-Z0-9]{6,12}$/i},
-    alien:{lbl:'Foreign Resident ID',ph:'e.g. 2012345678',hint:'Your foreign resident ID number',rx:/^[A-Z0-9\-]{5,15}$/i},
-    refugee:{lbl:'Refugee ID Number',ph:'e.g. REF/2023/0001',hint:'UNHCR‑issued Refugee ID number',rx:/^[A-Z0-9\/\-]{5,20}$/i},
-    mandate:{lbl:'Mandate Number',ph:'e.g. MND-2024-00123',hint:'ModelCover Mandate Number',rx:/^[A-Z0-9\-]{5,20}$/i},
-    temp:{lbl:'Temporary ID Number',ph:'e.g. TMP-2024-00001',hint:'Temporary ID number',rx:/^[A-Z0-9\-]{5,20}$/i}
+    national:{lbl:'National ID Number',ph:'e.g. 12345678',hint:'7 or 8‑digit number as on your National ID card',rx:/^\d{7,8}$/,err:'Enter your 7 or 8‑digit National ID number.'},
+    passport:{lbl:'Passport Number',ph:'e.g. A1234567',hint:'As printed on the data page of your passport',rx:/^[A-Z0-9]{6,12}$/i,err:'Enter a valid passport number.'},
+    alien:{lbl:'Foreign Resident ID',ph:'e.g. 2012345678',hint:'Your foreign resident ID number',rx:/^[A-Z0-9\-]{5,15}$/i,err:'Enter your foreign resident ID number.'},
+    refugee:{lbl:'Refugee ID Number',ph:'e.g. REF/2023/0001',hint:'UNHCR‑issued Refugee ID number',rx:/^[A-Z0-9\/\-]{5,20}$/i,err:'Enter your Refugee ID number.'},
+    mandate:{lbl:'Mandate Number',ph:'e.g. MND-2024-00123',hint:'ModelCover Mandate Number',rx:/^[A-Z0-9\-]{5,20}$/i,err:'Enter your ModelCover Mandate Number.'},
+    temp:{lbl:'Temporary ID Number',ph:'e.g. TMP-2024-00001',hint:'Temporary ID number',rx:/^[A-Z0-9\-]{5,20}$/i,err:'Enter your Temporary ID number.'}
   };
-  
+
   // Audit log simulation
   const auditQueue = [];
-  function addAuditEntry(msg) {
+  function addAuditEntry(msg){
     const ts = new Date().toISOString().substring(11,19)+'Z';
     auditQueue.unshift('→ '+ts+' '+msg);
-    ['at1','at2','at3'].forEach((id,i)=>{ const el=document.getElementById(id); if(el && auditQueue[i]) el.textContent = auditQueue[i]; });
+    ['at1','at2','at3'].forEach((id,i)=>{ const el=document.getElementById(id); if(el&&auditQueue[i]) el.textContent = auditQueue[i]; });
   }
   setInterval(()=>{
     const msgs = ['AUTH SESSION_HEARTBEAT uid=system','RBAC POLICY_CHECK resource=ward4B','DATA INTEGRITY_CHECK hash=ok','AI ANOMALY_SCAN result=nominal'];
     addAuditEntry(msgs[Math.floor(Math.random()*msgs.length)]);
   },4000);
-  
+
   // ----- NAVIGATION & UI HELPERS -----
   function sw(hide,show){
     document.getElementById(hide).classList.add('hidden');
@@ -610,7 +777,7 @@
     el.classList.remove('hidden');
     el.classList.add('fade');
   }
-  
+
   function pickRole(r,el){
     role = r;
     document.querySelectorAll('.rc').forEach(c=>c.classList.remove('sel'));
@@ -624,18 +791,18 @@
     document.getElementById('roleNoteTxt').innerHTML = c.note;
     feather.replace();
   }
-  
+
   function goS2(){
-    if(!role) return;
+    if(!role)return;
     const c = RC[role];
     document.getElementById('s2ico').innerHTML = `<i data-feather="${c.ico}"></i>`;
     document.getElementById('s2title').textContent = c.title;
     document.getElementById('s2sub').textContent = c.sub;
-    if(role === 'patient'){
+    if(role==='patient'){
       document.getElementById('staffForm').classList.add('hidden');
       document.getElementById('patForm').classList.remove('hidden');
       updateIdLabel();
-    } else {
+    }else{
       document.getElementById('patForm').classList.add('hidden');
       document.getElementById('staffForm').classList.remove('hidden');
       document.getElementById('staffNoteTxt').textContent = c.staffNote;
@@ -647,9 +814,9 @@
     sw('s1','s2');
     addAuditEntry('AUTH STEP2_ENTER role='+role);
   }
-  
+
   function goS1(){ sw('s2','s1'); }
-  
+
   function updateIdLabel(){
     const t = document.getElementById('idTypeIn').value;
     const c = ID_TYPES[t];
@@ -657,80 +824,158 @@
     document.getElementById('patIdIn').placeholder = c.ph;
     document.getElementById('patIdHint').textContent = c.hint;
   }
-  
+
+  // Password strength
+  function checkPwStrength(pw){
+    const wrap=document.getElementById('pwStrengthWrap');
+    if(!pw){wrap.style.display='none';return;}
+    wrap.style.display='block';
+    let score=0;
+    const hasLen=pw.length>=8,hasUpper=/[A-Z]/.test(pw),hasNum=/[0-9]/.test(pw),hasSym=/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(pw);
+    if(hasLen)score++;if(hasUpper)score++;if(hasNum)score++;if(hasSym)score++;
+    const cls=score<=1?'weak':score<=2?'fair':score<=3?'good':'strong';
+    ['pb1','pb2','pb3','pb4'].forEach((id,i)=>document.getElementById(id).className='pw-bar '+(i<score?cls:''));
+    document.getElementById('pwStrengthLbl').textContent=['','Too Weak','Fair','Good','Strong'][Math.min(score,4)];
+    ['req-len','req-upper','req-num','req-sym'].forEach((id,idx)=>{
+      const met=[hasLen,hasUpper,hasNum,hasSym][idx];
+      document.getElementById(id).className='req'+(met?' met':'');
+    });
+  }
+
+  // CAPTCHA
+  function refreshCaptcha(){
+    const a=Math.floor(Math.random()*15)+1,b=Math.floor(Math.random()*15)+1;
+    captchaAnswer=a+b;
+    document.getElementById('captchaQ').textContent=a+' + '+b+' = ?';
+    if(document.getElementById('captchaIn'))document.getElementById('captchaIn').value='';
+  }
+  refreshCaptcha();
+
+  // Attempt tracking
+  function updateAttemptDots(){
+    const row=document.getElementById('attemptsRow');
+    if(!row)return;
+    if(failedAttempts>0)row.style.display='flex';
+    else row.style.display='none';
+    for(let i=1;i<=3;i++){
+      const d=document.getElementById('ad'+i);
+      if(d)d.className='att-dot'+(i<=failedAttempts?' used':'');
+    }
+    const left=MAX_ATTEMPTS-failedAttempts;
+    document.getElementById('attemptsLeft').textContent=left>0?left+' attempt'+(left===1?'':'s')+' remaining':'';
+  }
+
+  function triggerLockout(){
+    document.getElementById('lockoutBanner').style.display='flex';
+    document.getElementById('staffFormInner').classList.add('form-locked');
+    document.getElementById('captchaWrap').classList.add('hidden');
+    let secs=LOCKOUT_SECS;
+    function tick(){
+      const m=Math.floor(secs/60),s=secs%60;
+      document.getElementById('lockoutTimer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+      if(secs<=0){
+        clearInterval(lockoutRef);
+        document.getElementById('lockoutBanner').style.display='none';
+        document.getElementById('staffFormInner').classList.remove('form-locked');
+        failedAttempts=0;updateAttemptDots();
+        document.getElementById('aiAttempts').textContent=parseInt(document.getElementById('aiAttempts').textContent||'0')+1;
+      }
+      secs--;
+    }
+    tick();lockoutRef=setInterval(tick,1000);
+    addAuditEntry('SECURITY LOCKOUT_TRIGGERED role='+role+' attempts=3');
+  }
+
+  // Staff login
   function doStaff(){
-    const c = RC[role];
-    const reg = document.getElementById('regIn').value.trim();
-    const em = document.getElementById('emailIn').value.trim();
-    const pw = document.getElementById('pwIn').value;
-    if(!reg || !c.regRx.test(reg.replace(/\s/g,''))) { alert(c.regErr); return; }
-    if(!em || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { alert('Enter a valid institutional email address.'); return; }
-    if(!pw || pw.length<8) { alert('Password must be at least 8 characters.'); return; }
-    
+    if(lockoutRef)return;
+    const c=RC[role];
+    const reg=document.getElementById('regIn').value.trim();
+    const em=document.getElementById('emailIn').value.trim();
+    const pw=document.getElementById('pwIn').value;
+    hideErr('staffErr');
+    if(failedAttempts>=2){
+      document.getElementById('captchaWrap').classList.remove('hidden');
+      const ans=parseInt(document.getElementById('captchaIn').value);
+      if(isNaN(ans)||ans!==captchaAnswer){
+        showErr('staffErr','Security check failed. Please solve the CAPTCHA correctly.');
+        refreshCaptcha();return;
+      }
+    }
+    if(!reg||!c.regRx.test(reg.replace(/\s/g,''))){ showErr('staffErr',c.regErr);return; }
+    if(!em||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ showErr('staffErr','Enter a valid institutional email address.');return; }
+    if(!pw||pw.length<8){
+      failedAttempts++;updateAttemptDots();
+      showErr('staffErr','Password must be at least 8 characters.');
+      if(failedAttempts>=MAX_ATTEMPTS)triggerLockout();
+      return;
+    }
     addAuditEntry('AUTH LOGIN_ATTEMPT role='+role+' email='+em.replace(/(.{2}).+(@.+)/,'$1***$2'));
-    s3contact = em; s3via = 'email';
+    s3contact=em;s3via='email';
     goS3();
   }
-  
+
   function doPat(){
-    const t = document.getElementById('idTypeIn').value;
-    const ic = ID_TYPES[t];
-    const id = document.getElementById('patIdIn').value.replace(/\s/g,'');
-    const pin = ['p1','p2','p3','p4'].map(i=>document.getElementById(i).value).join('');
-    const ph = document.getElementById('patPhIn').value.replace(/[\s\-]/g,'');
-    if(!id || !ic.rx.test(id)) { alert(ic.err); return; }
-    if(pin.length<4) { alert('Enter your complete 4‑digit ModelCover PIN.'); return; }
-    if(!ph || !/^(\+2547|\+2541|07|01)\d{8,9}$/.test(ph)) { alert('Enter your registered phone number (e.g. 0712 345 678).'); return; }
-    
+    const t=document.getElementById('idTypeIn').value;
+    const ic=ID_TYPES[t];
+    const id=document.getElementById('patIdIn').value.replace(/\s/g,'');
+    const pin=['p1','p2','p3','p4'].map(i=>document.getElementById(i).value).join('');
+    const ph=document.getElementById('patPhIn').value.replace(/[\s\-]/g,'');
+    hideErr('patErr');
+    if(!id||!ic.rx.test(id)){ showErr('patErr',ic.err);return; }
+    if(pin.length<4){ showErr('patErr','Enter your complete 4‑digit ModelCover PIN.');return; }
+    if(!ph||!/^(\+2547|\+2541|07|01)\d{8,9}$/.test(ph)){ showErr('patErr','Enter your registered phone number (e.g. 0712 345 678).');return; }
     addAuditEntry('AUTH PATIENT_LOGIN_ATTEMPT id_type='+t);
-    s3contact = ph; s3via = 'sms';
+    s3contact=ph;s3via='sms';
     goS3();
   }
-  
+
   function goS3(){
     const note = s3via==='sms' ? `A 6‑digit OTP was sent via SMS to ${s3contact.slice(0,4)}•••${s3contact.slice(-2)}` : `A 6‑digit OTP was sent to ${s3contact.replace(/(.{2}).+(@.+)/,'$1•••$2')}`;
     document.getElementById('otpNote').textContent = note;
-    ['o1','o2','o3','o4','o5','o6'].forEach(id=>{ const el=document.getElementById(id); el.value=''; el.classList.remove('f'); });
+    ['o1','o2','o3','o4','o5','o6'].forEach(id=>{const el=document.getElementById(id);el.value='';el.classList.remove('f');});
     document.getElementById('otpBtn').disabled = true;
     switchTab('otp');
     sw('s2','s3');
     startTimer();
+    computeRisk();
     addAuditEntry('AUTH MFA_INITIATED role='+role+' method='+s3via);
     feather.replace();
   }
-  
-  function goS2from3(){ clearInterval(timerRef); sw('s3','s2'); }
-  
+
+  function goS2from3(){clearInterval(timerRef);sw('s3','s2');}
+
   function switchTab(t){
     ['otp','bio','p360'].forEach(x=>{
-      document.getElementById('vt-'+x).classList.toggle('act', x===t);
-      document.getElementById('pan-'+x).classList.toggle('hidden', x!==t);
+      document.getElementById('vt-'+x).classList.toggle('act',x===t);
+      document.getElementById('pan-'+x).classList.toggle('hidden',x!==t);
     });
     feather.replace();
   }
-  
+
   function otpNav(el,prev,next){
     el.classList.toggle('f',!!el.value);
-    if(el.value && next) document.getElementById(next).focus();
+    if(el.value&&next)document.getElementById(next).focus();
     const all = ['o1','o2','o3','o4','o5','o6'].every(id=>document.getElementById(id).value);
     document.getElementById('otpBtn').disabled = !all;
   }
-  function pinNav(el,prev,next){ el.classList.toggle('f',!!el.value); if(el.value && next) document.getElementById(next).focus(); }
-  
-  function doOTP(){ addAuditEntry('AUTH OTP_VERIFY role='+role); showSuccess(); }
-  function doBio(){ addAuditEntry('AUTH BIOMETRIC_SCAN role='+role); showSuccess(); }
-  function doP360(){ addAuditEntry('AUTH P360_PUSH_SENT role='+role); showSuccess(); }
-  
+  function pinNav(el,prev,next){el.classList.toggle('f',!!el.value);if(el.value&&next)document.getElementById(next).focus();}
+
+  // MFA actions
+  function doOTP(){addAuditEntry('AUTH OTP_VERIFY role='+role);showSuccess();}
+  function doBio(){addAuditEntry('AUTH BIOMETRIC_SCAN role='+role);showSuccess();}
+  function doP360(){addAuditEntry('AUTH P360_PUSH_SENT role='+role);showSuccess();}
+
   function doAlt(mode){
-    if(mode==='ussd'){ alert('Dial *147# on your registered phone to verify via USSD.'); return; }
+    if(mode==='ussd'){alert('Dial *147# on your registered phone to verify via USSD.');return;}
     s3contact = role==='patient' ? (document.getElementById('patPhIn').value||'07XX') : (document.getElementById('emailIn').value||'staff@hospital.health');
     s3via = role==='patient' ? 'sms' : 'email';
     goS3();
-    setTimeout(()=>switchTab(mode==='p360'?'p360':'bio'), 120);
+    setTimeout(()=>switchTab(mode==='p360'?'p360':'bio'),120);
   }
-  
+
   function startTimer(){
-    if(timerRef) clearInterval(timerRef);
+    if(timerRef)clearInterval(timerRef);
     let s=30;
     const btn = document.getElementById('resendBtn');
     btn.disabled = true;
@@ -738,12 +983,33 @@
     timerRef = setInterval(()=>{
       s--;
       const t = document.getElementById('timer');
-      if(t) t.textContent = s;
-      if(s<=0){ clearInterval(timerRef); btn.disabled=false; btn.textContent='Resend code'; }
+      if(t)t.textContent=s;
+      if(s<=0){clearInterval(timerRef);btn.disabled=false;btn.textContent='Resend code';}
     },1000);
   }
-  function resend(){ addAuditEntry('AUTH OTP_RESEND role='+role); startTimer(); }
-  
+  function resend(){addAuditEntry('AUTH OTP_RESEND role='+role);startTimer();}
+
+  function computeRisk(){
+    const h = new Date().getHours();
+    const unusual = (h<6||h>22);
+    const panel = document.getElementById('riskPanel');
+    const score = document.getElementById('riskScore');
+    const signals = document.getElementById('riskSignals');
+    if(!panel)return;
+    if(unusual||failedAttempts>0){
+      panel.className='risk-panel med';
+      score.className='risk-score med';score.textContent='MEDIUM RISK';
+      let s='';
+      if(unusual)s+='<div class="risk-sig" style="color:#92400e">Unusual login time detected</div>';
+      if(failedAttempts>0)s+='<div class="risk-sig" style="color:#92400e">'+failedAttempts+' failed attempt(s) this session</div>';
+      s+='<div class="risk-sig" style="color:#166534">Location consistent with history</div>';
+      signals.innerHTML=s;
+    }else{
+      panel.className='risk-panel low';score.className='risk-score low';score.textContent='LOW RISK';
+      signals.innerHTML='<div class="risk-sig" style="color:#166534">Known device detected</div><div class="risk-sig" style="color:#166534">Login time within normal hours</div><div class="risk-sig" style="color:#166534">Location: Capital Region</div>';
+    }
+  }
+
   function showSuccess(){
     const c = RC[role];
     document.getElementById('sxIco').innerHTML = `<i data-feather="${c.ico}"></i>`;
@@ -753,7 +1019,7 @@
     sw('s3','s4');
     feather.replace();
   }
-  
+
   function launch(){
     const destinations = {
       doctor:'unihealth-doctor.html',
@@ -766,15 +1032,22 @@
     addAuditEntry('AUTH DASHBOARD_LAUNCH role='+role);
     setTimeout(()=>{ window.location.href = destinations[role] || 'unihealth-admin.html'; },900);
   }
-  
+
+  function hideErr(bid){document.getElementById(bid).style.display='none';}
+  function showErr(bid,msg){
+    const b=document.getElementById(bid);
+    b.querySelector('span:last-child').textContent=msg;
+    b.style.display='flex';
+    b.style.animation='none';
+    setTimeout(()=>b.style.animation='shk .38s ease',10);
+  }
   function togglePw(){
-    pwVis = !pwVis;
-    document.getElementById('pwIn').type = pwVis?'text':'password';
-    document.getElementById('eyeico').setAttribute('data-feather', pwVis?'eye-off':'eye');
+    pwVis=!pwVis;
+    document.getElementById('pwIn').type=pwVis?'text':'password';
+    document.getElementById('eyeico').setAttribute('data-feather',pwVis?'eye-off':'eye');
     feather.replace();
   }
-  
-  // Initialize Feather Icons
+
   feather.replace();
 </script>
 </body>
