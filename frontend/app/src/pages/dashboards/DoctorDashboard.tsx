@@ -55,6 +55,10 @@ export function DoctorDashboard() {
 
   type AdmittedRow = { bed: string; name: string; aflId: string; team: string; fhirId: string };
   type LabOrderRow = { id: string; when: string; patientFhirId: string; panel: string; priority: string; notes: string };
+  type ImagingOrderRow = { id: string; when: string; study: string; patientId: string; status: string };
+  type RxDraftRow = { id: string; drug: string; dose: string; route: string; when: string };
+  type ReferralRowX = { to: string; patient: string; priority: string; status: string };
+  type ProcRowX = { id: string; label: string; when: string };
 
   const [admitted, setAdmitted] = useState<AdmittedRow[]>(() => {
     try {
@@ -101,6 +105,47 @@ export function DoctorDashboard() {
     }
   }, [labOrders]);
 
+  const [imagingOrders, setImagingOrders] = useState<ImagingOrderRow[]>(() => {
+    try {
+      const raw = localStorage.getItem("doc.imagingOrders.v1");
+      const p = raw ? (JSON.parse(raw) as ImagingOrderRow[]) : [];
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("doc.imagingOrders.v1", JSON.stringify(imagingOrders));
+    } catch {
+      // ignore
+    }
+  }, [imagingOrders]);
+
+  const [rxDrafts, setRxDrafts] = useState<RxDraftRow[]>(() => {
+    try {
+      const raw = localStorage.getItem("doc.rxDrafts.v1");
+      const p = raw ? (JSON.parse(raw) as RxDraftRow[]) : [];
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("doc.rxDrafts.v1", JSON.stringify(rxDrafts));
+    } catch {
+      // ignore
+    }
+  }, [rxDrafts]);
+
+  const [rxForm, setRxForm] = useState({ drug: "", dose: "", route: "PO" });
+  const [referralAdds, setReferralAdds] = useState<ReferralRowX[]>([]);
+  const [procedureAdds, setProcedureAdds] = useState<ProcRowX[]>([]);
+  const [scheduleBlocks, setScheduleBlocks] = useState<{ t: string; label: string }[]>([]);
+
   const [showAdmit, setShowAdmit] = useState(false);
   const [admitForm, setAdmitForm] = useState<AdmittedRow>({ bed: "", name: "", aflId: "", team: "IM", fhirId: patientId });
 
@@ -111,6 +156,30 @@ export function DoctorDashboard() {
     notes: "",
     patientFhirId: patientId,
   });
+
+  useEffect(() => {
+    setLabForm((s) => ({ ...s, patientFhirId: patientId }));
+  }, [patientId]);
+
+  const commitLabOrder = (pid: string, panel: string, priority: string, notes: string, closeModal: boolean) => {
+    const trimmed = pid.trim();
+    if (!trimmed) {
+      toast("Please provide a FHIR Patient ID.");
+      return;
+    }
+    const now = new Date();
+    const row: LabOrderRow = {
+      id: `LAB-${now.getTime()}`,
+      when: now.toISOString(),
+      patientFhirId: trimmed,
+      panel,
+      priority,
+      notes: notes.trim(),
+    };
+    setLabOrders((cur) => [row, ...cur]);
+    if (closeModal) setShowLab(false);
+    toast(`Lab order created for ${trimmed}: ${panel} (${priority}).`);
+  };
 
   const queueRows = useMemo(
     () => [
@@ -390,6 +459,7 @@ export function DoctorDashboard() {
 
   return (
     <DashboardShell
+      shellVariant="doctor"
       title={DOC_TITLES[page]}
       crumb={page === "home" ? "Home" : DOC_TITLES[page]}
       portalSubtitle="Clinical Workstation"
@@ -610,25 +680,7 @@ export function DoctorDashboard() {
                 <button
                   className="btn-p"
                   type="button"
-                  onClick={() => {
-                    const pid = labForm.patientFhirId.trim();
-                    if (!pid) {
-                      toast("Please provide a FHIR Patient ID.");
-                      return;
-                    }
-                    const now = new Date();
-                    const row: LabOrderRow = {
-                      id: `LAB-${now.getTime()}`,
-                      when: now.toISOString(),
-                      patientFhirId: pid,
-                      panel: labForm.panel,
-                      priority: labForm.priority,
-                      notes: labForm.notes.trim(),
-                    };
-                    setLabOrders((cur) => [row, ...cur]);
-                    setShowLab(false);
-                    toast(`Lab order created for ${pid}: ${labForm.panel} (${labForm.priority}).`);
-                  }}
+                  onClick={() => commitLabOrder(labForm.patientFhirId, labForm.panel, labForm.priority, labForm.notes, true)}
                 >
                   Create order
                 </button>
@@ -648,7 +700,14 @@ export function DoctorDashboard() {
               <button className="btn-s" type="button" onClick={() => { setPage("notes"); void uiAction("Opening note composer."); }}>
                 📋 New Note
               </button>
-              <button className="btn-p" type="button" onClick={() => void uiAction("New order started." )}>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={() => {
+                  setPage("patient");
+                  void uiAction("New order started.");
+                }}
+              >
                 + New Order
               </button>
             </div>
@@ -689,7 +748,14 @@ export function DoctorDashboard() {
               <div className="ph-ti">Patient Workup</div>
             </div>
             <div className="ph-r">
-              <button className="btn-s btn-sm" type="button" onClick={() => void uiAction("Discharge workflow started.")}>
+              <button
+                className="btn-s btn-sm"
+                type="button"
+                onClick={() => {
+                  setPage("notes");
+                  void uiAction("Discharge workflow started.");
+                }}
+              >
                 🏠 Discharge
               </button>
               <button className="btn-s btn-sm" type="button" onClick={() => { setPage("referrals"); void uiAction("Opening referral form."); }}>
@@ -713,7 +779,14 @@ export function DoctorDashboard() {
             <div className="panel">
               <div className="pnl-hd">
                 <div className="pnl-ti">Care Plan</div>
-                <button className="btn-s btn-sm" type="button" onClick={() => void uiAction("Edit care plan.")}>
+                <button
+                  className="btn-s btn-sm"
+                  type="button"
+                  onClick={() => {
+                    setPage("notes");
+                    void uiAction("Edit care plan.");
+                  }}
+                >
                   Edit
                 </button>
               </div>
@@ -734,7 +807,14 @@ export function DoctorDashboard() {
             <div className="panel">
               <div className="pnl-hd">
                 <div className="pnl-ti">Diagnoses</div>
-                <button className="btn-s btn-sm" type="button" onClick={() => void uiAction("Add diagnosis.")}>
+                <button
+                  className="btn-s btn-sm"
+                  type="button"
+                  onClick={() => {
+                    setPage("notes");
+                    void uiAction("Add diagnosis.");
+                  }}
+                >
                   + Add
                 </button>
               </div>
@@ -752,7 +832,14 @@ export function DoctorDashboard() {
               <div className="ph-ti">Patient Queue</div>
               <div className="ph-su">Today · Dr. James Mutuku · Ward 4B</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Walk-in registration started.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                setPage("queue");
+                void uiAction("Walk-in registration started.");
+              }}
+            >
               + Add Walk-in
             </button>
           </div>
@@ -1001,22 +1088,27 @@ export function DoctorDashboard() {
               </div>
               <div className="pnl-bd">
                 <div className="ff">
-                  <label>Patient</label>
-                  <select>
-                    <option>Selected ID: {patientId}</option>
-                  </select>
+                  <label>FHIR Patient ID</label>
+                  <input
+                    className="mono"
+                    value={labForm.patientFhirId}
+                    onChange={(e) => setLabForm((s) => ({ ...s, patientFhirId: e.target.value }))}
+                    placeholder="e.g. P001"
+                  />
                 </div>
                 <div className="ff">
                   <label>Test Panel</label>
-                  <select>
+                  <select value={labForm.panel} onChange={(e) => setLabForm((s) => ({ ...s, panel: e.target.value }))}>
                     <option>U&amp;E</option>
                     <option>FBC</option>
                     <option>LFT</option>
+                    <option>CRP</option>
+                    <option>HbA1c</option>
                   </select>
                 </div>
                 <div className="ff">
                   <label>Priority</label>
-                  <select>
+                  <select value={labForm.priority} onChange={(e) => setLabForm((s) => ({ ...s, priority: e.target.value }))}>
                     <option>Routine</option>
                     <option>Urgent</option>
                     <option>STAT</option>
@@ -1024,9 +1116,19 @@ export function DoctorDashboard() {
                 </div>
                 <div className="ff">
                   <label>Clinical Notes</label>
-                  <textarea placeholder="Clinical indication…" style={{ minHeight: 70 }} />
+                  <textarea
+                    placeholder="Clinical indication…"
+                    style={{ minHeight: 70 }}
+                    value={labForm.notes}
+                    onChange={(e) => setLabForm((s) => ({ ...s, notes: e.target.value }))}
+                  />
                 </div>
-                <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }} onClick={() => void uiAction("Lab order submitted.")}>
+                <button
+                  className="btn-p"
+                  type="button"
+                  style={{ width: "100%", justifyContent: "center" }}
+                  onClick={() => commitLabOrder(labForm.patientFhirId, labForm.panel, labForm.priority, labForm.notes, false)}
+                >
                   Submit Lab Order
                 </button>
               </div>
@@ -1106,9 +1208,86 @@ export function DoctorDashboard() {
               <div className="ph-ey">Pharmacy</div>
               <div className="ph-ti">Prescriptions &amp; Medication Orders</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Create prescription started.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                void uiAction("Create prescription started.");
+                window.requestAnimationFrame(() =>
+                  document.getElementById("doc-rx-composer")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                );
+              }}
+            >
               + New Prescription
             </button>
+          </div>
+          <div className="panel" id="doc-rx-composer" style={{ marginBottom: 14 }}>
+            <div className="pnl-hd">
+              <div className="pnl-ti">Prescription draft</div>
+              <span className="tag te dot">LOCAL</span>
+            </div>
+            <div className="pnl-bd">
+              <div className="g2">
+                <div className="ff">
+                  <label>Drug</label>
+                  <input value={rxForm.drug} onChange={(e) => setRxForm((s) => ({ ...s, drug: e.target.value }))} placeholder="e.g. Amlodipine" />
+                </div>
+                <div className="ff">
+                  <label>Dose</label>
+                  <input value={rxForm.dose} onChange={(e) => setRxForm((s) => ({ ...s, dose: e.target.value }))} placeholder="e.g. 10mg OD" />
+                </div>
+              </div>
+              <div className="ff">
+                <label>Route</label>
+                <select value={rxForm.route} onChange={(e) => setRxForm((s) => ({ ...s, route: e.target.value }))}>
+                  <option value="PO">PO</option>
+                  <option value="IV">IV</option>
+                  <option value="IM">IM</option>
+                  <option value="TOP">Topical</option>
+                </select>
+              </div>
+              <button
+                className="btn-p"
+                type="button"
+                style={{ marginTop: 10, width: "100%", justifyContent: "center" }}
+                onClick={() => {
+                  if (!rxForm.drug.trim()) {
+                    toast("Enter a drug name.");
+                    return;
+                  }
+                  const id = `RX-${Date.now()}`;
+                  setRxDrafts((cur) => [
+                    { id, drug: rxForm.drug.trim(), dose: rxForm.dose.trim() || "—", route: rxForm.route, when: new Date().toISOString() },
+                    ...cur,
+                  ]);
+                  toast(`Added draft prescription ${id}.`);
+                }}
+              >
+                Add to draft list
+              </button>
+              {rxDrafts.length > 0 && (
+                <table className="tbl" style={{ marginTop: 14 }}>
+                  <thead>
+                    <tr>
+                      <th className="mono">ID</th>
+                      <th>Drug</th>
+                      <th>Dose</th>
+                      <th>Route</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rxDrafts.slice(0, 12).map((r) => (
+                      <tr key={r.id}>
+                        <td className="mono">{r.id}</td>
+                        <td style={{ fontWeight: 700 }}>{r.drug}</td>
+                        <td>{r.dose}</td>
+                        <td>{r.route}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
           {patientIdPanel}
           {liveChart}
@@ -1121,7 +1300,24 @@ export function DoctorDashboard() {
               <div className="ph-ti">Imaging &amp; Reports</div>
               <div className="ph-su">Radiology orders and report inbox</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Imaging order created.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                const id = `IMG-${Date.now()}`;
+                setImagingOrders((cur) => [
+                  {
+                    id,
+                    when: new Date().toISOString(),
+                    study: "CXR — PA (new order)",
+                    patientId,
+                    status: "Ordered",
+                  },
+                  ...cur,
+                ]);
+                void uiAction(`Imaging order ${id} created for ${patientId}.`);
+              }}
+            >
               + Order Imaging
             </button>
           </div>
@@ -1140,6 +1336,15 @@ export function DoctorDashboard() {
                   </tr>
                 </thead>
                 <tbody>
+                  {imagingOrders.map((o) => (
+                    <tr key={o.id}>
+                      <td style={{ fontWeight: 700 }}>{o.study}</td>
+                      <td className="mono">{o.patientId}</td>
+                      <td>
+                        <span className="tag am">{o.status}</span>
+                      </td>
+                    </tr>
+                  ))}
                   <tr>
                     <td>CXR — PA</td>
                     <td>Wangui Njoroge</td>
@@ -1166,12 +1371,21 @@ export function DoctorDashboard() {
               <div className="ph-ey">Documentation</div>
               <div className="ph-ti">Clinical Notes</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("New note created.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                void uiAction("New note created.");
+                window.requestAnimationFrame(() =>
+                  document.getElementById("doc-note-composer")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                );
+              }}
+            >
               + New Note
             </button>
           </div>
           {patientIdPanel}
-          <div className="panel">
+          <div className="panel" id="doc-note-composer">
             <div className="pnl-hd">
               <div className="pnl-ti">Progress Note</div>
             </div>
@@ -1201,7 +1415,22 @@ export function DoctorDashboard() {
               <div className="ph-ey">Referral Management</div>
               <div className="ph-ti">Referrals</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Referral created.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                setReferralAdds((r) => [
+                  {
+                    to: "Specialty — draft",
+                    patient: patientId,
+                    priority: "Routine",
+                    status: "Draft",
+                  },
+                  ...r,
+                ]);
+                void uiAction("Referral draft added to the table.");
+              }}
+            >
               + New Referral
             </button>
           </div>
@@ -1220,6 +1449,18 @@ export function DoctorDashboard() {
                   </tr>
                 </thead>
                 <tbody>
+                  {referralAdds.map((ref, idx) => (
+                    <tr key={`nr-${idx}`}>
+                      <td>{ref.to}</td>
+                      <td className="mono">{ref.patient}</td>
+                      <td>
+                        <span className="tag am">{ref.priority}</span>
+                      </td>
+                      <td>
+                        <span className="tag b">{ref.status}</span>
+                      </td>
+                    </tr>
+                  ))}
                   <tr>
                     <td>Cardiology — KNH</td>
                     <td>Wangui Njoroge</td>
@@ -1242,12 +1483,32 @@ export function DoctorDashboard() {
               <div className="ph-ey">Theatre / Procedures</div>
               <div className="ph-ti">Procedures</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Procedure scheduled.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                const id = `PROC-${Date.now()}`;
+                setProcedureAdds((p) => [
+                  { id, label: "Procedure hold — draft (consent pending)", when: new Date().toISOString().replace("T", " ").slice(0, 16) },
+                  ...p,
+                ]);
+                void uiAction(`Procedure ${id} scheduled (draft).`);
+              }}
+            >
               + Schedule Procedure
             </button>
           </div>
           <div className="panel">
             <div className="pnl-bd" style={{ fontSize: 12, color: "var(--t3)" }}>
+              {procedureAdds.length > 0 && (
+                <ul style={{ marginBottom: 12, paddingLeft: 18, color: "var(--t2)", fontWeight: 650 }}>
+                  {procedureAdds.map((p) => (
+                    <li key={p.id} style={{ marginBottom: 6 }}>
+                      <span className="mono">{p.id}</span> · {p.label} · <span className="mono">{p.when}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               Procedure scheduling and consents.
             </div>
           </div>
@@ -1259,7 +1520,18 @@ export function DoctorDashboard() {
               <div className="ph-ey">UniHealth</div>
               <div className="ph-ti">Claims &amp; Authorisations</div>
             </div>
-            <button className="btn-s" type="button" onClick={() => void uiAction("Claims synced.")}>
+            <button
+              className="btn-s"
+              type="button"
+              onClick={async () => {
+                try {
+                  await api.metricsJson();
+                  void uiAction("Claims gateway sync OK.");
+                } catch (e) {
+                  toast(e instanceof Error ? e.message : "Sync failed — API unreachable.");
+                }
+              }}
+            >
               ↺ Sync
             </button>
           </div>
@@ -1291,7 +1563,15 @@ export function DoctorDashboard() {
               <div className="ph-ey">Calendar</div>
               <div className="ph-ti">My Schedule</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction("Blocking time started.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                const label = `Blocked — clinician hold (${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`;
+                setScheduleBlocks((b) => [{ t: "Hold", label }, ...b]);
+                void uiAction("Calendar block added for today.");
+              }}
+            >
               + Block Time
             </button>
           </div>
@@ -1301,6 +1581,11 @@ export function DoctorDashboard() {
             </div>
             <div className="pnl-bd">
               <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.8 }}>
+                {scheduleBlocks.map((b, i) => (
+                  <div key={`${b.label}-${i}`}>
+                    <strong>{b.t}</strong> — {b.label}
+                  </div>
+                ))}
                 <div>
                   <strong>08:00</strong> — Ward round 4B
                 </div>
