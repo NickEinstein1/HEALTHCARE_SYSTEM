@@ -124,3 +124,52 @@
   color:var(--r) !important;
 }
 
+/* Role shell themes (legacy ADMIN / DOCTOR / NURSE / PATIENT HTML parity) */
+.dash-shell--admin .sb{background:#0f1f2e;}
+.dash-shell--admin .sb::before{
+  background:
+    radial-gradient(ellipse 120% 55% at -8% 100%,rgba(124,58,237,.12) 0%,transparent 52%),
+    radial-gradient(ellipse 90% 45% at 108% 0%,rgba(26,138,74,.1) 0%,transparent 48%),
+    linear-gradient(168deg,#0a1624 0%,#0f1f2e 45%,#152a3d 100%);
+}
+.dash-shell--admin .sb-ico{background:linear-gradient(135deg,var(--pu),#a78bfa);box-shadow:0 3px 10px rgba(124,58,237,.35);}
+.dash-shell--admin .ni.on{background:rgba(26,138,74,.18);border:1px solid rgba(26,138,74,.32);}
+.dash-shell--admin .tb-crumb b{color:var(--g);}
+
+.dash-shell--doctor .sb{background:#0f1f2e;}
+.dash-shell--doctor .sb::before{
+  background:
+    radial-gradient(ellipse 130% 50% at -10% 95%,rgba(13,148,136,.14) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 42% at 110% 0%,rgba(29,78,216,.09) 0%,transparent 50%),
+    linear-gradient(168deg,#0a1820 0%,#0f2430 42%,#123a38 100%);
+}
+.dash-shell--doctor .sb-ico{background:linear-gradient(135deg,var(--te),#5eead4);box-shadow:0 3px 10px rgba(13,148,136,.38);}
+.dash-shell--doctor .ni.on{background:rgba(13,148,136,.2);border:1px solid rgba(13,148,136,.35);}
+.dash-shell--doctor .ni.on .ni-lbl{color:#fff;}
+.dash-shell--doctor .tb-crumb b{color:var(--te);}
+.dash-shell--doctor .tb-search:focus-within{border-color:var(--te);box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+.dash-shell--doctor .tb-btn:hover{border-color:var(--te);background:var(--tel);}
+
+.dash-shell--nurse .sb{background:#1a1f3a;}
+.dash-shell--nurse .sb::before{
+  background:
+    radial-gradient(ellipse 125% 52% at -8% 100%,rgba(225,29,72,.11) 0%,transparent 52%),
+    radial-gradient(ellipse 85% 45% at 105% 5%,rgba(124,58,237,.1) 0%,transparent 48%),
+    linear-gradient(168deg,#12152a 0%,#1a1f3a 48%,#222850 100%);
+}
+.dash-shell--nurse .sb-ico{background:linear-gradient(135deg,var(--ro),#fb7185);box-shadow:0 3px 10px rgba(225,29,72,.35);}
+.dash-shell--nurse .ni.on{background:rgba(225,29,72,.16);border:1px solid rgba(225,29,72,.32);}
+.dash-shell--nurse .tb-crumb b{color:var(--ro);}
+.dash-shell--nurse .tb-search:focus-within{border-color:var(--ro);box-shadow:0 0 0 3px rgba(225,29,72,.1);}
+.dash-shell--nurse .tb-btn:hover{border-color:var(--ro);background:var(--rol);}
+
+/* Patient portal: deepen green shell slightly vs default */
+.dash-shell--patient .sb{background:#063220;}
+.dash-shell--patient .sb::before{
+  background:
+    radial-gradient(ellipse 135% 52% at -10% 100%,rgba(123,235,164,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 75% 40% at 110% 0%,rgba(26,138,74,.12) 0%,transparent 50%),
+    linear-gradient(168deg,#041a0f 0%,#0a3d1e 40%,#14693a 100%);
+}
+.dash-shell--patient .tb-crumb b{color:var(--g);}
+
