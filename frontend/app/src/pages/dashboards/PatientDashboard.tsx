@@ -635,6 +635,7 @@ export function PatientDashboard() {
 
   return (
     <DashboardShell
+      shellVariant="patient"
       title={PATIENT_TITLES[page]}
       crumb={PATIENT_CRUMBS[page]}
       portalSubtitle="Patient Portal · UniHealth"
@@ -774,7 +775,14 @@ export function PatientDashboard() {
                       </div>
                     ))}
                     <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                      <button className="btn-s btn-sm" type="button" onClick={() => setTopPanel("none")}>
+                      <button
+                        className="btn-s btn-sm"
+                        type="button"
+                        onClick={() => {
+                          void uiAction("All notifications marked as read.");
+                          setTopPanel("none");
+                        }}
+                      >
                         Mark all as read
                       </button>
                       <button className="btn-p btn-sm" type="button" onClick={() => setPage("results")}>
@@ -869,7 +877,8 @@ export function PatientDashboard() {
               type="button"
               className="qa"
               onClick={() => {
-                void uiAction("Message sent to your care team.");
+                setTopPanel("notifications");
+                void uiAction("Message queued — see Notifications for care-team updates.");
               }}
             >
               <span className="qa-e">💬</span>
@@ -1138,7 +1147,26 @@ export function PatientDashboard() {
               <div className="panel patient-card-in" style={{ marginBottom: 16, animationDelay: ".12s" }}>
                 <div className="pnl-hd">
                   <div className="pnl-ti">Health Score</div>
-                  <span className="pnl-lk">About this</span>
+                  <span
+                    className="pnl-lk"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                      toast(
+                        "Health Score is illustrative: it blends medication adherence, visit attendance, and preventive screenings. Not a clinical diagnosis."
+                      )
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toast(
+                          "Health Score is illustrative: it blends medication adherence, visit attendance, and preventive screenings. Not a clinical diagnosis."
+                        );
+                      }
+                    }}
+                  >
+                    About this
+                  </span>
                 </div>
                 <div className="pnl-bd">
                   <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
