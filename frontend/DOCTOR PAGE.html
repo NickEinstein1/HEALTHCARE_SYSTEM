@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/feather-icons"></script>
 <style>
-  /* ========== RESET & VARIABLES (unified) ========== */
+  /* ========== RESET & VARIABLES ========== */
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
     --primary: #1a8a4a; --primary-dark: #0a4a26; --primary-light: #e8f5ee; --primary-muted: #a8d8bc;
@@ -71,6 +71,7 @@
   .tb-cr{font-size:10px;color:var(--t3);margin-top:1px}
   .tb-cr b{color:var(--accent-teal)}
   .tb-gap{flex:1}
+  /* Hospital & current patient badges */
   .tb-ward{background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:6px;padding:5px 10px;font-size:10.5px;font-weight:700;color:var(--accent-teal);display:flex;align-items:center;gap:5px;flex-shrink:0}
   .tb-srch{display:flex;align-items:center;gap:6px;padding:6px 11px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;width:200px;transition:all .2s}
   .tb-srch:focus-within{border-color:var(--accent-teal);background:#fff;box-shadow:0 0 0 3px rgba(13,148,136,.09)}
@@ -150,7 +151,7 @@
   .field label{font-size:11px;font-weight:700;color:var(--t2)}
   .field input,.field select,.field textarea{padding:8px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-family:var(--font);font-size:12px;color:var(--t1);background:var(--bg);outline:none;transition:all .18s}
   .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent-teal);background:#fff;box-shadow:0 0 0 3px rgba(13,148,136,.09)}
-  /* Additional security widget styles */
+  /* AI Security widget */
   .ai-security-widget{background:linear-gradient(135deg,rgba(13,148,136,.07),rgba(13,148,136,.02));border:1.5px solid rgba(13,148,136,.2);border-radius:12px;padding:15px 16px;margin-bottom:14px}
   .ai-security-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .ai-security-ti{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--t1)}
@@ -166,7 +167,7 @@
 </head>
 <body>
 
-<!-- ========== SIDEBAR ========== -->
+<!-- SIDEBAR -->
 <nav class="sb">
   <div class="sb-flag"></div>
   <div class="sb-in">
@@ -222,7 +223,7 @@
   </div>
 </nav>
 
-<!-- ========== MAIN ========== -->
+<!-- MAIN CONTENT -->
 <div class="main">
   <header class="topbar">
     <div>
@@ -262,12 +263,12 @@
         </div>
       </div>
 
-      <!-- AI Security Monitor (clinical context) -->
+      <!-- AI Security & Clinical Alert Monitor -->
       <div class="ai-security-widget">
         <div class="ai-security-hd">
           <div>
-            <div class="ai-security-ti"><i data-feather="cpu"></i> AI Security &amp; Clinical Alert Monitor</div>
-            <div style="font-size:10px;color:var(--t3);margin-top:1px">Real‑time safety alerts and anomaly detection for your patients</div>
+            <div class="ai-security-ti"><i data-feather="cpu"></i> AI Clinical &amp; Security Alerts</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:1px">Real-time safety and anomaly detection</div>
           </div>
           <span class="tag g">ACTIVE</span>
         </div>
@@ -275,7 +276,7 @@
           <span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--accent-red)"></i></span>
           <div class="ai-row-body">
             <div class="ai-row-ti">Critical K⁺ — Wangui Njoroge</div>
-            <div class="ai-row-su">K⁺ 6.8 mmol/L at 03:00. ECG ordered. Dr. Mutuku notified.</div>
+            <div class="ai-row-su">K⁺ 6.8 mmol/L. ECG ordered. Dr. Mutuku notified.</div>
           </div>
           <span class="tag r">CRITICAL</span>
         </div>
@@ -309,13 +310,12 @@
         <div class="kpi" style="border-top:3px solid var(--primary)"><div class="kpi-e"><i data-feather="home"></i></div><div class="kpi-v">12</div><div class="kpi-l">Active Admissions</div></div>
       </div>
 
-      <!-- critical alert -->
+      <!-- Critical alert -->
       <div class="notice r" style="padding:10px 13px;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;margin-bottom:14px;display:flex;gap:9px">
         <i data-feather="alert-triangle"></i>
         <span><strong>CRITICAL:</strong> Wangui Njoroge — K⁺ 6.8. Immediate review.</span>
       </div>
 
-      <!-- Main clinical layout remains unchanged, just a sample -->
       <div class="gcol2">
         <div>
           <div class="panel" style="margin-bottom:14px">
@@ -350,32 +350,122 @@
       </div>
     </div>
 
-    <!-- Other pages (queue, patient, ward, labs, etc.) abbreviated for length; they retain their full logic. -->
-    <div id="pg-queue" class="pg"><div class="ph"><div class="ph-ti">Patient Queue</div></div><div class="panel"><div class="pnl-bd" id="queueTable"></div></div></div>
-    <div id="pg-patient" class="pg">... (full workup code, preserved from original) ...</div>
-    <div id="pg-ward" class="pg">...</div>
-    <div id="pg-labs" class="pg">...</div>
-    <div id="pg-prescriptions" class="pg">...</div>
-    <div id="pg-imaging" class="pg">...</div>
-    <div id="pg-notes" class="pg">...</div>
-    <div id="pg-referrals" class="pg">...</div>
-    <div id="pg-claims" class="pg">...</div>
-    <div id="pg-schedule" class="pg">...</div>
-    <div id="pg-procedures" class="pg">...</div>
+    <!-- ========== PATIENT QUEUE ========== -->
+    <div id="pg-queue" class="pg">
+      <div class="ph"><div><div class="ph-ey">Outpatient</div><div class="ph-ti">Patient Queue</div></div><button class="btn-p" onclick="mo('addPt')"><i data-feather="user-plus"></i> Add Walk-in</button></div>
+      <div class="panel"><div class="pnl-bd"><table class="tbl" id="queueTable"></table></div></div>
+    </div>
+
+    <!-- ========== PATIENT WORKUP ========== -->
+    <div id="pg-patient" class="pg">
+      <div class="ph">
+        <div><div class="ph-ey">Clinical Workup</div><div class="ph-ti">Patient Workup</div></div>
+        <div class="ph-r">
+          <button class="btn-s btn-sm" onclick="mo('discharge')"><i data-feather="home"></i> Discharge</button>
+          <button class="btn-s btn-sm" onclick="mo('refer')"><i data-feather="share-2"></i> Refer</button>
+          <button class="btn-p" onclick="mo('note')"><i data-feather="edit-3"></i> Add Note</button>
+        </div>
+      </div>
+
+      <!-- Patient Banner -->
+      <div class="pt-banner">
+        <!-- ... same as before ... -->
+        <div class="pt-in">
+          <div class="pt-av">WN</div>
+          <div>
+            <div class="pt-name">Wangui Njoroge</div>
+            <div class="pt-meta">Female · 35 yrs · O+ · Capital Region<br>Admitted: 4 Mar 2026 · Ward 4B · Bed 07</div>
+            <span class="tag r">⚠ Penicillin Allergy</span>
+          </div>
+          <div class="pt-ids"><div class="pt-id-pill">ModelCover ID: ModelCover-2024-XX-78841209</div></div>
+        </div>
+        <div class="pt-stats">
+          <div class="pt-stat"><div class="pt-sv">4</div><div class="pt-sl">Days</div></div>
+          <div class="pt-stat"><div class="pt-sv" style="color:#f87171">6.8</div><div class="pt-sl">K⁺ mmol/L</div></div>
+          <div class="pt-stat"><div class="pt-sv">120/80</div><div class="pt-sl">BP</div></div>
+          <div class="pt-stat"><div class="pt-sv">72</div><div class="pt-sl">HR</div></div>
+        </div>
+      </div>
+
+      <div class="gcol3">
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Current Vitals</div><button class="btn-s btn-sm" onclick="mo('vitals')">Record New</button></div>
+            <div class="pnl-bd">
+              <div class="vrow">
+                <div class="vcard"><i data-feather="activity"></i><div class="vc-v">120/80</div><div class="vc-l">BP</div></div>
+                <div class="vcard"><i data-feather="heart"></i><div class="vc-v">72</div><div class="vc-l">HR</div></div>
+                <div class="vcard"><i data-feather="thermometer"></i><div class="vc-v">36.8</div><div class="vc-l">Temp</div></div>
+                <div class="vcard"><i data-feather="wind"></i><div class="vc-v">98.5</div><div class="vc-l">SpO₂</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Latest Lab Results</div><button class="btn-pg btn-sm" onclick="mo('orderLab')">+ Order Lab</button></div>
+            <div class="pnl-bd" id="ptLabs"></div>
+          </div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-ti">Current Medications</div></div>
+            <div class="pnl-bd" id="ptMeds"></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Diagnoses</div><button class="btn-s btn-sm" onclick="mo('addDx')">+ Add</button></div>
+            <div class="pnl-bd" id="ptDx"></div>
+          </div>
+          <div class="panel" style="margin-bottom:14px">
+            <div class="pnl-hd"><div class="pnl-ti">Clinical History</div></div>
+            <div class="pnl-bd" id="ptHistory"></div>
+          </div>
+          <div class="panel">
+            <div class="pnl-hd"><div class="pnl-ti">Care Plan</div></div>
+            <div class="pnl-bd">
+              <div>Monitoring: 4‑hourly vitals<br>Labs: Daily U&amp;E<br>Diet: Low‑potassium</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== WARD ========== -->
+    <div id="pg-ward" class="pg"><div class="ph"><div class="ph-ti">Ward 4B — Bed Map</div></div><div class="panel"><div class="pnl-bd" id="fullBeds"></div></div></div>
+
+    <!-- ========== LABS ========== -->
+    <div id="pg-labs" class="pg"><div class="ph"><div class="ph-ti">Lab Orders &amp; Results</div><button class="btn-p" onclick="mo('orderLab')"><i data-feather="plus"></i> Order Lab</button></div><div class="panel"><div class="pnl-bd"><table class="tbl" id="labsTable"></table></div></div></div>
+
+    <!-- ========== PRESCRIPTIONS ========== -->
+    <div id="pg-prescriptions" class="pg"><div class="ph"><div class="ph-ti">Prescriptions</div><button class="btn-p" onclick="mo('prescribe')"><i data-feather="plus"></i> New Prescription</button></div><div class="panel"><div class="pnl-bd"><table class="tbl" id="rxTable"></table></div></div></div>
+
+    <!-- ========== IMAGING ========== -->
+    <div id="pg-imaging" class="pg"><div class="ph"><div class="ph-ti">Imaging &amp; Reports</div></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Patient</th><th>Study</th><th>Status</th></tr></thead><tbody><tr><td>4 Mar</td><td>Wangui Njoroge</td><td>Chest X‑Ray</td><td><span class="tag g">Reported</span></td></tr></tbody></table></div></div></div>
+
+    <!-- ========== NOTES ========== -->
+    <div id="pg-notes" class="pg"><div class="ph"><div class="ph-ti">Clinical Notes</div><button class="btn-p" onclick="mo('note')"><i data-feather="plus"></i> New Note</button></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Patient</th><th>Note Type</th></tr></thead><tbody><tr><td>04 Mar 09:15</td><td>Wangui Njoroge</td><td>Progress Note</td></tr></tbody></table></div></div></div>
+
+    <!-- ========== REFERRALS ========== -->
+    <div id="pg-referrals" class="pg"><div class="ph"><div class="ph-ti">Referrals</div><button class="btn-p" onclick="mo('refer')"><i data-feather="plus"></i> New Referral</button></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Patient</th><th>To</th><th>Status</th></tr></thead><tbody><tr><td>28 Feb</td><td>Wangui Njoroge</td><td>Cardiology</td><td><span class="tag te">Accepted</span></td></tr></tbody></table></div></div></div>
+
+    <!-- ========== CLAIMS ========== -->
+    <div id="pg-claims" class="pg"><div class="ph"><div class="ph-ti">ModelCover Claims</div><button class="btn-p" onclick="mo('claim')"><i data-feather="plus"></i> Submit Claim</button></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Claim No.</th><th>Patient</th><th>Amount</th><th>Status</th></tr></thead><tbody><tr><td>CLM-101</td><td>Wangui Njoroge</td><td>1,200</td><td><span class="tag g">Approved</span></td></tr></tbody></table></div></div></div>
+
+    <!-- ========== SCHEDULE ========== -->
+    <div id="pg-schedule" class="pg"><div class="ph"><div class="ph-ti">My Schedule</div></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Day</th><th>Shift</th></tr></thead><tbody><tr><td>Mon 10 Mar</td><td>08:00–16:00</td></tr></tbody></table></div></div></div>
+
+    <!-- ========== PROCEDURES ========== -->
+    <div id="pg-procedures" class="pg"><div class="ph"><div class="ph-ti">Procedures</div><button class="btn-p" onclick="mo('procedure')"><i data-feather="plus"></i> Book Procedure</button></div><div class="panel"><div class="pnl-bd"><table class="tbl"><thead><tr><th>Date</th><th>Patient</th><th>Procedure</th></tr></thead><tbody><tr><td>10 Mar</td><td>Omar Abdullahi</td><td>Laparotomy</td></tr></tbody></table></div></div></div>
 
     <!-- ========== AUDIT TRAIL ========== -->
     <div id="pg-audit" class="pg">
-      <div class="ph"><div><div class="ph-ey">Compliance</div><div class="ph-ti">Clinical Audit Trail</div><div class="ph-su">Append‑only log of clinical actions · Model Data Protection Act</div></div></div>
+      <div class="ph"><div><div class="ph-ey">Compliance</div><div class="ph-ti">Clinical Audit Trail</div></div></div>
       <div class="panel">
         <table class="tbl">
           <thead><tr><th>Timestamp</th><th>Action</th><th>User</th><th>Details</th><th>Status</th></tr></thead>
           <tbody id="auditTbody">
-            <tr><td class="mono">2026-04-03 09:42:11</td><td>View Workup</td><td>Dr. J. Mutuku</td><td>Wangui Njoroge</td><td><span class="tag g">LOGGED</span></td></tr>
-            <tr><td class="mono">2026-04-03 09:15:30</td><td>Prescribe</td><td>Dr. J. Mutuku</td><td>Amlodipine 5mg for Wangui N.</td><td><span class="tag g">LOGGED</span></td></tr>
-            <tr><td class="mono">2026-04-03 08:55:44</td><td>Order Lab</td><td>Dr. J. Mutuku</td><td>K⁺, U&E for Wangui N.</td><td><span class="tag g">LOGGED</span></td></tr>
+            <tr><td class="mono">2026-04-03 09:42</td><td>View Workup</td><td>Dr. J. Mutuku</td><td>Wangui Njoroge</td><td><span class="tag g">LOGGED</span></td></tr>
+            <tr><td class="mono">2026-04-03 09:15</td><td>Prescribe</td><td>Dr. J. Mutuku</td><td>Amlodipine 5mg</td><td><span class="tag g">LOGGED</span></td></tr>
           </tbody>
         </table>
-        <div style="padding:12px 16px;background:#f8faf8;border-top:1px solid var(--bdr);font-size:10.5px;color:var(--t3)"><i data-feather="link"></i> This audit trail is append‑only and tamper‑evident.</div>
       </div>
     </div>
 
@@ -383,43 +473,36 @@
     <div id="pg-health" class="pg">
       <div class="ph"><div><div class="ph-ey">Infrastructure</div><div class="ph-ti">System Health &amp; Backups</div></div></div>
       <div class="g2">
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-ti">Backup Status</div></div>
-          <div class="pnl-bd">
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Last full backup</span><strong style="color:var(--primary)">✓ 2h ago</strong></div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Incremental</span><strong style="color:var(--primary)">✓ 15m ago</strong></div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>DR Failover</span><strong style="color:var(--primary)">✓ Hot standby</strong></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-ti">Uptime &amp; Performance</div></div>
-          <div class="pnl-bd">
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>System Uptime</span><strong style="color:var(--primary)">99.97%</strong></div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>API Gateway</span><strong style="color:var(--primary)">UP</strong></div>
-            <div style="display:flex;justify-content:space-between;padding:8px 0"><span>FHIR Engine</span><strong style="color:var(--primary)">UP</strong></div>
-          </div>
-        </div>
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Backup Status</div></div><div class="pnl-bd"><div style="display:flex;justify-content:space-between;padding:8px 0"><span>Last full backup</span><strong style="color:var(--primary)">✓ 2h ago</strong></div></div></div>
+        <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Uptime &amp; Performance</div></div><div class="pnl-bd"><div style="display:flex;justify-content:space-between;padding:8px 0"><span>System Uptime</span><strong style="color:var(--primary)">99.97%</strong></div></div></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ========== MODAL & TOAST ========== -->
-<div class="mo-ov" id="moOv" onclick="if(event.target===this)closeMo()">... (same as before) ...</div>
-<div class="toast" id="toast">...</div>
+<!-- MODAL & TOAST -->
+<div class="mo-ov" id="moOv" onclick="if(event.target===this)closeMo()">
+  <div class="mo"><div class="mo-stripe"></div><div class="mo-hd"><div class="mo-ti" id="moTi">Action</div><button class="mo-x" onclick="closeMo()"><i data-feather="x"></i></button></div><div class="mo-bd" id="moBd"></div><div class="mo-ft"><button class="btn-s" onclick="closeMo()">Cancel</button><button class="btn-p" id="moBtn" onclick="submitMo()">Confirm</button></div></div>
+</div>
+<div class="toast" id="toast"><span class="toast-ico" id="toastIco"><i data-feather="check-circle"></i></span><div><div class="toast-msg" id="toastMsg"></div><div class="toast-sub" id="toastSub"></div></div></div>
 
 <script>
-  // ========== CORE DOCTOR LOGIC ==========
+  // ========== DATA & NAVIGATION ==========
   const now = new Date();
   document.getElementById('tbDate').textContent = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()]+', '+now.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()]+' '+now.getFullYear();
 
   const TITLES = {
     home:'Today\'s Overview',queue:'Patient Queue',patient:'Patient Workup',ward:'Ward 4B',
     labs:'Lab Orders & Results',prescriptions:'Prescriptions',imaging:'Imaging & Reports',
-    notes:'Clinical Notes',referrals:'Referrals',procedures:'Procedures',claims:'ModelCover Claims',schedule:'My Schedule',
-    audit:'Audit Trail',health:'System Health'
+    notes:'Clinical Notes',referrals:'Referrals',procedures:'Procedures',claims:'ModelCover Claims',
+    schedule:'My Schedule',audit:'Audit Trail',health:'System Health'
   };
-  const CRUMBS = { /* same */ };
+  const CRUMBS = {
+    home:'Home',queue:'Clinical › Queue',patient:'Clinical › Workup',ward:'Clinical › Ward',
+    labs:'Clinical › Labs',prescriptions:'Clinical › Prescriptions',imaging:'Clinical › Imaging',
+    notes:'Workflow › Notes',referrals:'Workflow › Referrals',procedures:'Workflow › Procedures',
+    claims:'System › Claims',schedule:'System › Schedule',audit:'Compliance › Audit',health:'Infrastructure › Health'
+  };
 
   let currentPatient = null;
 
@@ -435,9 +518,9 @@
     else setCurrentPatient(null);
     feather.replace();
   }
-
   function signOut(){if(confirm('Sign out?'))window.location.href='unihealth-login.html';}
 
+  // Current patient badge
   function setCurrentPatient(name){
     const badge = document.getElementById('currentPatientBadge');
     const span = document.getElementById('currentPatientName');
@@ -449,50 +532,115 @@
     }
   }
 
-  // Modal / Toast (same pattern)
-  function showToast(ico,msg,sub){ /* ... */ }
+  // ========== MODAL & TOAST ==========
+  const MO = {
+    addPt:{t:'Add Walk‑in Patient',s:'Add to Queue',b:'<div class="field"><label>First Name</label><input></div><div class="field"><label>Last Name</label><input></div>'},
+    discharge:{t:'Discharge Patient',s:'Confirm',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Discharge Summary</label><textarea></textarea></div>'},
+    refer:{t:'New Referral',s:'Send Referral',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Specialty</label><select><option>Cardiology</option></select></div>'},
+    note:{t:'New Clinical Note',s:'Sign & Save',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Note</label><textarea></textarea></div>'},
+    vitals:{t:'Record Vitals',s:'Save',b:'<div class="field-row"><div class="field"><label>BP</label><input placeholder="120/80"></div><div class="field"><label>HR</label><input type="number" placeholder="72"></div></div><div class="field-row"><div class="field"><label>Temp</label><input type="number" step="0.1" placeholder="36.8"></div><div class="field"><label>SpO₂</label><input type="number" placeholder="98"></div></div>'},
+    orderLab:{t:'Order Lab Test',s:'Submit',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Test</label><select><option>U&amp;E</option></select></div><div class="field"><label>Priority</label><select><option>Routine</option></select></div>'},
+    addDx:{t:'Add Diagnosis',s:'Save',b:'<div class="field"><label>ICD-10 Code</label><input placeholder="e.g. I10"></div><div class="field"><label>Description</label><input></div>'},
+    prescribe:{t:'New Prescription',s:'Sign & Submit',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Drug</label><input></div><div class="field-row"><div class="field"><label>Dose</label><input></div><div class="field"><label>Route</label><select><option>Oral</option></select></div></div>'},
+    claim:{t:'Submit ModelCover Claim',s:'Submit',b:'<div class="field"><label>Patient</label><select><option>Wangui Njoroge</option></select></div><div class="field"><label>Service</label><select><option>Inpatient</option></select></div><div class="field"><label>Amount</label><input type="number"></div>'},
+    procedure:{t:'Book Procedure',s:'Schedule',b:'<div class="field"><label>Patient</label><select><option>Omar Abdullahi</option></select></div><div class="field"><label>Procedure</label><input></div><div class="field-row"><div class="field"><label>Date</label><input type="date"></div><div class="field"><label>Time</label><input type="time"></div></div>'}
+  };
 
-  // Queue data etc.
+  function mo(k){
+    const m = MO[k]||{t:'Action',s:'OK',b:''};
+    document.getElementById('moTi').textContent = m.t;
+    document.getElementById('moBd').innerHTML = m.b;
+    document.getElementById('moBtn').textContent = m.s;
+    document.getElementById('moOv').classList.add('open');
+    feather.replace();
+  }
+  function closeMo(){document.getElementById('moOv').classList.remove('open');}
+  function submitMo(){ closeMo(); showToast('check-circle','Action completed','Logged to audit trail'); }
+
+  function showToast(ico,msg,sub){
+    const t = document.getElementById('toast');
+    document.getElementById('toastIco').innerHTML = `<i data-feather="${ico}"></i>`;
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastSub').textContent = sub||'';
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),3000);
+    feather.replace();
+  }
+
+  // ========== POPULATE DATA ==========
+  // Home Queue
   const QUEUE = [
     {av:'WN',name:'Wangui Njoroge',det:'ModelCover-78841209 · Hyperkalaemia',time:'08:00',tag:'r',tl:'⚠ Critical'},
     {av:'OA',name:'Omar Abdullahi',det:'ModelCover-87654321 · Abdominal pain',time:'08:30',tag:'am',tl:'Monitoring'},
     {av:'AG',name:'Adhiambo Grace',det:'ModelCover-23456789 · Headache',time:'09:00',tag:'b',tl:'Stable'},
   ];
-
-  const hq = document.getElementById('homeQueue');
+  const hq=document.getElementById('homeQueue');
   QUEUE.forEach(p=>{
-    hq.innerHTML += `<div class="q-item" onclick="currentPatient='${p.name}';setCurrentPatient('${p.name}');go('patient',null)">
+    hq.innerHTML+=`<div class="q-item" onclick="currentPatient='${p.name}';setCurrentPatient('${p.name}');go('patient',null)">
       <div class="q-av" style="background:var(--primary-light);color:var(--primary)">${p.av}</div>
       <div style="flex:1"><div class="q-name">${p.name}</div><div class="q-det">${p.det}</div></div>
       <div class="q-right"><div class="q-time">${p.time}</div><span class="tag ${p.tag}">${p.tl}</span></div>
     </div>`;
   });
 
-  // Beds, labs, etc. (abbreviated, same as original)
-  const BEDS = [{id:'01',pt:'Wangui N.',cls:'occ'},{id:'02',pt:'Omar A.',cls:'occ'},{id:'03',pt:'Available',cls:'free'}];
-  const hb = document.getElementById('homeBeds');
-  hb.style.display = 'grid'; hb.style.gridTemplateColumns = 'repeat(3,1fr)'; hb.style.gap = '6px';
-  BEDS.forEach(b=>{
-    hb.innerHTML += `<div style="padding:6px;border-radius:6px;background:${b.cls==='occ'?'#fef2f2':b.cls==='free'?'var(--primary-light)':'#fffbeb'};text-align:center"><div style="font-size:10px;font-weight:700">Bed ${b.id}</div><div style="font-size:9px">${b.pt}</div></div>`;
-  });
+  // Queue table
+  const qt=document.getElementById('queueTable');
+  qt.innerHTML='<thead><tr><th>#</th><th>Patient</th><th>ModelCover ID</th><th>Complaint</th><th>Status</th></tr></thead><tbody>';
+  QUEUE.forEach((p,i)=>{qt.innerHTML+=`<tr><td>${i+1}</td><td>${p.name}</td><td class="mono">${p.det.split('·')[0]}</td><td>${p.det.split('·')[1]?.trim()||''}</td><td><span class="tag ${p.tag}">${p.tl}</span></td></tr>`;});
+  qt.innerHTML+='</tbody>';
 
+  // Beds
+  const BEDS = [{id:'01',pt:'Wangui N.',cls:'occ'},{id:'02',pt:'Omar A.',cls:'occ'},{id:'03',pt:'Available',cls:'free'}];
+  const hb=document.getElementById('homeBeds');
+  hb.style.display='grid';hb.style.gridTemplateColumns='repeat(3,1fr)';hb.style.gap='6px';
+  BEDS.forEach(b=>{hb.innerHTML+=`<div style="padding:6px;border-radius:6px;background:${b.cls==='occ'?'#fef2f2':b.cls==='free'?'var(--primary-light)':'#fffbeb'};text-align:center"><div style="font-size:10px;font-weight:700">Bed ${b.id}</div><div style="font-size:9px">${b.pt}</div></div>`;});
+  // Full bed grid
+  const fullBeds=document.getElementById('fullBeds');
+  if(fullBeds) {fullBeds.style.display='grid';fullBeds.style.gridTemplateColumns='repeat(4,1fr)';fullBeds.style.gap='6px';BEDS.forEach(b=>{fullBeds.innerHTML+=`<div style="padding:6px;border-radius:6px;background:${b.cls==='occ'?'#fef2f2':b.cls==='free'?'var(--primary-light)':'#fffbeb'};text-align:center"><div style="font-size:10px;font-weight:700">Bed ${b.id}</div><div style="font-size:9px">${b.pt}</div></div>`;});}
+
+  // Labs
   const LABS = [{ind:'crit',name:'Serum K⁺',val:'6.8 mmol/L',vc:'crit',range:'3.5–5.0'}];
-  const hl = document.getElementById('homeLabs');
-  LABS.forEach(l=>{
-    hl.innerHTML += `<div class="lab-row"><div class="lab-ind ${l.ind}"></div><div style="flex:1"><div class="lab-name">${l.name}</div><div class="lab-ref">Ref: ${l.range}</div></div><div class="lab-val ${l.vc}">${l.val}</div></div>`;
-  });
+  const hl=document.getElementById('homeLabs');
+  LABS.forEach(l=>{hl.innerHTML+=`<div class="lab-row"><div class="lab-ind ${l.ind}"></div><div style="flex:1"><div class="lab-name">${l.name}</div><div class="lab-ref">Ref: ${l.range}</div></div><div class="lab-val ${l.vc}">${l.val}</div></div>`;});
+  const ptLabs=document.getElementById('ptLabs');
+  if(ptLabs){LABS.forEach(l=>{ptLabs.innerHTML+=`<div class="lab-row"><div class="lab-ind ${l.ind}"></div><div style="flex:1"><div class="lab-name">${l.name}</div><div class="lab-ref">Ref: ${l.range}</div></div><div class="lab-val ${l.vc}">${l.val}</div></div>`;});}
+
+  // Labs table
+  const labsTable=document.getElementById('labsTable');
+  if(labsTable){
+    labsTable.innerHTML='<thead><tr><th>Time</th><th>Patient</th><th>Test</th><th>Result</th><th>Flag</th></tr></thead><tbody>';
+    LABS.forEach(l=>{labsTable.innerHTML+=`<tr><td class="mono">07:45</td><td>Wangui Njoroge</td><td>${l.name}</td><td>${l.val}</td><td><span class="tag ${l.vc==='crit'?'r':'g'}">${l.vc.toUpperCase()}</span></td></tr>`;});
+    labsTable.innerHTML+='</tbody>';
+  }
+
+  // Meds
+  const MEDS = [{name:'Amlodipine 5mg',det:'OD oral'},{name:'Furosemide 40mg IV',det:'BD'}];
+  const pm=document.getElementById('ptMeds');
+  if(pm){MEDS.forEach(m=>{pm.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr)"><div style="flex:1"><div style="font-weight:700">${m.name}</div><div style="font-size:10.5px;color:var(--t3)">${m.det}</div></div><button class="btn-s btn-sm">Modify</button></div>`;});}
+
+  // Diagnoses
+  const DX = [{code:'E87.5',name:'Hyperkalaemia',st:'r'},{code:'I10',name:'Hypertension',st:'am'}];
+  const pd=document.getElementById('ptDx');
+  if(pd){DX.forEach(d=>{pd.innerHTML+=`<div style="display:flex;align-items:center;gap:9px;padding:8px;background:var(--bg);border-radius:8px;margin-bottom:8px"><span class="mono">${d.code}</span><span style="font-weight:700">${d.name}</span><span class="tag ${d.st}">${d.st==='r'?'Critical':'Monitoring'}</span></div>`;});}
+
+  // History
+  const HIST = [{ti:'Admitted — Hyperkalaemia',meta:'4 Mar 2026 · Central Referral Hospital'}];
+  const phist=document.getElementById('ptHistory');
+  if(phist){HIST.forEach(h=>{phist.innerHTML+=`<div style="display:flex;gap:10px;padding:8px 0"><div style="width:8px;height:8px;border-radius:50%;background:var(--accent-red);margin-top:5px"></div><div><div style="font-weight:700">${h.ti}</div><div style="font-size:10.5px;color:var(--t3)">${h.meta}</div></div></div>`;});}
+
+  // Prescriptions table
+  const rxTable=document.getElementById('rxTable');
+  if(rxTable){rxTable.innerHTML='<thead><tr><th>Date</th><th>Patient</th><th>Drug</th><th>Dose</th></tr></thead><tbody><tr><td>04 Mar</td><td>Wangui Njoroge</td><td>Amlodipine</td><td>5mg Oral</td></tr></tbody>';}
 
   // Live feed
   const liveFeed = document.getElementById('liveFeed');
   const events = [
     {msg:'Dr. Mutuku viewed Wangui Njoroge workup', time:'2m ago'},
-    {msg:'K⁺ result 6.8 mmol/L flagged critical', time:'15m ago'},
-    {msg:'Amlodipine prescription signed for Wangui N.', time:'30m ago'},
-    {msg:'Adhiambo Grace BP trend alert generated', time:'1h ago'}
+    {msg:'K⁺ result 6.8 flagged critical', time:'15m ago'},
+    {msg:'Amlodipine prescription signed', time:'30m ago'},
+    {msg:'Adhiambo Grace BP trend alert', time:'1h ago'}
   ];
-  events.forEach(e=>{
-    liveFeed.innerHTML += `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr)"><span style="font-size:12px">${e.msg}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${e.time}</span></div>`;
-  });
+  events.forEach(e=>{liveFeed.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bdr)"><span style="font-size:12px">${e.msg}</span><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${e.time}</span></div>`;});
 
   feather.replace();
 </script>
