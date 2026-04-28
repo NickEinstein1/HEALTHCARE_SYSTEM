@@ -351,26 +351,26 @@
     </div>
 
     <div class="sb-nav">
+      <!-- Main nursing care (general) -->
       <div class="sb-sec">Nursing Care</div>
       <div class="ni on" onclick="go('home',this)"><span class="ni-e"><i data-feather="home"></i></span><span class="ni-l">Shift Overview</span></div>
-      <div class="ni" onclick="go('patients',this)"><span class="ni-e"><i data-feather="grid"></i></span><span class="ni-l">My Patients</span><span class="ni-b ro">12</span></div>
-      <div class="ni" onclick="go('triage',this)"><span class="ni-e"><i data-feather="truck"></i></span><span class="ni-l">Triage Queue</span><span class="ni-b r">3</span></div>
-      <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Record Vitals</span><span class="ni-b am">4</span></div>
       <div class="ni" onclick="go('mar',this)"><span class="ni-e"><i data-feather="package"></i></span><span class="ni-l">Medication Admin (MAR)</span></div>
       <div class="ni" onclick="go('tasks',this)"><span class="ni-e"><i data-feather="check-square"></i></span><span class="ni-l">Tasks &amp; Care Plans</span><span class="ni-b am">5</span></div>
-      <div class="ni" onclick="go('fluids',this)"><span class="ni-e"><i data-feather="droplet"></i></span><span class="ni-l">Fluid Balance</span></div>
       <div class="ni" onclick="go('wounds',this)"><span class="ni-e"><i data-feather="bandage"></i></span><span class="ni-l">Wound Care</span></div>
 
+      <!-- Inpatient Care (active this shift) -->
       <div class="sb-sec">Inpatient Care</div>
       <div class="ni" onclick="go('patients',this)"><span class="ni-e"><i data-feather="layout"></i></span><span class="ni-l">Ward Patient List</span></div>
       <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Inpatient Vitals</span></div>
       <div class="ni" onclick="go('fluids',this)"><span class="ni-e"><i data-feather="droplet"></i></span><span class="ni-l">Fluid Charts</span></div>
 
+      <!-- Outpatient Care (active this shift) -->
       <div class="sb-sec">Outpatient Care</div>
-      <div class="ni" onclick="go('triage',this)"><span class="ni-e"><i data-feather="truck"></i></span><span class="ni-l">Walk&#8209;in Triage</span></div>
+      <div class="ni" onclick="go('triage',this)"><span class="ni-e"><i data-feather="truck"></i></span><span class="ni-l">Walk‑in Triage</span></div>
       <div class="ni" onclick="go('vitals',this)"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Outpatient Vitals</span></div>
       <div class="ni" onclick="mo('outpatientNote')"><span class="ni-e"><i data-feather="edit-3"></i></span><span class="ni-l">Quick Outpatient Note</span></div>
 
+      <!-- Documentation & Admin -->
       <div class="sb-sec">Documentation</div>
       <div class="ni" onclick="go('handover',this)"><span class="ni-e"><i data-feather="clipboard"></i></span><span class="ni-l">Shift Handover</span></div>
       <div class="ni" onclick="go('incidents',this)"><span class="ni-e"><i data-feather="alert-triangle"></i></span><span class="ni-l">Incident Reports</span></div>
