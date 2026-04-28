@@ -245,6 +245,7 @@ export function NurseDashboard() {
 
   return (
     <DashboardShell
+      shellVariant="nurse"
       title={NURSE_TITLES[page]}
       crumb={NURSE_CRUMBS[page]}
       portalSubtitle="Nurse Station"
@@ -264,7 +265,7 @@ export function NurseDashboard() {
         if (e.key !== "Enter") return;
         setPage("patients");
         const q = searchQuery.trim();
-        toast(q ? `Searching “${q}” (demo filter) — showing patient list.` : "Showing patient list.");
+        toast(q ? `Filtering patient list for “${q}”.` : "Opening patient list.");
       }}
       onTopbarNotificationsClick={() => {
         setPage("incidents");
@@ -913,7 +914,7 @@ export function NurseDashboard() {
               UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready
               for offline
             </span>
-            <button type="button" onClick={() => toast("Sync triggered.")}>
+            <button type="button" onClick={() => void uiAction("Manual UniHealth sync requested.")}>
               Sync Now
             </button>
           </div>
@@ -933,7 +934,18 @@ export function NurseDashboard() {
                   borderColor: "rgba(13,148,136,.3)",
                   color: "#0f766e",
                 }}
-                onClick={() => toast("Escalation queued.")}
+                onClick={async () => {
+                  try {
+                    const res = await api.nurseIncident({
+                      category: "news2_escalate_batch",
+                      ward: "Ward 4B",
+                      scope: "ews_widget_home",
+                    });
+                    toast(`Escalation batch logged (${res.id ?? "ok"}).`);
+                  } catch (e) {
+                    toast(e instanceof Error ? e.message : "Escalation request failed.");
+                  }
+                }}
               >
                 Escalate All →
               </button>
@@ -1153,10 +1165,42 @@ export function NurseDashboard() {
                     <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("incidents")}>
                       ⚠️ Report Incident
                     </button>
-                    <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => toast("Call doctor request sent.")}>
+                    <button
+                      className="btn-s"
+                      style={{ justifyContent: "center" }}
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const res = await api.nurseIncident({
+                            category: "call_doctor",
+                            patient_id: patientId,
+                            ward: "Ward 4B",
+                          });
+                          toast(`Call doctor request logged (${res.id ?? "ok"}).`);
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Request failed.");
+                        }
+                      }}
+                    >
                       📞 Call Doctor
                     </button>
-                    <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => toast("Transfer request submitted.")}>
+                    <button
+                      className="btn-s"
+                      style={{ justifyContent: "center" }}
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          const res = await api.nurseIncident({
+                            category: "transfer_request",
+                            patient_id: patientId,
+                            ward: "Ward 4B",
+                          });
+                          toast(`Transfer request logged (${res.id ?? "ok"}).`);
+                        } catch (e) {
+                          toast(e instanceof Error ? e.message : "Request failed.");
+                        }
+                      }}
+                    >
                       🚑 Request Transfer
                     </button>
                   </div>
@@ -1252,7 +1296,22 @@ export function NurseDashboard() {
               <div className="ph-ti">My Patients</div>
               <div className="ph-su">12 assigned · Morning Shift · Nurse Atieno</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => toast("Admit patient request sent.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await api.nurseIncident({
+                    category: "admit_request",
+                    ward: "Ward 4B",
+                    notes: "From My Patients header",
+                  });
+                  toast(`Admit request logged (${res.id ?? "ok"}).`);
+                } catch (e) {
+                  toast(e instanceof Error ? e.message : "Request failed.");
+                }
+              }}
+            >
               + Admit Patient
             </button>
           </div>
@@ -1515,7 +1574,14 @@ export function NurseDashboard() {
               <div className="ph-ti">Triage Queue</div>
               <div className="ph-su">Emergency and walk-in patients awaiting triage assessment</div>
             </div>
-            <button className="btn-p" type="button" onClick={() => toast("Triage entry opened.")}>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={() => {
+                setPage("vitals");
+                void uiAction("Triage new patient — opening vitals entry.");
+              }}
+            >
               + Triage New Patient
             </button>
           </div>
@@ -1625,7 +1691,16 @@ export function NurseDashboard() {
               <div className="ph-ti">Record Vitals</div>
               <div className="ph-su">Ward 4B · 4-hourly observations schedule</div>
             </div>
-            <button className="btn-vitals" type="button" onClick={() => toast("Vitals entry ready.")}>
+            <button
+              className="btn-vitals"
+              type="button"
+              onClick={() => {
+                void uiAction("Focused Quick Vitals Entry.");
+                window.requestAnimationFrame(() =>
+                  document.getElementById("nurse-vitals-quick-entry")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                );
+              }}
+            >
               + Record Vitals
             </button>
           </div>
@@ -1699,7 +1774,7 @@ export function NurseDashboard() {
                 )}
               </div>
             </div>
-            <div className="panel">
+            <div className="panel" id="nurse-vitals-quick-entry">
               <div className="pnl-hd">
                 <div className="pnl-ti">Quick Vitals Entry</div>
               </div>
