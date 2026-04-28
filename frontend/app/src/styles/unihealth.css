@@ -1,5 +1,9 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  /* Aliases for HTML model system / shared tokens */
+  --primary:var(--g);--primary-dark:var(--gd);--primary-light:var(--gl);
+  --text-primary:var(--t1);--text-secondary:var(--t2);--text-muted:var(--t3);
+  --shadow-md:var(--sh);--shadow-lg:var(--sh2);
   --g:#1a8a4a;--gd:#0a4a26;--gl:#e6f5ed;--gm:#b6dfc8;
   --r:#c0392b;--rl:#fff1f2;--rm:#fecaca;
   --b:#1d4ed8;--bl:#dbeafe;--bm:#bfdbfe;
@@ -21,6 +25,9 @@
 }
 html,body{height:100%;-webkit-font-smoothing:antialiased;font-family:var(--font)}
 body{display:flex;min-height:100vh;background:var(--bg)}
+/* React sign-in root: same flex row as legacy LOG IN PAGE */
+.sign-in-root{display:flex;min-height:100vh;width:100%;flex:1}
+.sign-in-root .card{box-shadow:var(--shadow-lg)}
 
 /* LEFT */
 .lp{width:420px;flex-shrink:0;background:var(--gd);display:flex;flex-direction:column;position:relative;overflow:hidden}
