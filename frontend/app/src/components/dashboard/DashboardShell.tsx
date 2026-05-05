@@ -27,7 +27,7 @@ export type DashboardNavSection = {
   items: DashboardNavItem[];
 };
 
-export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient";
+export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient" | "lab" | "pharmacy";
 
 export function DashboardShell(props: {
   title: string;
