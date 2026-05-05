@@ -508,6 +508,47 @@ _nurse_fluid_entries: list[dict] = []
 _nurse_wound_entries: list[dict] = []
 _nurse_handover_notes: list[dict] = []
 
+# ----- Lab portal (Phase 1 UI, in-memory) -----
+_lab_orders: list[dict] = [
+    {
+        "id": "LABORD-1001",
+        "patient_id": "P001",
+        "afl_id": "AFL-78841209",
+        "panel": "U&E",
+        "priority": "Urgent",
+        "status": "Collected",
+        "requested_at": "2026-04-03 09:12",
+    }
+]
+_lab_results: list[dict] = [
+    {"id": "RES-2001", "patient_id": "P001", "test": "Potassium (K⁺)", "value": "6.8", "unit": "mmol/L", "flag": "HIGH", "ts": "2026-04-02 11:32"},
+    {"id": "RES-2002", "patient_id": "P001", "test": "Creatinine", "value": "112", "unit": "µmol/L", "flag": "N", "ts": "2026-04-02 11:32"},
+]
+_lab_qc: list[dict] = [
+    {"id": "QC-3001", "instrument": "Chem Analyzer A", "control": "Level 1", "status": "PASS", "ts": "2026-04-03 08:00"},
+    {"id": "QC-3002", "instrument": "Hematology B", "control": "Level 2", "status": "PASS", "ts": "2026-04-03 08:05"},
+]
+_lab_imaging: list[dict] = [
+    {"id": "IMG-4001", "patient_id": "P002", "study": "CXR — PA", "modality": "X-Ray", "status": "Pending read", "ts": "2026-04-03 09:40"}
+]
+
+# ----- Pharmacy portal (Phase 1 UI, in-memory) -----
+_pharmacy_prescriptions: list[dict] = [
+    {"id": "RX-1001", "patient": "Wangui Njoroge", "patient_id": "P001", "drug": "Amlodipine 5mg", "dose": "1 tab daily", "status": "Pending", "verified": False},
+    {"id": "RX-1002", "patient": "Omar Abdullahi", "patient_id": "P002", "drug": "Morphine 10mg", "dose": "q4h PRN", "status": "Pending", "verified": False},
+    {"id": "RX-1003", "patient": "Adhiambo Grace", "patient_id": "P003", "drug": "Metformin 500mg", "dose": "bid", "status": "Pending", "verified": False},
+]
+_pharmacy_stock: list[dict] = [
+    {"name": "Amlodipine 5mg", "qty": 120, "min": 50, "unit": "tablets"},
+    {"name": "Morphine 10mg", "qty": 8, "min": 20, "unit": "ampoules"},
+    {"name": "Paracetamol IV", "qty": 4, "min": 15, "unit": "vials"},
+    {"name": "Saline 0.9% 500mL", "qty": 22, "min": 10, "unit": "bottles"},
+]
+_pharmacy_audit: list[dict] = [
+    {"ts": "2026-04-03 10:12:45", "action": "Dispense", "user": "Pauline K.", "detail": "RX-1001 Amlodipine 30 tablets", "status": "LOGGED"},
+    {"ts": "2026-04-03 09:58:02", "action": "Verify", "user": "Pauline K.", "detail": "RX-1001 approved after allergy check", "status": "LOGGED"},
+]
+
 
 @app.post("/nurse/incidents", status_code=200, summary="Create a nurse incident report (Phase 1 UI).")
 async def nurse_create_incident(payload: dict = Body(...)):
@@ -537,6 +578,149 @@ async def nurse_create_supply(payload: dict = Body(...)):
 @app.get("/nurse/supplies", status_code=200, summary="List nurse supply requests (Phase 1 UI).")
 async def nurse_list_supplies(limit: int = Query(default=50, ge=1, le=200)):
     return _nurse_supply_requests[:limit]
+
+
+# ----- Lab portal endpoints (Phase 1 UI) -----
+@app.get("/lab/orders", status_code=200, summary="List lab orders (Phase 1 UI).")
+async def lab_list_orders(limit: int = Query(default=200, ge=1, le=500)):
+    return _lab_orders[:limit]
+
+
+@app.post("/lab/orders", status_code=200, summary="Create a lab order (Phase 1 UI).")
+async def lab_create_order(payload: dict = Body(...)):
+    panel = (payload.get("panel") or "").strip()
+    if not panel:
+        raise HTTPException(status_code=400, detail="panel is required")
+    order_id = payload.get("id") or f"LABORD-{int(time.time() * 1000)}"
+    row = {
+        "id": order_id,
+        "patient_id": (payload.get("patient_id") or "").strip() or None,
+        "afl_id": (payload.get("afl_id") or "").strip() or None,
+        "panel": panel,
+        "priority": (payload.get("priority") or "").strip() or "Routine",
+        "status": (payload.get("status") or "").strip() or "Requested",
+        "requested_at": payload.get("requested_at") or time.strftime("%Y-%m-%d %H:%M"),
+    }
+    _lab_orders.insert(0, row)
+    return {"status": "created", "id": order_id}
+
+
+@app.get("/lab/results", status_code=200, summary="List lab results (Phase 1 UI).")
+async def lab_list_results(limit: int = Query(default=200, ge=1, le=500)):
+    return _lab_results[:limit]
+
+
+@app.get("/lab/qc", status_code=200, summary="List lab QC checks (Phase 1 UI).")
+async def lab_list_qc(limit: int = Query(default=200, ge=1, le=500)):
+    return _lab_qc[:limit]
+
+
+@app.get("/lab/imaging", status_code=200, summary="List imaging worklist (Phase 1 UI).")
+async def lab_list_imaging(limit: int = Query(default=200, ge=1, le=500)):
+    return _lab_imaging[:limit]
+
+
+@app.post("/lab/imaging", status_code=200, summary="Create imaging order/worklist item (Phase 1 UI).")
+async def lab_create_imaging(payload: dict = Body(...)):
+    study = (payload.get("study") or "").strip()
+    modality = (payload.get("modality") or "").strip()
+    if not study:
+        raise HTTPException(status_code=400, detail="study is required")
+    if not modality:
+        raise HTTPException(status_code=400, detail="modality is required")
+    img_id = payload.get("id") or f"IMG-{int(time.time() * 1000)}"
+    row = {
+        "id": img_id,
+        "patient_id": (payload.get("patient_id") or "").strip() or None,
+        "study": study,
+        "modality": modality,
+        "status": (payload.get("status") or "").strip() or "Pending read",
+        "ts": payload.get("ts") or time.strftime("%Y-%m-%d %H:%M"),
+    }
+    _lab_imaging.insert(0, row)
+    return {"status": "created", "id": img_id}
+
+
+# ----- Pharmacy portal endpoints (Phase 1 UI) -----
+@app.get("/pharmacy/prescriptions", status_code=200, summary="List pharmacy prescriptions (Phase 1 UI).")
+async def pharmacy_list_prescriptions(limit: int = Query(default=200, ge=1, le=500)):
+    return _pharmacy_prescriptions[:limit]
+
+
+@app.post("/pharmacy/prescriptions/{rx_id}/verify", status_code=200, summary="Verify a prescription (Phase 1 UI).")
+async def pharmacy_verify(rx_id: str):
+    for r in _pharmacy_prescriptions:
+        if str(r.get("id")) == rx_id:
+            r["verified"] = True
+            r["status"] = "Verified"
+            _pharmacy_audit.insert(
+                0,
+                {
+                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "action": "Verify",
+                    "user": "Pharmacy User",
+                    "detail": f"{rx_id} verified",
+                    "status": "LOGGED",
+                },
+            )
+            return {"status": "verified", "id": rx_id}
+    raise HTTPException(status_code=404, detail="Prescription not found")
+
+
+@app.post("/pharmacy/prescriptions/{rx_id}/dispense", status_code=200, summary="Dispense a prescription (Phase 1 UI).")
+async def pharmacy_dispense(rx_id: str):
+    for r in _pharmacy_prescriptions:
+        if str(r.get("id")) == rx_id:
+            r["status"] = "Dispensed"
+            _pharmacy_audit.insert(
+                0,
+                {
+                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "action": "Dispense",
+                    "user": "Pharmacy User",
+                    "detail": f"{rx_id} dispensed",
+                    "status": "LOGGED",
+                },
+            )
+            return {"status": "dispensed", "id": rx_id}
+    raise HTTPException(status_code=404, detail="Prescription not found")
+
+
+@app.get("/pharmacy/stock", status_code=200, summary="List pharmacy stock (Phase 1 UI).")
+async def pharmacy_list_stock(limit: int = Query(default=300, ge=1, le=1000)):
+    return _pharmacy_stock[:limit]
+
+
+@app.post("/pharmacy/stock/adjust", status_code=200, summary="Adjust stock (Phase 1 UI).")
+async def pharmacy_adjust_stock(payload: dict = Body(...)):
+    name = (payload.get("name") or "").strip()
+    qty = payload.get("qty")
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if not isinstance(qty, int):
+        raise HTTPException(status_code=400, detail="qty must be an integer")
+    for s in _pharmacy_stock:
+        if str(s.get("name", "")).strip().lower() == name.lower():
+            s["qty"] = qty
+            _pharmacy_audit.insert(
+                0,
+                {
+                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "action": "Stock Adjust",
+                    "user": "Pharmacy User",
+                    "detail": f"{name} adjusted to {qty}",
+                    "status": "LOGGED",
+                },
+            )
+            return {"status": "updated", "id": name}
+    # create if missing
+    _pharmacy_stock.insert(0, {"name": name, "qty": qty, "min": int(payload.get("min") or 0), "unit": (payload.get("unit") or "").strip() or "units"})
+    return {"status": "created", "id": name}
+
+
+@app.get("/pharmacy/audit", status_code=200, summary="List pharmacy audit entries (Phase 1 UI).")
+async def pharmacy_list_audit(limit: int = Query(default=200, ge=1, le=500)):
+    return _pharmacy_audit[:limit]
 
 
 @app.post("/nurse/tasks", status_code=200, summary="Create a nurse task (Phase 1 UI).")
