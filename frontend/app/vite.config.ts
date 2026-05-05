@@ -9,6 +9,8 @@ export default defineConfig({
       "/admin": "http://localhost:8000",
       "/ui": "http://localhost:8000",
       "/nurse": "http://localhost:8000",
+      "/lab": "http://localhost:8000",
+      "/pharmacy": "http://localhost:8000",
       "/fhir": "http://localhost:8000",
       "/metrics": "http://localhost:8000",
       "/integrations": "http://localhost:8000",
