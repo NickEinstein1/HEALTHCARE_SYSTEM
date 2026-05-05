@@ -110,6 +110,44 @@ export const api = {
   nurseHandover(limit = 50): Promise<any[]> {
     return getJson(`/nurse/handover?limit=${limit}`);
   },
+  // ---- Lab portal (Phase 1 UI) ----
+  labOrders(limit = 200): Promise<any[]> {
+    return getJson(`/lab/orders?limit=${encodeURIComponent(String(limit))}`);
+  },
+  labOrderCreate(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/lab/orders", payload);
+  },
+  labResults(limit = 200): Promise<any[]> {
+    return getJson(`/lab/results?limit=${encodeURIComponent(String(limit))}`);
+  },
+  labQc(limit = 200): Promise<any[]> {
+    return getJson(`/lab/qc?limit=${encodeURIComponent(String(limit))}`);
+  },
+  labImagingOrders(limit = 200): Promise<any[]> {
+    return getJson(`/lab/imaging?limit=${encodeURIComponent(String(limit))}`);
+  },
+  labImagingCreate(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/lab/imaging", payload);
+  },
+  // ---- Pharmacy portal (Phase 1 UI) ----
+  pharmacyPrescriptions(limit = 200): Promise<any[]> {
+    return getJson(`/pharmacy/prescriptions?limit=${encodeURIComponent(String(limit))}`);
+  },
+  pharmacyVerify(rxId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/pharmacy/prescriptions/${encodeURIComponent(rxId)}/verify`, {});
+  },
+  pharmacyDispense(rxId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/pharmacy/prescriptions/${encodeURIComponent(rxId)}/dispense`, {});
+  },
+  pharmacyStock(limit = 300): Promise<any[]> {
+    return getJson(`/pharmacy/stock?limit=${encodeURIComponent(String(limit))}`);
+  },
+  pharmacyStockAdjust(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/pharmacy/stock/adjust", payload);
+  },
+  pharmacyAudit(limit = 200): Promise<any[]> {
+    return getJson(`/pharmacy/audit?limit=${encodeURIComponent(String(limit))}`);
+  },
   uiAction(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/ui/actions", payload);
   },
