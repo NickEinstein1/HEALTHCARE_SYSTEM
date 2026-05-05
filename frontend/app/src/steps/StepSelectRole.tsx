@@ -1,7 +1,7 @@
 import type { RoleKey } from "../theme/tokens";
 import { ROLE_CONFIG } from "../lib/signInConfig";
 
-const ROLES: RoleKey[] = ["doctor", "nurse", "admin", "patient"];
+const ROLES: RoleKey[] = ["doctor", "nurse", "lab", "pharmacy", "admin", "patient"];
 
 type Props = {
   selected: RoleKey | null;
@@ -39,12 +39,16 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
             <div className="rnm">
               {r === "doctor" && "Doctor"}
               {r === "nurse" && "Nurse / CO"}
+              {r === "lab" && "Laboratory"}
+              {r === "pharmacy" && "Pharmacy"}
               {r === "admin" && "Administrator"}
               {r === "patient" && "Patient"}
             </div>
             <div className="rds">
               {r === "doctor" && "Physician · Specialist"}
               {r === "nurse" && "Nurse · Clinical Officer"}
+              {r === "lab" && "Diagnostics · Laboratory"}
+              {r === "pharmacy" && "Dispensing · Pharmacist"}
               {r === "admin" && "Hospital · System Admin"}
               {r === "patient" && "View health records"}
             </div>
