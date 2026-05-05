@@ -7,14 +7,13 @@ Pilot EMRs POST Patient/Encounter to Kafka via ingestion API.
 """
 
 import asyncpg
-import os
 import time
 from collections import defaultdict
 
 from fastapi import Body, FastAPI, HTTPException, Header, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
-import httpx
+from app.api.router import api_router
 
 from app.config import settings
 from app.ingestion import send_encounter, send_medication_request, send_observation, send_patient
@@ -45,68 +44,10 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# ----- Generic action log (remove "demo" placeholders) -----
-_ui_actions: list[dict] = []
+app.include_router(api_router)
 
-# ----- Integration: Kenya MOH Master Facility List (KMHFL) -----
-_kmhfl_cache: dict[str, tuple[float, dict]] = {}
-_KMHFL_TTL_S = 300.0
-
-
-def _kmhfl_base_url() -> str:
-    # Pick a stable default, but allow override.
-    return (os.getenv("KMHFL_BASE_URL") or "https://kmhfl.health.go.ke").rstrip("/")
-
-
-@app.get("/integrations/kmhfl/facilities", status_code=200, summary="Proxy Kenya KMHFL facilities with caching.")
-async def kmhfl_facilities(
-    search: str | None = Query(default=None),
-    name: str | None = Query(default=None),
-    code: str | None = Query(default=None, description="Comma-separated facility codes"),
-    is_published: bool | None = Query(default=True),
-    is_classified: bool | None = Query(default=False),
-    limit: int = Query(default=50, ge=1, le=200),
-    page: int = Query(default=1, ge=1, le=5000),
-):
-    """
-    Proxies the KMHFL API so the frontend can call it without CORS issues.
-    Response is cached briefly to reduce load and improve perceived speed.
-    """
-    base = _kmhfl_base_url()
-    url = f"{base}/api/facilities/facilities/"
-    params: dict[str, str] = {"page": str(page), "page_size": str(limit)}
-    if search:
-        params["search"] = search
-    if name:
-        params["name"] = name
-    if code:
-        params["code"] = code
-    if is_published is not None:
-        params["is_published"] = "true" if is_published else "false"
-    if is_classified is not None:
-        params["is_classified"] = "true" if is_classified else "false"
-
-    key = f"{url}?{sorted(params.items())}"
-    now = time.time()
-    cached = _kmhfl_cache.get(key)
-    if cached and (now - cached[0]) < _KMHFL_TTL_S:
-        return {"source": "kmhfl", "cached": True, "base_url": base, **cached[1]}
-
-    try:
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            resp = await client.get(url, params=params, headers={"Accept": "application/json"})
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"KMHFL fetch failed: {e}")
-
-    if resp.status_code >= 400:
-        raise HTTPException(status_code=502, detail=f"KMHFL returned {resp.status_code}: {resp.text[:400]}")
-
-    data = resp.json()
-    if not isinstance(data, dict):
-        data = {"results": data}
-    _kmhfl_cache[key] = (now, data)
-    return {"source": "kmhfl", "cached": False, "base_url": base, **data}
-
+# NOTE: Admin + Nurse Phase 1 endpoints moved to routers; kept here disabled.
+'''
 # ----- Admin: User management (Phase 1 UI, in-memory) -----
 _admin_users: list[dict] = [
     {
@@ -198,19 +139,6 @@ _admin_patients: list[dict] = [
         "updated_at": time.time(),
     }
 ]
-
-
-@app.post("/ui/actions", status_code=200, summary="Record a UI action (Phase 1 UI).")
-async def ui_record_action(payload: dict = Body(...)):
-    action_id = payload.get("id") or f"ACT-{int(time.time() * 1000)}"
-    row = {"id": action_id, **payload, "created_at": time.time()}
-    _ui_actions.insert(0, row)
-    return {"status": "recorded", "id": action_id}
-
-
-@app.get("/ui/actions", status_code=200, summary="List UI actions (Phase 1 UI).")
-async def ui_list_actions(limit: int = Query(default=100, ge=1, le=500)):
-    return _ui_actions[:limit]
 
 
 @app.get("/admin/users", status_code=200, summary="List admin-managed users (Phase 1 UI).")
@@ -508,46 +436,10 @@ _nurse_fluid_entries: list[dict] = []
 _nurse_wound_entries: list[dict] = []
 _nurse_handover_notes: list[dict] = []
 
-# ----- Lab portal (Phase 1 UI, in-memory) -----
-_lab_orders: list[dict] = [
-    {
-        "id": "LABORD-1001",
-        "patient_id": "P001",
-        "afl_id": "AFL-78841209",
-        "panel": "U&E",
-        "priority": "Urgent",
-        "status": "Collected",
-        "requested_at": "2026-04-03 09:12",
-    }
-]
-_lab_results: list[dict] = [
-    {"id": "RES-2001", "patient_id": "P001", "test": "Potassium (K⁺)", "value": "6.8", "unit": "mmol/L", "flag": "HIGH", "ts": "2026-04-02 11:32"},
-    {"id": "RES-2002", "patient_id": "P001", "test": "Creatinine", "value": "112", "unit": "µmol/L", "flag": "N", "ts": "2026-04-02 11:32"},
-]
-_lab_qc: list[dict] = [
-    {"id": "QC-3001", "instrument": "Chem Analyzer A", "control": "Level 1", "status": "PASS", "ts": "2026-04-03 08:00"},
-    {"id": "QC-3002", "instrument": "Hematology B", "control": "Level 2", "status": "PASS", "ts": "2026-04-03 08:05"},
-]
-_lab_imaging: list[dict] = [
-    {"id": "IMG-4001", "patient_id": "P002", "study": "CXR — PA", "modality": "X-Ray", "status": "Pending read", "ts": "2026-04-03 09:40"}
-]
-
-# ----- Pharmacy portal (Phase 1 UI, in-memory) -----
-_pharmacy_prescriptions: list[dict] = [
-    {"id": "RX-1001", "patient": "Wangui Njoroge", "patient_id": "P001", "drug": "Amlodipine 5mg", "dose": "1 tab daily", "status": "Pending", "verified": False},
-    {"id": "RX-1002", "patient": "Omar Abdullahi", "patient_id": "P002", "drug": "Morphine 10mg", "dose": "q4h PRN", "status": "Pending", "verified": False},
-    {"id": "RX-1003", "patient": "Adhiambo Grace", "patient_id": "P003", "drug": "Metformin 500mg", "dose": "bid", "status": "Pending", "verified": False},
-]
-_pharmacy_stock: list[dict] = [
-    {"name": "Amlodipine 5mg", "qty": 120, "min": 50, "unit": "tablets"},
-    {"name": "Morphine 10mg", "qty": 8, "min": 20, "unit": "ampoules"},
-    {"name": "Paracetamol IV", "qty": 4, "min": 15, "unit": "vials"},
-    {"name": "Saline 0.9% 500mL", "qty": 22, "min": 10, "unit": "bottles"},
-]
-_pharmacy_audit: list[dict] = [
-    {"ts": "2026-04-03 10:12:45", "action": "Dispense", "user": "Pauline K.", "detail": "RX-1001 Amlodipine 30 tablets", "status": "LOGGED"},
-    {"ts": "2026-04-03 09:58:02", "action": "Verify", "user": "Pauline K.", "detail": "RX-1001 approved after allergy check", "status": "LOGGED"},
-]
+#
+# NOTE:
+# Lab + Pharmacy Phase 1 in-memory state moved to `app/state.py`
+# and endpoints moved under `app/api/routers/`.
 
 
 @app.post("/nurse/incidents", status_code=200, summary="Create a nurse incident report (Phase 1 UI).")
@@ -580,147 +472,7 @@ async def nurse_list_supplies(limit: int = Query(default=50, ge=1, le=200)):
     return _nurse_supply_requests[:limit]
 
 
-# ----- Lab portal endpoints (Phase 1 UI) -----
-@app.get("/lab/orders", status_code=200, summary="List lab orders (Phase 1 UI).")
-async def lab_list_orders(limit: int = Query(default=200, ge=1, le=500)):
-    return _lab_orders[:limit]
-
-
-@app.post("/lab/orders", status_code=200, summary="Create a lab order (Phase 1 UI).")
-async def lab_create_order(payload: dict = Body(...)):
-    panel = (payload.get("panel") or "").strip()
-    if not panel:
-        raise HTTPException(status_code=400, detail="panel is required")
-    order_id = payload.get("id") or f"LABORD-{int(time.time() * 1000)}"
-    row = {
-        "id": order_id,
-        "patient_id": (payload.get("patient_id") or "").strip() or None,
-        "afl_id": (payload.get("afl_id") or "").strip() or None,
-        "panel": panel,
-        "priority": (payload.get("priority") or "").strip() or "Routine",
-        "status": (payload.get("status") or "").strip() or "Requested",
-        "requested_at": payload.get("requested_at") or time.strftime("%Y-%m-%d %H:%M"),
-    }
-    _lab_orders.insert(0, row)
-    return {"status": "created", "id": order_id}
-
-
-@app.get("/lab/results", status_code=200, summary="List lab results (Phase 1 UI).")
-async def lab_list_results(limit: int = Query(default=200, ge=1, le=500)):
-    return _lab_results[:limit]
-
-
-@app.get("/lab/qc", status_code=200, summary="List lab QC checks (Phase 1 UI).")
-async def lab_list_qc(limit: int = Query(default=200, ge=1, le=500)):
-    return _lab_qc[:limit]
-
-
-@app.get("/lab/imaging", status_code=200, summary="List imaging worklist (Phase 1 UI).")
-async def lab_list_imaging(limit: int = Query(default=200, ge=1, le=500)):
-    return _lab_imaging[:limit]
-
-
-@app.post("/lab/imaging", status_code=200, summary="Create imaging order/worklist item (Phase 1 UI).")
-async def lab_create_imaging(payload: dict = Body(...)):
-    study = (payload.get("study") or "").strip()
-    modality = (payload.get("modality") or "").strip()
-    if not study:
-        raise HTTPException(status_code=400, detail="study is required")
-    if not modality:
-        raise HTTPException(status_code=400, detail="modality is required")
-    img_id = payload.get("id") or f"IMG-{int(time.time() * 1000)}"
-    row = {
-        "id": img_id,
-        "patient_id": (payload.get("patient_id") or "").strip() or None,
-        "study": study,
-        "modality": modality,
-        "status": (payload.get("status") or "").strip() or "Pending read",
-        "ts": payload.get("ts") or time.strftime("%Y-%m-%d %H:%M"),
-    }
-    _lab_imaging.insert(0, row)
-    return {"status": "created", "id": img_id}
-
-
-# ----- Pharmacy portal endpoints (Phase 1 UI) -----
-@app.get("/pharmacy/prescriptions", status_code=200, summary="List pharmacy prescriptions (Phase 1 UI).")
-async def pharmacy_list_prescriptions(limit: int = Query(default=200, ge=1, le=500)):
-    return _pharmacy_prescriptions[:limit]
-
-
-@app.post("/pharmacy/prescriptions/{rx_id}/verify", status_code=200, summary="Verify a prescription (Phase 1 UI).")
-async def pharmacy_verify(rx_id: str):
-    for r in _pharmacy_prescriptions:
-        if str(r.get("id")) == rx_id:
-            r["verified"] = True
-            r["status"] = "Verified"
-            _pharmacy_audit.insert(
-                0,
-                {
-                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "action": "Verify",
-                    "user": "Pharmacy User",
-                    "detail": f"{rx_id} verified",
-                    "status": "LOGGED",
-                },
-            )
-            return {"status": "verified", "id": rx_id}
-    raise HTTPException(status_code=404, detail="Prescription not found")
-
-
-@app.post("/pharmacy/prescriptions/{rx_id}/dispense", status_code=200, summary="Dispense a prescription (Phase 1 UI).")
-async def pharmacy_dispense(rx_id: str):
-    for r in _pharmacy_prescriptions:
-        if str(r.get("id")) == rx_id:
-            r["status"] = "Dispensed"
-            _pharmacy_audit.insert(
-                0,
-                {
-                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "action": "Dispense",
-                    "user": "Pharmacy User",
-                    "detail": f"{rx_id} dispensed",
-                    "status": "LOGGED",
-                },
-            )
-            return {"status": "dispensed", "id": rx_id}
-    raise HTTPException(status_code=404, detail="Prescription not found")
-
-
-@app.get("/pharmacy/stock", status_code=200, summary="List pharmacy stock (Phase 1 UI).")
-async def pharmacy_list_stock(limit: int = Query(default=300, ge=1, le=1000)):
-    return _pharmacy_stock[:limit]
-
-
-@app.post("/pharmacy/stock/adjust", status_code=200, summary="Adjust stock (Phase 1 UI).")
-async def pharmacy_adjust_stock(payload: dict = Body(...)):
-    name = (payload.get("name") or "").strip()
-    qty = payload.get("qty")
-    if not name:
-        raise HTTPException(status_code=400, detail="name is required")
-    if not isinstance(qty, int):
-        raise HTTPException(status_code=400, detail="qty must be an integer")
-    for s in _pharmacy_stock:
-        if str(s.get("name", "")).strip().lower() == name.lower():
-            s["qty"] = qty
-            _pharmacy_audit.insert(
-                0,
-                {
-                    "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "action": "Stock Adjust",
-                    "user": "Pharmacy User",
-                    "detail": f"{name} adjusted to {qty}",
-                    "status": "LOGGED",
-                },
-            )
-            return {"status": "updated", "id": name}
-    # create if missing
-    _pharmacy_stock.insert(0, {"name": name, "qty": qty, "min": int(payload.get("min") or 0), "unit": (payload.get("unit") or "").strip() or "units"})
-    return {"status": "created", "id": name}
-
-
-@app.get("/pharmacy/audit", status_code=200, summary="List pharmacy audit entries (Phase 1 UI).")
-async def pharmacy_list_audit(limit: int = Query(default=200, ge=1, le=500)):
-    return _pharmacy_audit[:limit]
+# Lab + Pharmacy endpoints moved to `app/api/routers/lab.py` and `app/api/routers/pharmacy.py`.
 
 
 @app.post("/nurse/tasks", status_code=200, summary="Create a nurse task (Phase 1 UI).")
@@ -821,6 +573,7 @@ async def nurse_submit_handover(payload: dict = Body(...)):
 @app.get("/nurse/handover", status_code=200, summary="List handover submissions (Phase 1 UI).")
 async def nurse_list_handover(limit: int = Query(default=50, ge=1, le=200)):
     return _nurse_handover_notes[:limit]
+'''
 
 # Lightweight in-memory metrics for Phase 1 validation.
 _metrics_counts = defaultdict(int)
@@ -872,7 +625,7 @@ async def metrics_middleware(request: Request, call_next):
 async def health():
     return {"status": "ok"}
 
-
+"""
 @app.get("/metrics/json", summary="Simple in-memory metrics (Phase 1)")
 async def metrics_json():
     rows = []
@@ -920,247 +673,10 @@ async def metrics_prometheus():
                 f'unihealth_http_status_total{{method="{method}",path="{safe_path}",status="{status}"}} {cnt}'
             )
     return "\n".join(lines) + "\n"
+"""
 
 
-@app.get(
-    "/fhir/r5/Patient/{patient_id}/summary",
-    response_model=PatientSummary,
-    summary="Patient + recent encounters (edge-first, <50ms target)",
-)
-async def patient_summary(
-    patient_id: str,
-    encounters: int = Query(
-        default=5,
-        ge=1,
-        le=20,
-        description="Number of recent encounters to return",
-    ),
-    x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
-    scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
-    response: Response = None,
-):
-    start = time.perf_counter()
-    facility_id = x_facility_id
-    strict_consent = settings.consent_mode.lower() == "strict"
-    # Phase 1: simple consent enforcement. Emergency bypass is allowed but can be audited later.
-    if strict_consent and scope != "emergency" and facility_id:
-        allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed:
-            raise HTTPException(status_code=403, detail="Consent denied")
-
-    # 1. Try Redis (hot path)
-    summary = await get_summary_from_cache(patient_id)
-    if summary is not None:
-        if response is not None:
-            response.headers["X-Cache-Source"] = "redis-hit"
-            response.headers["X-Endpoint-Latency-Ms"] = f"{((time.perf_counter() - start) * 1000.0):.2f}"
-        # Trim encounters to requested count if cache had more
-        if len(summary.encounters) > encounters:
-            summary = PatientSummary(
-                patient=summary.patient,
-                encounters=summary.encounters[:encounters],
-            )
-        return summary
-
-    # 2. Fallback: PostgreSQL (warm)
-    summary = await get_summary_from_db(patient_id, encounters)
-    if summary is None:
-        raise HTTPException(status_code=404, detail="Patient not found")
-
-    # 3. Backfill cache for next time
-    await set_summary_in_cache(patient_id, summary)
-    if response is not None:
-        response.headers["X-Cache-Source"] = "postgres-miss"
-        response.headers["X-Endpoint-Latency-Ms"] = f"{((time.perf_counter() - start) * 1000.0):.2f}"
-
-    return summary
-
-
-# ----- Consent (Phase 1) -----
-
-
-@app.post(
-    "/consent/grant",
-    status_code=200,
-    summary="Grant consent for (patient, facility, scope).",
-)
-async def consent_grant(payload: dict = Body(...)):
-    patient_id = payload.get("patient_id")
-    facility_id = payload.get("facility_id")
-    scope = payload.get("scope", "treatment")
-    if not patient_id or not facility_id:
-        raise HTTPException(status_code=400, detail="patient_id and facility_id are required")
-    if not await patient_exists(patient_id):
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                "Patient not in database. Create P001 first: run edge consumer + "
-                "scripts/produce_sample_events.py, or: source ehr-api/.venv/bin/activate && "
-                "python scripts/seed_data.py"
-            ),
-        )
-    try:
-        await grant_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
-    except asyncpg.UndefinedTableError:
-        raise HTTPException(
-            status_code=503,
-            detail="Table 'consents' missing. Apply schema: PGPASSWORD=ehr_dev_password psql -U ehr -d ehr -h localhost -f ehr-api/schema.sql",
-        )
-    except asyncpg.ForeignKeyViolationError:
-        raise HTTPException(
-            status_code=404,
-            detail="Patient not in database (foreign key). Seed or ingest patient first.",
-        )
-    except asyncpg.PostgresError as e:
-        raise HTTPException(status_code=400, detail=f"Database error: {e}")
-    return {"status": "granted", "patient_id": patient_id, "facility_id": facility_id, "scope": scope}
-
-
-@app.post(
-    "/consent/revoke",
-    status_code=200,
-    summary="Revoke consent for (patient, facility, scope).",
-)
-async def consent_revoke(payload: dict = Body(...)):
-    patient_id = payload.get("patient_id")
-    facility_id = payload.get("facility_id")
-    scope = payload.get("scope", "treatment")
-    if not patient_id or not facility_id:
-        raise HTTPException(status_code=400, detail="patient_id and facility_id are required")
-    changed = await revoke_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
-    return {
-        "status": "revoked",
-        "patient_id": patient_id,
-        "facility_id": facility_id,
-        "scope": scope,
-        "rows_changed": changed,
-    }
-
-
-# ----- Pilot EMR ingestion (POST → Kafka) -----
-
-
-@app.post(
-    "/fhir/r5/Patient",
-    status_code=202,
-    summary="Ingest patient (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
-)
-async def ingest_patient(payload: dict = Body(...)):
-    """Accept FHIR-style Patient JSON. Required: id. Optional: nhi_number, family_name, given_name, birth_date, gender."""
-    try:
-        send_patient(payload)
-        return {"status": "accepted", "resourceType": "Patient", "id": payload.get("id")}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
-
-
-@app.post(
-    "/fhir/r5/Encounter",
-    status_code=202,
-    summary="Ingest encounter (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
-)
-async def ingest_encounter(payload: dict = Body(...)):
-    """Accept FHIR-style Encounter JSON. Required: id, patient_id (or subject.reference). Optional: facility_id, facility_name, status, class_code, period."""
-    try:
-        send_encounter(payload)
-        return {"status": "accepted", "resourceType": "Encounter", "id": payload.get("id")}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
-
-
-@app.post(
-    "/fhir/r5/Observation",
-    status_code=202,
-    summary="Ingest observation (pilot EMR/device). Publishes to Kafka; consumer updates Postgres/Redis.",
-)
-async def ingest_observation(payload: dict = Body(...)):
-    try:
-        send_observation(payload)
-        return {"status": "accepted", "resourceType": "Observation", "id": payload.get("id")}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
-
-
-@app.post(
-    "/fhir/r5/MedicationRequest",
-    status_code=202,
-    summary="Ingest MedicationRequest (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
-)
-async def ingest_medication_request(payload: dict = Body(...)):
-    try:
-        send_medication_request(payload)
-        return {"status": "accepted", "resourceType": "MedicationRequest", "id": payload.get("id")}
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
-
-
-@app.get(
-    "/fhir/r5/Patient/{patient_id}/observations",
-    response_model=list[Observation],
-    summary="Get patient observations (edge cache + warm store).",
-)
-async def patient_observations(
-    patient_id: str,
-    limit: int = Query(default=20, ge=1, le=200),
-    x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
-    scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
-    response: Response = None,
-):
-    facility_id = x_facility_id
-    strict_consent = settings.consent_mode.lower() == "strict"
-    if strict_consent and scope != "emergency" and facility_id:
-        allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed:
-            raise HTTPException(status_code=403, detail="Consent denied")
-
-    cached = await get_observations_from_cache(patient_id)
-    if cached is not None:
-        if response is not None:
-            response.headers["X-Cache-Source"] = "redis-hit"
-        return cached[:limit]
-
-    obs = await get_observations_from_db(patient_id, limit)
-    await set_observations_in_cache(patient_id, obs)
-    if response is not None:
-        response.headers["X-Cache-Source"] = "postgres-miss"
-    return obs
-
-
-@app.get(
-    "/fhir/r5/Patient/{patient_id}/medication-requests",
-    response_model=list[MedicationRequest],
-    summary="Get patient medication requests (edge cache + warm store).",
-)
-async def patient_med_requests(
-    patient_id: str,
-    limit: int = Query(default=20, ge=1, le=200),
-    x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
-    scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
-    response: Response = None,
-):
-    facility_id = x_facility_id
-    strict_consent = settings.consent_mode.lower() == "strict"
-    if strict_consent and scope != "emergency" and facility_id:
-        allowed = await has_active_consent(patient_id, facility_id, scope)
-        if not allowed:
-            raise HTTPException(status_code=403, detail="Consent denied")
-
-    cached = await get_med_requests_from_cache(patient_id)
-    if cached is not None:
-        if response is not None:
-            response.headers["X-Cache-Source"] = "redis-hit"
-        return cached[:limit]
-
-    meds = await get_med_requests_from_db(patient_id, limit)
-    await set_med_requests_in_cache(patient_id, meds)
-    if response is not None:
-        response.headers["X-Cache-Source"] = "postgres-miss"
-    return meds
+"""
+NOTE:
+FHIR + consent endpoints moved to `app/api/routers/fhir.py`.
+"""
