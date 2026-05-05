@@ -80,6 +80,40 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successRole: "Patient — UniHealth Self-Service",
     successMsg: "UniHealth identity verified.\nRedirecting to your health records…",
   },
+  lab: {
+    ico: "🧫",
+    title: "Sign in to Laboratory Portal",
+    sub: "Lab staff ID + institutional email + password",
+    note:
+      "Enter your <strong>Laboratory Staff ID</strong>, institutional email and password, then confirm via email OTP.",
+    noteClass: "amb",
+    noteIco: "🧪",
+    regLbl: "Laboratory Staff ID",
+    regHint: "e.g. LAB-KE-00231 — as issued by your facility",
+    regPH: "e.g. LAB-KE-00231",
+    regRx: /^[A-Za-z0-9\-]{5,20}$/,
+    regErr: "Enter your lab staff ID (e.g. LAB-KE-00231).",
+    staffNote: "Staff ID + institutional email + password → email OTP",
+    successRole: "Laboratory — Diagnostic Services",
+    successMsg: "Identity verified.\nRedirecting to laboratory portal…",
+  },
+  pharmacy: {
+    ico: "💊",
+    title: "Sign in to Pharmacy Portal",
+    sub: "Pharmacist ID + institutional email + password",
+    note:
+      "Enter your <strong>Pharmacy Registration ID</strong>, institutional email and password, then confirm via email OTP.",
+    noteClass: "amb",
+    noteIco: "🏥",
+    regLbl: "Pharmacy Registration ID",
+    regHint: "e.g. PHARM-00441 — as on your licence / facility roster",
+    regPH: "e.g. PHARM-00441",
+    regRx: /^[A-Za-z0-9/\-]{5,20}$/,
+    regErr: "Enter your pharmacy registration ID (e.g. PHARM-00441).",
+    staffNote: "Registration ID + institutional email + password → email OTP",
+    successRole: "Pharmacy — Clinical Dispensing",
+    successMsg: "Identity verified.\nRedirecting to pharmacy portal…",
+  },
 };
 
 export type IdTypeKey = "national" | "passport" | "alien" | "refugee" | "mandate" | "temp";
