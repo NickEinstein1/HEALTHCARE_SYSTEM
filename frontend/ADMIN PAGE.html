@@ -1,786 +1,1562 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniHealth EHR — Admin Dashboard</title>
-<!-- Fonts & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/feather-icons"></script>
-<style>
-  /* ----- RESET & GLOBAL ----- */
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  
-  /* ----- UNIFIED COLOR PALETTE (MODEL SYSTEM) ----- */
-  :root{
-    --primary: #1a8a4a;
-    --primary-dark: #0a4a26;
-    --primary-light: #e8f5ee;
-    --primary-muted: #a8d8bc;
-    --accent-blue: #2563eb;
-    --accent-amber: #d97706;
-    --accent-red: #dc2626;
-    --accent-purple: #7c3aed;
-    --bg-page: #f4f7f4;
-    --card-bg: #ffffff;
-    --border-light: #dde5e0;
-    --text-primary: #0c1a14;
-    --text-secondary: #2d4a38;
-    --text-tertiary: #5a7a66;
-    --shadow-sm: 0 1px 4px rgba(0,0,0,.06),0 6px 20px rgba(0,0,0,.06);
-    --shadow-md: 0 8px 32px rgba(0,0,0,.12);
-    --shadow-green: 0 4px 18px rgba(26,138,74,.28);
-    
-    /* legacy aliases */
-    --g: var(--primary);
-    --gd: var(--primary-dark);
-    --gl: var(--primary-light);
-    --gm: var(--primary-muted);
-    --r: var(--accent-red);
-    --b: var(--accent-blue);
-    --am: var(--accent-amber);
-    --pu: var(--accent-purple);
-    --bg: var(--bg-page);
-    --card: var(--card-bg);
-    --bdr: var(--border-light);
-    --t1: var(--text-primary);
-    --t2: var(--text-secondary);
-    --t3: var(--text-tertiary);
-    --font:'Sora',sans-serif;
-    --serif:'DM Serif Display',Georgia,serif;
-    --mono:'JetBrains Mono',monospace;
-    --sw:248px; --th:60px;
-  }
-  
-  html,body{height:100%;font-family:var(--font);-webkit-font-smoothing:antialiased;background:var(--bg);overflow:hidden}
-  body{display:flex}
-  
-  /* ----- SIDEBAR ----- */
-  .sb{width:var(--sw);flex-shrink:0;height:100vh;background:#0f1f2e;display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:200;overflow:hidden}
-  .sb::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 140% 50% at -10% 100%,rgba(26,138,74,.14) 0%,transparent 55%),radial-gradient(ellipse 80% 40% at 110% 0%,rgba(37,99,235,.1) 0%,transparent 50%);pointer-events:none}
-  .sb-flag{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#bb0000 0%,#bb0000 33%,#111 33%,#111 35.5%,#e8e8e8 35.5%,#e8e8e8 37%,#111 37%,#111 39.5%,#1a8a4a 39.5%,#1a8a4a 100%);z-index:10}
-  .sb-in{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;overflow-y:auto;overflow-x:hidden}
-  .sb-in::-webkit-scrollbar{width:0}
-  
-  /* Brand row */
-  .sb-brand{display:flex;align-items:center;gap:11px;padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-  .sb-ico{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#3ecf7a);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 3px 10px rgba(26,138,74,.4)}
-  .sb-nm{font-family:var(--serif);font-size:17px;color:#fff;letter-spacing:-.1px;line-height:1.1}
-  .sb-sub{font-size:9px;color:rgba(255,255,255,.32);letter-spacing:.5px;font-weight:500;margin-top:2px}
-  .sb-live{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71;animation:pulse 2s infinite;margin-left:auto}
-  @keyframes pulse{0%,100%{box-shadow:0 0 5px #2ecc71}50%{box-shadow:0 0 14px #2ecc71}}
-  
-  /* Nav section */
-  .sb-sec{padding:10px 10px 0}
-  .sb-sec-lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.22);padding:8px 10px 5px;font-weight:500}
-  .ni{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;transition:all .15s;margin-bottom:1px;position:relative}
-  .ni:hover{background:rgba(255,255,255,.06)}
-  .ni.on{background:rgba(26,138,74,.2);border:1px solid rgba(26,138,74,.28)}
-  .ni-ico{font-size:14px;flex-shrink:0;width:18px;text-align:center;opacity:.65;transition:opacity .15s}
-  .ni:hover .ni-ico,.ni.on .ni-ico{opacity:1}
-  .ni-lbl{font-size:12px;font-weight:600;color:rgba(255,255,255,.6);transition:color .15s;white-space:nowrap}
-  .ni:hover .ni-lbl,.ni.on .ni-lbl{color:#fff}
-  .ni-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
-  .ni-badge.red{background:var(--accent-red);color:#fff}
-  .ni-badge.amber{background:var(--accent-amber);color:#fff}
-  .ni-badge.green{background:var(--primary);color:#fff}
-  
-  /* User strip */
-  .sb-user{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:9px}
-  .sb-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#7beba4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
-  .sb-un{font-size:12px;font-weight:700;color:rgba(255,255,255,.8)}
-  .sb-ue{font-size:9.5px;color:rgba(255,255,255,.32);margin-top:1px}
-  .sb-signout{margin-left:auto;padding:5px 9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;font-size:10.5px;font-weight:600;color:rgba(255,255,255,.45);cursor:pointer;transition:all .15s}
-  .sb-signout:hover{background:rgba(220,38,38,.2);border-color:rgba(220,38,38,.4);color:#fca5a5}
-  
-  /* RBAC badge */
-  .rbac-badge{display:flex;align-items:center;gap:7px;padding:7px 12px;background:rgba(26,138,74,.12);border:1px solid rgba(26,138,74,.22);border-radius:7px;margin:0 10px 12px}
-  .rbac-ico{font-size:13px}
-  .rbac-role{font-size:10px;font-weight:700;color:rgba(255,255,255,.7);line-height:1.2}
-  .rbac-perm{font-size:8.5px;color:rgba(255,255,255,.35);margin-top:1px;font-family:var(--mono)}
-  .rbac-role-sel{font-family:var(--mono);font-size:9px;font-weight:700;background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;padding:2px 0;margin-top:2px;text-decoration:underline dotted}
-  
-  /* ----- MAIN ----- */
-  .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;height:100vh;min-width:0}
-  
-  /* Topbar */
-  .topbar{height:var(--th);background:var(--card);border-bottom:1.5px solid var(--bdr);display:flex;align-items:center;padding:0 24px;gap:14px;flex-shrink:0;position:sticky;top:0;z-index:100}
-  .tb-page{font-family:var(--serif);font-size:18px;color:var(--t1);letter-spacing:-.2px}
-  .tb-crumb{font-size:11px;color:var(--t3);font-weight:500;margin-top:1px}
-  .tb-crumb b{color:var(--primary)}
-  .tb-gap{flex:1}
-  .tb-search{display:flex;align-items:center;gap:8px;padding:8px 13px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:8px;width:220px;transition:all .2s}
-  .tb-search:focus-within{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09)}
-  .tb-search input{border:none;background:transparent;outline:none;font-family:var(--font);font-size:12.5px;color:var(--t1);width:100%}
-  .tb-search input::placeholder{color:var(--t3)}
-  .tb-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--bdr);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:15px;position:relative}
-  .tb-btn:hover{border-color:var(--primary);background:var(--primary-light)}
-  .tb-dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent-red);border:2px solid var(--card)}
-  .tb-datepill{font-family:var(--mono);font-size:10.5px;color:var(--t3);padding:6px 11px;background:var(--bg);border:1.5px solid var(--bdr);border-radius:7px;white-space:nowrap}
-  
-  /* Content area */
-  .content{flex:1;overflow-y:auto;padding:24px}
-  .content::-webkit-scrollbar{width:4px}
-  .content::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
-  .pg{display:none;animation:pgIn .3s ease both}
-  .pg.on{display:block}
-  @keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  
-  /* Page header */
-  .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:16px;flex-wrap:wrap}
-  .ph-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
-  .ph-title{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.3px;line-height:1.1}
-  .ph-sub{font-size:12.5px;color:var(--t3);margin-top:5px;line-height:1.5}
-  .ph-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  
-  /* Buttons */
-  .btn-p{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:12.5px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:var(--shadow-green);white-space:nowrap}
-  .btn-p:hover{background:var(--primary-dark);transform:translateY(-1px)}
-  .btn-s{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;background:var(--card);color:var(--t2);border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--font);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
-  .btn-s:hover{border-color:var(--primary);color:var(--primary-dark);background:var(--primary-light)}
-  
-  /* KPI cards */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-  .kpi{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:box-shadow .2s,transform .2s;cursor:default;animation:kpiFade .5s ease both}
-  @keyframes kpiFade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  .kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-  .kpi-bar{position:absolute;top:0;left:0;right:0;height:3px}
-  .kpi-bar.g{background:linear-gradient(90deg,var(--primary-dark),#3ecf7a)}
-  .kpi-bar.b{background:linear-gradient(90deg,#1e40af,#60a5fa)}
-  .kpi-bar.am{background:linear-gradient(90deg,#92400e,#fbbf24)}
-  .kpi-bar.r{background:linear-gradient(90deg,#7f1d1d,#f87171)}
-  .kpi-bar.pu{background:linear-gradient(90deg,#4c1d95,#a78bfa)}
-  .kpi-ico{position:absolute;top:14px;right:16px;font-size:24px;opacity:.14}
-  .kpi-lbl{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-  .kpi-val{font-family:var(--serif);font-size:31px;color:var(--t1);letter-spacing:-.5px;line-height:1;margin-bottom:8px}
-  .kpi-meta{font-size:11px;font-weight:600}
-  .kpi-meta.up{color:var(--primary)}
-  .kpi-meta.dn{color:var(--accent-red)}
-  
-  /* Quick actions */
-  .qa{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:22px}
-  .qa-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 8px;background:var(--card);border:1.5px solid var(--bdr);border-radius:10px;cursor:pointer;transition:all .15s;text-align:center}
-  .qa-item:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
-  .qa-e{font-size:20px;transition:transform .2s}
-  .qa-item:hover .qa-e{transform:scale(1.12)}
-  .qa-t{font-size:10.5px;font-weight:700;color:var(--t2)}
-  .qa-item:hover .qa-t{color:var(--primary-dark)}
-  
-  /* Panels */
-  .panel{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;overflow:hidden}
-  .pnl-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--bdr)}
-  .pnl-title{font-size:13.5px;font-weight:700;color:var(--t1)}
-  .pnl-sub{font-size:11px;color:var(--t3);margin-top:2px}
-  .pnl-link{font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;white-space:nowrap}
-  .pnl-link:hover{text-decoration:underline}
-  .pnl-body{padding:18px 20px}
-  
-  /* Tags */
-  .tag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
-  .tag.g{background:var(--primary-light);color:var(--primary-dark);border:1px solid var(--primary-muted)}
-  .tag.r{background:#fef2f2;color:#7f1d1d;border:1px solid #fecaca}
-  .tag.b{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
-  .tag.am{background:#fffbeb;color:#78350f;border:1px solid #fde68a}
-  .tag.pu{background:#f5f3ff;color:#4c1d95;border:1px solid #ddd6fe}
-  
-  /* Tables */
-  .tbl{width:100%;border-collapse:collapse}
-  .tbl th{font-size:10.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;background:#f8faf8;border-bottom:1.5px solid var(--bdr)}
-  .tbl td{font-size:12.5px;color:var(--t2);padding:11px 14px;border-bottom:1px solid var(--bdr);vertical-align:middle}
-  .tbl tr:hover td{background:#f8fbf8}
-  .tbl tr:last-child td{border:none}
-  
-  /* Grid layouts */
-  .g2{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-bottom:18px}
-  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-  
-  /* Activity feed */
-  .feed{display:flex;flex-direction:column}
-  .feed-item{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid #f3f5f3}
-  .feed-item:last-child{border:none}
-  .feed-dot-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:4px}
-  .feed-dot{width:8px;height:8px;border-radius:50%}
-  .feed-dot.g{background:var(--primary)}
-  .feed-dot.r{background:var(--accent-red)}
-  .feed-dot.b{background:var(--accent-blue)}
-  .feed-dot.am{background:var(--accent-amber)}
-  .feed-main{flex:1;min-width:0}
-  .feed-title{font-size:12px;font-weight:600;color:var(--t1);line-height:1.4}
-  .feed-sub{font-size:10.5px;color:var(--t3);margin-top:1px}
-  .feed-time{font-family:var(--mono);font-size:10px;color:var(--t3);flex-shrink:0;padding-top:2px}
-  
-  /* AI status cards */
-  .ai-status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-  .ai-stat{background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden}
-  .ai-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-  .ai-stat.ok::before{background:linear-gradient(90deg,var(--primary-dark),#3ecf7a)}
-  .ai-stat.warn::before{background:linear-gradient(90deg,#92400e,#fbbf24)}
-  .ai-stat.crit::before{background:linear-gradient(90deg,#7f1d1d,#f87171)}
-  .ai-stat-lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
-  .ai-stat-val{font-family:var(--serif);font-size:26px;color:var(--t1);letter-spacing:-.4px;margin-bottom:4px}
-  .ai-stat-sub{font-size:10.5px;font-weight:600}
-  .ai-stat-sub.ok{color:var(--primary)}
-  .ai-stat-sub.warn{color:var(--accent-amber)}
-  .ai-stat-sub.crit{color:var(--accent-red)}
-  
-  /* Modal */
-  .mo-overlay{position:fixed;inset:0;background:rgba(10,20,40,.5);backdrop-filter:blur(5px);z-index:500;display:none;align-items:center;justify-content:center}
-  .mo-overlay.open{display:flex}
-  .mo{background:var(--card);border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.22);width:100%;max-width:476px;overflow:hidden;animation:moIn .3s cubic-bezier(.16,1,.3,1)}
-  @keyframes moIn{from{opacity:0;transform:scale(.93) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
-  .mo-hd{padding:20px 24px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
-  .mo-title{font-family:var(--serif);font-size:20px;color:var(--t1)}
-  .mo-x{cursor:pointer;font-size:19px;color:var(--t3);padding:4px 7px;border-radius:5px;background:none;border:none;transition:all .15s}
-  .mo-x:hover{background:#fef2f2;color:var(--accent-red)}
-  .mo-body{padding:20px 24px}
-  .mo-foot{padding:14px 24px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:9px}
-  
-  /* Toast */
-  .toast{position:fixed;bottom:24px;right:24px;z-index:900;background:var(--card);border:1.5px solid var(--primary-muted);border-radius:12px;padding:13px 18px;box-shadow:var(--shadow-md);display:none;animation:toastIn .35s cubic-bezier(.16,1,.3,1)}
-  .toast.show{display:flex;align-items:center;gap:10px}
-  @keyframes toastIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-  .toast-ico{font-size:18px}
-  .toast-msg{font-size:12.5px;font-weight:700;color:var(--t1)}
-  .toast-sub{font-size:11px;color:var(--t3);margin-top:1px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniHealth EHR — Admin Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons">
+    </script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        :root {
+            --primary: #1a8a4a;
+            --primary-dark: #0a4a26;
+            --primary-light: #e8f5ee;
+            --primary-muted: #a8d8bc;
+            --accent-blue: #2563eb;
+            --accent-amber: #d97706;
+            --accent-red: #dc2626;
+            --accent-purple: #7c3aed;
+            --bg-page: #f4f7f4;
+            --card-bg: #ffffff;
+            --border-light: #dde5e0;
+            --text-primary: #0c1a14;
+            --text-secondary: #2d4a38;
+            --text-tertiary: #5a7a66;
+            --shadow-sm: 0 1px 4px rgba(0, 0, 0, .06), 0 6px 20px rgba(0, 0, 0, .06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, .12);
+            --shadow-green: 0 4px 18px rgba(26, 138, 74, .28);
+            --g: var(--primary);
+            --gd: var(--primary-dark);
+            --gl: var(--primary-light);
+            --gm: var(--primary-muted);
+            --r: var(--accent-red);
+            --b: var(--accent-blue);
+            --am: var(--accent-amber);
+            --pu: var(--accent-purple);
+            --bg: var(--bg-page);
+            --card: var(--card-bg);
+            --bdr: var(--border-light);
+            --t1: var(--text-primary);
+            --t2: var(--text-secondary);
+            --t3: var(--text-tertiary);
+            --font: 'Sora', sans-serif;
+            --serif: 'DM Serif Display', Georgia, serif;
+            --mono: 'JetBrains Mono', monospace;
+            --sw: 248px;
+            --th: 60px;
+        }
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+            background: var(--bg);
+            overflow: hidden
+        }
+        body {
+            display: flex
+        }
+
+        .sb {
+            width: var(--sw);
+            flex-shrink: 0;
+            height: 100vh;
+            background: #0f1f2e;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 200;
+            overflow: hidden
+        }
+        .sb::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 140% 50% at -10% 100%, rgba(26, 138, 74, .14) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 40% at 110% 0%, rgba(37, 99, 235, .1) 0%, transparent 50%);
+            pointer-events: none
+        }
+        .sb-flag {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #bb0000 0%, #bb0000 33%, #111 33%, #111 35.5%, #e8e8e8 35.5%, #e8e8e8 37%, #111 37%, #111 39.5%, #1a8a4a 39.5%, #1a8a4a 100%);
+            z-index: 10
+        }
+        .sb-in {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden
+        }
+        .sb-in::-webkit-scrollbar {
+            width: 0
+        }
+        .sb-brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06)
+        }
+        .sb-ico {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--g), #3ecf7a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(26, 138, 74, .4)
+        }
+        .sb-nm {
+            font-family: var(--serif);
+            font-size: 17px;
+            color: #fff;
+            letter-spacing: -.1px;
+            line-height: 1.1
+        }
+        .sb-sub {
+            font-size: 9px;
+            color: rgba(255, 255, 255, .32);
+            letter-spacing: .5px;
+            font-weight: 500;
+            margin-top: 2px
+        }
+        .sb-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: pulse 2s infinite;
+            margin-left: auto
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 5px #2ecc71
+            }
+            50% {
+                box-shadow: 0 0 14px #2ecc71
+            }
+        }
+        .sb-sec {
+            padding: 10px 10px 0
+        }
+        .sb-sec-lbl {
+            font-family: var(--mono);
+            font-size: 8.5px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .22);
+            padding: 8px 10px 5px;
+            font-weight: 500
+        }
+        .ni {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 11px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all .15s;
+            margin-bottom: 1px;
+            position: relative
+        }
+        .ni:hover {
+            background: rgba(255, 255, 255, .06)
+        }
+        .ni.on {
+            background: rgba(26, 138, 74, .2);
+            border: 1px solid rgba(26, 138, 74, .28)
+        }
+        .ni-ico {
+            font-size: 14px;
+            flex-shrink: 0;
+            width: 18px;
+            text-align: center;
+            opacity: .65;
+            transition: opacity .15s
+        }
+        .ni:hover .ni-ico,
+        .ni.on .ni-ico {
+            opacity: 1
+        }
+        .ni-lbl {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .6);
+            transition: color .15s;
+            white-space: nowrap
+        }
+        .ni:hover .ni-lbl,
+        .ni.on .ni-lbl {
+            color: #fff
+        }
+        .ni-badge {
+            margin-left: auto;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center
+        }
+        .ni-badge.red {
+            background: var(--r);
+            color: #fff
+        }
+        .ni-badge.amber {
+            background: var(--am);
+            color: #fff
+        }
+        .ni-badge.green {
+            background: var(--g);
+            color: #fff
+        }
+        .sb-user {
+            margin-top: auto;
+            padding: 14px 18px;
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            display: flex;
+            align-items: center;
+            gap: 9px
+        }
+        .sb-av {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--g), #7beba4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #fff
+        }
+        .sb-un {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .8)
+        }
+        .sb-ue {
+            font-size: 9.5px;
+            color: rgba(255, 255, 255, .32);
+            margin-top: 1px
+        }
+        .sb-signout {
+            margin-left: auto;
+            padding: 5px 9px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .45);
+            cursor: pointer;
+            transition: all .15s
+        }
+        .sb-signout:hover {
+            background: rgba(220, 38, 38, .2);
+            border-color: rgba(220, 38, 38, .4);
+            color: #fca5a5
+        }
+        .rbac-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 12px;
+            background: rgba(26, 138, 74, .12);
+            border: 1px solid rgba(26, 138, 74, .22);
+            border-radius: 7px;
+            margin: 0 10px 12px
+        }
+        .rbac-ico {
+            font-size: 13px
+        }
+        .rbac-role {
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .7);
+            line-height: 1.2
+        }
+        .rbac-perm {
+            font-size: 8.5px;
+            color: rgba(255, 255, 255, .35);
+            margin-top: 1px;
+            font-family: var(--mono)
+        }
+        .rbac-role-sel {
+            font-family: var(--mono);
+            font-size: 9px;
+            font-weight: 700;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, .55);
+            cursor: pointer;
+            padding: 2px 0;
+            margin-top: 2px;
+            text-decoration: underline dotted
+        }
+
+        .main {
+            margin-left: var(--sw);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-width: 0
+        }
+        .topbar {
+            height: var(--th);
+            background: var(--card);
+            border-bottom: 1.5px solid var(--bdr);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 14px;
+            flex-shrink: 0;
+            z-index: 100
+        }
+        .tb-page {
+            font-family: var(--serif);
+            font-size: 18px;
+            color: var(--t1);
+            letter-spacing: -.2px
+        }
+        .tb-crumb {
+            font-size: 11px;
+            color: var(--t3);
+            font-weight: 500;
+            margin-top: 1px
+        }
+        .tb-crumb b {
+            color: var(--g)
+        }
+        .tb-gap {
+            flex: 1
+        }
+        .tb-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 13px;
+            background: var(--bg);
+            border: 1.5px solid var(--bdr);
+            border-radius: 8px;
+            width: 220px;
+            transition: all .2s
+        }
+        .tb-search:focus-within {
+            border-color: var(--g);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(26, 138, 74, .09)
+        }
+        .tb-search input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: var(--font);
+            font-size: 12.5px;
+            color: var(--t1);
+            width: 100%
+        }
+        .tb-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1.5px solid var(--bdr);
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all .15s;
+            font-size: 15px;
+            position: relative
+        }
+        .tb-btn:hover {
+            border-color: var(--g);
+            background: var(--gl)
+        }
+        .tb-dot {
+            position: absolute;
+            top: 6px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--r);
+            border: 2px solid var(--card)
+        }
+        .tb-datepill {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            color: var(--t3);
+            padding: 6px 11px;
+            background: var(--bg);
+            border: 1.5px solid var(--bdr);
+            border-radius: 7px;
+            white-space: nowrap
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px
+        }
+        .content::-webkit-scrollbar {
+            width: 4px
+        }
+        .content::-webkit-scrollbar-thumb {
+            background: var(--bdr);
+            border-radius: 4px
+        }
+        .pg {
+            display: none;
+            animation: pgIn .3s ease both
+        }
+        .pg.on {
+            display: block
+        }
+        @keyframes pgIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+        .ph {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            gap: 16px;
+            flex-wrap: wrap
+        }
+        .ph-eyebrow {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--t3);
+            margin-bottom: 4px
+        }
+        .ph-title {
+            font-family: var(--serif);
+            font-size: 26px;
+            color: var(--t1);
+            letter-spacing: -.3px;
+            line-height: 1.1
+        }
+        .ph-sub {
+            font-size: 12.5px;
+            color: var(--t3);
+            margin-top: 5px;
+            line-height: 1.5
+        }
+        .ph-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+        .btn-p {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 16px;
+            background: var(--g);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .18s;
+            box-shadow: var(--shadow-green);
+            white-space: nowrap
+        }
+        .btn-p:hover {
+            background: var(--gd);
+            transform: translateY(-1px)
+        }
+        .btn-s {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 15px;
+            background: var(--card);
+            color: var(--t2);
+            border: 1.5px solid var(--bdr);
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            white-space: nowrap
+        }
+        .btn-s:hover {
+            border-color: var(--g);
+            color: var(--gd);
+            background: var(--gl)
+        }
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px
+        }
+        .kpi {
+            background: var(--card);
+            border: 1.5px solid var(--bdr);
+            border-radius: 14px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow .2s, transform .2s;
+            cursor: default
+        }
+        .kpi:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px)
+        }
+        .kpi-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px
+        }
+        .kpi-bar.g {
+            background: linear-gradient(90deg, var(--gd), #3ecf7a)
+        }
+        .kpi-bar.b {
+            background: linear-gradient(90deg, #1e40af, #60a5fa)
+        }
+        .kpi-bar.am {
+            background: linear-gradient(90deg, #92400e, #fbbf24)
+        }
+        .kpi-bar.r {
+            background: linear-gradient(90deg, #7f1d1d, #f87171)
+        }
+        .kpi-bar.pu {
+            background: linear-gradient(90deg, #4c1d95, #a78bfa)
+        }
+        .kpi-ico {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            font-size: 24px;
+            opacity: .14
+        }
+        .kpi-lbl {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--t3);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 8px
+        }
+        .kpi-val {
+            font-family: var(--serif);
+            font-size: 31px;
+            color: var(--t1);
+            letter-spacing: -.5px;
+            line-height: 1;
+            margin-bottom: 8px
+        }
+        .kpi-meta {
+            font-size: 11px;
+            font-weight: 600
+        }
+        .kpi-meta.up {
+            color: var(--g)
+        }
+        .kpi-meta.dn {
+            color: var(--r)
+        }
+        .qa {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+            margin-bottom: 22px
+        }
+        .qa-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 13px 8px;
+            background: var(--card);
+            border: 1.5px solid var(--bdr);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .15s;
+            text-align: center
+        }
+        .qa-item:hover {
+            border-color: var(--g);
+            background: var(--gl);
+            transform: translateY(-2px)
+        }
+        .qa-e {
+            font-size: 20px
+        }
+        .qa-t {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--t2)
+        }
+        .panel {
+            background: var(--card);
+            border: 1.5px solid var(--bdr);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 18px
+        }
+        .pnl-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--bdr)
+        }
+        .pnl-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--t1)
+        }
+        .pnl-sub {
+            font-size: 11px;
+            color: var(--t3);
+            margin-top: 2px
+        }
+        .pnl-link {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--g);
+            cursor: pointer
+        }
+        .pnl-link:hover {
+            text-decoration: underline
+        }
+        .pnl-body {
+            padding: 18px 20px
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            white-space: nowrap
+        }
+        .tag.g {
+            background: var(--gl);
+            color: var(--gd);
+            border: 1px solid var(--gm)
+        }
+        .tag.r {
+            background: #fef2f2;
+            color: #7f1d1d;
+            border: 1px solid #fecaca
+        }
+        .tag.b {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe
+        }
+        .tag.am {
+            background: #fffbeb;
+            color: #78350f;
+            border: 1px solid #fde68a
+        }
+        .tag.pu {
+            background: #f5f3ff;
+            color: #4c1d95;
+            border: 1px solid #ddd6fe
+        }
+        .tbl {
+            width: 100%;
+            border-collapse: collapse
+        }
+        .tbl th {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--t3);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 10px 14px;
+            text-align: left;
+            background: #f8faf8;
+            border-bottom: 1.5px solid var(--bdr)
+        }
+        .tbl td {
+            font-size: 12.5px;
+            color: var(--t2);
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--bdr);
+            vertical-align: middle
+        }
+        .tbl tr:hover td {
+            background: #f8fbf8
+        }
+        .tbl tr:last-child td {
+            border: none
+        }
+        .g2 {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 16px;
+            margin-bottom: 18px
+        }
+        .g3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 18px
+        }
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 11px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f5f3
+        }
+        .feed-item:last-child {
+            border: none
+        }
+        .feed-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 4px
+        }
+        .feed-dot.g {
+            background: var(--g)
+        }
+        .feed-dot.r {
+            background: var(--r)
+        }
+        .feed-dot.b {
+            background: var(--b)
+        }
+        .feed-dot.am {
+            background: var(--am)
+        }
+        .feed-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--t1)
+        }
+        .feed-sub {
+            font-size: 10.5px;
+            color: var(--t3)
+        }
+        .feed-time {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--t3);
+            flex-shrink: 0;
+            padding-top: 2px
+        }
+        .ai-stat {
+            background: var(--card);
+            border: 1.5px solid var(--bdr);
+            border-radius: 12px;
+            padding: 15px 16px;
+            position: relative;
+            overflow: hidden
+        }
+        .ai-stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px
+        }
+        .ai-stat.ok::before {
+            background: linear-gradient(90deg, var(--gd), #3ecf7a)
+        }
+        .ai-stat.warn::before {
+            background: linear-gradient(90deg, #92400e, #fbbf24)
+        }
+        .ai-stat.crit::before {
+            background: linear-gradient(90deg, #7f1d1d, #f87171)
+        }
+        .ai-stat-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--t3);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 6px
+        }
+        .ai-stat-val {
+            font-family: var(--serif);
+            font-size: 26px;
+            color: var(--t1);
+            letter-spacing: -.4px;
+            margin-bottom: 4px
+        }
+        .ai-stat-sub {
+            font-size: 10.5px;
+            font-weight: 600
+        }
+        .ai-stat-sub.ok {
+            color: var(--g)
+        }
+        .ai-stat-sub.warn {
+            color: var(--am)
+        }
+        .ai-stat-sub.crit {
+            color: var(--r)
+        }
+        .mo-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 20, 40, .5);
+            backdrop-filter: blur(5px);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center
+        }
+        .mo-overlay.open {
+            display: flex
+        }
+        .mo {
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .22);
+            width: 100%;
+            max-width: 476px;
+            overflow: hidden;
+            animation: moIn .3s cubic-bezier(.16, 1, .3, 1)
+        }
+        @keyframes moIn {
+            from {
+                opacity: 0;
+                transform: scale(.93) translateY(14px)
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0)
+            }
+        }
+        .mo-hd {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--bdr);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+        .mo-title {
+            font-family: var(--serif);
+            font-size: 20px;
+            color: var(--t1)
+        }
+        .mo-x {
+            cursor: pointer;
+            font-size: 19px;
+            color: var(--t3);
+            padding: 4px 7px;
+            border-radius: 5px;
+            background: none;
+            border: none;
+            transition: all .15s
+        }
+        .mo-x:hover {
+            background: #fef2f2;
+            color: var(--r)
+        }
+        .mo-body {
+            padding: 20px 24px
+        }
+        .mo-foot {
+            padding: 14px 24px;
+            border-top: 1px solid var(--bdr);
+            display: flex;
+            justify-content: flex-end;
+            gap: 9px
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 900;
+            background: var(--card);
+            border: 1.5px solid var(--gm);
+            border-radius: 12px;
+            padding: 13px 18px;
+            box-shadow: var(--shadow-md);
+            display: none;
+            animation: toastIn .35s cubic-bezier(.16, 1, .3, 1)
+        }
+        .toast.show {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(.96)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1)
+            }
+        }
+        .toast-ico {
+            font-size: 18px
+        }
+        .toast-msg {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--t1)
+        }
+        .toast-sub {
+            font-size: 11px;
+            color: var(--t3);
+            margin-top: 1px
+        }
+        .ff {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 14px
+        }
+        .ff label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--t2)
+        }
+        .ff input,
+        .ff select {
+            padding: 10px 13px;
+            border: 1.5px solid var(--bdr);
+            border-radius: 8px;
+            font-family: var(--font);
+            font-size: 13px;
+            color: var(--t1);
+            background: var(--bg);
+            outline: none;
+            transition: all .2s
+        }
+        .ff input:focus,
+        .ff select:focus {
+            border-color: var(--g);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(26, 138, 74, .09)
+        }
+        .ff-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+        .role-guard {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: var(--gl);
+            border: 1px solid var(--gm);
+            color: var(--gd)
+        }
+        .role-guard.locked {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #7f1d1d
+        }
+    </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
-<nav class="sb">
-  <div class="sb-flag"></div>
-  <div class="sb-in">
-    <div class="sb-brand">
-      <div class="sb-ico"><i data-feather="activity" style="color:#fff"></i></div>
-      <div>
-        <div class="sb-nm">UniHealth EHR</div>
-        <div class="sb-sub">Admin Portal · Central Health Authority</div>
-      </div>
-      <div class="sb-live"></div>
-    </div>
-
-    <!-- RBAC Role Badge -->
-    <div class="rbac-badge">
-      <span class="rbac-ico" id="rbacIco"><i data-feather="shield"></i></span>
-      <div>
-        <div class="rbac-role" id="rbacRole">System Administrator</div>
-        <div class="rbac-perm" id="rbacPerm">FULL ACCESS · ALL MODULES</div>
-        <select class="rbac-role-sel" id="rbacSel" onchange="switchRole(this.value)">
-          <option value="sysadmin">System Administrator</option>
-          <option value="secadmin">Security Administrator</option>
-          <option value="datamanager">Data Manager</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Navigation sections -->
-    <div class="sb-sec">
-      <div class="sb-sec-lbl">Main</div>
-      <div class="ni on" onclick="go('overview',this)"><span class="ni-ico"><i data-feather="bar-chart-2"></i></span><span class="ni-lbl">Overview</span></div>
-      <div class="ni" onclick="go('users',this)" id="nav-users"><span class="ni-ico"><i data-feather="users"></i></span><span class="ni-lbl">User Management</span><span class="ni-badge red">12</span></div>
-      <div class="ni" onclick="go('facilities',this)"><span class="ni-ico"><i data-feather="home"></i></span><span class="ni-lbl">Facilities</span></div>
-      <div class="ni" onclick="go('counties',this)"><span class="ni-ico"><i data-feather="map"></i></span><span class="ni-lbl">County Coverage</span></div>
-    </div>
-    <div class="sb-sec">
-      <div class="sb-sec-lbl">Clinical</div>
-      <div class="ni" onclick="go('patients',this)"><span class="ni-ico"><i data-feather="clipboard"></i></span><span class="ni-lbl">Patient Registry</span></div>
-      <div class="ni" onclick="go('staff',this)"><span class="ni-ico"><i data-feather="briefcase"></i></span><span class="ni-lbl">Staff Directory</span></div>
-      <div class="ni" onclick="go('unihealth',this)"><span class="ni-ico"><i data-feather="shield"></i></span><span class="ni-lbl">ModelCover Integration</span><span class="ni-badge amber">3</span></div>
-    </div>
-    <div class="sb-sec">
-      <div class="sb-sec-lbl">Security & Intelligence</div>
-      <div class="ni" onclick="go('ai',this)" id="nav-ai"><span class="ni-ico"><i data-feather="cpu"></i></span><span class="ni-lbl">AI Monitor</span><span class="ni-badge red" id="aiBadge">3</span></div>
-      <div class="ni" onclick="go('rbac',this)" id="nav-rbac"><span class="ni-ico"><i data-feather="lock"></i></span><span class="ni-lbl">RBAC & Roles</span></div>
-      <div class="ni" onclick="go('audit',this)"><span class="ni-ico"><i data-feather="link"></i></span><span class="ni-lbl">Audit Log</span></div>
-    </div>
-    <div class="sb-sec">
-      <div class="sb-sec-lbl">System</div>
-      <div class="ni" onclick="go('health',this)" id="nav-health"><span class="ni-ico"><i data-feather="database"></i></span><span class="ni-lbl">System Health</span><span class="ni-badge amber">1</span></div>
-      <div class="ni" onclick="go('reports',this)"><span class="ni-ico"><i data-feather="file-text"></i></span><span class="ni-lbl">Reports</span></div>
-      <div class="ni" onclick="go('settings',this)"><span class="ni-ico"><i data-feather="settings"></i></span><span class="ni-lbl">Settings</span></div>
-    </div>
-
-    <div class="sb-user">
-      <div class="sb-av">MK</div>
-      <div>
-        <div class="sb-un">M. Kamau</div>
-        <div class="sb-ue">m.kamau@health.auth</div>
-      </div>
-      <button class="sb-signout" onclick="signOut()"><i data-feather="log-out"></i> Sign Out</button>
-    </div>
-  </div>
-</nav>
-
-<!-- MAIN CONTENT -->
-<div class="main">
-  <header class="topbar">
-    <div>
-      <div class="tb-page" id="tbTitle">Overview</div>
-      <div class="tb-crumb">UniHealth EHR › <b id="tbCrumb">Dashboard</b></div>
-    </div>
-    <div class="tb-gap"></div>
-    <div class="tb-search">
-      <i data-feather="search" style="width:14px;height:14px;color:var(--t3)"></i>
-      <input placeholder="Search patients, staff, facilities…">
-    </div>
-    <div class="tb-btn" title="Notifications"><i data-feather="bell"></i><div class="tb-dot"></div></div>
-    <div class="tb-btn" title="ModelCover Live Status"><i data-feather="shield"></i></div>
-    <div class="tb-datepill" id="tbDate"></div>
-  </header>
-
-  <div class="content">
-    <!-- OVERVIEW PAGE -->
-    <div id="pg-overview" class="pg on">
-      <div class="ph">
-        <div>
-          <div class="ph-eyebrow">Central Health Authority · 2026</div>
-          <div class="ph-title">Good morning, Administrator</div>
-          <div class="ph-sub">System overview for <span id="todayFull" style="color:var(--primary);font-weight:700"></span></div>
+    <nav class="sb">
+        <div class="sb-flag"></div>
+        <div class="sb-in">
+            <div class="sb-brand">
+                <div class="sb-ico"><i data-feather="activity" style="color:#fff"></i></div>
+                <div>
+                    <div class="sb-nm">UniHealth EHR</div>
+                    <div class="sb-sub">Admin Portal · Central Health Authority</div>
+                </div>
+                <div class="sb-live"></div>
+            </div>
+            <div class="rbac-badge">
+                <span class="rbac-ico" id="rbacIco"><i data-feather="shield"></i></span>
+                <div>
+                    <div class="rbac-role" id="rbacRole">System Administrator</div>
+                    <div class="rbac-perm" id="rbacPerm">FULL ACCESS · ALL MODULES</div>
+                    <select class="rbac-role-sel" id="rbacSel" onchange="switchRole(this.value)">
+                        <option value="sysadmin">System Administrator</option>
+                        <option value="secadmin">Security Administrator</option>
+                        <option value="datamanager">Data Manager</option>
+                    </select>
+                </div>
+            </div>
+            <div class="sb-nav">
+                <div class="sb-sec">
+                    <div class="sb-sec-lbl">Main</div>
+                    <div class="ni on" data-page="overview"><span class="ni-ico"><i data-feather="bar-chart-2"></i></span><span class="ni-lbl">Overview</span></div>
+                    <div class="ni" data-page="users"><span class="ni-ico"><i data-feather="users"></i></span><span class="ni-lbl">User Management</span><span class="ni-badge red">12</span></div>
+                    <div class="ni" data-page="facilities"><span class="ni-ico"><i data-feather="home"></i></span><span class="ni-lbl">Facilities</span></div>
+                    <div class="ni" data-page="counties"><span class="ni-ico"><i data-feather="map"></i></span><span class="ni-lbl">County Coverage</span></div>
+                </div>
+                <div class="sb-sec">
+                    <div class="sb-sec-lbl">Clinical</div>
+                    <div class="ni" data-page="patients"><span class="ni-ico"><i data-feather="user-check"></i></span><span class="ni-lbl">Patient Registry</span></div>
+                    <div class="ni" data-page="staff"><span class="ni-ico"><i data-feather="briefcase"></i></span><span class="ni-lbl">Staff Directory</span></div>
+                    <div class="ni" data-page="unihealth"><span class="ni-ico"><i data-feather="shield"></i></span><span class="ni-lbl">ModelCover Integration</span><span class="ni-badge amber">3</span></div>
+                </div>
+                <div class="sb-sec">
+                    <div class="sb-sec-lbl">Security & Intelligence</div>
+                    <div class="ni" data-page="ai"><span class="ni-ico"><i data-feather="cpu"></i></span><span class="ni-lbl">AI Monitor</span><span class="ni-badge red" id="aiBadge">3</span></div>
+                    <div class="ni" data-page="rbac"><span class="ni-ico"><i data-feather="lock"></i></span><span class="ni-lbl">RBAC & Roles</span></div>
+                    <div class="ni" data-page="audit"><span class="ni-ico"><i data-feather="link"></i></span><span class="ni-lbl">Audit Log</span></div>
+                </div>
+                <div class="sb-sec">
+                    <div class="sb-sec-lbl">System</div>
+                    <div class="ni" data-page="health"><span class="ni-ico"><i data-feather="hard-drive"></i></span><span class="ni-lbl">System Health</span><span class="ni-badge amber">1</span></div>
+                    <div class="ni" data-page="reports"><span class="ni-ico"><i data-feather="clipboard"></i></span><span class="ni-lbl">Reports</span></div>
+                    <div class="ni" data-page="settings"><span class="ni-ico"><i data-feather="settings"></i></span><span class="ni-lbl">Settings</span></div>
+                </div>
+            </div>
+            <div class="sb-user">
+                <div class="sb-av">MK</div>
+                <div>
+                    <div class="sb-un">M. Kamau</div>
+                    <div class="sb-ue">m.kamau@moh.go.ke</div>
+                </div>
+                <button class="sb-signout" id="signOutBtn">Sign Out</button>
+            </div>
         </div>
-        <div class="ph-right">
-          <button class="btn-s" onclick="modal('export')"><i data-feather="download"></i> Export Report</button>
-          <button class="btn-p" onclick="modal('addUser')"><i data-feather="user-plus"></i> Add User</button>
+    </nav>
+
+    <div class="main">
+        <header class="topbar">
+            <div>
+                <div class="tb-page" id="tbTitle">Overview</div>
+                <div class="tb-crumb">UniHealth EHR › <b id="tbCrumb">Dashboard</b></div>
+            </div>
+            <div class="tb-gap"></div>
+            <div class="tb-search"><i data-feather="search" style="width:13px;height:13px;stroke:#9ca3af;flex-shrink:0"></i><input placeholder="Search across all modules…" id="globalSearch"></div>
+            <div class="tb-btn" id="notifBtn"><i data-feather="bell"></i><div class="tb-dot"></div></div>
+            <div class="tb-datepill" id="tbDate"></div>
+        </header>
+
+        <div class="content" id="contentArea"></div>
+    </div>
+
+    <div class="mo-overlay" id="moOverlay">
+        <div class="mo">
+            <div class="mo-hd"><div class="mo-title" id="moTitle">Action</div><button class="mo-x" id="moXBtn">✕</button></div>
+            <div class="mo-body" id="moBody"></div>
+            <div class="mo-foot"><button class="btn-s" id="moCancelBtn">Cancel</button><button class="btn-p" id="moConfirmBtn">Save</button></div>
         </div>
-      </div>
-
-      <!-- Quick actions -->
-      <div class="qa">
-        <div class="qa-item" onclick="go('users',null)"><span class="qa-e"><i data-feather="user-plus"></i></span><span class="qa-t">Add Staff</span></div>
-        <div class="qa-item" onclick="modal('addPatient')"><span class="qa-e"><i data-feather="clipboard"></i></span><span class="qa-t">Register Patient</span></div>
-        <div class="qa-item" onclick="modal('facility')"><span class="qa-e"><i data-feather="home"></i></span><span class="qa-t">New Facility</span></div>
-        <div class="qa-item" onclick="go('unihealth',null)"><span class="qa-e"><i data-feather="shield"></i></span><span class="qa-t">ModelCover Claims</span></div>
-        <div class="qa-item" onclick="go('reports',null)"><span class="qa-e"><i data-feather="file-text"></i></span><span class="qa-t">Generate Report</span></div>
-        <div class="qa-item" onclick="go('audit',null)"><span class="qa-e"><i data-feather="link"></i></span><span class="qa-t">Audit Log</span></div>
-        <div class="qa-item" onclick="go('counties',null)"><span class="qa-e"><i data-feather="map"></i></span><span class="qa-t">County Map</span></div>
-        <div class="qa-item" onclick="go('settings',null)"><span class="qa-e"><i data-feather="settings"></i></span><span class="qa-t">Settings</span></div>
-      </div>
-
-      <!-- KPIs row 1 -->
-      <div class="kpis">
-        <div class="kpi" style="animation-delay:.05s"><div class="kpi-bar g"></div><div class="kpi-ico"><i data-feather="users"></i></div><div class="kpi-lbl">Registered Patients</div><div class="kpi-val">55.2M</div><div class="kpi-meta up">▲ 2.1% this month</div></div>
-        <div class="kpi" style="animation-delay:.1s"><div class="kpi-bar b"></div><div class="kpi-ico"><i data-feather="briefcase"></i></div><div class="kpi-lbl">Active Staff</div><div class="kpi-val">48,914</div><div class="kpi-meta up">▲ 340 new this week</div></div>
-        <div class="kpi" style="animation-delay:.15s"><div class="kpi-bar am"></div><div class="kpi-ico"><i data-feather="home"></i></div><div class="kpi-lbl">Facilities Online</div><div class="kpi-val">2,387</div><div class="kpi-meta fl">— 13 degraded</div></div>
-        <div class="kpi" style="animation-delay:.2s"><div class="kpi-bar r"></div><div class="kpi-ico"><i data-feather="alert-triangle"></i></div><div class="kpi-lbl">Pending Approvals</div><div class="kpi-val">127</div><div class="kpi-meta dn">▼ Needs attention</div></div>
-      </div>
-
-      <!-- KPIs row 2 -->
-      <div class="kpis">
-        <div class="kpi" style="animation-delay:.25s"><div class="kpi-bar g"></div><div class="kpi-ico"><i data-feather="package"></i></div><div class="kpi-lbl">ModelCover Claims Today</div><div class="kpi-val">14,823</div><div class="kpi-meta up">▲ 47.5B total</div></div>
-        <div class="kpi" style="animation-delay:.3s"><div class="kpi-bar b"></div><div class="kpi-ico"><i data-feather="radio"></i></div><div class="kpi-lbl">FHIR Events/Day</div><div class="kpi-val">118M</div><div class="kpi-meta up">▲ P95 latency 32ms</div></div>
-        <div class="kpi" style="animation-delay:.35s"><div class="kpi-bar pu"></div><div class="kpi-ico"><i data-feather="map-pin"></i></div><div class="kpi-lbl">Regions Connected</div><div class="kpi-val">12/12</div><div class="kpi-meta up">▲ Full coverage</div></div>
-        <div class="kpi" style="animation-delay:.4s"><div class="kpi-bar g"></div><div class="kpi-ico"><i data-feather="lock"></i></div><div class="kpi-lbl">System Uptime</div><div class="kpi-val">99.97%</div><div class="kpi-meta up">▲ SLA met</div></div>
-      </div>
-
-      <!-- Main panels -->
-      <div class="g2">
-        <!-- Edge Node Status -->
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-title">Edge Node Status</div><span class="pnl-link" onclick="go('facilities',null)">All →</span></div>
-          <div id="nodeList"></div>
-        </div>
-        <!-- Live feed -->
-        <div class="panel">
-          <div class="pnl-hd">
-            <div><div class="pnl-title">Live System Activity</div><div class="pnl-sub" id="feedSub">Updating…</div></div>
-            <span class="pnl-link" onclick="go('audit',null)">Audit log →</span>
-          </div>
-          <div style="padding:0 20px"><div class="feed" id="feed"></div></div>
-        </div>
-      </div>
-
-      <!-- AI Overview strip -->
-      <div class="g3" style="margin-bottom:0">
-        <div class="panel" style="cursor:pointer" onclick="go('ai',null)">
-          <div class="pnl-hd"><div><div class="pnl-title"><i data-feather="cpu"></i> AI Security Status</div><div class="pnl-sub">Click to open AI Monitor</div></div><span class="tag am">3 alerts</span></div>
-          <div style="padding:12px 20px">
-            <div style="display:flex;gap:8px;padding:6px 0"><span style="color:var(--accent-red)"><i data-feather="alert-circle"></i></span><span>Unauthorised access attempt blocked · IP 192.0.2.x</span></div>
-            <div style="display:flex;gap:8px;padding:6px 0"><span style="color:var(--accent-amber)"><i data-feather="alert-triangle"></i></span><span>Abnormal DB query pattern · uid=staff_4421</span></div>
-          </div>
-        </div>
-        <div class="panel" style="cursor:pointer" onclick="go('health',null)">
-          <div class="pnl-hd"><div><div class="pnl-title"><i data-feather="database"></i> Backup Status</div><div class="pnl-sub">Click to open System Health</div></div><span class="tag g">HEALTHY</span></div>
-          <div style="padding:14px 20px">
-            <div style="display:flex;justify-content:space-between"><span>Last full backup</span><strong style="color:var(--primary)">✓ 2h ago</strong></div>
-            <div style="display:flex;justify-content:space-between"><span>Incremental</span><strong style="color:var(--primary)">✓ 15m ago</strong></div>
-            <div style="display:flex;justify-content:space-between"><span>DR Failover</span><strong style="color:var(--primary)">✓ Hot standby</strong></div>
-          </div>
-        </div>
-        <div class="panel" style="cursor:pointer" onclick="go('rbac',null)">
-          <div class="pnl-hd"><div><div class="pnl-title"><i data-feather="lock"></i> RBAC Overview</div><div class="pnl-sub">Click to manage roles</div></div></div>
-          <div style="padding:14px 20px">
-            <div style="display:flex;justify-content:space-between"><span>System Admins</span><strong>3 users</strong></div>
-            <div style="display:flex;justify-content:space-between"><span>Security Admins</span><strong>2 users</strong></div>
-            <div style="display:flex;justify-content:space-between"><span>Data Managers</span><strong>5 users</strong></div>
-            <div style="display:flex;justify-content:space-between"><span>Your role</span><strong id="overviewRbacRole" style="color:var(--primary)">System Admin</strong></div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- USER MANAGEMENT PAGE -->
-    <div id="pg-users" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Administration</div><div class="ph-title">User Management</div><div class="ph-sub">Manage staff accounts, roles and access permissions</div></div>
-        <div class="ph-right"><button class="btn-s"><i data-feather="upload"></i> Import CSV</button><button class="btn-p" onclick="modal('addUser')"><i data-feather="user-plus"></i> Add User</button></div>
-      </div>
-      <div class="panel">
-        <table class="tbl">
-          <thead><tr><th>User</th><th>Role</th><th>Reg. / ID</th><th>Facility</th><th>Last Login</th><th>Auth Method</th><th>Status</th><th></th></tr></thead>
-          <tbody id="userTbody"></tbody>
-        </table>
-      </div>
+    <div class="toast" id="toast">
+        <span class="toast-ico" id="toastIco">✅</span>
+        <div><div class="toast-msg" id="toastMsg"></div><div class="toast-sub" id="toastSub"></div></div>
     </div>
 
-    <!-- FACILITIES PAGE -->
-    <div id="pg-facilities" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">Facility Management</div><div class="ph-sub">2,387 ModelCover‑accredited facilities across 12 regions</div></div>
-        <button class="btn-p" onclick="modal('facility')"><i data-feather="plus"></i> Register Facility</button>
-      </div>
-      <div class="g3" id="facGrid" style="grid-template-columns:repeat(3,1fr)"></div>
-    </div>
+    <script>
+        (function() {
+            const state = {
+                currentPage: 'overview',
+                currentRole: 'sysadmin',
+                aiAlerts: 3,
+                users: [
+                    { name: 'Dr. Amina Wanjiru', initials: 'AW', role: 'Doctor', reg: 'A4821', facility: 'KNH Nairobi',
+                        lastLogin: '2 min ago', auth: 'Biometric', status: 'g', statusLabel: 'ACTIVE' },
+                    { name: 'Nurse John Otieno', initials: 'JO', role: 'Nurse / CO', reg: 'NCK/RN/12345',
+                        facility: 'Coast General', lastLogin: '14 min ago', auth: 'Practice 360', status: 'g',
+                        statusLabel: 'ACTIVE' },
+                    { name: 'Dr. Grace Muthoni', initials: 'GM', role: 'Doctor', reg: 'M/9822',
+                    facility: 'MTRH Eldoret', lastLogin: '1h ago', auth: 'SMS OTP', status: 'g',
+                    statusLabel: 'ACTIVE' },
+                    { name: 'Admin Sarah Njeri', initials: 'SN', role: 'Administrator', reg: 'ADMIN-KE-00441',
+                        facility: 'MOH HQ', lastLogin: '5h ago', auth: 'eCitizen SSO', status: 'g',
+                    statusLabel: 'ACTIVE' },
+                ],
+                patients: [
+                    { name: 'Wangui Njoroge', initials: 'WN', id: '12345678', county: 'Nairobi',
+                        modelCoverStatus: 'g', modelCoverLabel: 'ACTIVE', modelCoverNo: 'AFL-MBR-2024-884321',
+                        lastVisit: '3 days ago' },
+                    { name: 'Omar Abdullahi', initials: 'OA', id: '87654321', county: 'Mombasa',
+                        modelCoverStatus: 'g', modelCoverLabel: 'ACTIVE', modelCoverNo: 'AFL-MBR-2023-441209',
+                        lastVisit: '1 week ago' },
+                    { name: 'Adhiambo Grace', initials: 'AG', id: '23456789', county: 'Kisumu',
+                        modelCoverStatus: 'am', modelCoverLabel: 'PENDING', modelCoverNo: 'AFL-MBR-2024-221087',
+                        lastVisit: 'Today' },
+                ],
+                staff: [
+                    { name: 'Dr. Amina Wanjiru', initials: 'AW', role: 'Doctor', reg: 'A4821', council: 'KMPDC',
+                        facility: 'KNH Nairobi', verified: true },
+                    { name: 'Nurse John Otieno', initials: 'JO', role: 'Nurse', reg: 'NCK/RN/12345',
+                    council: 'NCK', facility: 'Coast General', verified: true },
+                    { name: 'CO Peter Kamau', initials: 'PK', role: 'Clinical Officer', reg: 'CO/7890',
+                    council: 'NCK', facility: 'Nakuru L5', verified: false },
+                ],
+                facilities: [
+                    { name: 'Kenyatta National Hospital', loc: 'Nairobi', level: 'Level 6', beds: 1800,
+                        occupancy: 78, status: 'g', statusLabel: 'ONLINE', latency: 24 },
+                    { name: 'MTRH Eldoret', loc: 'Uasin Gishu', level: 'Level 6', beds: 800, occupancy: 82,
+                        status: 'g', statusLabel: 'ONLINE', latency: 38 },
+                    { name: 'Coast General Hospital', loc: 'Mombasa', level: 'Level 5', beds: 600,
+                        occupancy: 65, status: 'g', statusLabel: 'ONLINE', latency: 41 },
+                    { name: 'Nakuru Level 5', loc: 'Nakuru', level: 'Level 5', beds: 400, occupancy: 58,
+                        status: 'r', statusLabel: 'DEGRADED', latency: 180 },
+                ],
+                auditEntries: [
+                    { ts: '2026-04-03 09:42', type: 'LOGIN', event: 'Admin Login — Success', actor: 'M. Kamau',
+                        role: 'System Admin', hash: '0x8f4a2c1e…', status: 'g', statusLabel: 'SUCCESS' },
+                    { ts: '2026-04-03 09:30', type: 'BLOCK', event: 'Failed Login (×3) — IP Blocked',
+                        actor: 'AI Monitor', role: 'System', hash: '0x7c53a8e1…', status: 'r',
+                    statusLabel: 'BLOCKED' },
+                ]
+            };
 
-    <!-- COUNTY COVERAGE PAGE -->
-    <div id="pg-counties" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Coverage</div><div class="ph-title">County Coverage Map</div><div class="ph-sub">All 12 regions · Real‑time connectivity</div></div>
-      </div>
-      <div class="panel">
-        <div class="pnl-hd"><div class="pnl-title">Coverage Heatmap — 47 Counties</div></div>
-        <div class="pnl-body"><div class="county-grid" id="countyGrid"></div></div>
-      </div>
-    </div>
+            const ROLES = {
+                sysadmin: { lbl: 'System Administrator', perm: 'FULL ACCESS', ico: 'shield', locked: [] },
+                secadmin: { lbl: 'Security Administrator', perm: 'AUDIT · RBAC · SECURITY', ico: 'lock',
+                    locked: ['users', 'patients', 'health'] },
+                datamanager: { lbl: 'Data Manager', perm: 'DATA MANAGEMENT', ico: 'database', locked: ['ai', 'rbac',
+                        'audit', 'settings'
+                    ] }
+            };
 
-    <!-- PATIENT REGISTRY PAGE -->
-    <div id="pg-patients" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Clinical</div><div class="ph-title">Patient Registry</div><div class="ph-sub">55.2M ModelCover‑registered patients</div></div>
-        <button class="btn-p" onclick="modal('addPatient')"><i data-feather="user-plus"></i> Register Patient</button>
-      </div>
-      <div class="panel">
-        <table class="tbl">
-          <thead><tr><th>Patient</th><th>National ID</th><th>County</th><th>ModelCover Status</th><th>ModelCover No.</th><th>Last Visit</th><th></th></tr></thead>
-          <tbody id="patTbody"></tbody>
-        </table>
-      </div>
-    </div>
+            const pageTitles = {
+                overview: 'Overview',
+                users: 'User Management',
+                facilities: 'Facilities',
+                counties: 'County Coverage',
+                patients: 'Patient Registry',
+                staff: 'Staff Directory',
+                unihealth: 'ModelCover Integration',
+                reports: 'Reports',
+                audit: 'Audit Log',
+                settings: 'System Settings',
+                ai: 'AI Monitor',
+                rbac: 'RBAC & Roles',
+                health: 'System Health'
+            };
 
-    <!-- STAFF DIRECTORY PAGE -->
-    <div id="pg-staff" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Human Resources</div><div class="ph-title">Staff Directory</div><div class="ph-sub">Model Medical Council and Model Nursing Council verified clinical staff</div></div>
-        <button class="btn-p" onclick="modal('addUser')"><i data-feather="user-plus"></i> Add Staff Member</button>
-      </div>
-      <div class="panel">
-        <table class="tbl">
-          <thead><tr><th>Name</th><th>Role</th><th>Registration No.</th><th>Council</th><th>Facility</th><th>Verified</th><th>Status</th></tr></thead>
-          <tbody id="staffTbody"></tbody>
-        </table>
-      </div>
-    </div>
+            function navigate(page) {
+                state.currentPage = page;
+                document.querySelectorAll('.ni').forEach(n => n.classList.remove('on'));
+                const nav = document.querySelector(`.ni[data-page="${page}"]`);
+                if (nav) nav.classList.add('on');
+                document.getElementById('tbTitle').textContent = pageTitles[page] || page;
+                document.getElementById('tbCrumb').textContent = 'Admin › ' + (pageTitles[page] || page);
+                renderPage();
+                feather.replace();
+            }
 
-    <!-- MODELCOVER INTEGRATION PAGE -->
-    <div id="pg-unihealth" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">ModelCover Health Cover</div><div class="ph-title">ModelCover Integration Hub</div><div class="ph-sub">Claims management, biometric verification, Practice 360 approvals</div></div>
-        <button class="btn-p"><i data-feather="refresh-cw"></i> Sync ModelCover</button>
-      </div>
-      <div class="panel">
-        <div class="pnl-hd"><div class="pnl-title">Pending Approvals</div></div>
-        <table class="tbl">
-          <thead><tr><th>ModelCover No.</th><th>Facility</th><th>Service</th><th>Amount</th><th>Auth</th><th></th></tr></thead>
-          <tbody>
-            <tr><td class="mono">ModelCover-2024-884321</td><td>Central Referral Hospital</td><td>Inpatient ward</td><td>12,400</td><td><span class="tag g dot">Biometric</span></td><td><button class="btn-p btn-sm">Approve</button></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+            function renderPage() {
+                const content = document.getElementById('contentArea');
+                switch (state.currentPage) {
+                    case 'overview':
+                        content.innerHTML = getOverviewHTML();
+                        break;
+                    case 'users':
+                        content.innerHTML = getUsersHTML();
+                        break;
+                    case 'facilities':
+                        content.innerHTML = getFacilitiesHTML();
+                        break;
+                    case 'counties':
+                        content.innerHTML = getCountiesHTML();
+                        break;
+                    case 'patients':
+                        content.innerHTML = getPatientsHTML();
+                        break;
+                    case 'staff':
+                        content.innerHTML = getStaffHTML();
+                        break;
+                    case 'unihealth':
+                        content.innerHTML = getUniHealthHTML();
+                        break;
+                    case 'reports':
+                        content.innerHTML = getReportsHTML();
+                        break;
+                    case 'audit':
+                        content.innerHTML = getAuditHTML();
+                        break;
+                    case 'settings':
+                        content.innerHTML = getSettingsHTML();
+                        break;
+                    case 'ai':
+                        content.innerHTML = getAIHTML();
+                        break;
+                    case 'rbac':
+                        content.innerHTML = getRBACHTML();
+                        break;
+                    case 'health':
+                        content.innerHTML = getHealthHTML();
+                        break;
+                    default:
+                        content.innerHTML = getOverviewHTML();
+                }
+                attachEvents();
+                feather.replace();
+                if (state.currentPage === 'overview') startOverviewWidgets();
+            }
 
-    <!-- REPORTS PAGE -->
-    <div id="pg-reports" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Analytics</div><div class="ph-title">Reports & Analytics</div></div>
-        <button class="btn-p" onclick="modal('export')"><i data-feather="download"></i> Export All</button>
-      </div>
-    </div>
+            function getOverviewHTML() {
+                return `
+                <div class="ph"><div><div class="ph-eyebrow">MOH Kenya · 2026</div><div class="ph-title">Good morning, Administrator</div><div class="ph-sub">System overview for <span id="todayFull" style="color:var(--g);font-weight:700"></span></div></div><div class="ph-right"><button class="btn-s" data-action="modal" data-modal="export">📥 Export Report</button><button class="btn-p" data-action="modal" data-modal="addUser">+ Add User</button></div></div>
+                <div class="qa" id="quickActions"></div>
+                <div class="kpis" id="kpiRow1"></div>
+                <div class="kpis" id="kpiRow2"></div>
+                <div class="g2">
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-title">Edge Node Status</div><span class="pnl-link" data-nav="facilities">All →</span></div><div id="nodeList"></div></div>
+                    <div class="panel"><div class="pnl-hd"><div><div class="pnl-title">Live System Activity</div><div class="pnl-sub" id="feedSub">Updating…</div></div><span class="pnl-link" data-nav="audit">Audit log →</span></div><div style="padding:0 20px"><div id="liveFeed"></div></div></div>
+                </div>
+                <div class="g3">
+                    <div class="panel" style="cursor:pointer" data-nav="ai"><div class="pnl-hd"><div class="pnl-title">🤖 AI Security Status</div><span class="tag am" id="aiOverviewBadge">3 alerts</span></div><div style="padding:12px 20px"><div style="display:flex;gap:8px;padding:6px 0"><span style="color:var(--r)">🔴</span><span>Unauthorised access blocked · IP 192.0.2.x</span></div><div style="display:flex;gap:8px;padding:6px 0"><span style="color:var(--am)">🟡</span><span>Abnormal DB query pattern · uid=staff_4421</span></div></div></div>
+                    <div class="panel" style="cursor:pointer" data-nav="health"><div class="pnl-hd"><div class="pnl-title">💾 Backup Status</div><span class="tag g">HEALTHY</span></div><div style="padding:14px 20px"><div style="display:flex;justify-content:space-between"><span>Last full backup</span><strong style="color:var(--g)">✓ 2h ago</strong></div><div style="display:flex;justify-content:space-between"><span>DR Failover</span><strong style="color:var(--g)">✓ Hot standby</strong></div></div></div>
+                    <div class="panel" style="cursor:pointer" data-nav="rbac"><div class="pnl-hd"><div class="pnl-title">🔐 RBAC Overview</div></div><div style="padding:14px 20px"><div style="display:flex;justify-content:space-between"><span>System Admins</span><strong>3 users</strong></div><div style="display:flex;justify-content:space-between"><span>Your role</span><strong style="color:var(--g)" id="overviewRbacRole">System Admin</strong></div></div></div>
+                </div>`;
+            }
 
-    <!-- AUDIT LOG PAGE -->
-    <div id="pg-audit" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Hyperledger Fabric Blockchain · Append‑Only</div><div class="ph-title">Audit Log</div><div class="ph-sub">Immutable blockchain‑recorded system events · Model Data Protection Act compliant</div></div>
-      </div>
-      <div class="panel">
-        <table class="tbl">
-          <thead><tr><th>Timestamp</th><th>Action Type</th><th>Event</th><th>Actor</th><th>Block Hash</th><th>Status</th></tr></thead>
-          <tbody id="auditTbody"></tbody>
-        </table>
-      </div>
-    </div>
+            function getUsersHTML() {
+                const rows = state.users.map(u => `
+                <tr><td><div class="cell-user"><div class="av">${u.initials}</div><span style="font-weight:700">${u.name}</span></div></td><td><span class="tag ${u.role==='Doctor'?'b':u.role==='Nurse / CO'?'g':'am'}">${u.role}</span></td><td class="mono">${u.reg}</td><td>${u.facility}</td><td>${u.lastLogin}</td><td>${u.auth}</td><td><span class="tag ${u.status}">${u.statusLabel}</span></td><td><button class="btn-s" style="padding:4px 10px;font-size:11px" data-action="modal" data-modal="addUser">Edit</button></td></tr>`).join('');
+                return `<div class="ph"><div><div class="ph-eyebrow">Administration</div><div class="ph-title">User Management</div></div><div class="ph-right"><button class="btn-s">📥 Import CSV</button><button class="btn-p" data-action="modal" data-modal="addUser">+ Add User</button></div></div>
+                <div class="panel"><table class="tbl"><thead><tr><th>User</th><th>Role</th><th>Reg. / ID</th><th>Facility</th><th>Last Login</th><th>Auth Method</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
 
-    <!-- SETTINGS PAGE -->
-    <div id="pg-settings" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div></div>
-      </div>
-      <div class="panel">
-        <div class="pnl-hd"><div class="pnl-title">Authentication Policies</div></div>
-        <div class="pnl-body">
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0"><i data-feather="toggle-right" style="color:var(--primary)"></i> Require Biometric at L4–L6 (ModelCover Policy)</div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0"><i data-feather="toggle-left" style="color:var(--t3)"></i> Allow SMS OTP fallback (L2/L3 only)</div>
-        </div>
-      </div>
-    </div>
+            function getFacilitiesHTML() {
+                const cards = state.facilities.map(f => `
+                <div class="fac-card">
+                    <div class="fac-top"><div><div class="fac-name">${f.name}</div><div class="fac-loc">📍 ${f.loc}</div></div><span class="tag ${f.status}">${f.statusLabel}</span></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"><span class="tag b">${f.level}</span><span class="tag grey" style="font-family:var(--mono)">${f.latency}ms</span></div>
+                    <div class="fac-stats">
+                        <div class="fac-s"><div class="fac-sv">${f.beds.toLocaleString()}</div><div class="fac-sl">Beds</div></div>
+                        <div class="fac-s"><div class="fac-sv" style="color:${f.occupancy>80?'var(--r)':f.occupancy>60?'var(--am)':'var(--g)'}">${f.occupancy}%</div><div class="fac-sl">Occupancy</div></div>
+                    </div>
+                    <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--g)" data-w="${f.occupancy}%"></div></div>
+                </div>`).join('');
+                return `<div class="ph"><div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">Facility Management</div></div><button class="btn-p" data-action="modal" data-modal="facility">+ Register Facility</button></div>
+                <div class="g3" style="grid-template-columns:repeat(4,1fr)">${cards}</div>`;
+            }
 
-    <!-- AI MONITOR PAGE -->
-    <div id="pg-ai" class="pg">
-      <div class="ph">
-        <div>
-          <div class="ph-eyebrow">AI · Security Intelligence</div>
-          <div class="ph-title">AI System Monitor</div>
-        </div>
-      </div>
-      <div class="ai-status-grid">
-        <div class="ai-stat ok"><div class="ai-stat-lbl">Threat Detection</div><div class="ai-stat-val">Active</div><div class="ai-stat-sub ok">▲ 0 breaches</div></div>
-        <div class="ai-stat warn"><div class="ai-stat-lbl">Anomaly Alerts</div><div class="ai-stat-val" id="aiAlertCount">3</div><div class="ai-stat-sub warn">⚠ 1 critical</div></div>
-        <div class="ai-stat ok"><div class="ai-stat-lbl">UEBA Model</div><div class="ai-stat-val">Running</div><div class="ai-stat-sub ok">▲ 48,914 profiles</div></div>
-        <div class="ai-stat info"><div class="ai-stat-lbl">DB Query Analysis</div><div class="ai-stat-val">Normal</div></div>
-      </div>
-      <div class="panel">
-        <div class="pnl-hd"><div class="pnl-title">Active AI Alerts</div></div>
-        <div style="padding:16px 20px">
-          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:10px">
-            <div style="display:flex;gap:8px"><i data-feather="alert-circle" style="color:var(--accent-red)"></i><strong>Unauthorized Access Attempt</strong></div>
-            <div style="font-size:11.5px;margin-top:4px">IP 192.0.2.x attempted 14 login requests. UEBA flagged as bot (confidence: 97%).</div>
-          </div>
-        </div>
-      </div>
-    </div>
+            function getCountiesHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">Coverage</div><div class="ph-title">County Coverage Map</div></div></div>
+                <div class="panel"><div class="pnl-hd"><div class="pnl-title">Coverage Heatmap — 47 Counties</div></div><div class="pnl-body"><div id="countyGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:5px"></div></div></div>`;
+            }
 
-    <!-- RBAC & ROLES PAGE -->
-    <div id="pg-rbac" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Security · Access Control</div><div class="ph-title">RBAC & Role Management</div></div>
-      </div>
-      <div class="g3">
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-title"><i data-feather="shield"></i> System Administrator</div><span class="tag g">3 users</span></div>
-          <div class="pnl-body">✅ Full system access<br>✅ Create/modify accounts<br>✅ Configure disaster recovery</div>
-        </div>
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-title"><i data-feather="lock"></i> Security Administrator</div><span class="tag r">2 users</span></div>
-          <div class="pnl-body">✅ View AI alerts<br>✅ Manage RBAC roles<br>❌ Cannot delete clinical records</div>
-        </div>
-        <div class="panel">
-          <div class="pnl-hd"><div class="pnl-title"><i data-feather="database"></i> Data Manager</div><span class="tag b">5 users</span></div>
-          <div class="pnl-body">✅ View patient records<br>✅ Export data reports<br>❌ Cannot access AI Monitor</div>
-        </div>
-      </div>
-    </div>
+            function getPatientsHTML() {
+                const rows = state.patients.map(p => `
+                <tr><td><div class="cell-user"><div class="av">${p.initials}</div><span style="font-weight:700">${p.name}</span></div></td><td class="mono">${p.id}</td><td>${p.county}</td><td><span class="tag ${p.modelCoverStatus}">${p.modelCoverLabel}</span></td><td class="mono" style="color:var(--t3)">${p.modelCoverNo}</td><td>${p.lastVisit}</td><td><button class="btn-s" style="padding:4px 10px">View</button></td></tr>`).join('');
+                return `<div class="ph"><div><div class="ph-eyebrow">Clinical</div><div class="ph-title">Patient Registry</div></div><button class="btn-p" data-action="modal" data-modal="addPatient">+ Register Patient</button></div>
+                <div class="panel"><table class="tbl"><thead><tr><th>Patient</th><th>National ID</th><th>County</th><th>ModelCover Status</th><th>ModelCover No.</th><th>Last Visit</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
 
-    <!-- SYSTEM HEALTH PAGE -->
-    <div id="pg-health" class="pg">
-      <div class="ph">
-        <div><div class="ph-eyebrow">Infrastructure · Reliability</div><div class="ph-title">System Health & Backups</div></div>
-      </div>
-      <div class="kpis">
-        <div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">Uptime</div><div class="kpi-val">99.97%</div></div>
-        <div class="kpi"><div class="kpi-bar b"></div><div class="kpi-lbl">Last Backup</div><div class="kpi-val">2h ago</div></div>
-        <div class="kpi"><div class="kpi-bar am"></div><div class="kpi-lbl">Storage Used</div><div class="kpi-val">63%</div></div>
-        <div class="kpi"><div class="kpi-bar pu"></div><div class="kpi-lbl">DR Failover</div><div class="kpi-val">✓ Live</div></div>
-      </div>
-      <div class="panel">
-        <div class="pnl-hd"><div class="pnl-title">Database Backup Management</div></div>
-        <div class="pnl-body">
-          <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Full Backup — Production DB</span><span>847 GB · 2h ago</span></div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Incremental Backup</span><span>12.4 GB · 15m ago</span></div>
-          <div style="display:flex;justify-content:space-between;padding:8px 0"><span>Audit Log Archive</span><span>3.1 GB · 1h ago</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+            function getStaffHTML() {
+                const rows = state.staff.map(s => `
+                <tr><td><div class="cell-user"><div class="av">${s.initials}</div><span style="font-weight:700">${s.name}</span></div></td><td><span class="tag ${s.role==='Doctor'?'b':s.role==='Nurse'?'g':'am'}">${s.role}</span></td><td class="mono">${s.reg}</td><td>${s.council}</td><td>${s.facility}</td><td><span class="tag ${s.verified?'g':'am'}">${s.verified?'✓ Verified':'⏳ Pending'}</span></td><td><span class="tag ${s.verified?'g':'am'}">${s.verified?'ACTIVE':'REVIEW'}</span></td></tr>`).join('');
+                return `<div class="ph"><div><div class="ph-eyebrow">Human Resources</div><div class="ph-title">Staff Directory</div></div><button class="btn-p" data-action="modal" data-modal="addUser">+ Add Staff</button></div>
+                <div class="panel"><table class="tbl"><thead><tr><th>Name</th><th>Role</th><th>Registration No.</th><th>Council</th><th>Facility</th><th>Verified</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span class="toast-ico" id="toastIco"><i data-feather="check-circle"></i></span>
-  <div><div class="toast-msg" id="toastMsg">Action recorded</div><div class="toast-sub" id="toastSub">Logged to audit trail</div></div>
-</div>
+            function getUniHealthHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">ModelCover</div><div class="ph-title">ModelCover Integration Hub</div></div><button class="btn-p">↺ Sync ModelCover</button></div>
+                <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">Claims Today</div><div class="kpi-val">14,823</div></div><div class="kpi"><div class="kpi-bar am"></div><div class="kpi-lbl">Pending</div><div class="kpi-val">127</div></div><div class="kpi"><div class="kpi-bar r"></div><div class="kpi-lbl">Rejected</div><div class="kpi-val">23</div></div></div>
+                <div class="panel"><div class="pnl-hd"><div class="pnl-title">Pending Approvals</div></div><table class="tbl"><thead><tr><th>ModelCover No.</th><th>Facility</th><th>Service</th><th>Amount</th><th>Auth</th><th></th></tr></thead><tbody><tr><td class="mono">AFL-MBR-2024-884321</td><td>KNH Nairobi</td><td>Inpatient ward</td><td>Ksh 12,400</td><td><span class="tag g dot">Biometric</span></td><td><button class="btn-p" style="padding:5px 11px;font-size:11px">Approve</button></td></tr></tbody></table></div>`;
+            }
 
-<!-- MODAL -->
-<div class="mo-overlay" id="moOverlay" onclick="if(event.target===this)closeMo()">
-  <div class="mo">
-    <div class="mo-hd">
-      <div class="mo-title" id="moTitle">Action</div>
-      <button class="mo-x" onclick="closeMo()"><i data-feather="x"></i></button>
-    </div>
-    <div class="mo-body" id="moBody"></div>
-    <div class="mo-foot">
-      <button class="btn-s" onclick="closeMo()">Cancel</button>
-      <button class="btn-p" id="moSubmit" onclick="submitMo()"><span id="moSubmitTxt">Save</span></button>
-    </div>
-  </div>
-</div>
+            function getReportsHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">Analytics</div><div class="ph-title">Reports & Analytics</div></div><button class="btn-p" data-action="modal" data-modal="export">📥 Export All</button></div>
+                <div class="g3" id="repGrid"></div>`;
+            }
 
-<script>
-  // ----- DATA & STATE -----
-  const now = new Date();
-  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const ds = DAYS[now.getDay()]+', '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear();
-  document.getElementById('tbDate').textContent = ds;
-  document.getElementById('todayFull').textContent = ds;
-  
-  const TITLES = {
-    overview:'Overview',users:'User Management',facilities:'Facility Management',
-    counties:'County Coverage',patients:'Patient Registry',staff:'Staff Directory',
-    unihealth:'ModelCover Integration',reports:'Reports & Analytics',audit:'Audit Log',
-    settings:'System Settings',ai:'AI Monitor',rbac:'RBAC & Roles',health:'System Health'
-  };
-  const CRUMBS = {
-    overview:'Dashboard',users:'Admin › Users',facilities:'Admin › Facilities',
-    counties:'Admin › Coverage',patients:'Clinical › Patients',staff:'Clinical › Staff',
-    unihealth:'Payments › ModelCover',reports:'System › Reports',audit:'System › Audit',
-    settings:'System › Settings',ai:'Security › AI Monitor',rbac:'Security › RBAC',health:'System › Health'
-  };
-  
-  let currentRole = 'sysadmin';
-  const ROLES = {
-    sysadmin:{lbl:'System Administrator',perm:'FULL ACCESS · ALL MODULES',ico:'shield',locked:[]},
-    secadmin:{lbl:'Security Administrator',perm:'AUDIT · RBAC · SECURITY ONLY',ico:'lock',locked:['users','patients','health']},
-    datamanager:{lbl:'Data Manager',perm:'DATA MANAGEMENT ONLY',ico:'database',locked:['ai','rbac','audit','settings']}
-  };
-  
-  // ----- NAVIGATION -----
-  function go(pg,el){
-    document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-    document.getElementById('pg-'+pg).classList.add('on');
-    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
-    if(el) el.classList.add('on');
-    else document.querySelectorAll('.ni').forEach(n=>{ if((n.getAttribute('onclick')||'').includes("'"+pg+"'")) n.classList.add('on'); });
-    document.getElementById('tbTitle').textContent = TITLES[pg]||pg;
-    document.getElementById('tbCrumb').textContent = CRUMBS[pg]||pg;
-  }
-  
-  function signOut(){ if(confirm('Sign out of UniHealth EHR admin portal?')){ window.location.href='unihealth-login.html'; } }
-  
-  function switchRole(r){
-    currentRole = r;
-    const ro = ROLES[r];
-    document.getElementById('rbacRole').textContent = ro.lbl;
-    document.getElementById('rbacPerm').textContent = ro.perm;
-    document.getElementById('rbacIco').innerHTML = `<i data-feather="${ro.ico}"></i>`;
-    document.getElementById('overviewRbacRole').textContent = ro.lbl;
-    feather.replace();
-    showToast('🔐','Role switched to '+ro.lbl,'All restricted pages locked');
-  }
-  
-  // ----- MODAL -----
-  const MO = {
-    addUser:{title:'Add New Staff User',submit:'Create Account',body:'<div class="field"><label>First Name</label><input placeholder="e.g. Amina"></div><div class="field"><label>Last Name</label><input placeholder="e.g. Wanjiru"></div>'},
-    addPatient:{title:'Register New Patient',submit:'Register Patient',body:'<div class="field"><label>First Name</label><input></div><div class="field"><label>Last Name</label><input></div>'},
-    facility:{title:'Register New Facility',submit:'Register Facility',body:'<div class="field"><label>Facility Name</label><input></div>'},
-    export:{title:'Export Report',submit:'Export',body:'<div class="field"><label>Report Type</label><select><option>System Overview</option></select></div>'}
-  };
-  function modal(key){
-    const m = MO[key]||{title:'Action',body:'',submit:'OK'};
-    document.getElementById('moTitle').textContent = m.title;
-    document.getElementById('moBody').innerHTML = m.body;
-    document.getElementById('moSubmitTxt').textContent = m.submit;
-    document.getElementById('moOverlay').classList.add('open');
-  }
-  function closeMo(){ document.getElementById('moOverlay').classList.remove('open'); }
-  function submitMo(){ setTimeout(closeMo,700); }
-  
-  // ----- TOAST -----
-  let toastTimer = null;
-  function showToast(ico,msg,sub){
-    const t = document.getElementById('toast');
-    document.getElementById('toastIco').innerHTML = `<i data-feather="check-circle"></i>`;
-    document.getElementById('toastMsg').textContent = msg;
-    document.getElementById('toastSub').textContent = sub||'';
-    t.classList.add('show');
-    if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>t.classList.remove('show'),3200);
-    feather.replace();
-  }
-  
-  // ----- POPULATE DATA -----
-  // Edge nodes
-  const NODES = [
-    {name:'Central Referral Hospital',loc:'Capital Region',lat:24,st:'g'},
-    {name:'Western Regional Hospital',loc:'Western Region',lat:38,st:'g'},
-    {name:'Coastal Regional Hospital',loc:'Coastal Region',lat:41,st:'g'},
-    {name:'Lake Regional Hospital',loc:'Lake Region',lat:52,st:'am'},
-    {name:'Rift Valley Regional Hospital',loc:'Rift Valley',lat:180,st:'r'},
-  ];
-  const nl = document.getElementById('nodeList');
-  NODES.forEach(n=>{
-    const lc = n.lat<50?'var(--primary)':n.lat<100?'var(--accent-amber)':'var(--accent-red)';
-    const stLabel = n.st==='g'?'ONLINE':n.st==='am'?'SLOW':'DEGRADED';
-    const stClass = n.st==='g'?'g':n.st==='am'?'am':'r';
-    nl.innerHTML += `<div class="feed-item"><div class="feed-dot ${n.st}"></div><div><div class="feed-title">${n.name}</div><div class="feed-sub">${n.loc}</div></div><div style="margin-left:auto;text-align:right"><span style="font-family:var(--mono);color:${lc}">${n.lat}ms</span><br><span class="tag ${stClass}">${stLabel}</span></div></div>`;
-  });
-  
-  // Live feed
-  const FEED_BASE = [
-    {c:'g',t:'Dr. A. Wanjiku logged in via Biometric',s:'Central Referral Hospital · Doctor',tm:'2m ago'},
-    {c:'b',t:'ModelCover claim approved — 12,400',s:'ModelCover-2024-884321 · Biometric verified',tm:'5m ago'},
-    {c:'am',t:'Rift Valley node degraded — latency spike',s:'RVL-005 · 180ms response time',tm:'8m ago'},
-    {c:'g',t:'New facility registered: Eastern Regional',s:'Admin: M. Kamau · Level 5',tm:'12m ago'},
-  ];
-  const feedEl = document.getElementById('feed');
-  FEED_BASE.forEach(a=>{
-    feedEl.innerHTML += `<div class="feed-item"><div class="feed-dot-col"><div class="feed-dot ${a.c}"></div></div><div class="feed-main"><div class="feed-title">${a.t}</div><div class="feed-sub">${a.s}</div></div><div class="feed-time">${a.tm}</div></div>`;
-  });
-  
-  // User table
-  const USERS = [
-    {n:'Dr. Amina Wanjiru',i:'AW',rc:'b',rl:'🩺 Doctor',reg:'A4821',f:'Central Referral Hospital',lg:'2 min ago',auth:'Biometric',st:'g',stl:'ACTIVE'},
-    {n:'Nurse John Otieno',i:'JO',rc:'g',rl:'💉 Nurse',reg:'RN/12345',f:'Coastal Regional',lg:'14 min ago',auth:'Practice 360',st:'g',stl:'ACTIVE'},
-  ];
-  const ut = document.getElementById('userTbody');
-  USERS.forEach(u=>{ ut.innerHTML += `<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="av">${u.i}</div><span style="font-weight:700">${u.n}</span></div></td><td><span class="tag ${u.rc}">${u.rl}</span></td><td class="mono">${u.reg}</td><td>${u.f}</td><td>${u.lg}</td><td>${u.auth}</td><td><span class="tag ${u.st}">${u.stl}</span></td><td><button class="btn-s btn-sm">Edit</button></td></tr>`; });
-  
-  // Facilities
-  const FACS = [
-    {name:'Central Referral Hospital',loc:'Capital Region',lvl:'Level 6',beds:1800,occ:78,st:'g',stl:'ONLINE',lat:24},
-    {name:'Western Regional Hospital',loc:'Western Region',lvl:'Level 6',beds:800,occ:82,st:'g',stl:'ONLINE',lat:38},
-  ];
-  const fg = document.getElementById('facGrid');
-  FACS.forEach(f=>{ fg.innerHTML += `<div class="panel" style="padding:16px"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">${f.name}</span><span class="tag ${f.st}">${f.stl}</span></div><div style="font-size:11.5px;color:var(--t3);margin-top:4px">${f.loc} · ${f.lvl} · ${f.beds} beds · ${f.occ}% occupancy</div></div>`; });
-  
-  // County grid
-  const COUNTIES = Array.from({length:47},(_,i)=>({c:'C'+(i+1),cl:i%5===0?'full':i%5===1?'hi':i%5===2?'med':i%5===3?'lo':'off'}));
-  const cg = document.getElementById('countyGrid');
-  cg.style.display='grid';cg.style.gridTemplateColumns='repeat(8,1fr)';cg.style.gap='5px';
-  COUNTIES.forEach(c=>{ cg.innerHTML += `<div style="aspect-ratio:1;border-radius:5px;background:${c.cl==='full'?'var(--primary-dark)':c.cl==='hi'?'var(--primary)':c.cl==='med'?'var(--primary-muted)':c.cl==='lo'?'var(--primary-light)':'#f1f5f1'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:6.5px;font-weight:700">${c.c}</div>`; });
-  
-  // Patients
-  const PATIENTS = [
-    {n:'Wangui Njoroge',id:'12345678',county:'Capital',cst:'g',shl:'ACTIVE',afl:'ModelCover-2024-884321',lv:'3 days ago'},
-    {n:'Omar Abdullahi',id:'87654321',county:'Coastal',cst:'g',shl:'ACTIVE',afl:'ModelCover-2023-441209',lv:'1 week ago'},
-  ];
-  const pt = document.getElementById('patTbody');
-  PATIENTS.forEach(p=>{ pt.innerHTML += `<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="av">${p.n.charAt(0)}</div><span style="font-weight:700">${p.n}</span></div></td><td class="mono">${p.id}</td><td>${p.county}</td><td><span class="tag ${p.cst}">${p.shl}</span></td><td class="mono">${p.afl}</td><td>${p.lv}</td><td><button class="btn-s btn-sm">View</button></td></tr>`; });
-  
-  // Staff
-  const STAFF = [
-    {n:'Dr. Amina Wanjiru',i:'AW',role:'Doctor',rc:'b',reg:'A4821',council:'MMC',f:'Central Referral Hospital',ok:true},
-    {n:'Nurse John Otieno',i:'JO',role:'Nurse',rc:'g',reg:'RN/12345',council:'MNC',f:'Coastal Regional',ok:true},
-  ];
-  const st2 = document.getElementById('staffTbody');
-  STAFF.forEach(s=>{ st2.innerHTML += `<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="av">${s.i}</div><span style="font-weight:700">${s.n}</span></div></td><td><span class="tag ${s.rc}">${s.role}</span></td><td class="mono">${s.reg}</td><td>${s.council}</td><td>${s.f}</td><td><span class="tag ${s.ok?'g':'am'}">${s.ok?'✓ Verified':'⏳ Pending'}</span></td><td><span class="tag ${s.ok?'g':'am'}">${s.ok?'ACTIVE':'REVIEW'}</span></td></tr>`; });
-  
-  // Audit log
-  const AUDIT = [
-    {ts:'2026-04-03 09:42:11',act:'LOGIN',ev:'Admin Login — Success',actor:'M. Kamau',role:'System Admin',hash:'0x8f4a2c1e…',st:'g',sl:'SUCCESS'},
-    {ts:'2026-04-03 09:30:22',act:'BLOCK',ev:'Failed Login (×3) — IP Blocked',actor:'AI Monitor',role:'System',hash:'0x7c53a8e1…',st:'r',sl:'BLOCKED'},
-  ];
-  const ab = document.getElementById('auditTbody');
-  AUDIT.forEach(a=>{ ab.innerHTML += `<tr><td class="mono">${a.ts}</td><td><span class="tag ${a.act==='CREATE'?'g':a.act==='BLOCK'?'r':'grey'}">${a.act}</span></td><td>${a.ev}</td><td>${a.actor}<br><span style="font-size:10px;color:var(--t3)">${a.role}</span></td><td class="mono">${a.hash}</td><td><span class="tag ${a.st}">${a.sl}</span></td></tr>`; });
-  
-  // Initialize Feather Icons after dynamic content
-  feather.replace();
-</script>
+            function getAuditHTML() {
+                const rows = state.auditEntries.map(a => `
+                <tr><td class="mono">${a.ts}</td><td><span class="tag ${a.status==='r'?'r':'grey'}">${a.type}</span></td><td>${a.event}</td><td>${a.actor}<br><span style="font-size:10px;color:var(--t3)">${a.role}</span></td><td class="mono">${a.hash}</td><td><span class="tag ${a.status}">${a.statusLabel}</span></td></tr>`).join('');
+                return `<div class="ph"><div><div class="ph-eyebrow">Hyperledger Fabric · Append-Only</div><div class="ph-title">Audit Log</div></div><div class="ph-right"><span class="role-guard">⛓️ Tamper-Evident</span><button class="btn-s">📥 Export</button></div></div>
+                <div class="panel"><table class="tbl"><thead><tr><th>Timestamp</th><th>Type</th><th>Event</th><th>Actor (Role)</th><th>Block Hash</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+            }
+
+            function getSettingsHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div></div><button class="btn-p" data-action="saveSettings">💾 Save Changes</button></div>
+                <div class="panel"><div class="pnl-hd"><div class="pnl-title">Authentication Policies</div></div><div class="pnl-body" id="settingsAuth"></div></div>`;
+            }
+
+            function getAIHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">AI · Security Intelligence</div><div class="ph-title">AI System Monitor</div></div><div class="ph-right"><span class="role-guard" id="aiRoleGuard">🛡️ System Administrator</span><button class="btn-s" data-action="dismissAlerts">✓ Dismiss</button><button class="btn-p" data-action="runAIScan">🤖 Run Scan</button></div></div>
+                <div class="ai-status-grid" id="aiStatGrid"></div>
+                <div class="panel"><div class="pnl-hd"><div class="pnl-title">Active AI Alerts</div></div><div style="padding:16px 20px" id="aiAlertList"></div></div>`;
+            }
+
+            function getRBACHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">Access Control</div><div class="ph-title">RBAC & Roles</div></div><div class="ph-right"><span class="role-guard" id="rbacPageGuard">🔐 System Admin</span></div></div>
+                <div class="g3">
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-title">🛡️ System Admin</div><span class="tag g">3 users</span></div><div class="pnl-body">✅ Full system access<br>✅ Create/modify accounts<br>✅ Disaster recovery</div></div>
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-title">🔒 Security Admin</div><span class="tag r">2 users</span></div><div class="pnl-body">✅ AI alerts<br>✅ Manage RBAC<br>❌ Cannot delete records</div></div>
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-title">📋 Data Manager</div><span class="tag b">5 users</span></div><div class="pnl-body">✅ View records<br>✅ Export reports<br>❌ No AI access</div></div>
+                </div>`;
+            }
+
+            function getHealthHTML() {
+                return `<div class="ph"><div><div class="ph-eyebrow">Infrastructure</div><div class="ph-title">System Health & Backups</div></div><div class="ph-right"><button class="btn-s" data-action="triggerBackup">💾 Run Backup</button></div></div>
+                <div class="kpis" style="margin-bottom:20px"><div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">Uptime</div><div class="kpi-val">99.97%</div></div><div class="kpi"><div class="kpi-bar b"></div><div class="kpi-lbl">Last Backup</div><div class="kpi-val">2h ago</div></div><div class="kpi"><div class="kpi-bar am"></div><div class="kpi-lbl">Storage Used</div><div class="kpi-val">63%</div></div><div class="kpi"><div class="kpi-bar pu"></div><div class="kpi-lbl">DR Failover</div><div class="kpi-val">✓ Live</div></div></div>
+                <div class="panel"><div class="pnl-hd"><div class="pnl-title">Backup Management</div></div><div class="pnl-body" id="backupList"></div></div>`;
+            }
+
+            function attachEvents() {
+                document.getElementById('signOutBtn').addEventListener('click', () => {
+                    if (confirm('Sign out?')) window.location.href = 'unihealth-login.html';
+                });
+                document.getElementById('moXBtn').addEventListener('click', closeModal);
+                document.getElementById('moCancelBtn').addEventListener('click', closeModal);
+                document.getElementById('moConfirmBtn').addEventListener('click', () => {
+                    closeModal();
+                    showToast('check-circle', 'Action completed', 'Logged to audit trail');
+                });
+                document.getElementById('contentArea').addEventListener('click', e => {
+                    const btn = e.target.closest('[data-action]');
+                    if (!btn) return;
+                    const action = btn.dataset.action;
+                    if (action === 'modal') openModal(btn.dataset.modal);
+                    if (action === 'runAIScan') { showToast('cpu', 'AI scan running…',
+                            'Scanning 2,387 nodes');
+                        state.aiAlerts = Math.max(0, state.aiAlerts - 1); }
+                    if (action === 'dismissAlerts') { state.aiAlerts = 0;
+                        showToast('check-circle', 'Alerts dismissed'); }
+                    if (action === 'triggerBackup') showToast('hard-drive', 'Backup initiated',
+                        'Full database backup in progress');
+                    if (action === 'saveSettings') showToast('settings', 'Settings saved',
+                    'Authentication policies updated');
+                });
+                document.getElementById('contentArea').addEventListener('click', e => {
+                    const el = e.target.closest('[data-nav]');
+                    if (el) navigate(el.dataset.nav);
+                });
+                document.getElementById('globalSearch').addEventListener('input', e => {
+                    const term = e.target.value.toLowerCase();
+                    if (state.currentPage === 'users') {
+                        const filtered = state.users.filter(u => u.name.toLowerCase().includes(
+                            term));
+                        renderPage();
+                    }
+                });
+                document.getElementById('notifBtn').addEventListener('click', () => showToast('bell',
+                    '3 notifications', 'ModelCover approvals pending'));
+                document.querySelectorAll('.ni[data-page]').forEach(item => {
+                    item.addEventListener('click', () => navigate(item.dataset.page));
+                });
+            }
+
+            function startOverviewWidgets() {
+                document.getElementById('todayFull').textContent = new Date().toLocaleDateString(
+                'en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('quickActions').innerHTML =
+                    ['Add Staff', 'Register Patient', 'New Facility', 'ModelCover Claims', 'Generate Report', 'Audit Log',
+                        'County Map', 'Settings'
+                    ].map(a => `<div class="qa-item" data-nav="${a.toLowerCase().replace(/ /g,'')}"><span class="qa-e">📋</span><span class="qa-t">${a}</span></div>`).join('');
+                document.getElementById('kpiRow1').innerHTML =
+                    `<div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">Registered Patients</div><div class="kpi-val">55.2M</div></div><div class="kpi"><div class="kpi-bar b"></div><div class="kpi-lbl">Active Staff</div><div class="kpi-val">48,914</div></div><div class="kpi"><div class="kpi-bar am"></div><div class="kpi-lbl">Facilities Online</div><div class="kpi-val">2,387</div></div><div class="kpi"><div class="kpi-bar r"></div><div class="kpi-lbl">Pending Approvals</div><div class="kpi-val">127</div></div>`;
+                document.getElementById('kpiRow2').innerHTML =
+                    `<div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">ModelCover Claims Today</div><div class="kpi-val">14,823</div></div><div class="kpi"><div class="kpi-bar b"></div><div class="kpi-lbl">FHIR Events/Day</div><div class="kpi-val">118M</div></div><div class="kpi"><div class="kpi-bar pu"></div><div class="kpi-lbl">Regions Connected</div><div class="kpi-val">12/12</div></div><div class="kpi"><div class="kpi-bar g"></div><div class="kpi-lbl">Uptime</div><div class="kpi-val">99.97%</div></div>`;
+                document.getElementById('nodeList').innerHTML = state.facilities.map(f => `
+                <div class="feed-item"><div class="feed-dot ${f.status==='g'?'g':f.status==='am'?'am':'r'}"></div><div><div class="feed-title">${f.name}</div><div class="feed-sub">${f.loc}</div></div><div style="margin-left:auto;text-align:right"><span style="font-family:var(--mono);color:${f.latency<50?'var(--g)':f.latency<100?'var(--am)':'var(--r)'}">${f.latency}ms</span><br><span class="tag ${f.status}">${f.statusLabel}</span></div></div>`).join('');
+                document.getElementById('liveFeed').innerHTML = [
+                    'Dr. A. Wanjiku logged in via Biometric',
+                    'ModelCover claim approved — Ksh 12,400',
+                    'Nakuru L5 node degraded — 180ms',
+                    'New facility registered: Machakos'
+                ].map((t, i) => `<div class="feed-item"><div class="feed-dot ${['g','b','am','g'][i]}"></div><div><div class="feed-title">${t}</div><div class="feed-sub">${['KNH Nairobi','AFL-MBR-2024-884321','NAK-005','Admin: M. Kamau'][i]}</div></div><div class="feed-time">${['2m','5m','8m','12m'][i]} ago</div></div>`).join('');
+                document.getElementById('overviewRbacRole').textContent = ROLES[state.currentRole].lbl;
+            }
+
+            function switchRole(r) {
+                state.currentRole = r;
+                const ro = ROLES[r];
+                document.getElementById('rbacRole').textContent = ro.lbl;
+                document.getElementById('rbacPerm').textContent = ro.perm;
+                document.getElementById('rbacIco').innerHTML = '<i data-feather="' + ro.ico + '"></i>';
+                showToast('shield', 'Role switched to ' + ro.lbl, 'Permissions updated');
+                feather.replace();
+            }
+            window.switchRole = switchRole;
+
+            const MODALS = {
+                addUser: { t: 'Add New Staff User',
+                    b: '<div class="ff-row"><div class="ff"><label>First Name</label><input></div><div class="ff"><label>Last Name</label><input></div></div><div class="ff"><label>Role</label><select><option>Doctor</option><option>Nurse / CO</option><option>Administrator</option></select></div><div class="ff"><label>Registration Number</label><input></div>' },
+                addPatient: { t: 'Register New Patient',
+                    b: '<div class="ff-row"><div class="ff"><label>First Name</label><input></div><div class="ff"><label>Last Name</label><input></div></div><div class="ff"><label>National ID</label><input></div>' },
+                facility: { t: 'Register New Facility',
+                    b: '<div class="ff"><label>Facility Name</label><input></div><div class="ff"><label>Level</label><select><option>Level 5</option><option>Level 6</option></select></div>' },
+                export: { t: 'Export Report',
+                    b: '<div class="ff"><label>Report Type</label><select><option>System Overview</option><option>Claims</option><option>Audit</option></select></div><div class="ff"><label>Format</label><select><option>PDF</option><option>Excel</option></select></div>' }
+            };
+
+            function openModal(key) {
+                const m = MODALS[key] || { t: 'Action', b: '' };
+                document.getElementById('moTitle').textContent = m.t;
+                document.getElementById('moBody').innerHTML = m.b;
+                document.getElementById('moOverlay').classList.add('open');
+                feather.replace();
+            }
+
+            function closeModal() { document.getElementById('moOverlay').classList.remove('open'); }
+
+            function showToast(icon, msg, sub) {
+                const t = document.getElementById('toast');
+                document.getElementById('toastIco').innerHTML = '<i data-feather="' + icon + '"></i>';
+                document.getElementById('toastMsg').textContent = msg;
+                document.getElementById('toastSub').textContent = sub || '';
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 3000);
+                feather.replace();
+            }
+
+            function init() {
+                document.getElementById('tbDate').textContent = new Date().toLocaleDateString('en-KE', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                setupEvents();
+                navigate('overview');
+            }
+
+            function setupEvents() {
+                document.querySelectorAll('.ni[data-page]').forEach(item => {
+                    item.addEventListener('click', () => navigate(item.dataset.page));
+                });
+                document.getElementById('signOutBtn').addEventListener('click', () => {
+                    if (confirm('Sign out of Admin Portal?')) window.location.href =
+                        'unihealth-login.html';
+                });
+            }
+
+            init();
+            feather.replace({ width: 16, height: 16, strokeWidth: 2 });
+        })();
+    </script>
+    <style>
+        .cell-user {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        .av {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--g), #7beba4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .fac-card {
+            background: var(--card);
+            border: 1.5px solid var(--bdr);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all .15s;
+        }
+        .fac-card:hover {
+            border-color: var(--gm);
+            box-shadow: var(--shadow-sm);
+        }
+        .fac-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+        .fac-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--t1);
+            line-height: 1.3;
+        }
+        .fac-loc {
+            font-size: 11px;
+            color: var(--t3);
+            margin-top: 2px;
+        }
+        .fac-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+            margin-top: 10px;
+        }
+        .fac-s {
+            background: var(--bg);
+            border-radius: 7px;
+            padding: 8px 10px;
+        }
+        .fac-sv {
+            font-family: var(--serif);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--t1);
+        }
+        .fac-sl {
+            font-size: 9.5px;
+            color: var(--t3);
+            margin-top: 1px;
+        }
+        .pbar {
+            height: 5px;
+            background: #e8ece8;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 9px;
+        }
+        .pbar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1.3s cubic-bezier(.16, 1, .3, 1);
+            width: 0;
+        }
+    </style>
 </body>
 </html>
