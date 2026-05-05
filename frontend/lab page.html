@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniHealth EHR — Laboratory & Diagnostic Imaging Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        :root {
+            --primary: #1a8a4a;
+            --primary-dark: #0a4a26;
+            --primary-light: #e8f5ee;
+            --primary-muted: #a8d8bc;
+            --accent-blue: #2563eb;
+            --accent-amber: #d97706;
+            --accent-red: #dc2626;
+            --accent-purple: #7c3aed;
+            --accent-teal: #0d9488;
+            --accent-rose: #e11d48;
+            --accent-indigo: #4f46e5;
+            --bg-page: #f4f7f4;
+            --card-bg: #fff;
+            --border-light: #dde5e0;
+            --text-primary: #0c1a14;
+            --text-secondary: #2d4a38;
+            --text-tertiary: #5a7a66;
+            --shadow-sm: 0 1px 4px rgba(0, 0, 0, .06), 0 6px 20px rgba(0, 0, 0, .06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, .12);
+            --shadow-green: 0 4px 18px rgba(26, 138, 74, .28);
+            --font: 'Sora', sans-serif;
+            --serif: 'DM Serif Display', Georgia, serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+        html,
+        body {
+            height: 100%;
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+            background: var(--bg-page)
+        }
+        body {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden
+        }
+        .sb {
+            width: 250px;
+            flex-shrink: 0;
+            height: 100vh;
+            background: #1a1f3a;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 200;
+            overflow: hidden
+        }
+        .sb::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 130% 55% at -10% 100%, rgba(124, 58, 237, .12) 0%, transparent 55%),
+                radial-gradient(ellipse 80% 40% at 110% 0%, rgba(79, 70, 229, .12) 0%, transparent 50%);
+            pointer-events: none
+        }
+        .sb-flag {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            z-index: 10;
+            background: linear-gradient(90deg, #bb0000 0 33%, #111 33% 35.5%, #e8e8e8 35.5% 37%, #111 37% 39.5%, #1a8a4a 39.5% 100%)
+        }
+        .sb-in {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%
+        }
+        .sb-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 16px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, .06)
+        }
+        .sb-ico {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--accent-purple), #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-green)
+        }
+        .sb-nm {
+            font-family: var(--serif);
+            font-size: 15px;
+            color: #fff;
+            line-height: 1.1
+        }
+        .sb-sub {
+            font-size: 8.5px;
+            color: rgba(255, 255, 255, .28);
+            letter-spacing: .5px;
+            margin-top: 1px
+        }
+        .sb-live {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a78bfa;
+            margin-left: auto;
+            box-shadow: 0 0 8px #a78bfa;
+            animation: glow 2s infinite
+        }
+        @keyframes glow {
+            0%,
+            100% {
+                box-shadow: 0 0 5px #a78bfa
+            }
+            50% {
+                box-shadow: 0 0 14px #a78bfa
+            }
+        }
+        .sb-user-card {
+            margin: 12px 14px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 10px;
+            padding: 11px 12px
+        }
+        .sb-av-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 8px
+        }
+        .sb-av {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple), #c4b5fd);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0
+        }
+        .sb-dname {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2
+        }
+        .sb-dreg {
+            font-family: var(--mono);
+            font-size: 9px;
+            color: rgba(255, 255, 255, .38);
+            margin-top: 2px
+        }
+        .sb-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(124, 58, 237, .2);
+            border: 1px solid rgba(124, 58, 237, .3);
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 9px;
+            font-weight: 700;
+            color: #c4b5fd
+        }
+        .sb-role-badge .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #a78bfa;
+            box-shadow: 0 0 5px #a78bfa;
+            animation: glow 2s infinite
+        }
+        .sb-nav {
+            flex: 1;
+            padding: 8px 10px;
+            overflow-y: auto
+        }
+        .sb-nav::-webkit-scrollbar {
+            width: 0
+        }
+        .sb-sec {
+            font-family: var(--mono);
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .2);
+            padding: 7px 8px 3px;
+            font-weight: 500
+        }
+        .ni {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all .14s;
+            margin-bottom: 2px
+        }
+        .ni:hover {
+            background: rgba(255, 255, 255, .06)
+        }
+        .ni.on {
+            background: rgba(124, 58, 237, .18);
+            border: 1px solid rgba(124, 58, 237, .25)
+        }
+        .ni-e {
+            font-size: 14px;
+            flex-shrink: 0;
+            width: 17px;
+            text-align: center;
+            opacity: .6;
+            transition: opacity .14s
+        }
+        .ni:hover .ni-e,
+        .ni.on .ni-e {
+            opacity: 1
+        }
+        .ni-l {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .55);
+            white-space: nowrap;
+            transition: color .14s
+        }
+        .ni:hover .ni-l,
+        .ni.on .ni-l {
+            color: #fff
+        }
+        .ni-b {
+            margin-left: auto;
+            font-size: 8.5px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 9px;
+            color: #fff
+        }
+        .ni-b.r {
+            background: var(--accent-red)
+        }
+        .ni-b.am {
+            background: var(--accent-amber)
+        }
+        .ni-b.g {
+            background: var(--primary)
+        }
+        .ni-b.b {
+            background: var(--accent-blue)
+        }
+        .sb-foot {
+            padding: 11px 13px;
+            border-top: 1px solid rgba(255, 255, 255, .05)
+        }
+        .sb-out {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 7px;
+            font-family: var(--font);
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .38);
+            cursor: pointer;
+            transition: all .14s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px
+        }
+        .sb-out:hover {
+            background: rgba(220, 38, 38, .18);
+            border-color: rgba(220, 38, 38, .35);
+            color: #fca5a5
+        }
+        .main {
+            margin-left: 250px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-width: 0;
+            overflow: hidden
+        }
+        .topbar {
+            height: 58px;
+            background: var(--card-bg);
+            border-bottom: 1.5px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 10px;
+            flex-shrink: 0;
+            z-index: 100
+        }
+        .tb-pg {
+            font-family: var(--serif);
+            font-size: 16px;
+            color: var(--text-primary);
+            letter-spacing: -.2px
+        }
+        .tb-cr {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 1px
+        }
+        .tb-cr b {
+            color: var(--accent-purple)
+        }
+        .tb-gap {
+            flex: 1
+        }
+        .tb-facility {
+            background: #f5f3ff;
+            border: 1.5px solid #ddd6fe;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--accent-purple);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0
+        }
+        .tb-srch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            background: var(--bg-page);
+            border: 1.5px solid var(--border-light);
+            border-radius: 7px;
+            width: 200px;
+            transition: all .2s
+        }
+        .tb-srch:focus-within {
+            border-color: var(--accent-purple);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, .09)
+        }
+        .tb-srch input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: var(--font);
+            font-size: 12px;
+            color: var(--text-primary);
+            width: 100%
+        }
+        .tb-srch input::placeholder {
+            color: var(--text-tertiary)
+        }
+        .tb-ic {
+            width: 33px;
+            height: 33px;
+            border-radius: 7px;
+            border: 1.5px solid var(--border-light);
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            position: relative;
+            flex-shrink: 0;
+            transition: all .14s
+        }
+        .tb-ic:hover {
+            border-color: var(--accent-purple);
+            background: #f5f3ff
+        }
+        .tb-dot {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            border: 2px solid var(--card-bg)
+        }
+        .tb-date {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--text-tertiary);
+            padding: 5px 10px;
+            background: var(--bg-page);
+            border: 1.5px solid var(--border-light);
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 20px
+        }
+        .content::-webkit-scrollbar {
+            width: 4px
+        }
+        .content::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px
+        }
+        .pg {
+            display: none;
+            animation: pgIn .3s ease both
+        }
+        .pg.on {
+            display: block
+        }
+        @keyframes pgIn {
+            from {
+                opacity: 0;
+                transform: translateY(7px)
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+        .ph {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+        .ph-ey {
+            font-family: var(--mono);
+            font-size: 8.5px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 3px
+        }
+        .ph-ti {
+            font-family: var(--serif);
+            font-size: 23px;
+            color: var(--text-primary);
+            letter-spacing: -.3px
+        }
+        .ph-su {
+            font-size: 11.5px;
+            color: var(--text-tertiary);
+            margin-top: 3px;
+            line-height: 1.5
+        }
+        .ph-r {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+        .btn-p {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--accent-purple);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .16s;
+            box-shadow: 0 3px 12px rgba(124, 58, 237, .28);
+            white-space: nowrap
+        }
+        .btn-p:hover {
+            background: #6d28d9;
+            transform: translateY(-1px)
+        }
+        .btn-s {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 13px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border-light);
+            border-radius: 7px;
+            font-family: var(--font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .14s;
+            white-space: nowrap
+        }
+        .btn-s:hover {
+            border-color: var(--accent-purple);
+            color: var(--accent-purple)
+        }
+        .panel {
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-light);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 14px
+        }
+        .pnl-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border-light)
+        }
+        .pnl-ti {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+        .pnl-su {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 1px
+        }
+        .pnl-lk {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-purple);
+            cursor: pointer
+        }
+        .pnl-lk:hover {
+            text-decoration: underline
+        }
+        .pnl-bd {
+            padding: 14px 16px
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap
+        }
+        .tag.g {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid var(--primary-muted)
+        }
+        .tag.r {
+            background: #fef2f2;
+            color: #7f1d1d;
+            border: 1px solid #fecaca
+        }
+        .tag.b {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe
+        }
+        .tag.am {
+            background: #fffbeb;
+            color: #78350f;
+            border: 1px solid #fde68a
+        }
+        .tag.pu {
+            background: #f5f3ff;
+            color: #5b21b6;
+            border: 1px solid #ddd6fe
+        }
+        .tag.te {
+            background: #f0fdfa;
+            color: #0f766e;
+            border: 1px solid #99f6e4
+        }
+        .kpi {
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-light);
+            border-radius: 11px;
+            padding: 15px 16px;
+            transition: box-shadow .2s, transform .2s
+        }
+        .kpi:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px)
+        }
+        .kpi-e {
+            font-size: 22px;
+            margin-bottom: 6px
+        }
+        .kpi-v {
+            font-family: var(--serif);
+            font-size: 26px;
+            color: var(--text-primary);
+            letter-spacing: -.4px;
+            line-height: 1
+        }
+        .kpi-l {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+            margin-top: 4px
+        }
+        .kpi-su {
+            font-size: 10.5px;
+            color: var(--text-tertiary);
+            margin-top: 3px
+        }
+        .g2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px
+        }
+        .g3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 14px
+        }
+        .g4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 14px
+        }
+        .g5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 14px
+        }
+        .tbl {
+            width: 100%;
+            border-collapse: collapse
+        }
+        .tbl th {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            padding: 8px 11px;
+            text-align: left;
+            background: #f8faf8;
+            border-bottom: 1.5px solid var(--border-light)
+        }
+        .tbl td {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            padding: 9px 11px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle
+        }
+        .tbl tr:hover td {
+            background: #f8faf8
+        }
+        .tbl tr:last-child td {
+            border: none
+        }
+        .mono {
+            font-family: var(--mono);
+            font-size: 11px
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 11px
+        }
+        .field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary)
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            padding: 8px 11px;
+            border: 1.5px solid var(--border-light);
+            border-radius: 7px;
+            font-family: var(--font);
+            font-size: 12px;
+            color: var(--text-primary);
+            background: var(--bg-page);
+            outline: none;
+            transition: all .18s
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: var(--accent-purple);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, .09)
+        }
+        .mo-ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 15, 25, .55);
+            backdrop-filter: blur(5px);
+            z-index: 600;
+            display: none;
+            align-items: center;
+            justify-content: center
+        }
+        .mo-ov.open {
+            display: flex
+        }
+        .mo {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .22);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+            animation: moIn .3s cubic-bezier(.16, 1, .3, 1)
+        }
+        @keyframes moIn {
+            from {
+                opacity: 0;
+                transform: scale(.93) translateY(12px)
+            }
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+        .mo-stripe {
+            height: 4px;
+            background: linear-gradient(90deg, #6d28d9, #7c3aed, #a78bfa)
+        }
+        .mo-hd {
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+        .mo-ti {
+            font-family: var(--serif);
+            font-size: 18px;
+            color: var(--text-primary)
+        }
+        .mo-x {
+            cursor: pointer;
+            font-size: 17px;
+            color: var(--text-tertiary);
+            padding: 4px 6px;
+            border-radius: 5px;
+            background: none;
+            border: none;
+            transition: all .15s
+        }
+        .mo-x:hover {
+            background: #fef2f2;
+            color: var(--accent-red)
+        }
+        .mo-bd {
+            padding: 16px 20px
+        }
+        .mo-ft {
+            padding: 12px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999;
+            background: var(--card-bg);
+            border: 1.5px solid var(--primary-muted);
+            border-radius: 10px;
+            padding: 11px 16px;
+            box-shadow: var(--shadow-md);
+            display: none;
+            align-items: center;
+            gap: 10px
+        }
+        .toast.show {
+            display: flex;
+            animation: cardIn .3s ease both
+        }
+        .toast-ico {
+            font-size: 18px
+        }
+        .toast-msg {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+        .toast-sub {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 1px
+        }
+        .ai-security-widget {
+            background: linear-gradient(135deg, rgba(124, 58, 237, .07), rgba(124, 58, 237, .02));
+            border: 1.5px solid rgba(124, 58, 237, .2);
+            border-radius: 12px;
+            padding: 15px 16px;
+            margin-bottom: 14px
+        }
+        .ai-security-hd {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px
+        }
+        .ai-security-ti {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+        .ai-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, .05)
+        }
+        .ai-row:last-child {
+            border: none
+        }
+        .ai-row-ico {
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-top: 1px
+        }
+        .ai-row-body {
+            flex: 1
+        }
+        .ai-row-ti {
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.35;
+            font-size: 11.5px
+        }
+        .ai-row-su {
+            font-size: 10.5px;
+            color: var(--text-tertiary);
+            margin-top: 2px
+        }
+        .security-score-bar {
+            height: 6px;
+            background: rgba(0, 0, 0, .05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px
+        }
+        .security-score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-purple), #a78bfa);
+            border-radius: 3px;
+            width: 98.4%;
+            transition: width .6s ease
+        }
+        .img-card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-light);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .2s
+        }
+        .img-card:hover {
+            border-color: var(--accent-purple);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px)
+        }
+        .img-thumb {
+            height: 120px;
+            background: #1a1f3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: rgba(255, 255, 255, .3);
+            position: relative
+        }
+        .img-thumb .img-type {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 7px;
+            border-radius: 4px;
+            background: rgba(124, 58, 237, .8);
+            color: #fff;
+            font-family: var(--mono)
+        }
+        .img-thumb .img-urgent {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red)
+        }
+        .img-info {
+            padding: 10px 12px
+        }
+        .img-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary)
+        }
+        .img-meta {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            margin-top: 3px;
+            font-family: var(--mono)
+        }
+        .ai-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px
+        }
+        .ai-progress-bar {
+            flex: 1;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden
+        }
+        .ai-progress-fill {
+            height: 100%;
+            background: var(--accent-purple);
+            width: 0%;
+            transition: width 0.5s ease
+        }
+        .ai-result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-top: 4px
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <nav class="sb">
+        <div class="sb-flag"></div>
+        <div class="sb-in">
+            <div class="sb-brand">
+                <div class="sb-ico"><i data-feather="droplet" style="color:#fff"></i></div>
+                <div>
+                    <div class="sb-nm">UniHealth EHR</div>
+                    <div class="sb-sub">Lab &amp; Imaging Portal</div>
+                </div>
+                <div class="sb-live"></div>
+            </div>
+            <div class="sb-user-card">
+                <div class="sb-av-row">
+                    <div class="sb-av">LK</div>
+                    <div>
+                        <div class="sb-dname">Laban K.</div>
+                        <div class="sb-dreg">LAB-8821</div>
+                    </div>
+                </div>
+                <div class="sb-role-badge"><span class="dot"></span>Medical Lab Technologist · Central Referral Hospital</div>
+            </div>
+            <div class="sb-nav">
+                <div class="sb-sec">Lab Workflow</div>
+                <div class="ni on" data-page="overview"><span class="ni-e"><i data-feather="home"></i></span><span class="ni-l">Overview</span></div>
+                <div class="ni" data-page="collection"><span class="ni-e"><i data-feather="clipboard"></i></span><span class="ni-l">Sample Collection</span><span class="ni-b r">5</span></div>
+                <div class="ni" data-page="tests"><span class="ni-e"><i data-feather="list"></i></span><span class="ni-l">Test Queue</span><span class="ni-b am">8</span></div>
+                <div class="ni" data-page="results"><span class="ni-e"><i data-feather="edit-3"></i></span><span class="ni-l">Results Entry</span></div>
+                <div class="ni" data-page="qc"><span class="ni-e"><i data-feather="check-circle"></i></span><span class="ni-l">Quality Control</span></div>
+
+                <div class="sb-sec">Diagnostic Imaging</div>
+                <div class="ni" data-page="imaging"><span class="ni-e"><i data-feather="camera"></i></span><span class="ni-l">All Imaging</span><span class="ni-b b">12</span></div>
+                <div class="ni" data-page="xray"><span class="ni-e"><i data-feather="radio"></i></span><span class="ni-l">X-Ray</span><span class="ni-b am">4</span></div>
+                <div class="ni" data-page="mri"><span class="ni-e"><i data-feather="maximize"></i></span><span class="ni-l">MRI / CT</span><span class="ni-b b">3</span></div>
+                <div class="ni" data-page="ultrasound"><span class="ni-e"><i data-feather="wifi"></i></span><span class="ni-l">Ultrasound</span><span class="ni-b g">5</span></div>
+                <div class="ni" data-page="mammography"><span class="ni-e"><i data-feather="shield"></i></span><span class="ni-l">Mammography</span><span class="ni-b pu">2</span></div>
+                <div class="ni" data-page="nuclear"><span class="ni-e"><i data-feather="activity"></i></span><span class="ni-l">Nuclear Medicine</span><span class="ni-b te">1</span></div>
+
+                <div class="sb-sec">Specialised Labs</div>
+                <div class="ni" data-page="pathology"><span class="ni-e"><i data-feather="eye"></i></span><span class="ni-l">Pathology</span><span class="ni-b am">2</span></div>
+                <div class="ni" data-page="microbiology"><span class="ni-e"><i data-feather="thermometer"></i></span><span class="ni-l">Microbiology</span><span class="ni-b b">1</span></div>
+                <div class="ni" data-page="bloodbank"><span class="ni-e"><i data-feather="heart"></i></span><span class="ni-l">Blood Bank</span><span class="ni-b r">3</span></div>
+                <div class="ni" data-page="molecular"><span class="ni-e"><i data-feather="cpu"></i></span><span class="ni-l">Molecular Dx</span></div>
+
+                <div class="sb-sec">Inventory</div>
+                <div class="ni" data-page="reagents"><span class="ni-e"><i data-feather="package"></i></span><span class="ni-l">Reagents &amp; Supplies</span><span class="ni-b am">2</span></div>
+
+                <div class="sb-sec">Security &amp; Compliance</div>
+                <div class="ni" data-page="audit"><span class="ni-e"><i data-feather="link"></i></span><span class="ni-l">Audit Trail</span></div>
+                <div class="ni" data-page="health"><span class="ni-e"><i data-feather="database"></i></span><span class="ni-l">System Health</span></div>
+
+                <div class="sb-sec">System</div>
+                <div class="ni" data-page="reports"><span class="ni-e"><i data-feather="file-text"></i></span><span class="ni-l">Reports</span></div>
+            </div>
+            <div class="sb-foot"><button class="sb-out" id="signOutBtn"><i data-feather="log-out"></i> Sign Out</button></div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════ MAIN ═══════════════ -->
+    <div class="main">
+        <header class="topbar">
+            <div>
+                <div class="tb-pg" id="tbTitle">Overview</div>
+                <div class="tb-cr">UniHealth EHR › <b id="tbCrumb">Lab &amp; Imaging</b></div>
+            </div>
+            <div class="tb-gap"></div>
+            <div class="tb-facility"><i data-feather="map-pin"></i> Central Referral Hospital</div>
+            <div class="tb-srch"><i data-feather="search" style="width:12px;height:12px;color:var(--text-tertiary)"></i><input placeholder="Search samples, tests, images…" id="globalSearch"></div>
+            <div class="tb-ic" id="bellBtn"><i data-feather="bell"></i><div class="tb-dot" id="bellDot"></div></div>
+            <div class="tb-date" id="tbDate"></div>
+        </header>
+
+        <div class="content">
+            <!-- ═══════════ OVERVIEW ═══════════ -->
+            <div id="pg-overview" class="pg on">
+                <div class="ph">
+                    <div>
+                        <div class="ph-ey">Laboratory &amp; Diagnostic Imaging · Central Referral Hospital</div>
+                        <div class="ph-ti">Good morning, Laban</div>
+                        <div class="ph-su">5 pending collections · 8 tests in queue · 14 imaging studies · AI monitor active</div>
+                    </div>
+                    <div class="ph-r">
+                        <button class="btn-s" data-page="collection"><i data-feather="clipboard"></i> Collect</button>
+                        <button class="btn-p" data-page="imaging"><i data-feather="camera"></i> Imaging</button>
+                    </div>
+                </div>
+
+                <div class="ai-security-widget">
+                    <div class="ai-security-hd">
+                        <div>
+                            <div class="ai-security-ti"><i data-feather="cpu"></i> AI Security Monitor — Laboratory &amp; Imaging</div>
+                            <div style="font-size:10px;color:var(--text-tertiary);margin-top:1px">Sample integrity · Imaging anomaly detection · Unauthorized access alerts</div>
+                        </div>
+                        <span class="tag g">ACTIVE</span>
+                    </div>
+                    <div id="aiAlertList">
+                        <div class="ai-row">
+                            <span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--accent-red)"></i></span>
+                            <div class="ai-row-body">
+                                <div class="ai-row-ti">AI anomaly: X-Ray IMG-004 shows possible pneumothorax</div>
+                                <div class="ai-row-su">AI confidence 94% — flagged for radiologist priority review</div>
+                            </div>
+                            <span class="tag r">CRITICAL</span>
+                        </div>
+                        <div class="ai-row">
+                            <span class="ai-row-ico"><i data-feather="alert-triangle" style="color:var(--accent-amber)"></i></span>
+                            <div class="ai-row-body">
+                                <div class="ai-row-ti">Sample tampering detected — TST-201</div>
+                                <div class="ai-row-su">K⁺ sample showed inconsistent tube seal</div>
+                            </div>
+                            <span class="tag am">WARNING</span>
+                        </div>
+                        <div class="ai-row">
+                            <span class="ai-row-ico"><i data-feather="check-circle" style="color:var(--primary)"></i></span>
+                            <div class="ai-row-body">
+                                <div class="ai-row-ti">All other systems nominal</div>
+                                <div class="ai-row-su">No additional safety concerns detected</div>
+                            </div>
+                            <span class="tag g">CLEAR</span>
+                        </div>
+                    </div>
+                    <div class="security-score-bar"><div class="security-score-fill" id="secFill"></div></div>
+                    <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;display:flex;justify-content:space-between">
+                        <span>System Security Score</span><span style="font-weight:700;color:var(--accent-purple)" id="secScoreTxt">98.4%</span>
+                    </div>
+                </div>
+
+                <div class="g5" style="margin-bottom:14px">
+                    <div class="kpi" style="border-top:3px solid var(--accent-red)"><div class="kpi-e"><i data-feather="clipboard"></i></div><div class="kpi-v">5</div><div class="kpi-l">Pending Collection</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-amber)"><div class="kpi-e"><i data-feather="list"></i></div><div class="kpi-v">8</div><div class="kpi-l">Tests in Queue</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-blue)"><div class="kpi-e"><i data-feather="camera"></i></div><div class="kpi-v">14</div><div class="kpi-l">Imaging Studies</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--primary)"><div class="kpi-e"><i data-feather="check-circle"></i></div><div class="kpi-v">42</div><div class="kpi-l">Results Today</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-purple)"><div class="kpi-e"><i data-feather="shield"></i></div><div class="kpi-v">6</div><div class="kpi-l">QC Passed</div></div>
+                </div>
+
+                <div class="g2">
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Recent Collections</div></div><div class="pnl-bd" id="homeColl"></div></div>
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Pending Imaging Reviews</div></div><div class="pnl-bd" id="homeImaging"></div></div>
+                </div>
+                <div class="g2">
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Low Reagents</div></div><div class="pnl-bd" id="homeReagents"></div></div>
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Blood Bank Status</div></div><div class="pnl-bd" id="homeBlood"></div></div>
+                </div>
+                <div class="panel">
+                    <div class="pnl-hd"><div class="pnl-ti">Live Lab &amp; Imaging Activity</div></div>
+                    <div class="pnl-bd" id="labFeed"></div>
+                </div>
+            </div>
+
+            <!-- ═══════════ SAMPLE COLLECTION ═══════════ -->
+            <div id="pg-collection" class="pg">
+                <div class="ph"><div><div class="ph-ey">Collection</div><div class="ph-ti">Sample Collection Tasks</div></div><button class="btn-p" id="batchCollectBtn"><i data-feather="check"></i> Collect Selected</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="collTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ TEST QUEUE ═══════════ -->
+            <div id="pg-tests" class="pg">
+                <div class="ph"><div><div class="ph-ey">Processing</div><div class="ph-ti">Test Queue</div></div><button class="btn-p" id="addResultBtn"><i data-feather="plus"></i> Enter Result</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="testsTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ RESULTS ENTRY ═══════════ -->
+            <div id="pg-results" class="pg">
+                <div class="ph"><div><div class="ph-ey">Results</div><div class="ph-ti">Results Entry</div></div></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="resultsTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ QUALITY CONTROL ═══════════ -->
+            <div id="pg-qc" class="pg">
+                <div class="ph"><div><div class="ph-ey">QA</div><div class="ph-ti">Quality Control Logs</div></div><button class="btn-p" id="addQcBtn"><i data-feather="plus"></i> Log QC</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="qcTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ ALL IMAGING ═══════════ -->
+            <div id="pg-imaging" class="pg">
+                <div class="ph">
+                    <div><div class="ph-ey">Diagnostic Imaging</div><div class="ph-ti">All Imaging Studies</div><div class="ph-su">X-Ray · MRI · CT · Ultrasound · Mammography · Nuclear — 14 studies</div></div>
+                    <div class="ph-r">
+                        <button class="btn-s" data-page="xray"><i data-feather="radio"></i> X-Ray</button>
+                        <button class="btn-s" data-page="mri"><i data-feather="maximize"></i> MRI/CT</button>
+                        <button class="btn-s" data-page="ultrasound"><i data-feather="wifi"></i> Ultrasound</button>
+                        <button class="btn-p" id="uploadImageBtn"><i data-feather="upload-cloud"></i> Upload</button>
+                    </div>
+                </div>
+                <div class="g3" id="allImagingGrid"></div>
+            </div>
+
+            <!-- ═══════════ X-RAY ═══════════ -->
+            <div id="pg-xray" class="pg">
+                <div class="ph"><div><div class="ph-ey">Radiology</div><div class="ph-ti">X-Ray Studies</div></div><button class="btn-p" id="uploadXrayBtn"><i data-feather="upload-cloud"></i> Upload X-Ray</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="xrayTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ MRI / CT ═══════════ -->
+            <div id="pg-mri" class="pg">
+                <div class="ph"><div><div class="ph-ey">Advanced Imaging</div><div class="ph-ti">MRI &amp; CT Studies</div></div><button class="btn-p" id="uploadMriBtn"><i data-feather="upload-cloud"></i> Upload MRI/CT</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="mriTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ ULTRASOUND ═══════════ -->
+            <div id="pg-ultrasound" class="pg">
+                <div class="ph"><div><div class="ph-ey">Sonography</div><div class="ph-ti">Ultrasound Studies</div></div><button class="btn-p" id="uploadUsBtn"><i data-feather="upload-cloud"></i> Upload Ultrasound</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="usTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ MAMMOGRAPHY ═══════════ -->
+            <div id="pg-mammography" class="pg">
+                <div class="ph"><div><div class="ph-ey">Women's Imaging</div><div class="ph-ti">Mammography Studies</div></div><button class="btn-p" id="uploadMammoBtn"><i data-feather="upload-cloud"></i> Upload Mammogram</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="mammoTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ NUCLEAR MEDICINE ═══════════ -->
+            <div id="pg-nuclear" class="pg">
+                <div class="ph"><div><div class="ph-ey">Nuclear Medicine</div><div class="ph-ti">PET &amp; SPECT Studies</div></div><button class="btn-p" id="uploadNuclearBtn"><i data-feather="upload-cloud"></i> Upload Study</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="nuclearTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ PATHOLOGY ═══════════ -->
+            <div id="pg-pathology" class="pg">
+                <div class="ph"><div><div class="ph-ey">Histopathology &amp; Cytology</div><div class="ph-ti">Pathology Cases</div></div><button class="btn-p" id="addPathologyBtn"><i data-feather="plus"></i> New Case</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="pathTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ MICROBIOLOGY ═══════════ -->
+            <div id="pg-microbiology" class="pg">
+                <div class="ph"><div><div class="ph-ey">Culture &amp; Sensitivity</div><div class="ph-ti">Microbiology Bench</div></div><button class="btn-p" id="addMicroBtn"><i data-feather="plus"></i> Log Culture</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="microTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ BLOOD BANK ═══════════ -->
+            <div id="pg-bloodbank" class="pg">
+                <div class="ph"><div><div class="ph-ey">Transfusion Medicine</div><div class="ph-ti">Blood Bank Inventory</div></div><button class="btn-p" id="addBloodUnitBtn"><i data-feather="plus"></i> Add Unit</button></div>
+                <div class="g4" id="bloodKpi"></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="bloodTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ MOLECULAR DIAGNOSTICS ═══════════ -->
+            <div id="pg-molecular" class="pg">
+                <div class="ph"><div><div class="ph-ey">PCR &amp; Genetic Testing</div><div class="ph-ti">Molecular Diagnostics</div></div><button class="btn-p" id="addMolecularBtn"><i data-feather="plus"></i> New Test</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="molTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ REAGENTS ═══════════ -->
+            <div id="pg-reagents" class="pg">
+                <div class="ph"><div><div class="ph-ey">Inventory</div><div class="ph-ti">Reagents &amp; Supplies</div></div><button class="btn-p" id="adjustReagentBtn"><i data-feather="edit-3"></i> Adjust Stock</button></div>
+                <div class="panel"><div class="pnl-bd"><table class="tbl" id="reagentsTable"></table></div></div>
+            </div>
+
+            <!-- ═══════════ REPORTS ═══════════ -->
+            <div id="pg-reports" class="pg">
+                <div class="ph"><div><div class="ph-ey">Analytics</div><div class="ph-ti">Lab &amp; Imaging Reports</div></div></div>
+                <div class="panel"><div class="pnl-bd" id="reportList"></div></div>
+            </div>
+
+            <!-- ═══════════ AUDIT ═══════════ -->
+            <div id="pg-audit" class="pg">
+                <div class="ph"><div><div class="ph-ey">Compliance</div><div class="ph-ti">Laboratory Audit Trail</div><div class="ph-su">Append‑only log · Model Data Protection Act · Hyperledger Fabric</div></div></div>
+                <div class="panel">
+                    <table class="tbl"><thead><tr><th>Timestamp</th><th>Action</th><th>User</th><th>Details</th><th>Status</th></tr></thead><tbody id="auditTbody"></tbody></table>
+                    <div style="padding:12px 16px;background:#f8faf8;border-top:1px solid var(--border-light);font-size:10.5px;color:var(--text-tertiary)"><i data-feather="link"></i> Append‑only · Tamper‑evident (Hyperledger Fabric) · ISO 27001 compliant</div>
+                </div>
+            </div>
+
+            <!-- ═══════════ SYSTEM HEALTH ═══════════ -->
+            <div id="pg-health" class="pg">
+                <div class="ph"><div><div class="ph-ey">Infrastructure</div><div class="ph-ti">System Health &amp; Backups</div></div></div>
+                <div class="g2">
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Backup Status</div></div><div class="pnl-bd"><div style="display:flex;justify-content:space-between;padding:8px 0"><span>Last full backup</span><strong style="color:var(--primary)">✓ 2h ago</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>Incremental</span><strong style="color:var(--primary)">✓ 15m ago</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>DR Failover</span><strong style="color:var(--primary)">✓ Hot standby</strong></div></div></div>
+                    <div class="panel"><div class="pnl-hd"><div class="pnl-ti">Uptime &amp; Performance</div></div><div class="pnl-bd"><div style="display:flex;justify-content:space-between;padding:8px 0"><span>System Uptime</span><strong style="color:var(--primary)">99.97%</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>API Gateway</span><strong style="color:var(--primary)">UP</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span>FHIR Engine (HAPI R5)</span><strong style="color:var(--primary)">UP</strong></div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════ MODAL ═══════════ -->
+    <div class="mo-ov" id="moOv">
+        <div class="mo">
+            <div class="mo-stripe"></div>
+            <div class="mo-hd"><div class="mo-ti" id="moTi">Action</div><button class="mo-x" id="moCloseBtn"><i data-feather="x"></i></button></div>
+            <div class="mo-bd" id="moBd"></div>
+            <div class="mo-ft"><button class="btn-s" id="moCancelBtn">Cancel</button><button class="btn-p" id="moConfirmBtn">Confirm</button></div>
+        </div>
+    </div>
+
+    <!-- ═══════════ TOAST ═══════════ -->
+    <div class="toast" id="toast">
+        <span class="toast-ico" id="toastIco"><i data-feather="check-circle"></i></span>
+        <div><div class="toast-msg" id="toastMsg"></div><div class="toast-sub" id="toastSub"></div></div>
+    </div>
+
+    <script>
+        (function() {
+            // ═══════════ STATE ═══════════
+            const State = {
+                currentPage: 'overview',
+                collection: [
+                    { id: 'COL-001', patient: 'Wangui Njoroge', test: 'U&E', status: 'Pending', checked: false },
+                    { id: 'COL-002', patient: 'Omar Abdullahi', test: 'FBC', status: 'Pending', checked: false },
+                    { id: 'COL-003', patient: 'Adhiambo Grace', test: 'CSF Analysis', status: 'Pending', checked: false },
+                    { id: 'COL-004', patient: 'Kipchoge Mutai', test: 'LFTs', status: 'Pending', checked: false },
+                    { id: 'COL-005', patient: 'Wanjiku M.', test: 'Blood Culture', status: 'Pending', checked: false },
+                ],
+                testsQueue: [
+                    { id: 'TST-201', patient: 'Wangui Njoroge', test: 'K⁺', status: 'In Progress' },
+                    { id: 'TST-202', patient: 'Omar Abdullahi', test: 'CRP', status: 'In Progress' },
+                    { id: 'TST-203', patient: 'Adhiambo Grace', test: 'CSF Cell Count', status: 'In Progress' },
+                    { id: 'TST-204', patient: 'Kipchoge Mutai', test: 'ALT', status: 'In Progress' },
+                ],
+                imaging: [
+                    { id: 'IMG-001', patient: 'Wangui Njoroge', modality: 'X-Ray', region: 'Chest PA', urgency: 'STAT', status: 'Pending Review', aiFindings: null },
+                    { id: 'IMG-002', patient: 'Omar Abdullahi', modality: 'MRI', region: 'Brain w/ contrast', urgency: 'Routine', status: 'Pending Review', aiFindings: null },
+                    { id: 'IMG-003', patient: 'Kipchoge Mutai', modality: 'CT', region: 'Abdomen/Pelvis', urgency: 'Urgent', status: 'In Progress', aiFindings: null },
+                    { id: 'IMG-004', patient: 'Wangui Njoroge', modality: 'X-Ray', region: 'Chest LAT', urgency: 'STAT', status: 'Pending Review', aiFindings: 'Possible pneumothorax — AI confidence 94%' },
+                    { id: 'IMG-005', patient: 'Adhiambo Grace', modality: 'Ultrasound', region: 'Abdomen', urgency: 'Routine', status: 'Completed', aiFindings: null },
+                    { id: 'IMG-006', patient: 'Wanjiku M.', modality: 'Ultrasound', region: 'Pelvis', urgency: 'Routine', status: 'Pending Review', aiFindings: null },
+                    { id: 'IMG-007', patient: 'Amina Hassan', modality: 'Mammography', region: 'Bilateral', urgency: 'Routine', status: 'Pending Review', aiFindings: null },
+                    { id: 'IMG-008', patient: 'Peter Otieno', modality: 'Nuclear Medicine', region: 'Bone Scan', urgency: 'Routine', status: 'Pending Review', aiFindings: null },
+                ],
+                pathology: [
+                    { id: 'PATH-001', patient: 'Adhiambo Grace', specimen: 'Cervical Biopsy', status: 'Processing', report: '—' },
+                    { id: 'PATH-002', patient: 'Wangui Njoroge', specimen: 'Fine Needle Aspirate (Thyroid)', status: 'Pending', report: '—' },
+                ],
+                micro: [
+                    { id: 'MIC-001', patient: 'Wanjiku M.', specimen: 'Blood Culture', organism: 'Pending', sensitivity: '—', status: 'Incubating' },
+                ],
+                bloodUnits: [
+                    { id: 'BB-2026-0401', group: 'O+', expiry: '2026-05-15', status: 'Available' },
+                    { id: 'BB-2026-0402', group: 'A+', expiry: '2026-05-10', status: 'Available' },
+                    { id: 'BB-2026-0399', group: 'B+', expiry: '2026-04-28', status: 'Low Stock' },
+                ],
+                molecular: [
+                    { id: 'MOL-001', patient: 'Omar Abdullahi', test: 'PCR - TB', status: 'In Progress', result: '—' },
+                ],
+                reagents: [
+                    { name: 'EDTA Tubes', qty: 15, min: 20 },
+                    { name: 'Serum Separator Gel', qty: 8, min: 10 },
+                    { name: 'Glucose Strips', qty: 50, min: 25 },
+                    { name: 'PCR Reagents', qty: 30, min: 15 },
+                    { name: 'X-Ray Developer', qty: 12, min: 10 },
+                ],
+                audit: [
+                    { ts: '2026-04-03 09:45:12', action: 'Sample Collected', user: 'Laban K.', detail: 'COL-001 (U&E) for Wangui Njoroge', status: 'LOGGED' },
+                    { ts: '2026-04-03 09:30:07', action: 'Result Entered', user: 'Laban K.', detail: 'TST-200 (Hb) result 12.8 g/dL', status: 'LOGGED' },
+                ],
+            };
+
+            // ═══════════ DOM CACHE ═══════════
+            const pages = document.querySelectorAll('.pg');
+            const navItems = document.querySelectorAll('.ni[data-page]');
+            const tbTitle = document.getElementById('tbTitle');
+            const tbCrumb = document.getElementById('tbCrumb');
+            const moOv = document.getElementById('moOv');
+            const moTi = document.getElementById('moTi');
+            const moBd = document.getElementById('moBd');
+            const moConfirmBtn = document.getElementById('moConfirmBtn');
+            const toastEl = document.getElementById('toast');
+            const globalSearch = document.getElementById('globalSearch');
+            let currentModalAction = null;
+
+            const pageTitles = {
+                overview: 'Overview',
+                collection: 'Sample Collection',
+                tests: 'Test Queue',
+                results: 'Results Entry',
+                qc: 'Quality Control',
+                imaging: 'All Imaging Studies',
+                xray: 'X-Ray Studies',
+                mri: 'MRI & CT Studies',
+                ultrasound: 'Ultrasound Studies',
+                mammography: 'Mammography Studies',
+                nuclear: 'Nuclear Medicine Studies',
+                pathology: 'Pathology Cases',
+                microbiology: 'Microbiology Bench',
+                bloodbank: 'Blood Bank',
+                molecular: 'Molecular Diagnostics',
+                reagents: 'Reagents & Supplies',
+                reports: 'Reports',
+                audit: 'Audit Trail',
+                health: 'System Health'
+            };
+            const pageCrumbs = {
+                overview: 'Lab & Imaging › Home',
+                collection: 'Lab › Collection',
+                tests: 'Lab › Queue',
+                results: 'Lab › Results',
+                qc: 'Lab › QC',
+                imaging: 'Imaging › All',
+                xray: 'Imaging › X-Ray',
+                mri: 'Imaging › MRI/CT',
+                ultrasound: 'Imaging › Ultrasound',
+                mammography: 'Imaging › Mammography',
+                nuclear: 'Imaging › Nuclear Medicine',
+                pathology: 'Pathology › Cases',
+                microbiology: 'Microbiology › Bench',
+                bloodbank: 'Blood Bank › Inventory',
+                molecular: 'Molecular › Diagnostics',
+                reagents: 'Inventory › Reagents',
+                reports: 'Lab › Reports',
+                audit: 'Compliance › Audit',
+                health: 'Infrastructure › Health'
+            };
+
+            // ═══════════ NAVIGATION ═══════════
+            function goToPage(pageId) {
+                if (pageId === State.currentPage) return;
+                pages.forEach(p => p.classList.remove('on'));
+                const target = document.getElementById('pg-' + pageId);
+                if (target) target.classList.add('on');
+                navItems.forEach(n => n.classList.remove('on'));
+                const activeNav = document.querySelector(`.ni[data-page="${pageId}"]`);
+                if (activeNav) activeNav.classList.add('on');
+                State.currentPage = pageId;
+                tbTitle.textContent = pageTitles[pageId] || pageId;
+                tbCrumb.textContent = pageCrumbs[pageId] || pageId;
+                refreshAll();
+                feather.replace();
+            }
+            window.goToPage = goToPage;
+
+            // Event delegation for sidebar
+            document.querySelector('.sb-nav').addEventListener('click', (e) => {
+                const ni = e.target.closest('.ni[data-page]');
+                if (!ni) return;
+                goToPage(ni.dataset.page);
+            });
+
+            // Top bar buttons that navigate
+            document.querySelectorAll('.btn-s[data-page], .btn-p[data-page]').forEach(btn => {
+                btn.addEventListener('click', () => goToPage(btn.dataset.page));
+            });
+
+            // ═══════════ MODAL ═══════════
+            function openModal(title, bodyHTML, actionKey, confirmText = 'Confirm') {
+                moTi.textContent = title;
+                moBd.innerHTML = bodyHTML;
+                moConfirmBtn.textContent = confirmText;
+                currentModalAction = actionKey;
+                moOv.classList.add('open');
+                feather.replace();
+            }
+            function closeModal() {
+                moOv.classList.remove('open');
+                currentModalAction = null;
+            }
+            document.getElementById('moCloseBtn').addEventListener('click', closeModal);
+            document.getElementById('moCancelBtn').addEventListener('click', closeModal);
+            moOv.addEventListener('click', (e) => { if (e.target === moOv) closeModal(); });
+
+            // Modal actions map
+            const modalActions = {
+                addResult: () => {
+                    const val = document.getElementById('resValue')?.value || '';
+                    const flag = document.getElementById('resFlag')?.value || 'Normal';
+                    if (!val) { showToast('alert-circle', 'Validation Error', 'Result value required'); return; }
+                    addAuditEntry(`Result entered: ${val} (${flag})`);
+                    showToast('check-circle', 'Result saved', `${val} — ${flag}`);
+                },
+                addQC: () => {
+                    const lot = document.getElementById('qcLot')?.value || '';
+                    const pass = document.getElementById('qcPass')?.value || 'Passed';
+                    addAuditEntry(`QC logged: Lot ${lot} — ${pass}`);
+                    showToast('check-circle', 'QC saved', `Lot ${lot} ${pass}`);
+                },
+                uploadImage: () => {
+                    const mod = document.getElementById('imgModality')?.value || 'X-Ray';
+                    const region = document.getElementById('imgRegion')?.value || 'N/A';
+                    const newImg = { id: 'IMG-' + (State.imaging.length + 101), patient: 'New Patient', modality: mod, region, urgency: 'Routine', status: 'Pending Review', aiFindings: null };
+                    State.imaging.push(newImg);
+                    addAuditEntry(`Image uploaded: ${mod} ${region}`);
+                    showToast('check-circle', 'Image uploaded', `${mod} — ${region}`);
+                    refreshAll();
+                },
+            };
+
+            moConfirmBtn.addEventListener('click', () => {
+                if (currentModalAction && modalActions[currentModalAction]) {
+                    modalActions[currentModalAction]();
+                }
+                closeModal();
+            });
+
+            // ═══════════ TOAST ═══════════
+            function showToast(icon, msg, sub = '') {
+                document.getElementById('toastIco').innerHTML = `<i data-feather="${icon}"></i>`;
+                document.getElementById('toastMsg').textContent = msg;
+                document.getElementById('toastSub').textContent = sub;
+                toastEl.classList.add('show');
+                setTimeout(() => toastEl.classList.remove('show'), 3000);
+                feather.replace();
+            }
+            window.showToast = showToast;
+
+            // ═══════════ AUDIT ═══════════
+            function addAuditEntry(detail) {
+                const ts = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                State.audit.unshift({ ts, action: 'User Action', user: 'Laban K.', detail, status: 'LOGGED' });
+                renderAuditTable();
+            }
+            function renderAuditTable() {
+                const tbody = document.getElementById('auditTbody');
+                if (!tbody) return;
+                tbody.innerHTML = State.audit.slice(0, 20).map(e =>
+                    `<tr><td class="mono">${e.ts}</td><td>${e.action}</td><td>${e.user}</td><td>${e.detail}</td><td><span class="tag g">${e.status}</span></td></tr>`
+                ).join('');
+            }
+
+            // ═══════════ AI DETECTION SIMULATION ═══════════
+            function runAIAnalysis(imageId) {
+                const img = State.imaging.find(i => i.id === imageId);
+                if (!img) return;
+                const findingsPool = [
+                    'No significant abnormality detected',
+                    'Possible nodule — recommend CT follow-up',
+                    'Cardiomegaly suspected',
+                    'Small pleural effusion',
+                    'Normal variant',
+                ];
+                const randomFinding = findingsPool[Math.floor(Math.random() * findingsPool.length)];
+                const confidence = Math.floor(Math.random() * 30 + 70);
+                img.aiFindings = `${randomFinding} (AI confidence ${confidence}%)`;
+                showToast('cpu', `AI analysis complete for ${imageId}`, img.aiFindings);
+                // Update AI alerts on overview dynamically
+                const aiAlertList = document.getElementById('aiAlertList');
+                if (aiAlertList && randomFinding.includes('abnormality') || randomFinding.includes('suspected')) {
+                    const newAlert = document.createElement('div');
+                    newAlert.className = 'ai-row';
+                    newAlert.innerHTML = `<span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--accent-red)"></i></span><div class="ai-row-body"><div class="ai-row-ti">AI Alert: ${img.modality} ${img.id}</div><div class="ai-row-su">${img.aiFindings}</div></div><span class="tag r">NEW</span>`;
+                    aiAlertList.prepend(newAlert);
+                }
+                renderAllImagingGrid();
+                refreshSpecificTables();
+                feather.replace();
+            }
+
+            // ═══════════ RENDERING ═══════════
+            function renderCollectionTable() {
+                const ct = document.getElementById('collTable');
+                if (!ct) return;
+                ct.innerHTML = `<thead><tr><th><input type="checkbox" id="selectAllColl"></th><th>ID</th><th>Patient</th><th>Test</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
+                State.collection.forEach(c => {
+                    ct.innerHTML += `<tr>
+                        <td><input type="checkbox" class="collCheck" data-id="${c.id}" ${c.checked?'checked':''}></td>
+                        <td class="mono">${c.id}</td><td>${c.patient}</td><td>${c.test}</td>
+                        <td><span class="tag ${c.status==='Pending'?'am':'g'}">${c.status}</span></td>
+                        <td><button class="btn-s collSingle" data-id="${c.id}">Collect</button></td></tr>`;
+                });
+                ct.innerHTML += '</tbody>';
+                document.querySelectorAll('.collCheck').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const id = cb.dataset.id;
+                        const item = State.collection.find(c => c.id === id);
+                        if (item) item.checked = cb.checked;
+                        updateSelectAllState();
+                    });
+                });
+                document.getElementById('selectAllColl')?.addEventListener('change', (e) => {
+                    State.collection.forEach(c => c.checked = e.target.checked);
+                    renderCollectionTable();
+                });
+                document.querySelectorAll('.collSingle').forEach(btn => {
+                    btn.addEventListener('click', () => collectSingle(btn.dataset.id));
+                });
+                updateSelectAllState();
+            }
+
+            function updateSelectAllState() {
+                const allChecked = State.collection.every(c => c.checked);
+                const selectAll = document.getElementById('selectAllColl');
+                if (selectAll) selectAll.checked = allChecked;
+            }
+
+            function collectSingle(id) {
+                const item = State.collection.find(c => c.id === id);
+                if (item) {
+                    item.status = 'Collected';
+                    item.checked = false;
+                    renderCollectionTable();
+                    addAuditEntry(`Sample ${id} collected - ${item.test} for ${item.patient}`);
+                    showToast('check-circle', `${id} collected`, 'Inventory updated');
+                }
+            }
+
+            function batchCollect() {
+                const selected = State.collection.filter(c => c.checked);
+                if (selected.length === 0) {
+                    showToast('alert-circle', 'No selection', 'Check items first');
+                    return;
+                }
+                selected.forEach(c => { c.status = 'Collected'; c.checked = false; });
+                renderCollectionTable();
+                addAuditEntry(`Batch collected ${selected.length} samples`);
+                showToast('check-circle', `${selected.length} samples collected`, 'Inventory updated');
+            }
+
+            document.getElementById('batchCollectBtn')?.addEventListener('click', batchCollect);
+
+            function renderAllImagingGrid() {
+                const grid = document.getElementById('allImagingGrid');
+                if (!grid) return;
+                const icons = { 'X-Ray': 'radio', 'MRI': 'maximize', 'CT': 'maximize', 'Ultrasound': 'wifi', 'Mammography': 'shield', 'Nuclear Medicine': 'activity' };
+                const colors = { 'X-Ray': '#2563eb', 'MRI': '#7c3aed', 'CT': '#0d9488', 'Ultrasound': '#1a8a4a', 'Mammography': '#e11d48', 'Nuclear Medicine': '#0d9488' };
+                grid.innerHTML = State.imaging.map(img => `
+                    <div class="img-card" data-id="${img.id}">
+                        <div class="img-thumb" style="background:${colors[img.modality]||'#1a1f3a'}">
+                            <span class="img-type">${img.modality}</span>
+                            ${img.urgency==='STAT'?'<span class="img-urgent"></span>':''}
+                            <i data-feather="${icons[img.modality]||'camera'}" style="width:36px;height:36px;color:rgba(255,255,255,.5)"></i>
+                        </div>
+                        <div class="img-info">
+                            <div class="img-name">${img.region}</div>
+                            <div class="img-meta">${img.id} · ${img.patient} · <span style="color:${img.urgency==='STAT'?'var(--accent-red)':'var(--text-tertiary)'}">${img.urgency}</span></div>
+                            ${img.aiFindings ? `<div class="ai-result-badge" style="color:var(--accent-red)"><i data-feather="cpu" style="width:10px;height:10px"></i> ${img.aiFindings}</div>` : '<div class="ai-result-badge" style="color:var(--text-tertiary)">No AI analysis</div>'}
+                            <div class="ai-progress" style="display:none"><div class="ai-progress-bar"><div class="ai-progress-fill"></div></div><span style="font-size:10px">Analyzing...</span></div>
+                            <button class="btn-s ai-analyze-btn" data-id="${img.id}" style="margin-top:8px;width:100%"><i data-feather="cpu"></i> Run AI Analysis</button>
+                        </div>
+                    </div>`).join('');
+                feather.replace();
+            }
+
+            // Event delegation for imaging grid
+            document.getElementById('allImagingGrid')?.addEventListener('click', (e) => {
+                const btn = e.target.closest('.ai-analyze-btn');
+                if (btn) {
+                    const id = btn.dataset.id;
+                    runAIAnalysis(id);
+                }
+            });
+
+            // Render specific modality tables
+            function renderXrayTable() { const t = document.getElementById('xrayTable'); if (!t) return; const data = State.imaging.filter(i => i.modality === 'X-Ray'); t.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Region</th><th>Urgency</th><th>AI</th><th>Status</th></tr></thead><tbody>` + data.map(i => `<tr><td class="mono">${i.id}</td><td>${i.patient}</td><td>${i.region}</td><td><span class="tag ${i.urgency==='STAT'?'r':'am'}">${i.urgency}</span></td><td>${i.aiFindings?`<span class="tag r">${i.aiFindings}</span>`:'<span class="tag g">—</span>'}</td><td>${i.status}</td></tr>`).join('') + '</tbody>'; }
+            function renderMriTable() { const t = document.getElementById('mriTable'); if (!t) return; const data = State.imaging.filter(i => i.modality === 'MRI' || i.modality === 'CT'); t.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Modality</th><th>Region</th><th>Urgency</th><th>AI</th></tr></thead><tbody>` + data.map(i => `<tr><td class="mono">${i.id}</td><td>${i.patient}</td><td>${i.modality}</td><td>${i.region}</td><td><span class="tag ${i.urgency==='STAT'?'r':'am'}">${i.urgency}</span></td><td>${i.aiFindings||'—'}</td></tr>`).join('') + '</tbody>'; }
+            function renderUsTable() { const t = document.getElementById('usTable'); if (!t) return; const data = State.imaging.filter(i => i.modality === 'Ultrasound'); t.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Region</th><th>Urgency</th><th>AI</th></tr></thead><tbody>` + data.map(i => `<tr><td class="mono">${i.id}</td><td>${i.patient}</td><td>${i.region}</td><td><span class="tag g">${i.urgency}</span></td><td>${i.aiFindings||'—'}</td></tr>`).join('') + '</tbody>'; }
+            function renderMammoTable() { const t = document.getElementById('mammoTable'); if (!t) return; const data = State.imaging.filter(i => i.modality === 'Mammography'); t.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Region</th><th>Urgency</th><th>AI</th></tr></thead><tbody>` + data.map(i => `<tr><td class="mono">${i.id}</td><td>${i.patient}</td><td>${i.region}</td><td><span class="tag b">${i.urgency}</span></td><td>${i.aiFindings||'—'}</td></tr>`).join('') + '</tbody>'; }
+            function renderNuclearTable() { const t = document.getElementById('nuclearTable'); if (!t) return; const data = State.imaging.filter(i => i.modality === 'Nuclear Medicine'); t.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Region</th><th>Urgency</th><th>AI</th></tr></thead><tbody>` + data.map(i => `<tr><td class="mono">${i.id}</td><td>${i.patient}</td><td>${i.region}</td><td><span class="tag te">${i.urgency}</span></td><td>${i.aiFindings||'—'}</td></tr>`).join('') + '</tbody>'; }
+
+            function renderAllLabTables() {
+                // Tests Queue
+                const tt = document.getElementById('testsTable');
+                if (tt) tt.innerHTML = `<thead><tr><th>Test ID</th><th>Patient</th><th>Test</th><th>Status</th><th>Action</th></tr></thead><tbody>` + State.testsQueue.map(t => `<tr><td class="mono">${t.id}</td><td>${t.patient}</td><td>${t.test}</td><td><span class="tag am">${t.status}</span></td><td><button class="btn-s open-result-modal">Result</button></td></tr>`).join('') + '</tbody>';
+                // Results Entry
+                const rt = document.getElementById('resultsTable');
+                if (rt) rt.innerHTML = `<thead><tr><th>Test ID</th><th>Patient</th><th>Test</th><th>Result</th><th>Flag</th></tr></thead><tbody><tr><td class="mono">TST-200</td><td>Kipchoge Mutai</td><td>Hb</td><td>12.8 g/dL</td><td><span class="tag g">Normal</span></td></tr></tbody>`;
+                // QC
+                const qt = document.getElementById('qcTable');
+                if (qt) qt.innerHTML = `<thead><tr><th>Date</th><th>Control</th><th>Lot</th><th>Result</th><th>Pass/Fail</th></tr></thead><tbody><tr><td>04 Mar</td><td>Normal Control</td><td>L-2026</td><td>Within range</td><td><span class="tag g">Passed</span></td></tr></tbody>`;
+                // Pathology
+                const pt = document.getElementById('pathTable');
+                if (pt) pt.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Specimen</th><th>Status</th></tr></thead><tbody>` + State.pathology.map(p => `<tr><td class="mono">${p.id}</td><td>${p.patient}</td><td>${p.specimen}</td><td><span class="tag ${p.status==='Processing'?'am':'b'}">${p.status}</span></td></tr>`).join('') + '</tbody>';
+                // Micro
+                const mt = document.getElementById('microTable');
+                if (mt) mt.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Specimen</th><th>Organism</th><th>Status</th></tr></thead><tbody>` + State.micro.map(m => `<tr><td class="mono">${m.id}</td><td>${m.patient}</td><td>${m.specimen}</td><td>${m.organism}</td><td><span class="tag am">${m.status}</span></td></tr>`).join('') + '</tbody>';
+                // Blood Bank
+                const bkpi = document.getElementById('bloodKpi');
+                if (bkpi) {
+                    const avail = State.bloodUnits.filter(u => u.status === 'Available').length;
+                    const low = State.bloodUnits.filter(u => u.status === 'Low Stock').length;
+                    bkpi.innerHTML = `<div class="kpi" style="border-top:3px solid var(--primary)"><div class="kpi-e"><i data-feather="heart"></i></div><div class="kpi-v">${avail}</div><div class="kpi-l">Available</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-amber)"><div class="kpi-v">${low}</div><div class="kpi-l">Low Stock</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-blue)"><div class="kpi-v">O+</div><div class="kpi-l">Most Needed</div></div>
+                    <div class="kpi" style="border-top:3px solid var(--accent-purple)"><div class="kpi-v">3</div><div class="kpi-l">Exp <30d</div></div>`;
+                }
+                const bt = document.getElementById('bloodTable');
+                if (bt) bt.innerHTML = `<thead><tr><th>Unit ID</th><th>Group</th><th>Expiry</th><th>Status</th></tr></thead><tbody>` + State.bloodUnits.map(u => `<tr><td class="mono">${u.id}</td><td><strong>${u.group}</strong></td><td>${u.expiry}</td><td><span class="tag ${u.status==='Available'?'g':'am'}">${u.status}</span></td></tr>`).join('') + '</tbody>';
+                // Molecular
+                const molt = document.getElementById('molTable');
+                if (molt) molt.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Test</th><th>Status</th><th>Result</th></tr></thead><tbody>` + State.molecular.map(m => `<tr><td class="mono">${m.id}</td><td>${m.patient}</td><td>${m.test}</td><td><span class="tag am">${m.status}</span></td><td>${m.result}</td></tr>`).join('') + '</tbody>';
+                // Reagents
+                const rtbl = document.getElementById('reagentsTable');
+                if (rtbl) rtbl.innerHTML = `<thead><tr><th>Reagent</th><th>Stock</th><th>Min</th><th>Status</th></tr></thead><tbody>` + State.reagents.map(r => `<tr><td>${r.name}</td><td style="color:${r.qty<r.min?'var(--accent-red)':'inherit'};font-weight:700">${r.qty}</td><td>${r.min}</td><td><span class="tag ${r.qty<r.min?'r':'g'}">${r.qty<r.min?'Low':'OK'}</span></td></tr>`).join('') + '</tbody>';
+            }
+
+            function refreshSpecificTables() {
+                renderXrayTable(); renderMriTable(); renderUsTable(); renderMammoTable(); renderNuclearTable();
+            }
+
+            function renderHomePreviews() {
+                const hc = document.getElementById('homeColl');
+                if (hc) hc.innerHTML = State.collection.slice(0,3).map(c => `<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${c.test} · ${c.patient}</span><span class="tag ${c.status==='Pending'?'am':'g'}">${c.status}</span></div>`).join('');
+                const hi = document.getElementById('homeImaging');
+                if (hi) hi.innerHTML = State.imaging.filter(i => i.status==='Pending Review').slice(0,3).map(i => `<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${i.modality} ${i.region} · ${i.patient}</span><span class="tag ${i.urgency==='STAT'?'r':'am'}">${i.urgency}</span></div>`).join('');
+                const hre = document.getElementById('homeReagents');
+                if (hre) hre.innerHTML = State.reagents.filter(r => r.qty<r.min).map(r => `<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${r.name}</span><span style="color:var(--accent-red);font-weight:700">${r.qty} left</span></div>`).join('');
+                const hb = document.getElementById('homeBlood');
+                if (hb) hb.innerHTML = State.bloodUnits.map(u => `<div style="display:flex;justify-content:space-between;padding:6px 0"><span>${u.id} (${u.group})</span><span>Exp: ${u.expiry}</span></div>`).join('');
+                const lf = document.getElementById('labFeed');
+                if (lf) lf.innerHTML = [
+                    { msg: 'AI flagged IMG-004: possible pneumothorax (94% confidence)', time: '3m ago', color: 'var(--accent-red)' },
+                    { msg: 'Sample COL-001 (U&E) collected for Wangui Njoroge', time: '15m ago', color: 'var(--text-primary)' },
+                ].map(e => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-light)"><span style="font-size:12px;color:${e.color}">${e.msg}</span><span style="font-family:var(--mono);font-size:10px;color:var(--text-tertiary)">${e.time}</span></div>`).join('');
+            }
+
+            function refreshAll() {
+                renderCollectionTable();
+                renderAllImagingGrid();
+                renderAllLabTables();
+                refreshSpecificTables();
+                renderHomePreviews();
+                renderAuditTable();
+                feather.replace();
+            }
+
+            // ═══════════ GLOBAL SEARCH ═══════════
+            globalSearch.addEventListener('input', () => {
+                const term = globalSearch.value.toLowerCase();
+                const filtered = State.collection.filter(c => c.patient.toLowerCase().includes(term) || c.test.toLowerCase().includes(term));
+                renderCollectionTableWithData(filtered);
+            });
+
+            function renderCollectionTableWithData(data) {
+                const ct = document.getElementById('collTable');
+                if (!ct) return;
+                ct.innerHTML = `<thead><tr><th>ID</th><th>Patient</th><th>Test</th><th>Status</th></tr></thead><tbody>` + data.map(c => `<tr><td class="mono">${c.id}</td><td>${c.patient}</td><td>${c.test}</td><td><span class="tag ${c.status==='Pending'?'am':'g'}">${c.status}</span></td></tr>`).join('') + '</tbody>';
+            }
+
+            // ═══════════ OPEN MODAL ACTIONS ═══════════
+            document.getElementById('addResultBtn')?.addEventListener('click', () => openModal('Enter Test Result', `<div class="field"><label>Test ID</label><input id="resTestId" value="TST-201" readonly></div><div class="field"><label>Result Value</label><input id="resValue" placeholder="e.g. 6.8 mmol/L"></div><div class="field"><label>Flag</label><select id="resFlag"><option>Normal</option><option>High</option><option>Critical</option></select></div>`, 'addResult'));
+            document.getElementById('addQcBtn')?.addEventListener('click', () => openModal('Log QC', `<div class="field"><label>Lot Number</label><input id="qcLot" placeholder="L-2026-04"></div><div class="field"><label>Result</label><input id="qcResult" placeholder="Within range"></div><div class="field"><label>Pass/Fail</label><select id="qcPass"><option>Passed</option><option>Failed</option></select></div>`, 'addQC'));
+            document.getElementById('uploadImageBtn')?.addEventListener('click', () => openModal('Upload Diagnostic Image', `<div class="field"><label>Modality</label><select id="imgModality"><option>X-Ray</option><option>MRI</option><option>CT</option><option>Ultrasound</option><option>Mammography</option><option>Nuclear Medicine</option></select></div><div class="field"><label>Region</label><input id="imgRegion" placeholder="e.g. Chest PA"></div>`, 'uploadImage'));
+            document.getElementById('uploadXrayBtn')?.addEventListener('click', () => document.getElementById('uploadImageBtn').click());
+            document.getElementById('uploadMriBtn')?.addEventListener('click', () => document.getElementById('uploadImageBtn').click());
+            document.getElementById('uploadUsBtn')?.addEventListener('click', () => document.getElementById('uploadImageBtn').click());
+            document.getElementById('uploadMammoBtn')?.addEventListener('click', () => document.getElementById('uploadImageBtn').click());
+            document.getElementById('uploadNuclearBtn')?.addEventListener('click', () => document.getElementById('uploadImageBtn').click());
+
+            // Sign out
+            document.getElementById('signOutBtn')?.addEventListener('click', () => { if (confirm('Sign out?')) location.href = 'unihealth-login.html'; });
+
+            // Date
+            const now = new Date();
+            document.getElementById('tbDate').textContent = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][now.getDay()] + ', ' + now.getDate() + ' ' + ['January','February','March','April','May','June','July','August','September','October','November','December'][now.getMonth()] + ' ' + now.getFullYear();
+
+            // Security score animation
+            setInterval(() => {
+                const score = (97.5 + Math.random()*2).toFixed(1);
+                document.getElementById('secScoreTxt').textContent = score + '%';
+                document.getElementById('secFill').style.width = score + '%';
+            }, 8000);
+
+            // Initial render
+            refreshAll();
+            feather.replace();
+        })();
+    </script>
+</body>
+</html>
