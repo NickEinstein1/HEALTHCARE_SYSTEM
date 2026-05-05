@@ -173,3 +173,32 @@
 }
 .dash-shell--patient .tb-crumb b{color:var(--g);}
 
+/* Laboratory portal (purple) */
+.dash-shell--lab .sb{background:#1a1f3a;}
+.dash-shell--lab .sb::before{
+  background:
+    radial-gradient(ellipse 130% 55% at -10% 100%,rgba(124,58,237,.12) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 40% at 110% 0%,rgba(79,70,229,.12) 0%,transparent 50%),
+    linear-gradient(168deg,#12152a 0%,#1a1f3a 48%,#222850 100%);
+}
+.dash-shell--lab .sb-ico{background:linear-gradient(135deg,var(--pu),#a78bfa);box-shadow:0 3px 10px rgba(124,58,237,.35);}
+.dash-shell--lab .sb-live{background:#a78bfa;box-shadow:0 0 8px #a78bfa;}
+.dash-shell--lab .ni.on{background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.28);}
+.dash-shell--lab .tb-crumb b{color:var(--pu);}
+.dash-shell--lab .tb-search:focus-within{border-color:var(--pu);box-shadow:0 0 0 3px rgba(124,58,237,.12);}
+.dash-shell--lab .tb-btn:hover{border-color:var(--pu);background:var(--pul);}
+
+/* Pharmacy portal (teal + dark sidebar) */
+.dash-shell--pharmacy .sb{background:#0f1f2e;}
+.dash-shell--pharmacy .sb::before{
+  background:
+    radial-gradient(ellipse 140% 50% at -10% 100%,rgba(26,138,74,.14) 0%,transparent 55%),
+    radial-gradient(ellipse 80% 40% at 110% 0%,rgba(37,99,235,.1) 0%,transparent 50%),
+    linear-gradient(168deg,#0a1624 0%,#0f1f2e 45%,#152a3d 100%);
+}
+.dash-shell--pharmacy .sb-ico{background:linear-gradient(135deg,var(--te),#2dd4bf);box-shadow:0 3px 10px rgba(13,148,136,.35);}
+.dash-shell--pharmacy .ni.on{background:rgba(13,148,136,.18);border:1px solid rgba(13,148,136,.32);}
+.dash-shell--pharmacy .tb-crumb b{color:var(--te);}
+.dash-shell--pharmacy .tb-search:focus-within{border-color:var(--te);box-shadow:0 0 0 3px rgba(13,148,136,.12);}
+.dash-shell--pharmacy .tb-btn:hover{border-color:var(--te);background:var(--tel);}
+
