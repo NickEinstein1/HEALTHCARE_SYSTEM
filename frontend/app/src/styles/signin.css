@@ -10,41 +10,80 @@
   min-height: 100vh !important;
   width: 100% !important;
   flex-direction: row !important;
-  background: #040c1e !important;
+  background: #030a18 !important;
+  position: relative !important;
 }
 
-/* ── Right panel ────────────────────────────────────────────────── */
+/* ── Right panel — glassmorphism backdrop ───────────────────────── */
 .sign-in-root .rp {
   flex: 1 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   padding: 40px 20px !important;
-  background: transparent !important;
   position: relative !important;
+  /* Inner column glow behind card */
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 50%, rgba(0,212,255,0.045) 0%, transparent 70%) !important;
+}
+
+/* Vignette edges on right panel */
+.sign-in-root .rp::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background:
+    linear-gradient(to right,  rgba(3,10,24,0.5) 0%, transparent 18%),
+    linear-gradient(to left,   rgba(3,10,24,0.5) 0%, transparent 18%),
+    linear-gradient(to bottom, rgba(3,10,24,0.4) 0%, transparent 14%),
+    linear-gradient(to top,    rgba(3,10,24,0.4) 0%, transparent 14%) !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
 }
 
 /* ── Card container ─────────────────────────────────────────────── */
 .sign-in-root .card {
-  background: #0a1628 !important;
-  border: 2px solid #1e6090 !important;
-  border-radius: 20px !important;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.70), 0 0 0 1px rgba(0,120,200,0.12) !important;
+  background: rgba(8,18,40,0.88) !important;
+  border: 1.5px solid rgba(0,180,255,0.20) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,0.07),
+    0 0 40px rgba(0,212,255,0.08),
+    0 32px 72px rgba(0,0,0,0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   width: 100% !important;
-  max-width: 448px !important;
+  max-width: 452px !important;
   overflow: hidden !important;
   position: relative !important;
   z-index: 1 !important;
+  animation: siCardIn 0.5s cubic-bezier(0.23,1,0.32,1) both !important;
 }
+
+@keyframes siCardIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* Card hover: subtle border brightening */
+.sign-in-root .card:hover {
+  border-color: rgba(0,212,255,0.32) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,212,255,0.10),
+    0 0 55px rgba(0,212,255,0.12),
+    0 32px 72px rgba(0,0,0,0.75) !important;
+  transition: border-color 0.3s, box-shadow 0.3s !important;
+}
+
 .sign-in-root .cstripe {
   height: 3px !important;
-  background: linear-gradient(90deg, #003d60, #00aadd, #00e5a0, #7c3aed, #003d60) !important;
-  background-size: 300% 100% !important;
-  animation: siStripe 5s linear infinite !important;
+  background: linear-gradient(90deg, #001e38, #00aadd, #00e5a0, #7c3aed, #ff3366, #00aadd, #001e38) !important;
+  background-size: 400% 100% !important;
+  animation: siStripe 6s linear infinite !important;
 }
 @keyframes siStripe {
   0%   { background-position: 0%   0; }
-  100% { background-position: 300% 0; }
+  100% { background-position: 400% 0; }
 }
 .sign-in-root .cbody {
   padding: 26px 28px 20px !important;

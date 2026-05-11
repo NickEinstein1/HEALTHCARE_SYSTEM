@@ -216,7 +216,8 @@ export function LandingPage() {
     return () => obs.disconnect();
   }, []);
 
-  const goSignIn = () => navigate("/sign-in");
+  const goSignIn    = () => navigate("/sign-in");
+  const goRegister  = () => navigate("/register");
 
   /* ── TOPBAR ──────────────────────────────────────────────────────── */
   const Topbar = (
@@ -233,7 +234,7 @@ export function LandingPage() {
       </div>
       <div style={{ display: "flex", gap: 8 }}>
         <button className="lp-btn-ghost" onClick={goSignIn} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#00d4ff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Sign In</button>
-        <button className="lp-btn-primary" onClick={goSignIn} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
+        <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
       </div>
     </nav>
   );
@@ -283,8 +284,11 @@ export function LandingPage() {
         </p>
 
         <div className="lp-fade-up lp-d3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 56 }}>
-          <button className="lp-btn-primary" onClick={goSignIn} style={{ padding: "14px 34px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-            Access Your Portal
+          <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "14px 34px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+            Create Your Account
+          </button>
+          <button onClick={goSignIn} style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            Sign In →
           </button>
           <a href="#features" style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
             See How It Works →
@@ -374,7 +378,7 @@ export function LandingPage() {
         </div>
         <div ref={rolesRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           {ROLES.map((r, i) => (
-            <div key={r.id} className="lp-role-card" onClick={goSignIn}
+            <div key={r.id} className="lp-role-card" onClick={goRegister}
               style={{ padding: "26px 24px", background: r.bg, border: `1px solid ${r.border}`, borderRadius: 18,
                 opacity: rolesVisible ? 1 : 0, transform: rolesVisible ? "translateY(0)" : "translateY(28px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
@@ -600,8 +604,11 @@ export function LandingPage() {
           Join 380+ clinicians and 47,000+ patients already on UniHealth. Request pilot access for your facility today.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="lp-btn-primary" onClick={goSignIn} style={{ padding: "15px 38px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
-            Sign In to Your Portal
+          <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "15px 38px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+            Create Your Account
+          </button>
+          <button onClick={goSignIn} style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            Already have an account? Sign In
           </button>
           <a href="mailto:admin@unihealth.ke" style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 500, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             Request Facility Access

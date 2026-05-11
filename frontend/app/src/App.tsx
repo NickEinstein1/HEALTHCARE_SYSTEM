@@ -3,6 +3,7 @@ import { SignInPage } from "./pages/SignInPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LandingPage } from "./pages/LandingPage";
 import { MedicalBackground } from "./components/MedicalBackground";
+import { CreateAccountPage } from "./pages/CreateAccountPage";
 
 export function App() {
   return (
@@ -15,6 +16,15 @@ export function App() {
             <>
               <MedicalBackground />
               <SignInPage />
+            </>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <>
+              <MedicalBackground />
+              <CreateAccountPage />
             </>
           }
         />
