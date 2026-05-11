@@ -1,0 +1,535 @@
+/* ═══════════════════════════════════════════════════════════════════
+   UNIHEALTH EHR — RESPONSIVE LAYOUT SYSTEM
+   Breakpoints:
+     ≤ 480px   Phone portrait        (xs)
+     ≤ 640px   Phone landscape       (sm)
+     ≤ 768px   Tablet portrait       (md)
+     ≤ 900px   Tablet landscape      (lg)
+     ≤ 1100px  Laptop                (xl)  ← existing partial coverage
+   ≥ 1280px    Desktop               (2xl)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════════
+   DASHBOARD SHELL — Hamburger + Sidebar drawer + Overlay
+   ════════════════════════════════════════════════════════════════════ */
+
+/* Hamburger button — hidden on desktop */
+.tb-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px;
+  background: none;
+  border: 1.5px solid rgba(0,210,255,0.15);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.tb-hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: var(--t1);
+  border-radius: 2px;
+  transition: all .2s;
+}
+.tb-hamburger:hover { border-color: rgba(0,210,255,0.40); }
+.tb-hamburger:hover span { background: #00d4ff; }
+
+/* Sidebar close button — hidden on desktop */
+.sb-close {
+  display: none;
+  margin-left: auto;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+  padding: 4px 8px;
+  cursor: pointer;
+  line-height: 1;
+  font-family: var(--font);
+}
+.sb-close:hover { background: rgba(255,51,102,0.15); color: #ff8aab; border-color: rgba(255,51,102,0.3); }
+
+/* Overlay backdrop */
+.sb-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 190;
+}
+
+/* Title group in topbar */
+.tb-title-group { display: flex; flex-direction: column; justify-content: center; }
+
+/* ── Tables: always allow horizontal scroll on a wrapper ── */
+.tbl-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Add tbl-wrap equivalent directly to panel bodies containing tables */
+.panel .pnl-bd, .panel .pnl-body { overflow-x: auto; }
+
+/* ════════════════════════════════════════════════════════════════════
+   LAPTOP  ≤ 1100px  (xl)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  /* Shell */
+  .main { margin-left: 260px; }
+
+  /* Admin grids */
+  .kpis  { grid-template-columns: repeat(2, 1fr) !important; }
+  .qa    { grid-template-columns: repeat(4, 1fr) !important; }
+  .g2    { grid-template-columns: 1fr !important; }
+  .g2e   { grid-template-columns: 1fr 1fr !important; }
+  .g3    { grid-template-columns: 1fr 1fr !important; }
+  .county-grid { grid-template-columns: repeat(6, 1fr) !important; }
+
+  /* Doctor grids */
+  .doc .g2, .doc .gcol2, .doc .gcol3 { grid-template-columns: 1fr !important; }
+  .doc .g3  { grid-template-columns: 1fr 1fr !important; }
+  .doc .g4  { grid-template-columns: repeat(2, 1fr) !important; }
+  .doc .pt-stats { grid-template-columns: repeat(3, 1fr) !important; }
+  .doc .bed-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  .doc .ff-row   { grid-template-columns: 1fr 1fr !important; }
+
+  /* Nurse grids */
+  .nurse .g2, .nurse .gcol2, .nurse .gcol3 { grid-template-columns: 1fr !important; }
+  .nurse .g3  { grid-template-columns: 1fr 1fr !important; }
+  .nurse .g4  { grid-template-columns: repeat(2, 1fr) !important; }
+  .nurse .ff-row { grid-template-columns: 1fr 1fr !important; }
+
+  /* Patient grids */
+  .patient .g2, .patient .g2e { grid-template-columns: 1fr !important; }
+  .patient .g3  { grid-template-columns: 1fr 1fr !important; }
+  .patient .g4  { grid-template-columns: repeat(2, 1fr) !important; }
+  .patient .qas { grid-template-columns: repeat(4, 1fr) !important; }
+  .patient .hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .patient .ff-row { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TABLET LANDSCAPE  ≤ 900px  (lg)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  /* Sidebar drawer handled by dashboard-shell.css @media 920px */
+  .main { margin-left: 0 !important; }
+
+  /* Content padding tighter */
+  .content { padding: 20px 18px 36px !important; }
+
+  /* Topbar */
+  .topbar { padding: 0 14px !important; gap: 10px !important; }
+
+  /* Admin */
+  .kpis  { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .qa    { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+  .g2, .g2e, .g3 { grid-template-columns: 1fr !important; }
+  .county-grid    { grid-template-columns: repeat(5, 1fr) !important; }
+  .stat-strip     { flex-wrap: wrap; }
+  .stat-cell      { min-width: 50%; }
+
+  /* Doctor */
+  .doc .g2, .doc .g3, .doc .gcol2, .doc .gcol3 { grid-template-columns: 1fr !important; }
+  .doc .g4        { grid-template-columns: repeat(2, 1fr) !important; }
+  .doc .pt-stats  { grid-template-columns: repeat(2, 1fr) !important; }
+  .doc .pt-ids    { display: none; }
+  .doc .bed-grid  { grid-template-columns: repeat(3, 1fr) !important; }
+  .doc .ff-row    { grid-template-columns: 1fr !important; }
+
+  /* Nurse */
+  .nurse .g2, .nurse .g3, .nurse .gcol2, .nurse .gcol3 { grid-template-columns: 1fr !important; }
+  .nurse .g4  { grid-template-columns: repeat(2, 1fr) !important; }
+  .nurse .ff-row { grid-template-columns: 1fr !important; }
+
+  /* Patient */
+  .patient .g2, .patient .g2e, .patient .g3 { grid-template-columns: 1fr !important; }
+  .patient .g4  { grid-template-columns: repeat(2, 1fr) !important; }
+  .patient .qas { grid-template-columns: repeat(3, 1fr) !important; }
+  .patient .hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .patient .ff-row { grid-template-columns: 1fr !important; }
+  .patient .body-callout { display: none; }
+  .patient .body-fig-in  { min-height: 400px !important; }
+
+  /* Modal full-width */
+  .modal {
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 40px) !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TABLET PORTRAIT  ≤ 768px  (md)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Shell */
+  .content { padding: 16px 14px 32px !important; }
+  .topbar  { padding: 0 14px !important; height: 54px !important; gap: 8px !important; }
+  .tb-page { font-size: 15px !important; }
+  .tb-crumb { display: none; }
+  .tb-search { display: none !important; }
+
+  /* Page headers — stack cleanly */
+  .ph, .doc .ph, .nurse .ph, .patient .ph {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  .ph-title, .ph-ti { font-size: 22px !important; }
+  .ph-sub,   .ph-su { font-size: 12.5px !important; }
+  .ph-right, .doc .ph-r, .nurse .ph-r, .patient .ph-r {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  /* KPI cards — 2 col */
+  .kpis       { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .kpi        { padding: 14px 16px !important; }
+  .kpi-val    { font-size: 26px !important; }
+
+  /* Quick actions — 4 col */
+  .qa         { grid-template-columns: repeat(4, 1fr) !important; }
+  .qa-item    { padding: 10px 6px !important; }
+  .qa-e       { font-size: 18px !important; }
+  .qa-t       { font-size: 9.5px !important; }
+
+  /* Panels */
+  .panel, .doc .panel, .nurse .panel, .patient .panel {
+    border-radius: 12px !important;
+  }
+  .pnl-hd, .doc .pnl-hd, .nurse .pnl-hd, .patient .pnl-hd {
+    padding: 12px 14px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .pnl-body, .doc .pnl-bd, .nurse .pnl-bd, .patient .pnl-bd {
+    padding: 12px 14px !important;
+  }
+
+  /* Tables — make scrollable */
+  .tbl, .doc .tbl, .nurse .tbl, .patient .tbl {
+    font-size: 11.5px !important;
+    min-width: 560px;
+  }
+  .tbl th, .doc .tbl th, .nurse .tbl th, .patient .tbl th { padding: 8px 10px !important; }
+  .tbl td, .doc .tbl td, .nurse .tbl td, .patient .tbl td { padding: 8px 10px !important; }
+
+  /* Buttons — touch friendly */
+  .btn-p, .doc .btn-p, .nurse .btn-p, .patient .btn-p {
+    padding: 10px 14px !important;
+    font-size: 12.5px !important;
+    min-height: 40px !important;
+  }
+  .btn-s, .doc .btn-s, .nurse .btn-s, .patient .btn-s {
+    padding: 9px 13px !important;
+    font-size: 12.5px !important;
+    min-height: 40px !important;
+  }
+
+  /* Doctor patient banner */
+  .doc .pt-in   { flex-wrap: wrap !important; }
+  .doc .pt-name { font-size: 17px !important; }
+  .doc .pt-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .doc .pt-ids   { display: none !important; }
+  .doc .bed-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .doc .ff-row   { grid-template-columns: 1fr !important; }
+
+  /* Nurse g4 → 2 col */
+  .nurse .g4    { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .nurse .ff-row { grid-template-columns: 1fr !important; }
+
+  /* Patient */
+  .patient .qas   { grid-template-columns: repeat(3, 1fr) !important; }
+  .patient .hero  { padding: 16px !important; border-radius: 14px !important; }
+  .patient .hero-greet { font-size: 18px !important; }
+  .patient .hero-top   { flex-direction: column !important; }
+  .patient .hero-ids   { align-items: flex-start !important; flex-direction: row !important; flex-wrap: wrap !important; }
+  .patient .hero-stats { grid-template-columns: repeat(2, 1fr) !important; margin-top: 12px !important; }
+  .patient .g4    { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Modal */
+  .modal {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 24px) !important;
+    border-radius: 14px !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+  .modal-ti  { font-size: 13.5px !important; }
+  .modal-hd  { padding: 12px 14px !important; }
+  .modal-bd  { padding: 12px 14px !important; }
+  .modal-ft  { padding: 10px 14px !important; flex-wrap: wrap !important; }
+
+  /* Filter row */
+  .filter-row { flex-direction: column !important; align-items: stretch !important; }
+  .fsearch    { max-width: 100% !important; }
+  .fsel       { width: 100% !important; }
+
+  /* Nurse MAR time buttons wrap */
+  .nurse .mar-times { flex-wrap: wrap !important; }
+  .nurse .handover-hero { padding: 14px 16px !important; border-radius: 12px !important; }
+
+  /* Patient consent row */
+  .patient .consent-row   { flex-direction: column !important; }
+  .patient .consent-right { align-items: flex-start !important; }
+
+  /* Feed items */
+  .feed-time { display: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PHONE LANDSCAPE / SMALL TABLET  ≤ 640px  (sm)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Content */
+  .content { padding: 14px 12px 28px !important; }
+
+  /* Topbar */
+  .topbar { padding: 0 12px !important; height: 52px !important; gap: 8px !important; }
+  .tb-page { font-size: 14px !important; font-weight: 800 !important; }
+
+  /* KPI → 2 per row, smaller */
+  .kpis    { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .kpi     { padding: 12px 14px !important; border-radius: 12px !important; }
+  .kpi-val { font-size: 24px !important; }
+  .kpi-lbl { font-size: 9.5px !important; }
+  .kpi-meta{ font-size: 10.5px !important; }
+
+  /* Quick actions → 4 col on sm, wrap */
+  .qa      { grid-template-columns: repeat(4, 1fr) !important; gap: 7px !important; }
+
+  /* All main grids: 1 column */
+  .g2, .g2e, .g3,
+  .doc .g2, .doc .g3, .doc .gcol2, .doc .gcol3,
+  .nurse .g2, .nurse .g3, .nurse .gcol2, .nurse .gcol3,
+  .patient .g2, .patient .g2e, .patient .g3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* g4 → 2 col */
+  .doc .g4, .nurse .g4, .patient .g4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Patient quick-actions */
+  .patient .qas { grid-template-columns: repeat(3, 1fr) !important; gap: 7px !important; }
+  .patient .qa  { padding: 10px 8px !important; }
+  .patient .qa-e { font-size: 20px !important; }
+  .patient .qa-l { font-size: 9.5px !important; }
+
+  /* Doc patient stats */
+  .doc .pt-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .doc .bed-grid { grid-template-columns: repeat(3, 1fr) !important; }
+
+  /* Panel headers stack */
+  .pnl-hd, .doc .pnl-hd, .nurse .pnl-hd, .patient .pnl-hd {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  /* Nurse shift badge row */
+  .nurse .g4 { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+  /* Feed */
+  .feed-item { flex-wrap: wrap !important; }
+
+  /* Stat strip */
+  .stat-strip { flex-wrap: wrap !important; }
+  .stat-cell  { min-width: calc(50% - 1px) !important; }
+
+  /* Donut */
+  .donut-wrap { flex-direction: column !important; align-items: center !important; }
+
+  /* County grid */
+  .county-grid { grid-template-columns: repeat(4, 1fr) !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PHONE PORTRAIT  ≤ 480px  (xs)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  /* Content */
+  .content { padding: 12px 10px 24px !important; }
+
+  /* Topbar */
+  .topbar  { padding: 0 10px !important; height: 50px !important; }
+  .tb-page { font-size: 13px !important; }
+
+  /* KPI → 1 col on very small phones */
+  .kpis    { grid-template-columns: 1fr !important; gap: 8px !important; }
+  .kpi     { padding: 12px 14px !important; display: flex !important; align-items: center !important; gap: 12px !important; }
+  .kpi-bar { top: 0 !important; bottom: 0 !important; right: auto !important; width: 4px !important; height: 100% !important; border-radius: 0 !important; }
+  .kpi-ico { position: static !important; font-size: 22px !important; opacity: 0.5 !important; margin-bottom: 0 !important; flex-shrink: 0; }
+  .kpi-val { font-size: 26px !important; margin-bottom: 2px !important; }
+  .kpi-lbl { margin-bottom: 2px !important; }
+
+  /* Quick actions → 3 col */
+  .qa      { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+
+  /* All grids → 1 col */
+  .g2, .g2e, .g3,
+  .doc .g2, .doc .g3, .doc .g4, .doc .gcol2, .doc .gcol3,
+  .nurse .g2, .nurse .g3, .nurse .g4, .nurse .gcol2, .nurse .gcol3,
+  .patient .g2, .patient .g2e, .patient .g3, .patient .g4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Patient quick-actions → 2 col */
+  .patient .qas { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Patient hero stats → 2 col */
+  .patient .hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Doctor bed grid → 2 col */
+  .doc .bed-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Nurse triage KPIs → 2 col */
+  .nurse .g4 { grid-template-columns: 1fr 1fr !important; }
+
+  /* Page title smaller */
+  .ph-title, .ph-ti { font-size: 20px !important; }
+  .ph-sub,   .ph-su { font-size: 12px !important; }
+
+  /* Panel header */
+  .pnl-title, .pnl-ti { font-size: 12.5px !important; }
+  .pnl-sub,   .pnl-su { font-size: 10.5px !important; }
+
+  /* Buttons full-width on mobile (only in page headers and filter rows) */
+  .ph .btn-p, .ph .btn-s,
+  .nurse .ph .btn-p, .nurse .ph .btn-s {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+
+  /* Table font */
+  .tbl, .doc .tbl, .nurse .tbl, .patient .tbl {
+    font-size: 11px !important;
+  }
+
+  /* Modal takes full height on small phones */
+  .modal {
+    width: calc(100vw - 12px) !important;
+    max-height: calc(100vh - 16px) !important;
+    border-radius: 12px !important;
+  }
+
+  /* County grid */
+  .county-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  .cc          { font-size: 5.5px !important; }
+
+  /* Doc patient banner */
+  .doc .pt-av  { width: 40px !important; height: 40px !important; font-size: 16px !important; }
+  .doc .pt-name{ font-size: 16px !important; }
+  .doc .pt-stats { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Nurse handover */
+  .nurse .handover-hero { padding: 12px !important; }
+
+  /* Patient hero */
+  .patient .hero  { padding: 14px !important; border-radius: 12px !important; }
+  .patient .hero-greet { font-size: 16px !important; }
+  .patient .cover-amt  { font-size: 26px !important; }
+  .patient .cover-limits { grid-template-columns: 1fr !important; }
+  .patient .prog-lbl   { width: 90px !important; font-size: 10px !important; }
+  .patient .body-fig-in { min-height: 340px !important; }
+  .patient .ring-wrap   { width: 72px !important; height: 72px !important; }
+  .patient .ring-num    { font-size: 18px !important; }
+
+  /* Sign-in page */
+  .card   { border-radius: 14px !important; }
+  .cbody  { padding: 20px 18px 16px !important; }
+  .rgrid  { grid-template-columns: 1fr 1fr !important; gap: 7px !important; }
+  .rc     { padding: 10px 6px !important; }
+  .remi   { font-size: 19px !important; }
+  .rnm    { font-size: 10.5px !important; }
+  .pin-grid { gap: 7px !important; }
+  .pin-box  { width: 44px !important; height: 48px !important; font-size: 21px !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   SIGN-IN PAGE — Responsive stacking
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 820px) {
+  .sign-in-root { flex-direction: column !important; min-height: 100vh !important; }
+  .lp { display: none !important; }
+  .rp {
+    flex: 1 !important;
+    padding: 24px 16px !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    min-height: 100vh;
+  }
+  .card { max-width: 100% !important; border-radius: 16px !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   GLOBAL TOUCH TARGETS — Minimum 44×44px hit areas on mobile
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .btn-p, .btn-s,
+  .doc .btn-p, .doc .btn-s,
+  .nurse .btn-p, .nurse .btn-s,
+  .patient .btn-p, .patient .btn-s,
+  .tb-btn, .tb-hamburger {
+    min-height: 42px !important;
+  }
+
+  /* Larger tap area for nav items */
+  .ni { min-height: 46px !important; }
+
+  /* Select and input height */
+  select, input:not([type=range]) {
+    min-height: 40px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   MODAL — Slide-up from bottom on mobile (better UX)
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .modal {
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+  .modal::before {
+    border-radius: 18px 18px 0 0 !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   TOPBAR DATE PILL — hide on narrow viewports
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) { .tb-datepill { display: none !important; } }
+@media (max-width: 900px) { .tb-search   { max-width: 160px !important; } }
+
+/* ════════════════════════════════════════════════════════════════════
+   CANVAS BACKGROUND — Don't render on very slow/small devices
+   ════════════════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  canvas[aria-hidden] { opacity: 0.4; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PRINT — clean minimal layout
+   ════════════════════════════════════════════════════════════════════ */
+@media print {
+  .sb, .topbar, .ds-toast, canvas { display: none !important; }
+  .main { margin-left: 0 !important; }
+  .content { padding: 0 !important; overflow: visible !important; }
+  .panel, .kpi { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  body, :root { background: #fff !important; color: #000 !important; }
+}

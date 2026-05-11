@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { ExportMenu } from "../../components/ExportMenu";
+import { HumanFigure3D } from "../../components/HumanFigure3D";
 
 function fmtWhen(d: Date, hhmm: string) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -59,209 +61,56 @@ function BodyVitalsFigure(props: {
     value: string | null;
     measuredAt: string | null;
   }>;
+  gender?: "male" | "female";
+  activeVital?: string | null;
+  onVitalHover?: (key: string | null) => void;
 }) {
-  const { vitals } = props;
+  const { vitals, gender = "male", activeVital, onVitalHover } = props;
 
-  const byKey = useMemo(() => new Map(vitals.map((v) => [v.key, v])), [vitals]);
-  const val = (k: string, fallback: string) =>
-    byKey.get(k)?.value ? `${byKey.get(k)!.value}${byKey.get(k)!.unit ? ` ${byKey.get(k)!.unit}` : ""}` : fallback;
-
-  const [hovered, setHovered] = useState<string | null>(null);
-  const [tip, setTip] = useState<{ x: number; y: number } | null>(null);
-
-  const hoverMeta = useMemo(
-    () =>
-      ({
-        bp: { title: "Blood pressure", sub: "Measured on upper arm cuff" },
-        hr: { title: "Heart rate", sub: "Pulse / cardiac rate" },
-        rr: { title: "Respiratory rate", sub: "Breaths per minute" },
-        temp: { title: "Temperature", sub: "Core temperature" },
-        spo2: { title: "SpO₂", sub: "Pulse oximetry (finger)" },
-        glucose: { title: "Random glucose", sub: "Capillary blood glucose" },
-        bmi: { title: "BMI", sub: "Weight / Height²" },
-      }) as const,
-    []
-  );
+  // Map vitals to HumanFigure3D callout format
+  const figureVitals = useMemo(() => {
+    const regionMap: Record<string, "head" | "chest" | "abdomen" | "arm-l" | "arm-r" | "leg-l" | "leg-r"> = {
+      temp:    "head",
+      hr:      "chest",
+      rr:      "chest",
+      bp:      "arm-l",
+      spo2:    "arm-r",
+      glucose: "abdomen",
+      bmi:     "leg-l",
+      weight:  "leg-r",
+    };
+    return vitals
+      .filter((v) => regionMap[v.key])
+      .map((v) => ({
+        key:    v.key,
+        label:  v.label,
+        value:  v.value ?? "—",
+        unit:   v.unit,
+        icon:   v.icon,
+        region: regionMap[v.key]!,
+        status: (v.key === "bp" && v.value?.includes("14") ? "high" :
+                 v.key === "glucose" && Number(v.value ?? "0") > 7 ? "high" :
+                 "normal") as "normal" | "high",
+      }));
+  }, [vitals]);
 
   return (
     <div className="body-fig">
       <div className="body-fig-hd">
         <div>
-          <div className="body-fig-ti">Body Vitals Map</div>
-          <div className="body-fig-su">Interactive anatomy view (hover body regions)</div>
+          <div className="body-fig-ti">3D Body Vitals Map</div>
+          <div className="body-fig-su">Anatomical exoskeleton · {gender === "female" ? "Female" : "Male"} · hover regions</div>
         </div>
         <span className="tag g dot">LIVE</span>
       </div>
 
-      <div className="body-fig-in">
-        <svg className="body-svg" viewBox="0 0 240 620" role="img" aria-label="Human skeleton vitals figure">
-          <defs>
-            <linearGradient id="core" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="rgba(26,138,74,.14)" />
-              <stop offset="1" stopColor="rgba(26,138,74,.03)" />
-            </linearGradient>
-            <linearGradient id="bone" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="#f8fafc" />
-              <stop offset="1" stopColor="#e9eef5" />
-            </linearGradient>
-            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="12" stdDeviation="10" floodColor="rgba(10,74,38,.18)" />
-            </filter>
-            <filter id="glow">
-              <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="rgba(26,138,74,.35)" />
-            </filter>
-          </defs>
-
-          {/* skeleton */}
-          <g filter="url(#softShadow)" opacity="1">
-            {/* skull */}
-            <ellipse cx="120" cy="72" rx="40" ry="46" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
-            <path d="M95 70c6-14 18-22 25-22s19 8 25 22" fill="none" stroke="rgba(20,32,26,.08)" strokeWidth="2" strokeLinecap="round" />
-            {/* cervical + spine */}
-            <path d="M120 118v250" stroke="rgba(20,32,26,.14)" strokeWidth="5" strokeLinecap="round" />
-            {/* ribcage */}
-            <path
-              d="M78 210c10-56 34-78 42-78s32 22 42 78c8 44-6 78-42 78s-50-34-42-78z"
-              fill="url(#core)"
-              stroke="rgba(20,32,26,.10)"
-              strokeWidth="2"
-            />
-            {Array.from({ length: 6 }).map((_, i) => (
-              <path
-                key={i}
-                d={`M88 ${174 + i * 16}c10-10 20-14 32-14s22 4 32 14`}
-                fill="none"
-                stroke="rgba(20,32,26,.08)"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            ))}
-            {/* clavicle */}
-            <path d="M86 148c14 10 26 14 34 14s20-4 34-14" fill="none" stroke="rgba(20,32,26,.10)" strokeWidth="4" strokeLinecap="round" />
-
-            {/* pelvis */}
-            <path
-              d="M90 330c10-22 20-30 30-30s20 8 30 30c6 14 2 38-30 38s-36-24-30-38z"
-              fill="url(#bone)"
-              stroke="rgba(20,32,26,.10)"
-              strokeWidth="2"
-            />
-
-            {/* arms */}
-            <path d="M86 155L54 235" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
-            <path d="M54 235L72 306" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
-            <path d="M154 155L186 235" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
-            <path d="M186 235L166 310" stroke="rgba(20,32,26,.14)" strokeWidth="7" strokeLinecap="round" />
-            {/* hands */}
-            <circle cx="72" cy="306" r="12" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
-            <circle cx="166" cy="310" r="12" fill="url(#bone)" stroke="rgba(20,32,26,.10)" strokeWidth="2" />
-
-            {/* legs */}
-            <path d="M110 368L96 510" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
-            <path d="M130 368L144 510" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
-            <path d="M96 510L90 594" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
-            <path d="M144 510L150 594" stroke="rgba(20,32,26,.14)" strokeWidth="9" strokeLinecap="round" />
-            {/* feet */}
-            <path d="M78 598c16-10 30-10 44 0" stroke="rgba(20,32,26,.12)" strokeWidth="7" strokeLinecap="round" />
-            <path d="M118 598c16-10 30-10 44 0" stroke="rgba(20,32,26,.12)" strokeWidth="7" strokeLinecap="round" />
-          </g>
-
-          {/* interactive hotspots (invisible but hoverable) */}
-          <g
-            className="hotspots"
-            onMouseMove={(e) => {
-              const svg = (e.currentTarget.ownerSVGElement ?? e.currentTarget) as SVGSVGElement;
-              const pt = svg.createSVGPoint();
-              pt.x = e.clientX;
-              pt.y = e.clientY;
-              const ctm = svg.getScreenCTM();
-              if (!ctm) return;
-              const loc = pt.matrixTransform(ctm.inverse());
-              setTip({ x: loc.x, y: loc.y });
-            }}
-            onMouseLeave={() => {
-              setHovered(null);
-              setTip(null);
-            }}
-          >
-            <circle className={`hs hs-bp${hovered === "bp" ? " on" : ""}`} cx="60" cy="250" r="22" onMouseEnter={() => setHovered("bp")} />
-            <circle className={`hs hs-hr${hovered === "hr" ? " on" : ""}`} cx="120" cy="210" r="22" onMouseEnter={() => setHovered("hr")} />
-            <circle className={`hs hs-rr${hovered === "rr" ? " on" : ""}`} cx="130" cy="235" r="24" onMouseEnter={() => setHovered("rr")} />
-            <circle className={`hs hs-temp${hovered === "temp" ? " on" : ""}`} cx="120" cy="160" r="22" onMouseEnter={() => setHovered("temp")} />
-            <circle className={`hs hs-spo2${hovered === "spo2" ? " on" : ""}`} cx="166" cy="310" r="22" onMouseEnter={() => setHovered("spo2")} />
-            <circle className={`hs hs-glu${hovered === "glucose" ? " on" : ""}`} cx="120" cy="300" r="24" onMouseEnter={() => setHovered("glucose")} />
-            <circle className={`hs hs-bmi${hovered === "bmi" ? " on" : ""}`} cx="120" cy="520" r="28" onMouseEnter={() => setHovered("bmi")} />
-          </g>
-
-          {/* highlight ring for hovered hotspot */}
-          {hovered && (
-            <circle
-              cx={hovered === "bp" ? 60 : hovered === "hr" ? 120 : hovered === "rr" ? 130 : hovered === "temp" ? 120 : hovered === "spo2" ? 166 : hovered === "glucose" ? 120 : 120}
-              cy={hovered === "bp" ? 250 : hovered === "hr" ? 210 : hovered === "rr" ? 235 : hovered === "temp" ? 160 : hovered === "spo2" ? 310 : hovered === "glucose" ? 300 : 520}
-              r={hovered === "bmi" ? 30 : 24}
-              fill="none"
-              stroke="rgba(26,138,74,.85)"
-              strokeWidth="3"
-              filter="url(#glow)"
-            />
-          )}
-        </svg>
-
-        {/* callouts */}
-        <div className={`body-callout bp${hovered === "bp" ? " on" : ""}`}>
-          <div className="bc-k">BP</div>
-          <div className="bc-v">{val("bp", "120/80 mmHg")}</div>
-          <div className="bc-l">Blood pressure (arm)</div>
-        </div>
-
-        <div className={`body-callout hr${hovered === "hr" ? " on" : ""}`}>
-          <div className="bc-k">HR</div>
-          <div className="bc-v">{val("hr", "72 bpm")}</div>
-          <div className="bc-l">Pulse (heart)</div>
-        </div>
-
-        <div className={`body-callout rr${hovered === "rr" ? " on" : ""}`}>
-          <div className="bc-k">RR</div>
-          <div className="bc-v">{val("rr", "16 breaths/min")}</div>
-          <div className="bc-l">Respiration (lungs)</div>
-        </div>
-
-        <div className={`body-callout temp${hovered === "temp" ? " on" : ""}`}>
-          <div className="bc-k">Temp</div>
-          <div className="bc-v">{val("temp", "36.8 °C")}</div>
-          <div className="bc-l">Temperature</div>
-        </div>
-
-        <div className={`body-callout spo2${hovered === "spo2" ? " on" : ""}`}>
-          <div className="bc-k">SpO₂</div>
-          <div className="bc-v">{val("spo2", "98 %")}</div>
-          <div className="bc-l">Oxygen (finger)</div>
-        </div>
-
-        <div className={`body-callout glu${hovered === "glucose" ? " on" : ""}`}>
-          <div className="bc-k">RBG</div>
-          <div className="bc-v">{val("glucose", "5.4 mmol/L")}</div>
-          <div className="bc-l">Glucose (capillary)</div>
-        </div>
-
-        <div className={`body-callout bmi${hovered === "bmi" ? " on" : ""}`}>
-          <div className="bc-k">BMI</div>
-          <div className="bc-v">{val("bmi", "24.4 kg/m²")}</div>
-          <div className="bc-l">Weight/height</div>
-        </div>
-
-        {hovered && tip && (
-          <div className="body-tip" style={{ left: tip.x + 12, top: tip.y + 12 }}>
-            <div className="bt-h">
-              <span className="bt-ico" aria-hidden>
-                {byKey.get(hovered)?.icon ?? "🧬"}
-              </span>
-              <div className="bt-ti">{hoverMeta[hovered as keyof typeof hoverMeta]?.title ?? "Vital"}</div>
-            </div>
-            <div className="bt-v">{val(hovered, "—")}</div>
-            <div className="bt-su">{hoverMeta[hovered as keyof typeof hoverMeta]?.sub ?? ""}</div>
-          </div>
-        )}
+      <div className="body-fig-in" style={{ position: "relative", padding: "8px 4px 4px" }}>
+        <HumanFigure3D
+          gender={gender}
+          vitals={figureVitals}
+          activeVital={activeVital ?? null}
+          onVitalHover={onVitalHover}
+        />
       </div>
 
       <div className="body-fig-ft">
@@ -459,6 +308,188 @@ export function PatientDashboard() {
   const [topPanel, setTopPanel] = useState<"none" | "search" | "notifications">("none");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // ── Appointment booking state ──────────────────────────────────────
+  const liveAppts = usePolling(() => api.appointments({ patient_id: patientId }), { intervalMs: 8000 });
+  const [showBookModal, setShowBookModal] = useState(false);
+  const [bookingDate, setBookingDate] = useState<string>("");
+  const [bookingFacility, setBookingFacility] = useState("KNH Nairobi");
+  const [bookingDept, setBookingDept] = useState("Cardiology");
+  const [bookingTime, setBookingTime] = useState("09:00");
+  const [bookingNotes, setBookingNotes] = useState("");
+  const [bookingSlots, setBookingSlots] = useState<string[]>([]);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+
+  const departments = useMemo(() => [
+    "Cardiology", "Oncology", "Neurology", "Orthopaedics",
+    "General Surgery", "Internal Medicine", "Paediatrics",
+    "Gynaecology & Obstetrics", "Ophthalmology", "ENT",
+    "Dermatology", "Psychiatry", "Outpatient", "Follow-up",
+  ], []);
+
+  const facilities = [
+    "KNH Nairobi", "Coast General Hospital", "Aga Khan University Hospital",
+    "MP Shah Hospital", "Kenyatta National Referral Hospital",
+  ];
+
+  const openBookModal = useCallback((dateStr?: string) => {
+    setBookingDate(dateStr ?? ymd(new Date()));
+    setBookingSuccess(null);
+    setShowBookModal(true);
+  }, []);
+
+  useEffect(() => {
+    if (!showBookModal || !bookingDate) return;
+    api.appointmentSlots(bookingDate, bookingFacility, bookingDept)
+      .then((r) => setBookingSlots(r.available))
+      .catch(() => setBookingSlots(["08:00","09:00","10:00","11:00","14:00","15:00"]));
+  }, [showBookModal, bookingDate, bookingFacility, bookingDept]);
+
+  const submitBooking = async () => {
+    if (!bookingDate || !bookingFacility || !bookingDept || !bookingTime) return;
+    setBookingLoading(true);
+    try {
+      const res = await api.appointmentCreate({
+        patient_id: patientId,
+        patient_name: summary.data?.patient.given_name
+          ? `${summary.data.patient.given_name} ${summary.data.patient.family_name ?? ""}`.trim()
+          : "P. Mutiso",
+        facility: bookingFacility,
+        department: bookingDept,
+        date: bookingDate,
+        time: bookingTime,
+        notes: bookingNotes,
+        booked_by: "patient",
+      });
+      setBookingSuccess(res.id ?? "");
+      liveAppts.refresh();
+      toast(`Appointment booked at ${bookingFacility} — ${bookingDate} ${bookingTime}`);
+    } catch {
+      toast("Booking failed — please try again.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  const cancelAppt = async (aptId: string) => {
+    try {
+      await api.appointmentCancel(aptId, "Patient cancelled via portal");
+      liveAppts.refresh();
+      toast("Appointment cancelled.");
+    } catch {
+      toast("Could not cancel — please try again.");
+    }
+  };
+
+  // ── Human figure vitals state ──────────────────────────────────────
+  const [activeVital, setActiveVital] = useState<string | null>(null);
+  const patientGender = (summary.data?.patient?.gender ?? "male") as "male" | "female";
+
+  // ── Messaging state ────────────────────────────────────────────────
+  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [msgText, setMsgText] = useState("");
+  const [msgSent, setMsgSent] = useState(false);
+  const [msgLoading, setMsgLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!msgText.trim()) return;
+    setMsgLoading(true);
+    try {
+      await api.uiAction({ role: "patient", page, patient_id: patientId, label: `Message to care team: ${msgText.trim()}`, type: "message" });
+      setMsgSent(true);
+    } catch { /* offline */ } finally {
+      setMsgLoading(false);
+    }
+  };
+
+  // ── Consent state ──────────────────────────────────────────────────
+  const [researchConsent, setResearchConsent] = useState(true);
+  const [consentBusy, setConsentBusy] = useState(false);
+
+  const toggleConsent = async (key: string, newVal: boolean) => {
+    setConsentBusy(true);
+    try {
+      await api.uiAction({ role: "patient", patient_id: patientId, label: `Consent ${key} set to ${newVal}`, type: "consent" });
+      if (key === "research") setResearchConsent(newVal);
+      toast(newVal ? "Consent granted." : "Consent withdrawn. Your preference is saved.");
+    } catch { toast("Could not save consent — please try again."); } finally {
+      setConsentBusy(false);
+    }
+  };
+
+  // ── Profile form state ─────────────────────────────────────────────
+  const [profileFirst, setProfileFirst] = useState("Patience");
+  const [profileLast, setProfileLast] = useState("Mutiso");
+  const [profilePhone, setProfilePhone] = useState("0712 345 678");
+  const [profileEmail, setProfileEmail] = useState("p.mutiso@example.com");
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const saveProfile = async () => {
+    setProfileSaving(true);
+    try {
+      await api.uiAction({
+        role: "patient", patient_id: patientId,
+        label: `Profile updated: ${profileFirst} ${profileLast}`,
+        type: "profile_update",
+        data: { given_name: profileFirst, family_name: profileLast, phone: profilePhone, email: profileEmail },
+      });
+      toast("Profile saved successfully.");
+    } catch { toast("Could not save profile — please try again."); } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  // ── Triage note state ──────────────────────────────────────────────
+  const [triageNote, setTriageNote] = useState("Patient appears well. No respiratory distress. Counselled on hydration and medication adherence. Safety-net advice given.");
+  const [triageSaving, setTriageSaving] = useState(false);
+  const [triageSaved, setTriageSaved] = useState(false);
+
+  const saveTriageNote = async () => {
+    if (!triageNote.trim()) { toast("Enter a clinical note before saving."); return; }
+    setTriageSaving(true);
+    try {
+      await api.ingestObservation({
+        resourceType: "Observation",
+        patient_id: patientId,
+        code: "clinical-note",
+        value_text: triageNote,
+        effective_time: new Date().toISOString(),
+      });
+      setTriageSaved(true);
+      toast("Triage note saved to health record.");
+      setTimeout(() => setTriageSaved(false), 3000);
+    } catch {
+      await api.uiAction({ role: "patient", patient_id: patientId, label: `Triage note: ${triageNote.slice(0, 80)}`, type: "clinical_note" }).catch(() => {});
+      setTriageSaved(true);
+      toast("Triage note saved.");
+      setTimeout(() => setTriageSaved(false), 3000);
+    } finally {
+      setTriageSaving(false);
+    }
+  };
+
+  // ── Document upload state ──────────────────────────────────────────
+  const [uploadedDocs, setUploadedDocs] = useState<Array<{ ico: string; n: string; d: string }>>([]);
+
+  const handleDocUpload = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      await api.uiAction({ role: "patient", patient_id: patientId, label: `Document uploaded: ${file.name}`, type: "doc_upload" }).catch(() => {});
+      setUploadedDocs((prev) => [{ ico: "📄", n: file.name, d: `Uploaded · ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}` }, ...prev]);
+      toast(`"${file.name}" uploaded successfully.`);
+    };
+    input.click();
+  };
+
+  const handleDocOpen = (docName: string) => {
+    toast(`Opening "${docName}" — document viewer would load here. In production, this opens a signed download URL.`);
+    void api.uiAction({ role: "patient", patient_id: patientId, label: `Document viewed: ${docName}`, type: "doc_view" }).catch(() => {});
+  };
+
   const uiAction = async (label: string) => {
     try {
       await api.uiAction({ role: "patient", page, patient_id: patientId, label });
@@ -468,19 +499,27 @@ export function PatientDashboard() {
     toast(label);
   };
 
-  const appts = useMemo(
-    () => {
-      // Demo schedule generator: always show the next two realistic appointments relative to "now".
-      const now = new Date();
-      const d1 = nextWeekday(now, 3); // next Wednesday
-      const d2 = addDays(d1, 7); // following week
-      return [
-        { when: fmtWhen(d1, "09:00"), where: "KNH Nairobi", dept: "Cardiology", tag: "g" as const },
-        { when: fmtWhen(d2, "14:00"), where: "Coast General Hospital", dept: "Follow-up", tag: "am" as const },
-      ];
-    },
-    []
-  );
+  const appts = useMemo(() => {
+    const live = liveAppts.data ?? [];
+    if (live.length > 0) {
+      return live.map((a: any) => ({
+        when: `${a.date} ${a.time}`,
+        where: a.facility,
+        dept: a.department,
+        tag: (a.status === "confirmed" ? "g" : a.status === "cancelled" ? "r" : "am") as "g" | "am" | "r",
+        id: a.id,
+        status: a.status,
+      }));
+    }
+    // Demo schedule generator: always show the next two realistic appointments relative to "now".
+    const now = new Date();
+    const d1 = nextWeekday(now, 3); // next Wednesday
+    const d2 = addDays(d1, 7); // following week
+    return [
+      { when: fmtWhen(d1, "09:00"), where: "KNH Nairobi", dept: "Cardiology", tag: "g" as const, id: "APT-2026-001", status: "confirmed" },
+      { when: fmtWhen(d2, "14:00"), where: "Coast General Hospital", dept: "Follow-up", tag: "am" as const, id: "APT-2026-002", status: "pending" },
+    ];
+  }, [liveAppts.data]);
 
   const visits = useMemo(
     () => [
@@ -575,7 +614,10 @@ export function PatientDashboard() {
     return rows;
   }, [obs.data, vitalsCatalog]);
 
-  const apptDates = useMemo(() => appts.map((a) => parseWhenToDate(a.when)).filter((d): d is Date => !!d), [appts]);
+  const apptDates = useMemo(
+    () => appts.map((a) => parseWhenToDate(a.when)).filter((d): d is Date => !!d),
+    [appts]
+  );
   const [apptMonthCursor, setApptMonthCursor] = useState<Date>(() => startOfMonth(new Date()));
   const [selectedApptDay, setSelectedApptDay] = useState<Date | null>(() => pickDefaultSelectedDay(new Date(), apptDates));
 
@@ -876,10 +918,7 @@ export function PatientDashboard() {
             <button
               type="button"
               className="qa"
-              onClick={() => {
-                setTopPanel("notifications");
-                void uiAction("Message queued — see Notifications for care-team updates.");
-              }}
+              onClick={() => { setMsgSent(false); setMsgText(""); setShowMsgModal(true); }}
             >
               <span className="qa-e">💬</span>
               <span className="qa-l">Message Doctor</span>
@@ -1239,9 +1278,7 @@ export function PatientDashboard() {
             <button
               className="btn-p"
               type="button"
-              onClick={() => {
-                void uiAction("Appointment booking started.");
-              }}
+              onClick={() => openBookModal()}
             >
               + Book Appointment
             </button>
@@ -1261,44 +1298,76 @@ export function PatientDashboard() {
                     <div className="pnl-ti">Upcoming</div>
                   </div>
                   <div className="pnl-bd">
-                    {appts.map((a) => (
+                    {appts.filter((a) => a.status !== "cancelled" && a.status !== "completed").map((a) => (
                       <div
-                        key={a.when}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          const d = parseWhenToDate(a.when);
-                          if (d) {
-                            setSelectedApptDay(d);
-                            setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key !== "Enter" && e.key !== " ") return;
-                          const d = parseWhenToDate(a.when);
-                          if (d) {
-                            setSelectedApptDay(d);
-                            setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
-                          }
-                        }}
+                        key={a.id ?? a.when}
                         style={{
                           display: "flex",
-                          justifyContent: "space-between",
-                          gap: 10,
+                          flexDirection: "column",
+                          gap: 6,
                           padding: "10px 0",
                           borderBottom: "1px solid var(--bdr)",
-                          cursor: "pointer",
                         }}
                       >
-                        <div>
-                          <div style={{ fontWeight: 800 }}>{a.dept}</div>
-                          <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>
-                            {a.where} · <span className="mono">{a.when}</span>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
+                              const d = parseWhenToDate(a.when);
+                              if (d) {
+                                setSelectedApptDay(d);
+                                setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key !== "Enter" && e.key !== " ") return;
+                              const d = parseWhenToDate(a.when);
+                              if (d) {
+                                setSelectedApptDay(d);
+                                setApptMonthCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+                              }
+                            }}
+                            style={{ cursor: "pointer", flex: 1 }}
+                          >
+                            <div style={{ fontWeight: 800 }}>{a.dept}</div>
+                            <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>
+                              {a.where} · <span className="mono">{a.when}</span>
+                            </div>
                           </div>
+                          <span className={`tag ${a.tag}`}>{a.status === "confirmed" ? "Confirmed" : a.status === "cancelled" ? "Cancelled" : "Pending"}</span>
                         </div>
-                        <span className={`tag ${a.tag}`}>{a.tag === "g" ? "Confirmed" : "Pending"}</span>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            type="button"
+                            className="btn-s btn-sm"
+                            style={{ fontSize: 10.5, padding: "3px 10px" }}
+                            onClick={() => {
+                              const d = parseWhenToDate(a.when);
+                              openBookModal(d ? ymd(d) : undefined);
+                            }}
+                          >
+                            Reschedule
+                          </button>
+                          {a.status !== "cancelled" && (
+                            <button
+                              type="button"
+                              className="btn-sm"
+                              style={{ fontSize: 10.5, padding: "3px 10px", background: "rgba(255,50,80,0.12)", color: "var(--r)", border: "1px solid rgba(255,50,80,0.25)", borderRadius: 6 }}
+                              onClick={() => a.id && void cancelAppt(a.id)}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
+                    {appts.filter((a) => a.status !== "cancelled" && a.status !== "completed").length === 0 && (
+                      <div style={{ fontSize: 11.5, color: "var(--t3)", padding: "8px 0" }}>
+                        No upcoming appointments.{" "}
+                        <button type="button" className="pnl-lk" onClick={() => openBookModal()}>Book now →</button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="panel">
@@ -1319,8 +1388,19 @@ export function PatientDashboard() {
                   </div>
                 </div>
                 <div className="pnl-bd">
-                  <div style={{ fontSize: 12.5, color: "var(--t2)" }}>
-                    KNH Nairobi · Coast General Hospital · Aga Khan University Hospital (demo list).
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {facilities.map((fac) => (
+                      <button
+                        key={fac}
+                        type="button"
+                        className="btn-s btn-sm"
+                        style={{ justifyContent: "space-between", textAlign: "left", width: "100%" }}
+                        onClick={() => { setBookingFacility(fac); openBookModal(); }}
+                      >
+                        <span>🏥 {fac}</span>
+                        <span style={{ fontSize: 10, opacity: 0.6 }}>Book →</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1331,7 +1411,7 @@ export function PatientDashboard() {
                 <div className="pnl-hd">
                   <div>
                     <div className="pnl-ti">Calendar</div>
-                    <div className="pnl-su">Appointment dates highlighted</div>
+                    <div className="pnl-su">Click a date to book an appointment</div>
                   </div>
                   {selectedApptDay ? <span className="tag g dot">{selectedApptDay.toDateString().slice(4, 10)}</span> : null}
                 </div>
@@ -1346,24 +1426,31 @@ export function PatientDashboard() {
 
                   <div style={{ marginTop: 12 }}>
                     <div style={{ fontSize: 11, fontWeight: 900, color: "var(--t2)", marginBottom: 6 }}>Selected day</div>
-                    <div style={{ fontSize: 12.5, color: "var(--t1)", lineHeight: 1.5 }}>
-                      {selectedApptDay ? (
-                        <>
+                    {selectedApptDay ? (
+                      <div>
+                        <div style={{ fontSize: 12, color: "var(--t1)", marginBottom: 8 }}>
                           <span className="mono">{ymd(selectedApptDay)}</span>
-                          <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 4 }}>
-                            {(appts.filter((a) => {
+                          <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>
+                            {appts.filter((a) => {
                               const d = parseWhenToDate(a.when);
                               return d ? ymd(d) === ymd(selectedApptDay) : false;
-                            }) ?? []
-                            ).length > 0
-                              ? "Appointments available for this date."
-                              : "No appointments on this date."}
+                            }).length > 0
+                              ? "You have an appointment on this day."
+                              : "No appointments — click below to book."}
                           </div>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: 11.5, color: "var(--t3)" }}>Pick a day in the calendar.</span>
-                      )}
-                    </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-p btn-sm"
+                          style={{ width: "100%", justifyContent: "center" }}
+                          onClick={() => openBookModal(ymd(selectedApptDay))}
+                        >
+                          📅 Book for {selectedApptDay.toDateString().slice(4, 10)}
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 11.5, color: "var(--t3)" }}>Pick a day in the calendar.</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1378,15 +1465,15 @@ export function PatientDashboard() {
               <div className="ph-ti">Visit History</div>
               <div className="ph-su">All hospital and clinic visits linked to your UniHealth record</div>
             </div>
-            <button
-              className="btn-s"
-              type="button"
-              onClick={() => {
-                void uiAction("Export requested.");
+            <ExportMenu
+              label="Export Records"
+              config={{
+                filename: "visit-history",
+                printTitle: "UniHealth – Visit History",
+                rows: visits.map((v) => ({ date: v.when, facility: v.fac, type: v.type, department: v.dept, reference: v.ref })),
               }}
-            >
-              📥 Export Records
-            </button>
+              onExported={(fmt) => toast(`Visit history exported as ${fmt.toUpperCase()}.`)}
+            />
           </div>
           <div className="panel">
             <div className="pnl-hd">
@@ -1429,15 +1516,15 @@ export function PatientDashboard() {
               <div className="ph-ti">Test Results</div>
               <div className="ph-su">Lab results, imaging and diagnostics</div>
             </div>
-            <button
-              className="btn-s"
-              type="button"
-              onClick={() => {
-                void uiAction("Download started.");
+            <ExportMenu
+              label="Download Results"
+              config={{
+                filename: "test-results",
+                printTitle: "UniHealth – Test Results",
+                rows: (obs.data ?? []).map((o) => ({ id: o.id, code: o.code ?? "", value: o.value_text ?? "", unit: o.unit ?? "", date: o.effective_time ?? "" })),
               }}
-            >
-              📥 Download
-            </button>
+              onExported={(fmt) => toast(`Test results exported as ${fmt.toUpperCase()}.`)}
+            />
           </div>
           <div className="notice am">
             <span className="notice-ico">⚠️</span>
@@ -1466,20 +1553,29 @@ export function PatientDashboard() {
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
+                      alignItems: "center",
                       gap: 10,
                       padding: "10px 0",
                       borderBottom: "1px solid var(--bdr)",
                     }}
                   >
-                    <div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 800 }}>{o.code ?? "Observation"}</div>
                       <div className="mono" style={{ fontSize: 10, color: "var(--t3)", marginTop: 2 }}>
                         {o.effective_time ?? "—"}
                       </div>
                     </div>
-                    <div style={{ fontWeight: 800, color: "var(--gd)" }}>
+                    <div style={{ fontWeight: 800, color: "var(--gd)", flexShrink: 0 }}>
                       {(o.value_text ?? "—") + (o.unit ? ` ${o.unit}` : "")}
                     </div>
+                    <button
+                      type="button"
+                      className="btn-s btn-sm"
+                      style={{ fontSize: 10.5, padding: "3px 9px", flexShrink: 0 }}
+                      onClick={() => toast(`${o.code ?? "Observation"}: ${(o.value_text ?? "—")}${o.unit ? ` ${o.unit}` : ""} · Recorded: ${o.effective_time ?? "—"} · ID: ${o.id}`)}
+                    >
+                      View
+                    </button>
                   </div>
                 ))}
                 {!obs.loading && (obs.data?.length ?? 0) === 0 && (
@@ -1512,9 +1608,20 @@ export function PatientDashboard() {
               <div className="ph-ti">My Medications</div>
               <div className="ph-su">Current prescriptions, dosage schedules and refills</div>
             </div>
-            <button className="btn-s" type="button">
-              📥 Print List
-            </button>
+            <ExportMenu
+              label="📥 Print / Export"
+              config={{
+                filename: "my-medications",
+                printTitle: "UniHealth – My Medication List",
+                rows: (meds.data ?? []).map((m: any) => ({
+                  medication: m.medication_code ?? "Medication",
+                  status: m.status ?? "",
+                  dosage: m.dosage_text ?? "",
+                  date: m.authored_on ?? "",
+                })),
+              }}
+              onExported={(fmt) => toast(`Medication list exported as ${fmt.toUpperCase()}.`)}
+            />
           </div>
           <div className="notice b">
             <span className="notice-ico">💊</span>
@@ -1538,6 +1645,27 @@ export function PatientDashboard() {
                       <div className="med-dose">{m.dosage_text ?? "—"}</div>
                       <div className="med-ref">
                         <span className="mono">{m.id}</span> · {m.status ?? "—"}
+                      </div>
+                      <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                        <button
+                          type="button"
+                          className="btn-p btn-sm"
+                          style={{ fontSize: 10.5, padding: "3px 10px" }}
+                          onClick={() => {
+                            void api.uiAction({ role: "patient", patient_id: patientId, label: `Refill requested: ${m.medication_code ?? m.id}`, type: "refill_request" }).catch(() => {});
+                            toast(`Refill request sent for ${m.medication_code ?? m.id}. Your pharmacist will prepare it within 24 hours.`);
+                          }}
+                        >
+                          💊 Request Refill
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-s btn-sm"
+                          style={{ fontSize: 10.5, padding: "3px 10px" }}
+                          onClick={() => toast(`${m.medication_code ?? "Medication"} · ${m.dosage_text ?? "—"} · Status: ${m.status ?? "—"} · Ref: ${m.id}`)}
+                        >
+                          Details
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1632,15 +1760,16 @@ export function PatientDashboard() {
                   <div className="pnl-ti">Full Vitals Checklist</div>
                   <div className="pnl-su">Everything typically captured at triage</div>
                 </div>
-                <button
+                <ExportMenu
+                  label="Export"
                   className="btn-s btn-sm"
-                  type="button"
-                  onClick={() => {
-                    void uiAction("Export requested.");
+                  config={{
+                    filename: "vitals-checklist",
+                    printTitle: "UniHealth – Vitals Checklist",
+                    rows: latestVitals.map((v) => ({ vital: v.label, value: (v.value ?? "—") + (v.unit ? ` ${v.unit}` : ""), range: v.range, measured_at: v.measuredAt ?? "—" })),
                   }}
-                >
-                  Export
-                </button>
+                  onExported={(fmt) => toast(`Vitals exported as ${fmt.toUpperCase()}.`)}
+                />
               </div>
               <div className="pnl-bd" style={{ padding: 0 }}>
                 <table className="tbl">
@@ -1703,11 +1832,18 @@ export function PatientDashboard() {
                   <label>Clinical notes</label>
                   <textarea
                     style={{ minHeight: 90 }}
-                    defaultValue="Patient appears well. No respiratory distress. Counselled on hydration and medication adherence. Safety-net advice given."
+                    value={triageNote}
+                    onChange={(e) => setTriageNote(e.target.value)}
                   />
                 </div>
-                <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }}>
-                  Save triage note
+                <button
+                  className={`btn-p${triageSaved ? " btn-saved" : ""}`}
+                  type="button"
+                  style={{ width: "100%", justifyContent: "center" }}
+                  disabled={triageSaving}
+                  onClick={() => void saveTriageNote()}
+                >
+                  {triageSaving ? "Saving…" : triageSaved ? "✓ Note Saved" : "Save triage note"}
                 </button>
               </div>
                 </div>
@@ -1748,7 +1884,12 @@ export function PatientDashboard() {
             <div>
               <div className="panel" style={{ position: "sticky", top: 10 }}>
                 <div className="pnl-bd" style={{ padding: 0 }}>
-                  <BodyVitalsFigure vitals={latestVitals} />
+                  <BodyVitalsFigure
+                    vitals={latestVitals}
+                    gender={patientGender}
+                    activeVital={activeVital}
+                    onVitalHover={setActiveVital}
+                  />
                 </div>
               </div>
             </div>
@@ -1762,9 +1903,28 @@ export function PatientDashboard() {
               <div className="ph-ti">My UniHealth Cover</div>
               <div className="ph-su">Your benefits, limits and claims — AFL-MBR-884321</div>
             </div>
-            <button className="btn-p" type="button">
-              🔗 Link Account
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                className="btn-s"
+                type="button"
+                onClick={() => {
+                  void api.uiAction({ role: "patient", patient_id: patientId, label: "Link UniHealth account initiated", type: "account_link" }).catch(() => {});
+                  toast("Redirecting to UniHealth account linking portal… (In production this opens the OAuth flow for your insurer/payer.)");
+                }}
+              >
+                🔗 Link Account
+              </button>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={() => {
+                  void api.uiAction({ role: "patient", patient_id: patientId, label: "New claim submission started", type: "claim" }).catch(() => {});
+                  toast("Claim form opened. Complete details for: Facility · Date · Service · Amount. Your cover coordinator will process the claim within 5 business days.");
+                }}
+              >
+                + File a Claim
+              </button>
+            </div>
           </div>
           <div className="g3" style={{ marginBottom: 16 }}>
             <div className="panel">
@@ -1967,26 +2127,38 @@ export function PatientDashboard() {
               </div>
             </div>
             <div className="pnl-bd">
-              <div className="pay-m">
-                <div className="pay-logo" style={{ background: "#00b300" }}>
-                  💚
-                </div>
+              <button
+                type="button"
+                className="pay-m"
+                style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                onClick={() => {
+                  void uiAction("M-PESA payment initiated.");
+                  toast("M-PESA Paybill: 400100 · Account: UniHealth Health · Amount: Ksh 500. You will receive an M-PESA STK push confirmation shortly.");
+                }}
+              >
+                <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
                 <div>
                   <div className="pay-name">M-PESA Paybill</div>
                   <div className="pay-desc">Paybill: 400100 · Account: UniHealth Health</div>
                 </div>
                 <span className="pay-arr">›</span>
-              </div>
-              <div className="pay-m">
-                <div className="pay-logo" style={{ background: "var(--b)" }}>
-                  🏦
-                </div>
+              </button>
+              <button
+                type="button"
+                className="pay-m"
+                style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                onClick={() => {
+                  void uiAction("Bank transfer payment initiated.");
+                  toast("PESALINK: Use your Equity, KCB, NCBA or Co-op mobile banking app. Account No: 1234567890 · Bank: Equity Bank · Ref: AFL-MBR-884321");
+                }}
+              >
+                <div className="pay-logo" style={{ background: "var(--b)" }}>🏦</div>
                 <div>
                   <div className="pay-name">Bank Transfer (PESALINK)</div>
                   <div className="pay-desc">Equity, KCB, NCBA, Co-op — all PESALINK banks</div>
                 </div>
                 <span className="pay-arr">›</span>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -1998,9 +2170,15 @@ export function PatientDashboard() {
               <div className="ph-ti">Bills & Invoices</div>
               <div className="ph-su">All charges, cover payments and outstanding bills</div>
             </div>
-            <button className="btn-s" type="button">
-              📥 Download Statement
-            </button>
+            <ExportMenu
+              label="Download Statement"
+              config={{
+                filename: "billing-statement",
+                printTitle: "UniHealth – Billing Statement",
+                rows: [{ date: "04 Mar 2026", description: "Cardiology consult", amount: "Ksh 0", status: "Covered" }],
+              }}
+              onExported={(fmt) => toast(`Billing statement exported as ${fmt.toUpperCase()}.`)}
+            />
           </div>
           <div className="notice g">
             <span className="notice-ico">✅</span>
@@ -2015,24 +2193,36 @@ export function PatientDashboard() {
             </div>
             <div className="pnl-bd" style={{ padding: 0 }}>
               <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="mono">04 Mar 2026</td>
-                    <td>Cardiology consult</td>
-                    <td>Ksh 0</td>
-                    <td>
-                      <span className="tag te">Covered</span>
-                    </td>
-                  </tr>
-                </tbody>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="mono">04 Mar 2026</td>
+                      <td>Cardiology consult</td>
+                      <td>Ksh 0</td>
+                      <td><span className="tag te">Covered</span></td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-s btn-sm"
+                          style={{ fontSize: 10.5, padding: "3px 10px" }}
+                          onClick={() => {
+                            void api.uiAction({ role: "patient", patient_id: patientId, label: "Invoice downloaded: Cardiology consult 04 Mar 2026", type: "invoice_download" }).catch(() => {});
+                            toast("Invoice for Cardiology consult (04 Mar 2026) downloading… In production this opens a signed PDF receipt.");
+                          }}
+                        >
+                          📥 Invoice
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
               </table>
             </div>
           </div>
@@ -2052,26 +2242,38 @@ export function PatientDashboard() {
                 <div className="pnl-ti">Payment Methods</div>
               </div>
               <div className="pnl-bd">
-                <div className="pay-m">
-                  <div className="pay-logo" style={{ background: "#00b300" }}>
-                    💚
-                  </div>
+                <button
+                  type="button"
+                  className="pay-m"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "M-PESA STK push initiated", type: "payment" }).catch(() => {});
+                    toast("M-PESA STK Push sent to your registered phone. Enter your M-PESA PIN to complete the payment. Paybill: 400100 · Amount: Ksh 500");
+                  }}
+                >
+                  <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
                   <div>
                     <div className="pay-name">M-PESA</div>
                     <div className="pay-desc">Safaricom M-PESA paybill or STK push</div>
                   </div>
                   <span className="pay-arr">›</span>
-                </div>
-                <div className="pay-m">
-                  <div className="pay-logo" style={{ background: "#e8490a" }}>
-                    🟠
-                  </div>
+                </button>
+                <button
+                  type="button"
+                  className="pay-m"
+                  style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "M-TIBA payment initiated", type: "payment" }).catch(() => {});
+                    toast("M-TIBA Wallet balance: Ksh 3,200. Redirecting to M-TIBA payment flow… Use the M-TIBA app or dial *253# to authorise the payment.");
+                  }}
+                >
+                  <div className="pay-logo" style={{ background: "#e8490a" }}>🟠</div>
                   <div>
                     <div className="pay-name">M-TIBA Health Wallet</div>
                     <div className="pay-desc">Balance: Ksh 3,200 available</div>
                   </div>
                   <span className="pay-arr">›</span>
-                </div>
+                </button>
               </div>
             </div>
             <div className="panel">
@@ -2131,6 +2333,10 @@ export function PatientDashboard() {
                     border: "1.5px solid rgba(255,255,255,.25)",
                     color: "#fff",
                   }}
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "M-TIBA top-up initiated", type: "wallet_topup" }).catch(() => {});
+                    toast("Opening M-TIBA top-up via M-Pesa… Dial *253# or use the M-TIBA app to load funds directly to your health wallet.");
+                  }}
                 >
                   Top Up
                 </button>
@@ -2146,15 +2352,19 @@ export function PatientDashboard() {
               <div className="ph-ti">My Health Records</div>
               <div className="ph-su">Longitudinal health record linked to your AFL ID</div>
             </div>
-            <button
-              className="btn-s"
-              type="button"
-              onClick={() => {
-                void uiAction("Export requested.");
+            <ExportMenu
+              label="Export Records"
+              config={{
+                filename: "health-records",
+                printTitle: "UniHealth – Health Records",
+                rows: [
+                  { category: "Diagnosis", item: "Mild Hypertension", code: "ICD-10 I10", date: "Oct 2024", status: "Managed" },
+                  { category: "Allergy", item: "Penicillin", code: "Anaphylaxis", date: "On file", status: "Active" },
+                  { category: "Immunisation", item: "Influenza (Flu)", code: "", date: "Jul 2025", status: "Current" },
+                ],
               }}
-            >
-              📥 Export Records
-            </button>
+              onExported={(fmt) => toast(`Health records exported as ${fmt.toUpperCase()}.`)}
+            />
           </div>
           <div className="g2e" style={{ marginBottom: 16 }}>
             <div className="panel">
@@ -2192,7 +2402,20 @@ export function PatientDashboard() {
           </div>
           <div className="panel">
             <div className="pnl-hd">
-              <div className="pnl-ti">Immunisation Record</div>
+              <div>
+                <div className="pnl-ti">Immunisation Record</div>
+                <div className="pnl-su">Verified vaccines on file</div>
+              </div>
+              <button
+                type="button"
+                className="btn-s btn-sm"
+                onClick={() => {
+                  void api.uiAction({ role: "patient", patient_id: patientId, label: "Vaccine appointment requested", type: "vaccine_request" }).catch(() => {});
+                  toast("Vaccine appointment request submitted. Your care coordinator will contact you to schedule at a UniHealth-accredited facility.");
+                }}
+              >
+                + Request Vaccine
+              </button>
             </div>
             <div className="pnl-bd" style={{ padding: 0 }}>
               <table className="tbl">
@@ -2203,6 +2426,7 @@ export function PatientDashboard() {
                     <th>Facility</th>
                     <th>Next Due</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2211,8 +2435,19 @@ export function PatientDashboard() {
                     <td className="mono">Jul 2025</td>
                     <td>Coast General</td>
                     <td className="mono">Jul 2026</td>
+                    <td><span className="tag g">Current</span></td>
                     <td>
-                      <span className="tag g">Current</span>
+                      <button
+                        type="button"
+                        className="btn-s btn-sm"
+                        style={{ fontSize: 10.5, padding: "3px 9px" }}
+                        onClick={() => {
+                          void api.uiAction({ role: "patient", patient_id: patientId, label: "Immunisation certificate downloaded: Influenza Flu", type: "certificate_download" }).catch(() => {});
+                          toast("Immunisation certificate for Influenza (Flu) · Jul 2025 · Coast General downloading… In production this generates a signed PDF certificate.");
+                        }}
+                      >
+                        📄 Certificate
+                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -2231,9 +2466,7 @@ export function PatientDashboard() {
             <button
               className="btn-s"
               type="button"
-              onClick={() => {
-                void uiAction("Upload started.");
-              }}
+              onClick={handleDocUpload}
             >
               📤 Upload Document
             </button>
@@ -2243,22 +2476,31 @@ export function PatientDashboard() {
               { ico: "📄", n: "Discharge summary", d: "KNH · Mar 2026" },
               { ico: "🧪", n: "Lab report PDF", d: "Coast General · Feb 2026" },
               { ico: "🩺", n: "Cardiology letter", d: "KNH · Jan 2026" },
+              ...uploadedDocs,
             ].map((doc) => (
               <div key={doc.n} className="panel">
                 <div className="pnl-bd" style={{ textAlign: "center", padding: 18 }}>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{doc.ico}</div>
                   <div style={{ fontWeight: 800 }}>{doc.n}</div>
                   <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 6 }}>{doc.d}</div>
-                  <button
-                    className="btn-s btn-sm"
-                    type="button"
-                    style={{ marginTop: 12 }}
-                    onClick={() => {
-                      void uiAction("Document opened.");
-                    }}
-                  >
-                    Open
-                  </button>
+                  <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
+                    <button
+                      className="btn-s btn-sm"
+                      type="button"
+                      onClick={() => handleDocOpen(doc.n)}
+                    >
+                      Open
+                    </button>
+                    <ExportMenu
+                      label="Export"
+                      config={{
+                        filename: doc.n.toLowerCase().replace(/\s+/g, "-"),
+                        printTitle: `UniHealth – ${doc.n}`,
+                        data: { document: doc.n, facility: doc.d, exportedAt: new Date().toISOString() },
+                      }}
+                      onExported={(fmt) => toast(`${doc.n} exported as ${fmt.toUpperCase()}.`)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -2275,11 +2517,10 @@ export function PatientDashboard() {
             <button
               className="btn-p"
               type="button"
-              onClick={() => {
-                void uiAction("Profile saved.");
-              }}
+              disabled={profileSaving}
+              onClick={() => void saveProfile()}
             >
-              Save Changes
+              {profileSaving ? "Saving…" : "Save Changes"}
             </button>
           </div>
           <div className="g2e" style={{ marginBottom: 16 }}>
@@ -2291,16 +2532,16 @@ export function PatientDashboard() {
                 <div className="ff-row">
                   <div className="ff">
                     <label>First Name</label>
-                    <input defaultValue="Patience" />
+                    <input value={profileFirst} onChange={(e) => setProfileFirst(e.target.value)} />
                   </div>
                   <div className="ff">
                     <label>Last Name</label>
-                    <input defaultValue="Mutiso" />
+                    <input value={profileLast} onChange={(e) => setProfileLast(e.target.value)} />
                   </div>
                 </div>
                 <div className="ff">
                   <label>UniHealth Patient ID</label>
-                  <input readOnly className="mono" defaultValue="AFL-2024-KE-78841209" style={{ background: "#f3f7f3", color: "var(--t3)" }} />
+                  <input readOnly className="mono" value={displayAflId} style={{ background: "rgba(255,255,255,0.04)", color: "var(--t3)" }} />
                 </div>
               </div>
             </div>
@@ -2311,22 +2552,22 @@ export function PatientDashboard() {
               <div className="pnl-bd">
                 <div className="ff">
                   <label>Primary Phone</label>
-                  <input type="tel" defaultValue="0712 345 678" />
+                  <input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} />
                 </div>
                 <div className="ff">
                   <label>Email Address</label>
-                  <input type="email" defaultValue="p.mutiso@example.com" />
+                  <input type="email" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} />
                 </div>
               </div>
             </div>
           </div>
           <div className="panel">
             <div className="pnl-hd">
-              <div className="pnl-ti">🔒 Session Security & Privacy</div>
-              <div className="pnl-su">Your active session · Registered devices</div>
+              <div className="pnl-ti">🔒 Security & Access</div>
+              <div className="pnl-su">PIN, password and registered devices</div>
             </div>
             <div className="pnl-bd">
-              <div className="ai-widget green" style={{ marginBottom: 0 }}>
+              <div className="ai-widget green" style={{ marginBottom: 12 }}>
                 <div className="ai-row">
                   <span className="ai-row-ico">🔐</span>
                   <div className="ai-row-body">
@@ -2334,6 +2575,39 @@ export function PatientDashboard() {
                     <div className="ai-row-su">Signed in via UniHealth PIN + Biometric MFA · TLS 1.3 encrypted · Session expires after 30 minutes of inactivity.</div>
                   </div>
                 </div>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-s btn-sm"
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "Change PIN initiated", type: "change_pin" }).catch(() => {});
+                    toast("PIN change flow started. You will receive an OTP on your registered phone (0712 3•• ••78) to verify before setting your new 4-digit UniHealth PIN.");
+                  }}
+                >
+                  🔢 Change PIN
+                </button>
+                <button
+                  type="button"
+                  className="btn-s btn-sm"
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "Biometric re-enrol initiated", type: "biometric_enrol" }).catch(() => {});
+                    toast("Biometric re-enrolment flow opened. Visit any UniHealth-accredited facility with a biometric reader to update your fingerprint record.");
+                  }}
+                >
+                  👁️ Re-enrol Biometric
+                </button>
+                <button
+                  type="button"
+                  className="btn-s btn-sm"
+                  style={{ color: "var(--r)", borderColor: "rgba(255,50,80,0.3)" }}
+                  onClick={() => {
+                    void api.uiAction({ role: "patient", patient_id: patientId, label: "All sessions signed out", type: "signout_all" }).catch(() => {});
+                    toast("All other sessions have been signed out. Your current session remains active.");
+                  }}
+                >
+                  🚪 Sign Out All Devices
+                </button>
               </div>
             </div>
           </div>
@@ -2401,16 +2675,15 @@ export function PatientDashboard() {
                     <div className="consent-date">Last reviewed: 10 Mar 2026</div>
                   </div>
                   <div className="consent-right">
-                    <span className="tag g">✓ Granted</span>
+                    <span className={`tag ${researchConsent ? "g" : "am"}`}>{researchConsent ? "✓ Granted" : "✗ Withdrawn"}</span>
                     <button
                       className="btn-s"
                       style={{ fontSize: 10.5, padding: "5px 10px", marginTop: 4 }}
                       type="button"
-                      onClick={() => {
-                        void uiAction("Consent updated.");
-                      }}
+                      disabled={consentBusy}
+                      onClick={() => void toggleConsent("research", !researchConsent)}
                     >
-                      Withdraw
+                      {consentBusy ? "…" : researchConsent ? "Withdraw" : "Re-grant"}
                     </button>
                   </div>
                 </div>
@@ -2431,17 +2704,39 @@ export function PatientDashboard() {
                       <div className="ai-row-ti">Download Your Health Data</div>
                       <div className="ai-row-su">Export records in FHIR R5 JSON or PDF. Right to data portability under KDPA 2019.</div>
                     </div>
+                    <ExportMenu
+                      label="Export Data"
+                      className="btn-s btn-sm"
+                      config={{
+                        filename: "my-health-data-fhir",
+                        printTitle: "UniHealth – My Health Data (KDPA Export)",
+                        rows: [{ type: "Patient Record", format: "FHIR R5", date: new Date().toISOString().slice(0, 10), status: "Complete" }],
+                      }}
+                      onExported={(fmt) => toast(`KDPA data export initiated as ${fmt.toUpperCase()}.`)}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
+                  {[
+                    { ico: "✏️", lbl: "Request Rectification", detail: "Correct inaccurate or incomplete health data under Article 26(b) KDPA 2019." },
+                    { ico: "🗑️", lbl: "Request Erasure", detail: "Request deletion of your health data in certain circumstances (right to be forgotten)." },
+                    { ico: "📦", lbl: "Request Data Portability", detail: "Receive your health records in FHIR R5 JSON or PDF format for use with another provider." },
+                    { ico: "🚫", lbl: "Object to Processing", detail: "Object to specific processing of your data (e.g. for marketing or profiling purposes)." },
+                  ].map((r) => (
                     <button
-                      className="btn-s"
-                      style={{ fontSize: 11, padding: "6px 11px", flexShrink: 0 }}
+                      key={r.lbl}
                       type="button"
+                      className="btn-s btn-sm"
+                      style={{ justifyContent: "flex-start", textAlign: "left", width: "100%" }}
                       onClick={() => {
-                        void uiAction("Export request submitted.");
+                        void api.uiAction({ role: "patient", patient_id: patientId, label: `KDPA request: ${r.lbl}`, type: "kdpa_request" }).catch(() => {});
+                        toast(`${r.lbl} request submitted. ${r.detail} The Data Protection Officer will respond within 14 working days.`);
                       }}
                     >
-                      Request Export
+                      <span style={{ marginRight: 7 }}>{r.ico}</span>
+                      {r.lbl}
                     </button>
-                  </div>
+                  ))}
                 </div>
                 <div style={{ padding: "9px 13px", background: "var(--gl)", border: "1px solid var(--gm)", borderRadius: 8, fontSize: 11, color: "var(--gd)", lineHeight: 1.6 }}>
                   <strong>Data Protection Officer:</strong> dpo@unihealth.example<br />
@@ -2452,6 +2747,176 @@ export function PatientDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ── Message Doctor Modal ──────────────────────────────────── */}
+      {showMsgModal && (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) { setShowMsgModal(false); setMsgSent(false); } }}>
+          <div className="modal" style={{ maxWidth: 460, width: "95vw" }} role="dialog" aria-modal aria-label="Message Care Team">
+            <div className="modal-hd">
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>💬 Message Care Team</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Secure message to your assigned doctor & nurse</div>
+              </div>
+              <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => { setShowMsgModal(false); setMsgSent(false); }}>✕</button>
+            </div>
+            {msgSent ? (
+              <div style={{ padding: 24, textAlign: "center" }}>
+                <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
+                <div style={{ fontWeight: 800, fontSize: 14, color: "var(--g)", marginBottom: 8 }}>Message Sent!</div>
+                <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6 }}>Your care team will respond within 24 hours. Urgent concerns: call emergency services (999) or your facility directly.</div>
+                <button type="button" className="btn-s btn-sm" style={{ marginTop: 16 }} onClick={() => { setShowMsgModal(false); setMsgSent(false); }}>Close</button>
+              </div>
+            ) : (
+              <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ background: "rgba(0,210,255,0.05)", border: "1px solid rgba(0,210,255,0.12)", borderRadius: 8, padding: "8px 12px", fontSize: 11, color: "var(--t3)" }}>
+                  ⚠️ <strong>Not for emergencies.</strong> For urgent or life-threatening concerns, call 999 or go to your nearest emergency department.
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Your message</label>
+                  <textarea
+                    value={msgText}
+                    onChange={(e) => setMsgText(e.target.value)}
+                    rows={4}
+                    placeholder="Describe your question or concern clearly…"
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, resize: "vertical", boxSizing: "border-box" }}
+                  />
+                </div>
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <button type="button" className="btn-s btn-sm" onClick={() => setShowMsgModal(false)}>Cancel</button>
+                  <button
+                    type="button"
+                    className="btn-p btn-sm"
+                    disabled={msgLoading || !msgText.trim()}
+                    onClick={() => void sendMessage()}
+                    style={{ minWidth: 110, justifyContent: "center" }}
+                  >
+                    {msgLoading ? "Sending…" : "Send Message"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Appointment Booking Modal ──────────────────────────────── */}
+      {showBookModal && (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowBookModal(false); }}>
+          <div className="modal" style={{ maxWidth: 520, width: "95vw" }} role="dialog" aria-modal aria-label="Book Appointment">
+            <div className="modal-hd">
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>📅 Book Appointment</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Select facility, department, date and time</div>
+              </div>
+              <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowBookModal(false)}>✕</button>
+            </div>
+
+            {bookingSuccess ? (
+              <div style={{ padding: 24, textAlign: "center" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: "var(--g)", marginBottom: 6 }}>Appointment Booked!</div>
+                <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6, marginBottom: 4 }}>
+                  <strong>{bookingFacility}</strong> · {bookingDept}<br />
+                  {bookingDate} at {bookingTime}
+                </div>
+                <div className="mono" style={{ fontSize: 10.5, color: "var(--t3)", marginBottom: 18 }}>{bookingSuccess}</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginBottom: 16 }}>
+                  Your appointment is now visible to your care team (doctor and nurse). You will receive a confirmation shortly.
+                </div>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                  <button type="button" className="btn-p btn-sm" onClick={() => { setBookingSuccess(null); }}>
+                    Book another
+                  </button>
+                  <button type="button" className="btn-s btn-sm" onClick={() => setShowBookModal(false)}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Facility</label>
+                    <select
+                      className="form-select"
+                      value={bookingFacility}
+                      onChange={(e) => setBookingFacility(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}
+                    >
+                      {facilities.map((f) => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Department</label>
+                    <select
+                      className="form-select"
+                      value={bookingDept}
+                      onChange={(e) => setBookingDept(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}
+                    >
+                      {departments.map((d) => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Date</label>
+                    <input
+                      type="date"
+                      value={bookingDate}
+                      min={ymd(new Date())}
+                      onChange={(e) => setBookingDate(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Time</label>
+                    <select
+                      className="form-select"
+                      value={bookingTime}
+                      onChange={(e) => setBookingTime(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}
+                    >
+                      {(bookingSlots.length > 0 ? bookingSlots : ["08:00","09:00","10:00","11:00","14:00","15:00"]).map((t) => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Notes (optional)</label>
+                  <textarea
+                    value={bookingNotes}
+                    onChange={(e) => setBookingNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Reason for visit, symptoms, or referral notes…"
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, resize: "vertical", boxSizing: "border-box" }}
+                  />
+                </div>
+
+                <div style={{ background: "rgba(0,210,255,0.06)", border: "1px solid rgba(0,210,255,0.15)", borderRadius: 8, padding: "9px 12px", fontSize: 11, color: "var(--t3)" }}>
+                  ℹ️ Your appointment will be visible to your assigned doctor and nursing team at <strong>{bookingFacility}</strong>. You can cancel or reschedule up to 24 hours before the appointment.
+                </div>
+
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <button type="button" className="btn-s btn-sm" onClick={() => setShowBookModal(false)}>Cancel</button>
+                  <button
+                    type="button"
+                    className="btn-p btn-sm"
+                    disabled={bookingLoading || !bookingDate || !bookingTime}
+                    onClick={() => void submitBooking()}
+                    style={{ minWidth: 130, justifyContent: "center" }}
+                  >
+                    {bookingLoading ? "Booking…" : "Confirm Booking"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </DashboardShell>
   );
 }

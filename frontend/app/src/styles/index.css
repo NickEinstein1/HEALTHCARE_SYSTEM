@@ -4,8 +4,21 @@
 @import "./doctor-dashboard.css";
 @import "./nurse-dashboard.css";
 @import "./patient-dashboard.css";
+/* ── Futuristic dark-mode hospital HUD theme (loaded last to override) ── */
+@import "./futuristic.css";
+/* ── Responsive layout system — all breakpoints for all roles ── */
+@import "./responsive.css";
+/* ── Sign-in page — loaded LAST, wins over every other stylesheet ── */
+@import "./signin.css";
 
 #root {
   display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Landing page — full-bleed dark wrapper; no light body bleed-through */
+.lp-root {
+  width: 100%;
   min-height: 100vh;
 }

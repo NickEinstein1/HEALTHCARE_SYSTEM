@@ -80,6 +80,93 @@ export function AdminDashboard() {
     | "health"
   >("overview");
 
+  // ── Phase 3: Capacity Intelligence state ──────────────────────────
+  const [aiWards, setAiWards]           = useState<any[]>([]);
+  const [aiForecasts, setAiForecasts]   = useState<Record<string, any[]>>({});
+  const [aiAnomalies, setAiAnomalies]   = useState<any[]>([]);
+  const [aiAudit, setAiAudit]           = useState<any[]>([]);
+  const [aiStatus, setAiStatus]         = useState<any | null>(null);
+
+  useEffect(() => {
+    if (page !== "ai") return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const [wards, anomalies, audit, status] = await Promise.all([
+          api.aiWards("admin"),
+          api.aiAnomalies({ limit: 30 }, "admin"),
+          api.aiAuditLog({ limit: 50 }),
+          api.aiStatus(),
+        ]);
+        if (cancelled) return;
+        setAiWards(wards);
+        setAiAnomalies(anomalies);
+        setAiAudit(audit);
+        setAiStatus(status);
+        // load forecasts for all wards
+        const fc: Record<string, any[]> = {};
+        await Promise.all(wards.map(async (w: any) => {
+          try {
+            fc[w.ward_id] = await api.aiWardForecast(w.ward_id, 24, "admin");
+          } catch { /* ward offline */ }
+        }));
+        if (!cancelled) setAiForecasts(fc);
+      } catch { /* api offline */ }
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [page]);
+
+  const ackAdminAnomaly = async (id: string) => {
+    try {
+      await api.aiAckAnomaly(id, "Reviewed by admin", "admin");
+      setAiAnomalies(prev => prev.filter(a => a.id !== id));
+      void uiAction("Anomaly acknowledged.");
+    } catch { /* offline */ }
+  };
+
+  const [showWalkin, setShowWalkin] = useState(false);
+  const [walkinBusy, setWalkinBusy] = useState(false);
+  const [walkinForm, setWalkinForm] = useState<{
+    facility_id: string;
+    full_name: string;
+    phone: string;
+    dob: string;
+    gender: string;
+    national_id: string;
+    mrn: string;
+    chief_complaint: string;
+    triage_level: string;
+  }>({
+    facility_id: "FAC-0001",
+    full_name: "",
+    phone: "",
+    dob: "",
+    gender: "female",
+    national_id: "",
+    mrn: "",
+    chief_complaint: "",
+    triage_level: "Green",
+  });
+  const [walkinMatches, setWalkinMatches] = useState<{ uhid: string; score: number; reason: string }[] | null>(null);
+  const [lastCreatedWalkin, setLastCreatedWalkin] = useState<{ uhid: string; walkinId: string; action: string } | null>(null);
+
+  // Patient 360 panel
+  const [patient360Uhid, setPatient360Uhid] = useState<string | null>(null);
+  const [patient360Data, setPatient360Data] = useState<{
+    patient?: any;
+    aliases?: any[];
+    visits?: any[];
+    facilities_visited?: string[];
+    total_visits?: number;
+  } | null>(null);
+  const [patient360Loading, setPatient360Loading] = useState(false);
+
+  // Cross-facility patient search
+  const [uhidSearch, setUhidSearch] = useState("");
+  const [uhidSearchResults, setUhidSearchResults] = useState<any[] | null>(null);
+  const [uhidSearchBusy, setUhidSearchBusy] = useState(false);
+
   const todayFull = useMemo(() => {
     const now = new Date();
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -127,6 +214,59 @@ export function AdminDashboard() {
       // Keep the UX clean even if the API is offline.
     }
     toast(label);
+  };
+
+  const submitWalkin = async (chosenUhid?: string) => {
+    setWalkinBusy(true);
+    try {
+      const res = await api.walkinCreate({ ...walkinForm, uhid: chosenUhid });
+      const action = res.correlation?.action ?? "";
+      const candidates = res.correlation?.candidates ?? [];
+      if (action !== "created_new" && candidates.length > 0 && !chosenUhid) {
+        setWalkinMatches(candidates);
+      } else {
+        setWalkinMatches(null);
+        setShowWalkin(false);
+        setLastCreatedWalkin({
+          uhid: res.patient?.uhid ?? "",
+          walkinId: res.walkin?.id ?? "",
+          action,
+        });
+        setWalkinForm((s) => ({ ...s, full_name: "", phone: "", dob: "", national_id: "", mrn: "", chief_complaint: "" }));
+        void uiAction(`Walk-in registered — UHID ${res.patient?.uhid ?? "—"} (${action}).`);
+      }
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Walk-in failed — is the API running?");
+    } finally {
+      setWalkinBusy(false);
+    }
+  };
+
+  const openPatient360 = async (uhid: string) => {
+    setPatient360Uhid(uhid);
+    setPatient360Data(null);
+    setPatient360Loading(true);
+    try {
+      const data = await api.walkinPatient360(uhid);
+      setPatient360Data(data);
+    } catch {
+      toast("Patient 360 unavailable — is the API running?");
+    } finally {
+      setPatient360Loading(false);
+    }
+  };
+
+  const runUhidSearch = async () => {
+    if (!uhidSearch.trim()) return;
+    setUhidSearchBusy(true);
+    try {
+      const results = await api.walkinSearch(uhidSearch.trim(), 20);
+      setUhidSearchResults(results);
+    } catch {
+      toast("Search failed — is the API running?");
+    } finally {
+      setUhidSearchBusy(false);
+    }
   };
 
   const downloadJsonFile = (baseName: string, data: unknown) => {
@@ -1669,10 +1809,161 @@ export function AdminDashboard() {
             <div className="ph-title">Patient Registry</div>
             <div className="ph-sub">55.2M UniHealth-registered patients across 12 regions</div>
           </div>
-          <button className="btn-p" type="button" onClick={openCreatePatient}>
-            + Register Patient
-          </button>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                setShowWalkin(true);
+                setWalkinMatches(null);
+              }}
+            >
+              + Walk-in
+            </button>
+            <button className="btn-p" type="button" onClick={openCreatePatient}>
+              + Register Patient
+            </button>
+          </div>
         </div>
+
+        {showWalkin && (
+          <div className="modal" role="dialog" aria-modal="true" aria-label="Register walk-in">
+            <div className="modal-card" style={{ maxWidth: 780 }}>
+              <div className="modal-hd">
+                <div>
+                  <div className="modal-ti">Register Walk-in</div>
+                  <div className="modal-su">Quick registration + cross-facility patient correlation (UHID)</div>
+                </div>
+                <button className="btn-x" type="button" onClick={() => setShowWalkin(false)} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="modal-bd">
+                <div className="g2" style={{ gap: 12 }}>
+                  <div className="ff">
+                    <label>Facility ID</label>
+                    <input
+                      className="mono"
+                      value={walkinForm.facility_id}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, facility_id: e.target.value }))}
+                      placeholder="e.g. FAC-0001"
+                    />
+                  </div>
+                  <div className="ff">
+                    <label>Triage Level</label>
+                    <select value={walkinForm.triage_level} onChange={(e) => setWalkinForm((s) => ({ ...s, triage_level: e.target.value }))}>
+                      {["Red", "Orange", "Yellow", "Green"].map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="ff" style={{ gridColumn: "1 / -1" }}>
+                    <label>Full name <span style={{ color: "var(--r)" }}>*</span></label>
+                    <input value={walkinForm.full_name} onChange={(e) => setWalkinForm((s) => ({ ...s, full_name: e.target.value }))} placeholder="e.g. Jane Wanjiku" />
+                  </div>
+                  <div className="ff">
+                    <label>Phone</label>
+                    <input className="mono" value={walkinForm.phone} onChange={(e) => setWalkinForm((s) => ({ ...s, phone: e.target.value }))} placeholder="+2547…" />
+                  </div>
+                  <div className="ff">
+                    <label>Date of birth</label>
+                    <input className="mono" value={walkinForm.dob} onChange={(e) => setWalkinForm((s) => ({ ...s, dob: e.target.value }))} placeholder="YYYY-MM-DD" />
+                  </div>
+                  <div className="ff">
+                    <label>Gender</label>
+                    <select value={walkinForm.gender} onChange={(e) => setWalkinForm((s) => ({ ...s, gender: e.target.value }))}>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="ff">
+                    <label>National ID / Passport</label>
+                    <input
+                      className="mono"
+                      value={walkinForm.national_id}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, national_id: e.target.value }))}
+                      placeholder="e.g. 12345678"
+                    />
+                  </div>
+                  <div className="ff">
+                    <label>Local MRN (facility record no.)</label>
+                    <input
+                      className="mono"
+                      value={walkinForm.mrn}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, mrn: e.target.value }))}
+                      placeholder="e.g. MRN-00482"
+                    />
+                  </div>
+                  <div className="ff">
+                    <label>Chief complaint</label>
+                    <input
+                      value={walkinForm.chief_complaint}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, chief_complaint: e.target.value }))}
+                      placeholder="e.g. cough, fever"
+                    />
+                  </div>
+                </div>
+
+                {walkinMatches && walkinMatches.length > 0 && (
+                  <div className="notice am" style={{ marginTop: 14 }}>
+                    <span className="notice-e">🧬</span>
+                    <div className="notice-tx" style={{ width: "100%" }}>
+                      <strong>Possible existing records — is this the same patient?</strong>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                        {walkinMatches.map((m) => (
+                          <div
+                            key={m.uhid}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 10,
+                              padding: "8px 10px",
+                              background: "var(--s)",
+                              borderRadius: 8,
+                            }}
+                          >
+                            <div>
+                              <span className="mono" style={{ fontWeight: 900, color: "var(--p)" }}>{m.uhid}</span>
+                              <span style={{ marginLeft: 8, color: "var(--t2)", fontWeight: 700 }}>
+                                {Math.round(m.score * 100)}% match
+                              </span>
+                              <div style={{ fontSize: 12, color: "var(--t2)", marginTop: 2 }}>{m.reason}</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button className="btn-p btn-sm" type="button" disabled={walkinBusy} onClick={() => void submitWalkin(m.uhid)}>
+                                ✓ Link to UHID
+                              </button>
+                              <button className="btn-s btn-sm" type="button" disabled={walkinBusy} onClick={() => { setWalkinMatches(null); void submitWalkin("__create_new__"); }}>
+                                No, new patient
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="modal-ft">
+                <button className="btn-s" type="button" onClick={() => setShowWalkin(false)} disabled={walkinBusy}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-p"
+                  type="button"
+                  onClick={() => void submitWalkin()}
+                  disabled={walkinBusy || !walkinForm.full_name.trim()}
+                >
+                  {walkinBusy ? "Creating…" : "Register walk-in"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showPatientEditor && (
           <div className="panel" style={{ marginBottom: 16 }}>
@@ -1738,6 +2029,226 @@ export function AdminDashboard() {
             </div>
           </div>
         )}
+        {lastCreatedWalkin && (
+          <div className="notice g" style={{ marginBottom: 14 }}>
+            <span className="notice-e">✅</span>
+            <div className="notice-tx" style={{ width: "100%" }}>
+              <strong>Walk-in registered</strong> ·{" "}
+              {lastCreatedWalkin.action === "created_new" ? "New patient created" : `Linked to existing patient`} ·{" "}
+              UHID <span className="mono">{lastCreatedWalkin.uhid}</span>
+              <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                <button
+                  className="btn-p btn-sm"
+                  type="button"
+                  onClick={() => {
+                    void openPatient360(lastCreatedWalkin.uhid);
+                    setLastCreatedWalkin(null);
+                  }}
+                >
+                  View Patient 360 →
+                </button>
+                <button className="btn-s btn-sm" type="button" onClick={() => setLastCreatedWalkin(null)}>
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cross-facility UHID search */}
+        <div className="panel" style={{ marginBottom: 14 }}>
+          <div className="pnl-hd">
+            <div>
+              <div className="pnl-ti">Cross-Facility Patient Search</div>
+              <div className="pnl-su">Search by name, phone, or national ID across the full UniHealth identity index</div>
+            </div>
+          </div>
+          <div className="pnl-bd">
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <input
+                style={{ flex: 1 }}
+                value={uhidSearch}
+                onChange={(e) => setUhidSearch(e.target.value)}
+                placeholder="Name, +2547… phone, or National ID"
+                onKeyDown={(e) => e.key === "Enter" && void runUhidSearch()}
+              />
+              <button className="btn-p" type="button" onClick={() => void runUhidSearch()} disabled={uhidSearchBusy || !uhidSearch.trim()}>
+                {uhidSearchBusy ? "Searching…" : "Search"}
+              </button>
+              {uhidSearchResults && (
+                <button className="btn-s" type="button" onClick={() => { setUhidSearchResults(null); setUhidSearch(""); }}>
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {uhidSearchResults && uhidSearchResults.length === 0 && (
+              <div style={{ marginTop: 10, color: "var(--t2)", fontSize: 13 }}>No matching patients found.</div>
+            )}
+
+            {uhidSearchResults && uhidSearchResults.length > 0 && (
+              <table className="tbl" style={{ marginTop: 12 }}>
+                <thead>
+                  <tr>
+                    <th className="mono">UHID</th>
+                    <th>Name</th>
+                    <th className="mono">Phone</th>
+                    <th className="mono">DOB</th>
+                    <th>Aliases</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {uhidSearchResults.map((r: any) => (
+                    <tr key={r.uhid}>
+                      <td className="mono" style={{ fontWeight: 900, color: "var(--p)" }}>{r.uhid}</td>
+                      <td style={{ fontWeight: 800 }}>{r.full_name}</td>
+                      <td className="mono">{r.phone ?? "—"}</td>
+                      <td className="mono">{r.dob ?? "—"}</td>
+                      <td style={{ fontSize: 12, color: "var(--t2)" }}>
+                        {r.visit_count ?? 0} visits · {(r.aliases ?? []).length} facility alias(es)
+                      </td>
+                      <td>
+                        <button className="btn-p btn-sm" type="button" onClick={() => void openPatient360(r.uhid)}>
+                          Patient 360 →
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Patient 360 panel */}
+        {patient360Uhid && (
+          <div className="panel" style={{ marginBottom: 14, borderLeft: "4px solid var(--p)" }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-ti">
+                  Patient 360 ·{" "}
+                  <span className="mono" style={{ color: "var(--p)" }}>
+                    {patient360Uhid}
+                  </span>
+                </div>
+                <div className="pnl-su">
+                  Cross-facility identity · all MRN aliases · complete visit history
+                </div>
+              </div>
+              <button className="btn-s btn-sm" type="button" onClick={() => { setPatient360Uhid(null); setPatient360Data(null); }}>
+                Close
+              </button>
+            </div>
+            <div className="pnl-bd">
+              {patient360Loading && <div style={{ color: "var(--t2)", padding: "8px 0" }}>Loading…</div>}
+              {!patient360Loading && patient360Data && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                  {/* Core demographics */}
+                  <div>
+                    <div style={{ fontWeight: 800, marginBottom: 8, fontSize: 13, color: "var(--t2)", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                      Core Identity
+                    </div>
+                    <div className="g2" style={{ gap: 10 }}>
+                      {[
+                        ["Full Name", patient360Data.patient?.full_name],
+                        ["Date of Birth", patient360Data.patient?.dob],
+                        ["Gender", patient360Data.patient?.gender],
+                        ["Phone", patient360Data.patient?.phone],
+                        ["National ID", patient360Data.patient?.national_id],
+                        ["Total visits", String(patient360Data.total_visits ?? 0)],
+                      ].map(([label, value]) => (
+                        <div key={label} style={{ background: "var(--s)", borderRadius: 8, padding: "8px 12px" }}>
+                          <div style={{ fontSize: 11, color: "var(--t3)", textTransform: "uppercase", letterSpacing: ".05em" }}>{label}</div>
+                          <div style={{ fontWeight: 800, marginTop: 2 }}>{value || "—"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Facility aliases */}
+                  {patient360Data.aliases && patient360Data.aliases.length > 0 && (
+                    <div>
+                      <div style={{ fontWeight: 800, marginBottom: 8, fontSize: 13, color: "var(--t2)", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                        Facility MRN Aliases ({patient360Data.aliases.length})
+                      </div>
+                      <table className="tbl">
+                        <thead>
+                          <tr>
+                            <th>Facility</th>
+                            <th className="mono">Facility ID</th>
+                            <th className="mono">Local MRN</th>
+                            <th className="mono">Linked at</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {patient360Data.aliases.map((a: any, i: number) => (
+                            <tr key={i}>
+                              <td style={{ fontWeight: 700 }}>{a.facility_name ?? "—"}</td>
+                              <td className="mono">{a.facility_id ?? "—"}</td>
+                              <td className="mono" style={{ color: "var(--p)", fontWeight: 900 }}>{a.mrn ?? "—"}</td>
+                              <td className="mono" style={{ fontSize: 12 }}>
+                                {a.created_at ? new Date(a.created_at * 1000).toLocaleString() : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {/* Visit history */}
+                  {patient360Data.visits && patient360Data.visits.length > 0 && (
+                    <div>
+                      <div style={{ fontWeight: 800, marginBottom: 8, fontSize: 13, color: "var(--t2)", textTransform: "uppercase", letterSpacing: ".06em" }}>
+                        Walk-in Visit History ({patient360Data.visits.length})
+                      </div>
+                      <table className="tbl">
+                        <thead>
+                          <tr>
+                            <th className="mono">Visit ID</th>
+                            <th>Facility</th>
+                            <th>Complaint</th>
+                            <th>Triage</th>
+                            <th className="mono">MRN</th>
+                            <th className="mono">Arrived</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {patient360Data.visits.map((v: any) => {
+                            const level = String(v.triage_level ?? "");
+                            const levelColor =
+                              level === "Red" ? "var(--r)" : level === "Orange" ? "#f97316" : level === "Yellow" ? "#ca8a04" : "var(--g)";
+                            return (
+                              <tr key={v.id}>
+                                <td className="mono" style={{ fontSize: 12 }}>{v.id}</td>
+                                <td style={{ fontWeight: 700 }}>{v.facility_name ?? "—"}</td>
+                                <td>{v.chief_complaint ?? "—"}</td>
+                                <td style={{ color: levelColor, fontWeight: 800 }}>{level || "—"}</td>
+                                <td className="mono">{v.mrn ?? "—"}</td>
+                                <td className="mono" style={{ fontSize: 12 }}>{v.arrived_at ?? "—"}</td>
+                                <td>
+                                  <span className={`tag ${v.status === "Resolved" ? "g" : "am"}`}>
+                                    {v.status ?? "Pending"}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  {(patient360Data.aliases?.length ?? 0) === 0 && (patient360Data.visits?.length ?? 0) === 0 && (
+                    <div style={{ color: "var(--t2)", fontSize: 13 }}>
+                      No aliases or walk-in visits recorded yet for this patient.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="filter-row">
           <div className="fsearch">
             <span aria-hidden>🔎</span>
@@ -1833,6 +2344,14 @@ export function AdminDashboard() {
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                          <button
+                            className="btn-s btn-sm"
+                            type="button"
+                            style={{ borderColor: "rgba(99,102,241,.35)", color: "var(--p)" }}
+                            onClick={() => void openPatient360(p.afl_id)}
+                          >
+                            360°
+                          </button>
                           <button className="btn-s btn-sm" type="button" onClick={() => openEditPatient(p)}>
                             Manage
                           </button>
@@ -2077,27 +2596,190 @@ export function AdminDashboard() {
       <div className={`pg${page === "ai" ? " on" : ""}`} id="pg-ai">
         <div className="ph">
           <div>
-            <div className="ph-eyebrow">Security & Intelligence</div>
-            <div className="ph-title">AI Monitor</div>
-            <div className="ph-sub">Anomaly detection, access guardrails, and automated response</div>
+            <div className="ph-eyebrow">Phase 3 — AI Assist</div>
+            <div className="ph-title">Capacity Intelligence</div>
+            <div className="ph-sub">
+              Real-time ward occupancy · 48-h bed demand forecast · Anomaly audit trail
+              {aiStatus && (
+                <span style={{ marginLeft: 12, fontSize: 11, color: "var(--g)", background: "rgba(0,229,160,0.08)",
+                  border: "1px solid rgba(0,229,160,0.2)", borderRadius: 5, padding: "2px 8px" }}>
+                  {aiStatus.model_version} · {aiStatus.active_anomalies} active alerts
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="ph-r">
+            <button className="btn-s btn-sm" type="button"
+              onClick={async () => {
+                try {
+                  await api.aiStatus();
+                  void uiAction("AI engine health check OK.");
+                  toast("AI Engine: operational");
+                } catch { toast("AI Engine: unreachable"); }
+              }}>
+              Ping AI Engine
+            </button>
+            <button className="btn-p btn-sm" type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/ai/simulate/trigger-alert", {
+                    headers: { "X-UniHealth-Role": "admin" }
+                  });
+                  if (res.ok) toast("Test alert injected — check anomaly rail.");
+                  else toast("Failed to inject alert.");
+                } catch { toast("API offline."); }
+              }}>
+              Inject Test Alert
+            </button>
           </div>
         </div>
-        <div className="panel">
-          <div className="pnl-hd">
-            <div className="pnl-title">Alerts</div>
-            <span className="tag am">3 alerts</span>
+
+        {/* Ward Capacity Cards */}
+        <div style={{ marginBottom: 20 }}>
+          <div className="pnl-hd" style={{ marginBottom: 10 }}>
+            <div className="pnl-title">Ward Occupancy — Live</div>
           </div>
-          <div className="pnl-body">
-            <div className="tag r" style={{ marginBottom: 10 }}>
-              Critical
+          {aiWards.length === 0 ? (
+            <div style={{ padding: "14px", color: "var(--t3)", fontSize: 13 }}>
+              Loading ward data from AI engine…
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: "var(--t1)" }}>
-              Unauthorised access attempt blocked · IP 197.232.xx.xx
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12 }}>
+              {aiWards.map((w: any) => (
+                <div key={w.ward_id} style={{
+                  padding: "16px 18px", background: "var(--card)", borderRadius: 12,
+                  border: `1px solid ${w.pct >= 90 ? "rgba(255,51,102,0.35)" : w.pct >= 75 ? "rgba(255,184,48,0.3)" : "var(--bdr)"}`,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "var(--t1)", marginBottom: 2 }}>{w.name}</div>
+                  <div style={{ fontSize: 11, color: "var(--t3)", marginBottom: 8 }}>{w.facility}</div>
+                  <div style={{ fontWeight: 900, fontSize: 28,
+                    color: w.pct >= 90 ? "var(--r)" : w.pct >= 75 ? "var(--am)" : "var(--g)" }}>
+                    {w.pct}%
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--t2)", marginBottom: 8 }}>
+                    {w.occupied} / {w.capacity} beds occupied
+                  </div>
+                  <div style={{ height: 5, background: "rgba(255,255,255,0.06)", borderRadius: 3 }}>
+                    <div style={{ height: "100%", borderRadius: 3, width: `${w.pct}%`,
+                      background: w.pct >= 90 ? "var(--r)" : w.pct >= 75 ? "var(--am)" : "var(--g)",
+                      transition: "width 0.7s ease" }} />
+                  </div>
+                  {/* Mini forecast sparkline */}
+                  {aiForecasts[w.ward_id] && (
+                    <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 28, marginTop: 8 }}>
+                      {(aiForecasts[w.ward_id] ?? []).slice(0, 12).map((s: any, i: number) => (
+                        <div key={i} title={`${s.ts}: ${s.predicted}/${s.capacity}`}
+                          style={{ flex: 1, height: `${Math.max(8, s.pct)}%`, borderRadius: "1px 1px 0 0",
+                            background: s.status === "CRITICAL" ? "var(--r)" : s.status === "WARNING" ? "var(--am)" : "var(--g)",
+                            opacity: 0.7 }} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-            <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 4 }}>
-              Blocked at gateway. Review RBAC + MFA policy.
-            </div>
+          )}
+        </div>
+
+        {/* Active Anomalies */}
+        <div style={{ marginBottom: 20 }}>
+          <div className="pnl-hd" style={{ marginBottom: 10 }}>
+            <div className="pnl-title">Active Clinical Anomalies</div>
+            <span className="tag am">
+              {aiAnomalies.filter((a: any) => !a.acknowledged).length} unacknowledged
+            </span>
           </div>
+          {aiAnomalies.length === 0 ? (
+            <div style={{ padding: "12px 14px", background: "rgba(0,229,160,0.05)",
+              border: "1px solid rgba(0,229,160,0.15)", borderRadius: 10, fontSize: 13, color: "var(--t3)" }}>
+              No active anomalies — AI engine running normally.
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Severity</th><th>Patient</th><th>Metric</th>
+                    <th>Value</th><th>Message</th><th>Type</th><th>Acked</th><th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {aiAnomalies.slice(0, 20).map((a: any) => (
+                    <tr key={a.id}>
+                      <td>
+                        <span className={`tag ${a.severity === "CRITICAL" ? "r" : "am"}`}>
+                          {a.severity}
+                        </span>
+                      </td>
+                      <td className="mono">{a.patient_id}</td>
+                      <td style={{ fontWeight: 600 }}>{(a.metric ?? "").toUpperCase()}</td>
+                      <td className="mono">{a.value}</td>
+                      <td style={{ fontSize: 11, color: "var(--t2)", maxWidth: 260 }}>{a.msg}</td>
+                      <td style={{ fontSize: 11 }}>{a.type}</td>
+                      <td>
+                        <span style={{ fontSize: 11, color: a.acknowledged ? "var(--g)" : "var(--t3)" }}>
+                          {a.acknowledged ? "✓ Yes" : "No"}
+                        </span>
+                      </td>
+                      <td>
+                        {!a.acknowledged && (
+                          <button className="btn-s" style={{ fontSize: 11, padding: "3px 9px" }}
+                            onClick={() => void ackAdminAnomaly(a.id)}>
+                            Ack
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* KDPA AI Audit Trail */}
+        <div>
+          <div className="pnl-hd" style={{ marginBottom: 10 }}>
+            <div className="pnl-title">AI Audit Trail (KDPA)</div>
+            <span className="tag b">{aiAudit.length} entries</span>
+          </div>
+          {aiAudit.length === 0 ? (
+            <div style={{ fontSize: 13, color: "var(--t3)", padding: "12px 0" }}>
+              No AI recommendations logged yet. Use diagnosis hints or anomaly checks to generate entries.
+            </div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Audit ID</th><th>Event</th><th>Role</th>
+                    <th>Patient</th><th>Model</th><th>Timestamp</th><th>Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aiAudit.slice(0, 20).map((e: any) => (
+                    <tr key={e.audit_id}>
+                      <td className="mono" style={{ fontSize: 10 }}>{e.audit_id}</td>
+                      <td style={{ fontSize: 12 }}>{e.event}</td>
+                      <td><span className="tag b" style={{ fontSize: 10 }}>{e.role}</span></td>
+                      <td className="mono">{e.patient_id ?? "—"}</td>
+                      <td style={{ fontSize: 11, color: "var(--t3)" }}>{e.model_version}</td>
+                      <td style={{ fontSize: 11 }}>{e.ts?.replace("T", " ").replace("Z", "")}</td>
+                      <td style={{ fontSize: 11 }}>
+                        {e.feedback ? (
+                          <span style={{ color: "var(--g)", fontWeight: 600 }}>
+                            {e.feedback.action}
+                          </span>
+                        ) : (
+                          <span style={{ color: "var(--t3)" }}>—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
 

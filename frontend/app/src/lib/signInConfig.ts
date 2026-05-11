@@ -4,7 +4,8 @@ export type RoleConfig = {
   ico: string;
   title: string;
   sub: string;
-  note: string;
+  noteHead: string;
+  noteBody: string;
   noteClass: "grn" | "blu" | "amb";
   noteIco: string;
   regLbl?: string;
@@ -21,9 +22,9 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
   doctor: {
     ico: "🩺",
     title: "Sign in as Doctor",
-    sub: "Registration number + institutional email + password",
-    note:
-      "Enter your <strong>Medical Registration Number</strong>, institutional email and password, then confirm via SMS or email OTP.",
+    sub: "Medical Registration No. · Institutional Email · Password",
+    noteHead: "Medical Registration No. · email · password",
+    noteBody: "Confirm identity via SMS or email OTP after sign-in.",
     noteClass: "grn",
     noteIco: "🏥",
     regLbl: "Medical Registration No.",
@@ -31,16 +32,16 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     regPH: "e.g. A4821",
     regRx: /^[A-Za-z0-9/\-]{3,12}$/,
     regErr: "Enter your registration number as printed on your licence.",
-    staffNote: "Registration number + institutional email + password → SMS/email OTP",
+    staffNote: "Reg. No. · Email · Password → OTP",
     successRole: "Doctor — Pilot Hospital A",
     successMsg: "Identity verified.\nRedirecting to clinical dashboard…",
   },
   nurse: {
     ico: "💉",
     title: "Sign in as Nurse / Clinical Officer",
-    sub: "Registration number + institutional email + password",
-    note:
-      "Enter your <strong>Nursing Registration Number</strong>, institutional email and password, then confirm via SMS or email OTP.",
+    sub: "Nursing Registration No. · Institutional Email · Password",
+    noteHead: "Nursing Registration No. · email · password",
+    noteBody: "Confirm identity via SMS or email OTP after sign-in.",
     noteClass: "grn",
     noteIco: "🏥",
     regLbl: "Nursing Registration No.",
@@ -48,16 +49,16 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     regPH: "e.g. RN/12345",
     regRx: /^[A-Za-z0-9/\-]{5,15}$/,
     regErr: "Enter your nursing registration number.",
-    staffNote: "Registration number + institutional email + password → SMS/email OTP",
+    staffNote: "Reg. No. · Email · Password → OTP",
     successRole: "Nurse — Pilot Hospital B",
     successMsg: "Identity verified.\nRedirecting to nursing portal…",
   },
   admin: {
     ico: "🗂️",
     title: "Sign in as Administrator",
-    sub: "Employee ID + institutional email + password",
-    note:
-      "Enter your <strong>Employee ID</strong>, institutional email and password, then confirm via SMS or email OTP.",
+    sub: "HRIS Employee ID · Institutional Email · Password",
+    noteHead: "HRIS Employee ID · email · password",
+    noteBody: "Confirm identity via SMS or email OTP after sign-in.",
     noteClass: "grn",
     noteIco: "🔐",
     regLbl: "HRIS Employee ID",
@@ -65,16 +66,16 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     regPH: "e.g. ADMIN-KE-00441",
     regRx: /^[A-Za-z0-9\-]{4,20}$/,
     regErr: "Enter your HRIS Employee ID (e.g. ADMIN-KE-00441).",
-    staffNote: "Employee ID + institutional email + password → SMS/email OTP",
+    staffNote: "Employee ID · Email · Password → OTP",
     successRole: "Administrator — UniHealth Pilot",
     successMsg: "HRIS identity verified.\nRedirecting to admin dashboard…",
   },
   patient: {
     ico: "🙋",
     title: "Access Your Health Records",
-    sub: "UniHealth Patient Portal: ID type → ID number + 4-digit PIN → OTP / Biometric",
-    note:
-      "<strong>UniHealth Patient Portal login.</strong> Select your ID type, enter your ID number and the <strong>4-digit PIN</strong> you created during UniHealth registration, then verify via SMS OTP or fingerprint biometric.",
+    sub: "ID type · ID number · 4-digit PIN → OTP or Biometric",
+    noteHead: "National / Passport / Alien ID · 4-digit UniHealth PIN",
+    noteBody: "Verify via SMS OTP or fingerprint biometric.",
     noteClass: "blu",
     noteIco: "🏛️",
     successRole: "Patient — UniHealth Self-Service",
@@ -83,9 +84,9 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
   lab: {
     ico: "🧫",
     title: "Sign in to Laboratory Portal",
-    sub: "Lab staff ID + institutional email + password",
-    note:
-      "Enter your <strong>Laboratory Staff ID</strong>, institutional email and password, then confirm via email OTP.",
+    sub: "Lab Staff ID · Institutional Email · Password",
+    noteHead: "Laboratory Staff ID · email · password",
+    noteBody: "Confirm identity via email OTP after sign-in.",
     noteClass: "amb",
     noteIco: "🧪",
     regLbl: "Laboratory Staff ID",
@@ -93,16 +94,16 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     regPH: "e.g. LAB-KE-00231",
     regRx: /^[A-Za-z0-9\-]{5,20}$/,
     regErr: "Enter your lab staff ID (e.g. LAB-KE-00231).",
-    staffNote: "Staff ID + institutional email + password → email OTP",
+    staffNote: "Staff ID · Email · Password → OTP",
     successRole: "Laboratory — Diagnostic Services",
     successMsg: "Identity verified.\nRedirecting to laboratory portal…",
   },
   pharmacy: {
     ico: "💊",
     title: "Sign in to Pharmacy Portal",
-    sub: "Pharmacist ID + institutional email + password",
-    note:
-      "Enter your <strong>Pharmacy Registration ID</strong>, institutional email and password, then confirm via email OTP.",
+    sub: "Pharmacy Registration ID · Institutional Email · Password",
+    noteHead: "Pharmacy Registration ID · email · password",
+    noteBody: "Confirm identity via email OTP after sign-in.",
     noteClass: "amb",
     noteIco: "🏥",
     regLbl: "Pharmacy Registration ID",
@@ -110,7 +111,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     regPH: "e.g. PHARM-00441",
     regRx: /^[A-Za-z0-9/\-]{5,20}$/,
     regErr: "Enter your pharmacy registration ID (e.g. PHARM-00441).",
-    staffNote: "Registration ID + institutional email + password → email OTP",
+    staffNote: "Registration ID · Email · Password → OTP",
     successRole: "Pharmacy — Clinical Dispensing",
     successMsg: "Identity verified.\nRedirecting to pharmacy portal…",
   },

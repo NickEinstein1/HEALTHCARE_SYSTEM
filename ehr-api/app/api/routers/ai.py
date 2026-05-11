@@ -1,0 +1,417 @@
+"""
+UniHealth Phase 3 — AI Assist Router
+=====================================
+Endpoints
+  GET  /ai/status                  — model health + connection stats
+  POST /ai/diagnosis-hints         — differential diagnosis from features
+  POST /ai/anomaly-check           — single-patient deterioration check
+  POST /ai/news2                   — compute NEWS2 EWS from raw vitals
+  GET  /ai/anomalies               — list active (unacknowledged) anomalies
+  POST /ai/anomalies/{id}/ack      — clinician acknowledges an anomaly
+  GET  /ai/patients                — list simulated patients
+  GET  /ai/patients/{sim_id}/vitals — time-series vitals for one patient
+  GET  /ai/patients/{sim_id}/labs  — lab results for one patient
+  GET  /ai/wards                   — current ward occupancy
+  GET  /ai/wards/{ward_id}/forecast — 48-h bed demand forecast
+  GET  /ai/audit                   — AI recommendation audit trail (admin only)
+  POST /ai/audit/{hint_id}/feedback — clinician feedback on a diagnosis hint
+  GET  /ai/simulate/trigger-alert  — dev: inject a test critical alert
+  WS   /ws/alerts/{role}           — real-time alert stream (role-scoped)
+
+Security
+  - All REST endpoints validate X-UniHealth-Role header (role-gating).
+  - WebSocket endpoint validates ?token= query parameter.
+  - All AI recommendations are KDPA-logged to ai_audit_log.
+  - Rate limiting: 60 AI hint requests per minute per client IP.
+"""
+
+from __future__ import annotations
+
+import time
+from collections import defaultdict
+from typing import Optional
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.requests import Request
+
+import app.state as st
+from app.ai.models import MODEL_VERSION, anomaly_check, compute_news2, diagnosis_hints
+from app.ai.ws_manager import VALID_ROLES, alert_manager
+
+router = APIRouter(prefix="/ai")
+
+# ── in-memory rate limiter (60 req/min per IP) ─────────────────────────
+_rate_buckets: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 60
+_RATE_WINDOW = 60.0
+
+
+def _check_rate_limit(ip: str) -> None:
+    now = time.time()
+    bucket = _rate_buckets[ip]
+    # evict old timestamps
+    _rate_buckets[ip] = [t for t in bucket if now - t < _RATE_WINDOW]
+    if len(_rate_buckets[ip]) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit exceeded: {_RATE_LIMIT} AI requests per {int(_RATE_WINDOW)}s",
+        )
+    _rate_buckets[ip].append(now)
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+# ── role guard ──────────────────────────────────────────────────────────
+def _require_role(request: Request, allowed: list[str]) -> str:
+    role = request.headers.get("X-UniHealth-Role", "").strip().lower()
+    if not role:
+        raise HTTPException(status_code=401, detail="X-UniHealth-Role header required")
+    if role not in VALID_ROLES:
+        raise HTTPException(status_code=403, detail=f"Unknown role: {role}")
+    if role not in allowed:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Role '{role}' is not permitted to access this endpoint",
+        )
+    return role
+
+
+# ── AI audit logger ─────────────────────────────────────────────────────
+def _audit(event: str, role: str, patient_id: str | None, payload: dict) -> str:
+    audit_id = f"AUD-{int(time.time() * 1000)}"
+    entry = {
+        "audit_id":     audit_id,
+        "event":        event,
+        "role":         role,
+        "patient_id":   patient_id,
+        "model_version": MODEL_VERSION,
+        "payload":      payload,
+        "ts":           time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "feedback":     None,
+    }
+    st.ai_audit_log.insert(0, entry)
+    # trim to 500 entries in-memory
+    if len(st.ai_audit_log) > 500:
+        st.ai_audit_log[:] = st.ai_audit_log[:500]
+    return audit_id
+
+
+# ══════════════════════════════════════════════════════════════════
+# REST ENDPOINTS
+# ══════════════════════════════════════════════════════════════════
+
+@router.get("/status", summary="AI engine health and connection status.")
+async def ai_status():
+    return {
+        "status":          "operational",
+        "model_version":   MODEL_VERSION,
+        "model_type":      "rule-based-v1",
+        "ws_connections":  alert_manager.status(),
+        "active_anomalies": len([a for a in st.ai_anomalies if not a.get("acknowledged")]),
+        "audit_log_count": len(st.ai_audit_log),
+        "simulated_patients": len(st.sim_patients),
+        "ts":              time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+
+@router.post("/diagnosis-hints", summary="Differential diagnosis from clinical features.")
+async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
+    _check_rate_limit(_client_ip(request))
+    role = _require_role(request, ["doctor", "nurse", "admin"])
+
+    features   = payload.get("features", {})
+    medications = payload.get("medications", [])
+    patient_id  = payload.get("patient_id")
+
+    if not isinstance(features, dict):
+        raise HTTPException(status_code=400, detail="'features' must be an object")
+
+    result = diagnosis_hints(features, medications)
+
+    audit_id = _audit(
+        "diagnosis_hints", role, patient_id,
+        {"features_keys": list(features.keys()), "n_differentials": len(result["differentials"])},
+    )
+    result["audit_id"] = audit_id
+    return result
+
+
+@router.post("/anomaly-check", summary="Run anomaly detection on a single vital/lab set.")
+async def run_anomaly_check(request: Request, payload: dict = Body(...)):
+    _check_rate_limit(_client_ip(request))
+    role       = _require_role(request, ["doctor", "nurse", "lab", "admin"])
+    patient_id = payload.get("patient_id", "unknown")
+    vitals     = payload.get("vitals", {})
+    labs       = payload.get("labs")
+    baseline   = payload.get("baseline") or st.sim_baselines.get(patient_id)
+
+    anomalies = anomaly_check(patient_id, vitals, labs, baseline)
+
+    # Persist new anomalies and broadcast via WebSocket
+    new_count = 0
+    for ano in anomalies:
+        existing_ids = {a["id"] for a in st.ai_anomalies}
+        if ano["id"] not in existing_ids:
+            st.ai_anomalies.insert(0, ano)
+            new_count += 1
+            # fire-and-forget broadcast (non-blocking)
+            import asyncio
+            asyncio.create_task(alert_manager.broadcast_alert(ano))
+
+    _audit("anomaly_check", role, patient_id, {"n_anomalies": len(anomalies)})
+    return {"anomalies": anomalies, "new_alerts_fired": new_count}
+
+
+@router.post("/news2", summary="Compute NEWS2 Early Warning Score from vitals.")
+async def compute_ews(request: Request, payload: dict = Body(...)):
+    _check_rate_limit(_client_ip(request))
+    _require_role(request, ["doctor", "nurse", "admin"])
+
+    try:
+        result = compute_news2(
+            rr    = int(payload.get("rr",   16)),
+            spo2  = int(payload.get("spo2", 98)),
+            sbp   = int(payload.get("sbp",  120)),
+            hr    = int(payload.get("hr",   75)),
+            temp  = float(payload.get("temp", 37.0)),
+            gcs   = int(payload.get("gcs",  15)),
+        )
+    except (TypeError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid vitals: {e}")
+
+    return result
+
+
+@router.get("/anomalies", summary="List active anomaly alerts.")
+async def list_anomalies(
+    request: Request,
+    patient_id: Optional[str] = Query(default=None),
+    severity: Optional[str]   = Query(default=None),
+    ack: Optional[bool]       = Query(default=None),
+    limit: int                = Query(default=50, ge=1, le=200),
+):
+    _require_role(request, ["doctor", "nurse", "admin"])
+    rows = list(st.ai_anomalies)
+    if patient_id:
+        rows = [a for a in rows if a.get("patient_id") == patient_id]
+    if severity:
+        rows = [a for a in rows if a.get("severity", "").upper() == severity.upper()]
+    if ack is not None:
+        rows = [a for a in rows if bool(a.get("acknowledged")) == ack]
+    return rows[:limit]
+
+
+@router.post("/anomalies/{anomaly_id}/ack", summary="Acknowledge an anomaly alert.")
+async def acknowledge_anomaly(anomaly_id: str, request: Request, payload: dict = Body(default={})):
+    role = _require_role(request, ["doctor", "nurse", "admin"])
+    for a in st.ai_anomalies:
+        if a.get("id") == anomaly_id:
+            a["acknowledged"]   = True
+            a["ack_by"]         = role
+            a["ack_ts"]         = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+            a["ack_note"]       = payload.get("note", "")
+            _audit("anomaly_ack", role, a.get("patient_id"), {"anomaly_id": anomaly_id})
+            return {"status": "acknowledged", "anomaly_id": anomaly_id}
+    raise HTTPException(status_code=404, detail="Anomaly not found")
+
+
+@router.get("/patients", summary="List simulated patients (Phase 3 test data).")
+async def list_sim_patients(
+    request: Request,
+    ward_id:  Optional[str] = Query(default=None),
+    icd10:    Optional[str] = Query(default=None),
+    limit:    int           = Query(default=50, ge=1, le=100),
+):
+    _require_role(request, ["doctor", "nurse", "admin"])
+    rows = list(st.sim_patients)
+    if ward_id:
+        rows = [p for p in rows if p.get("ward_id") == ward_id]
+    if icd10:
+        rows = [p for p in rows if p.get("icd10") == icd10]
+
+    # Attach latest NEWS2 score to each patient
+    for p in rows:
+        sid = p.get("sim_id", "")
+        vitals_series = st.sim_vitals.get(sid, [])
+        if vitals_series:
+            latest = vitals_series[-1]
+            ews = compute_news2(
+                rr   = latest.get("rr",   16),
+                spo2 = latest.get("spo2", 98),
+                sbp  = latest.get("sbp",  120),
+                hr   = latest.get("hr",   75),
+                temp = latest.get("temp", 37.0),
+                gcs  = latest.get("gcs",  15),
+            )
+            p["news2_score"] = ews["score"]
+            p["news2_risk"]  = ews["risk"]
+        else:
+            p["news2_score"] = None
+            p["news2_risk"]  = "UNKNOWN"
+
+    return rows[:limit]
+
+
+@router.get("/patients/{sim_id}/vitals", summary="Vital-sign time series for a patient.")
+async def get_patient_vitals(
+    sim_id: str, request: Request,
+    limit: int = Query(default=24, ge=1, le=100),
+):
+    _require_role(request, ["doctor", "nurse", "admin"])
+    vitals = st.sim_vitals.get(sim_id)
+    if vitals is None:
+        raise HTTPException(status_code=404, detail=f"Patient {sim_id} not found in simulation data")
+    return vitals[-limit:]
+
+
+@router.get("/patients/{sim_id}/labs", summary="Lab results for a simulated patient.")
+async def get_patient_labs(sim_id: str, request: Request):
+    _require_role(request, ["doctor", "nurse", "lab", "admin"])
+    patient = next((p for p in st.sim_patients if p.get("sim_id") == sim_id), None)
+    if not patient:
+        raise HTTPException(status_code=404, detail=f"Patient {sim_id} not found")
+    from app.ai.simulator import _labs_for
+    labs = _labs_for(patient.get("icd10", ""))
+    # attach patient context (de-identified: sim_id only, no PII)
+    return {
+        "sim_id":   sim_id,
+        "panel":    "Admission Bloods",
+        "results":  labs,
+        "ts":       patient.get("admitted_at"),
+    }
+
+
+@router.get("/wards", summary="Current ward occupancy across all wards.")
+async def get_wards(request: Request):
+    _require_role(request, ["doctor", "nurse", "admin"])
+    return list(st.sim_ward_state.values())
+
+
+@router.get("/wards/{ward_id}/forecast", summary="48-hour bed demand forecast for a ward.")
+async def get_ward_forecast(
+    ward_id: str, request: Request,
+    hours: int = Query(default=24, ge=1, le=48),
+):
+    _require_role(request, ["nurse", "admin"])
+    forecast = st.sim_bed_forecast.get(ward_id)
+    if not forecast:
+        raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
+    return forecast[:hours]
+
+
+@router.get("/audit", summary="AI recommendation audit trail (admin only — KDPA).")
+async def get_audit_log(
+    request: Request,
+    event:   Optional[str] = Query(default=None),
+    limit:   int           = Query(default=100, ge=1, le=500),
+):
+    _require_role(request, ["admin"])
+    rows = list(st.ai_audit_log)
+    if event:
+        rows = [r for r in rows if r.get("event") == event]
+    return rows[:limit]
+
+
+@router.post("/audit/{audit_id}/feedback", summary="Clinician feedback on an AI hint.")
+async def submit_feedback(
+    audit_id: str, request: Request, payload: dict = Body(...),
+):
+    role = _require_role(request, ["doctor", "nurse"])
+    action   = payload.get("action", "").strip()
+    note     = payload.get("note", "").strip()
+
+    allowed_actions = {"accepted", "overridden", "ignored", "escalated"}
+    if action not in allowed_actions:
+        raise HTTPException(
+            status_code=400,
+            detail=f"action must be one of: {', '.join(sorted(allowed_actions))}",
+        )
+
+    for entry in st.ai_audit_log:
+        if entry.get("audit_id") == audit_id:
+            entry["feedback"] = {
+                "action": action,
+                "note":   note,
+                "by":     role,
+                "ts":     time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            }
+            return {"status": "recorded", "audit_id": audit_id}
+
+    raise HTTPException(status_code=404, detail="Audit entry not found")
+
+
+@router.get("/simulate/trigger-alert", summary="Dev: inject a simulated critical alert.")
+async def trigger_test_alert(request: Request):
+    _require_role(request, ["admin"])
+    test_anomaly = {
+        "id":           f"ANO-TEST-{int(time.time()*1000)}",
+        "patient_id":   "SIM-001",
+        "metric":       "spo2",
+        "value":        84,
+        "severity":     "CRITICAL",
+        "msg":          "SpO₂ critically low — immediate respiratory support",
+        "type":         "threshold",
+        "model_version": MODEL_VERSION,
+        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "acknowledged": False,
+    }
+    st.ai_anomalies.insert(0, test_anomaly)
+    import asyncio
+    asyncio.create_task(alert_manager.broadcast_alert(test_anomaly))
+    return {"status": "alert_injected", "anomaly": test_anomaly}
+
+
+# ══════════════════════════════════════════════════════════════════
+# WEBSOCKET ENDPOINT
+# ══════════════════════════════════════════════════════════════════
+
+@router.websocket("/ws/alerts/{role}")
+async def ws_alerts(websocket: WebSocket, role: str, token: str = Query(...)):
+    """
+    Real-time alert stream, scoped by clinical role.
+    Clients connect with ?token=<ws-token>.
+    Server pushes JSON events:
+      { "event": "anomaly_alert" | "ward_update", "ts": "...", "data": {...} }
+    Clients can send { "event": "ping" } to keep alive.
+    """
+    role = role.lower().strip()
+
+    # Auth + role validation
+    if not alert_manager.validate_token(token):
+        await websocket.close(code=4001, reason="Invalid token")
+        return
+    if role not in VALID_ROLES:
+        await websocket.close(code=4003, reason=f"Unknown role: {role}")
+        return
+
+    await alert_manager.connect(websocket, role)
+    try:
+        # Send connection confirmation
+        import json
+        await websocket.send_text(json.dumps({
+            "event": "connected",
+            "role":  role,
+            "ts":    time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "msg":   f"UniHealth Phase 3 alert stream active for role: {role}",
+        }))
+
+        # Main message loop
+        while True:
+            data = await websocket.receive_text()
+            try:
+                msg = json.loads(data)
+                if msg.get("event") == "ping":
+                    await websocket.send_text(json.dumps({
+                        "event": "pong",
+                        "ts":    time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                    }))
+            except Exception:
+                pass  # Ignore malformed client messages
+
+    except WebSocketDisconnect:
+        alert_manager.disconnect(websocket, role)

@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniHealth EHR — Secure Sign In</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniHealth EHR — Secure Sign In</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
-    <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        :root{
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
             --primary:#1a8a4a;--primary-dark:#0a4a26;--primary-light:#e8f5ee;--primary-muted:#a8d8bc;
             --accent-blue:#2563eb;--accent-amber:#d97706;--accent-red:#dc2626;--accent-purple:#7c3aed;
             --bg-page:#f4f7f4;--card-bg:#ffffff;--border-light:#dde5e0;
@@ -22,31 +22,31 @@
             --r:var(--accent-red);--b:var(--accent-blue);--am:var(--accent-amber);--pu:var(--accent-purple);
             --w:var(--card-bg);--bg:var(--bg-page);--card:var(--card-bg);--bdr:var(--border-light);
             --t1:var(--text-primary);--t2:var(--text-secondary);--t3:var(--text-tertiary);
-            --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
-            --sh:0 24px 64px rgba(10,74,38,.1),0 4px 16px rgba(10,74,38,.07);
+  --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --sh:0 24px 64px rgba(10,74,38,.1),0 4px 16px rgba(10,74,38,.07);
             --sh-g:0 8px 28px rgba(26,138,74,.28)
         }
         html,body{height:100%;-webkit-font-smoothing:antialiased;font-family:var(--font);background:var(--bg)}
         body{display:flex;min-height:100vh}
-        .lp{width:420px;flex-shrink:0;background:var(--gd);display:flex;flex-direction:column;position:relative;overflow:hidden}
-        .lp::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 10% 90%,rgba(38,180,80,.18) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 95% 5%,rgba(26,138,74,.3) 0%,transparent 55%),linear-gradient(148deg,#061510 0%,#0a3d1e 45%,#1a6635 100%);z-index:0}
-        .lp::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:28px 28px;z-index:1}
-        .flag{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#bb0000 0%,#bb0000 33%,#1a1a1a 33%,#1a1a1a 35.5%,#e8e8e8 35.5%,#e8e8e8 37%,#1a1a1a 37%,#1a1a1a 39.5%,#1a8a4a 39.5%,#1a8a4a 100%);z-index:20}
-        .li{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:36px 38px}
-        .brand{display:flex;align-items:center;gap:11px;margin-bottom:8px;animation:fd .7s ease both}
-        @keyframes fd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
-        .brand-sq{width:40px;height:40px;border-radius:10px;font-size:19px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
-        .brand-nm{font-family:var(--serif);font-size:19px;color:#fff;line-height:1.1}
-        .brand-tg{font-size:9.5px;color:rgba(255,255,255,.38);letter-spacing:.4px;margin-top:1px;font-weight:500}
-        .sys-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 10px;font-size:10px;color:rgba(255,255,255,.5);font-weight:500;width:fit-content;animation:fd .7s .1s ease both}
-        .dot{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 7px #2ecc71;animation:gl 2.1s infinite}
-        @keyframes gl{0%,100%{box-shadow:0 0 5px #2ecc71}50%{box-shadow:0 0 13px #2ecc71}}
-        .hero{margin-top:40px;flex:1;animation:fu .8s .2s ease both}
-        @keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-        .eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:11px}
-        .hl{font-family:var(--serif);font-size:32px;color:#fff;line-height:1.18;letter-spacing:-.2px;margin-bottom:13px}
-        .hl em{font-style:italic;color:#7beba4}
-        .hd{font-size:13px;color:rgba(255,255,255,.48);line-height:1.72;max-width:320px}
+.lp{width:420px;flex-shrink:0;background:var(--gd);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.lp::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 55% at 10% 90%,rgba(38,180,80,.18) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 95% 5%,rgba(26,138,74,.3) 0%,transparent 55%),linear-gradient(148deg,#061510 0%,#0a3d1e 45%,#1a6635 100%);z-index:0}
+.lp::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:28px 28px;z-index:1}
+.flag{position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#bb0000 0%,#bb0000 33%,#1a1a1a 33%,#1a1a1a 35.5%,#e8e8e8 35.5%,#e8e8e8 37%,#1a1a1a 37%,#1a1a1a 39.5%,#1a8a4a 39.5%,#1a8a4a 100%);z-index:20}
+.li{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:36px 38px}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:8px;animation:fd .7s ease both}
+@keyframes fd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+.brand-sq{width:40px;height:40px;border-radius:10px;font-size:19px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+.brand-nm{font-family:var(--serif);font-size:19px;color:#fff;line-height:1.1}
+.brand-tg{font-size:9.5px;color:rgba(255,255,255,.38);letter-spacing:.4px;margin-top:1px;font-weight:500}
+.sys-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 10px;font-size:10px;color:rgba(255,255,255,.5);font-weight:500;width:fit-content;animation:fd .7s .1s ease both}
+.dot{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 7px #2ecc71;animation:gl 2.1s infinite}
+@keyframes gl{0%,100%{box-shadow:0 0 5px #2ecc71}50%{box-shadow:0 0 13px #2ecc71}}
+.hero{margin-top:40px;flex:1;animation:fu .8s .2s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:11px}
+.hl{font-family:var(--serif);font-size:32px;color:#fff;line-height:1.18;letter-spacing:-.2px;margin-bottom:13px}
+.hl em{font-style:italic;color:#7beba4}
+.hd{font-size:13px;color:rgba(255,255,255,.48);line-height:1.72;max-width:320px}
         .ai-monitor{margin-top:22px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:13px 14px;animation:fu .8s .4s ease both}
         .ai-hd{display:flex;align-items:center;gap:7px;margin-bottom:10px}
         .ai-pulse{width:8px;height:8px;border-radius:50%;background:#2ecc71;flex-shrink:0;box-shadow:0 0 7px #2ecc71;animation:gl 2.1s infinite}
@@ -68,28 +68,28 @@
         .at-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;color:rgba(255,255,255,.22);text-transform:uppercase;margin-bottom:4px}
         .at-entry{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.32);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6;animation:scrollIn .5s ease both}
         @keyframes scrollIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-        .lfooter{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.22);animation:fu .8s .45s ease both}
-        .rp{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden}
-        .rp::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(26,138,74,.045) 1.5px,transparent 1.5px);background-size:20px 20px;pointer-events:none}
+.lfooter{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.22);animation:fu .8s .45s ease both}
+.rp{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden}
+.rp::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(26,138,74,.045) 1.5px,transparent 1.5px);background-size:20px 20px;pointer-events:none}
         .card{background:var(--card);border:1.5px solid var(--bdr);border-radius:20px;box-shadow:var(--sh);width:100%;max-width:460px;position:relative;z-index:1;overflow:hidden;animation:ci .6s cubic-bezier(.16,1,.3,1) .1s both}
-        @keyframes ci{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-        .cstripe{height:3px;background:linear-gradient(90deg,var(--gd),var(--g),#7beba4)}
-        .cbody{padding:28px 30px 22px}
-        .cfoot{padding:13px 30px;border-top:1px solid var(--bdr);background:#f9fbf9;display:flex;align-items:center;justify-content:space-between}
-        .stepper{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
-        .sdot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--t3);background:var(--w);transition:all .3s;position:relative;z-index:1}
-        .sdot.act{border-color:var(--g);background:var(--g);color:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.14)}
-        .sdot.done{border-color:var(--g);background:var(--gl);color:var(--g)}
-        .sline{flex:1;max-width:42px;height:2px;background:var(--bdr);transition:background .4s}
-        .sline.done{background:var(--g)}
-        .shd{text-align:center;margin-bottom:20px}
-        .sico{width:50px;height:50px;border-radius:50%;background:var(--gl);border:2px solid var(--gm);margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:21px;transition:all .3s}
-        .stitle{font-family:var(--serif);font-size:21px;color:var(--t1);letter-spacing:-.2px;margin-bottom:4px}
-        .ssub{font-size:12px;color:var(--t3);line-height:1.5}
+@keyframes ci{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.cstripe{height:3px;background:linear-gradient(90deg,var(--gd),var(--g),#7beba4)}
+.cbody{padding:28px 30px 22px}
+.cfoot{padding:13px 30px;border-top:1px solid var(--bdr);background:#f9fbf9;display:flex;align-items:center;justify-content:space-between}
+.stepper{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:22px}
+.sdot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--t3);background:var(--w);transition:all .3s;position:relative;z-index:1}
+.sdot.act{border-color:var(--g);background:var(--g);color:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.14)}
+.sdot.done{border-color:var(--g);background:var(--gl);color:var(--g)}
+.sline{flex:1;max-width:42px;height:2px;background:var(--bdr);transition:background .4s}
+.sline.done{background:var(--g)}
+.shd{text-align:center;margin-bottom:20px}
+.sico{width:50px;height:50px;border-radius:50%;background:var(--gl);border:2px solid var(--gm);margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:21px;transition:all .3s}
+.stitle{font-family:var(--serif);font-size:21px;color:var(--t1);letter-spacing:-.2px;margin-bottom:4px}
+.ssub{font-size:12px;color:var(--t3);line-height:1.5}
         /* ── Role grid ── */
         .rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
         .rc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 9px;border:2px solid var(--bdr);border-radius:11px;cursor:pointer;transition:all .18s cubic-bezier(.16,1,.3,1);background:var(--w);text-align:center;position:relative;font-family:var(--font)}
-        .rc:hover{border-color:var(--g);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,138,74,.1)}
+.rc:hover{border-color:var(--g);transform:translateY(-2px);box-shadow:0 4px 14px rgba(26,138,74,.1)}
         .rc.sel,.rc[aria-pressed="true"]{border-color:var(--g);background:var(--gl);box-shadow:var(--sh-g);transform:translateY(-2px)}
         .rc:focus-visible{outline:2px solid var(--g);outline-offset:2px}
         .rchk{position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:700;opacity:0;transform:scale(.4);transition:all .2s;pointer-events:none}
@@ -100,43 +100,43 @@
         .rc.sel .rnm,.rc[aria-pressed="true"] .rnm{color:var(--gd)}
         .rds{font-size:9.5px;color:var(--t3);line-height:1.3;pointer-events:none}
         /* ── Notices ── */
-        .nbox{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:8px;margin-bottom:16px;font-size:11.5px;line-height:1.5;font-weight:500;animation:sd .3s ease}
-        @keyframes sd{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
-        .nbox.grn{background:var(--gl);border:1px solid var(--gm);color:var(--gd)}
+.nbox{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:8px;margin-bottom:16px;font-size:11.5px;line-height:1.5;font-weight:500;animation:sd .3s ease}
+@keyframes sd{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+.nbox.grn{background:var(--gl);border:1px solid var(--gm);color:var(--gd)}
         .nbox.blu{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a}
         .nbox.amb{background:#fffbeb;border:1px solid #fde68a;color:#78350f}
-        .nbox .ni{font-size:14px;flex-shrink:0;margin-top:1px}
+.nbox .ni{font-size:14px;flex-shrink:0;margin-top:1px}
         /* ── Fields ── */
-        .fields{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
-        .field{display:flex;flex-direction:column;gap:4px}
-        .field label{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.1px}
-        .fw{position:relative;display:flex;align-items:center}
-        .fi{position:absolute;left:12px;color:var(--t3);font-size:14px;pointer-events:none;display:flex;align-items:center;transition:color .2s}
-        .fw:focus-within .fi{color:var(--g)}
-        .fw input,.fw select{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--t1);background:#fbfdfb;outline:none;transition:all .2s}
-        .fw input::placeholder{color:var(--t3);font-size:12px}
-        .fw input:focus,.fw select:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09)}
+.fields{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.1px}
+.fw{position:relative;display:flex;align-items:center}
+.fi{position:absolute;left:12px;color:var(--t3);font-size:14px;pointer-events:none;display:flex;align-items:center;transition:color .2s}
+.fw:focus-within .fi{color:var(--g)}
+.fw input,.fw select{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--bdr);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--t1);background:#fbfdfb;outline:none;transition:all .2s}
+.fw input::placeholder{color:var(--t3);font-size:12px}
+.fw input:focus,.fw select:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09)}
         .fw input[aria-invalid="true"]{border-color:var(--r);box-shadow:0 0 0 3px rgba(220,38,38,.09)}
-        .fw select{cursor:pointer;-webkit-appearance:none;appearance:none}
-        .fhint{font-size:10px;color:var(--t3);padding-left:1px;line-height:1.4}
-        .eyebn{position:absolute;right:11px;background:none;border:none;color:var(--t3);cursor:pointer;padding:3px;display:flex;align-items:center;transition:color .15s}
-        .eyebn:hover{color:var(--g)}
+.fw select{cursor:pointer;-webkit-appearance:none;appearance:none}
+.fhint{font-size:10px;color:var(--t3);padding-left:1px;line-height:1.4}
+.eyebn{position:absolute;right:11px;background:none;border:none;color:var(--t3);cursor:pointer;padding:3px;display:flex;align-items:center;transition:color .15s}
+.eyebn:hover{color:var(--g)}
         .eyebn:focus-visible{outline:2px solid var(--g);border-radius:4px}
-        .lbl-row{display:flex;justify-content:space-between;align-items:center}
-        .lbl-row label{font-size:11px;font-weight:700;color:var(--t2)}
-        .fgt{font-size:11px;font-weight:600;color:var(--g);cursor:pointer;text-decoration:none;background:none;border:none;font-family:var(--font)}
-        .fgt:hover{text-decoration:underline}
+.lbl-row{display:flex;justify-content:space-between;align-items:center}
+.lbl-row label{font-size:11px;font-weight:700;color:var(--t2)}
+.fgt{font-size:11px;font-weight:600;color:var(--g);cursor:pointer;text-decoration:none;background:none;border:none;font-family:var(--font)}
+.fgt:hover{text-decoration:underline}
         .fgt:focus-visible{outline:2px solid var(--g);border-radius:3px}
         /* ── PIN ── */
-        .pin-grid{display:flex;gap:9px;justify-content:center;margin:4px 0 0}
-        .pin-box{width:50px;height:54px;text-align:center;border:2px solid var(--bdr);border-radius:9px;font-family:var(--mono);font-size:24px;font-weight:700;color:var(--t1);background:#fbfdfb;outline:none;transition:all .2s}
-        .pin-box:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.04)}
-        .pin-box.f{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.pin-grid{display:flex;gap:9px;justify-content:center;margin:4px 0 0}
+.pin-box{width:50px;height:54px;text-align:center;border:2px solid var(--bdr);border-radius:9px;font-family:var(--mono);font-size:24px;font-weight:700;color:var(--t1);background:#fbfdfb;outline:none;transition:all .2s}
+.pin-box:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.04)}
+.pin-box.f{border-color:var(--g);background:var(--gl);color:var(--gd)}
         /* ── OTP ── */
-        .otp-grid{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
+.otp-grid{display:flex;gap:8px;justify-content:center;margin:8px 0 16px}
         .obox{width:44px;height:50px;text-align:center;border:2px solid var(--bdr);border-radius:9px;font-family:var(--mono);font-size:22px;font-weight:700;color:var(--t1);background:#fbfdfb;outline:none;transition:all .2s}
         .obox:focus{border-color:var(--g);background:#fff;box-shadow:0 0 0 3px rgba(26,138,74,.09);transform:scale(1.04)}
-        .obox.f{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.obox.f{border-color:var(--g);background:var(--gl);color:var(--gd)}
         /* ── Button ── */
         .btn{width:100%;padding:12px 16px;background:linear-gradient(135deg,var(--gd),var(--g));border:none;border-radius:10px;color:#fff;font-family:var(--font);font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .2s;position:relative;overflow:hidden;letter-spacing:.1px}
         .btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .2s}
@@ -152,10 +152,10 @@
         .bkbn:focus-visible{outline:2px solid var(--g);border-radius:6px}
         /* ── Alt row ── */
         .orline{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:11px;color:var(--t3)}
-        .orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--bdr)}
         .alt-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
         .altbn{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--bdr);border-radius:8px;background:var(--w);font-family:var(--font);font-size:11.5px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .18s}
-        .altbn:hover{border-color:var(--g);color:var(--gd);background:var(--gl)}
+.altbn:hover{border-color:var(--g);color:var(--gd);background:var(--gl)}
         .altbn:focus-visible{outline:2px solid var(--g)}
         /* ── Error banner ── */
         .errbanner{display:none;align-items:center;gap:8px;padding:9px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;font-size:11.5px;color:#991b1b;margin-bottom:12px;font-weight:500}
@@ -174,7 +174,7 @@
         /* ── Lockout ── */
         .lockout{display:none;flex-direction:column;align-items:center;text-align:center;padding:20px 16px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;margin-bottom:16px;gap:6px}
         .lockout-ico{font-size:28px;color:#dc2626;margin-bottom:4px}
-        .lockout-ti{font-size:14px;font-weight:700;color:#991b1b}
+.lockout-ti{font-size:14px;font-weight:700;color:#991b1b}
         .lockout-su{font-size:11.5px;color:#b91c1c;line-height:1.6}
         .lockout-cd{font-family:var(--mono);font-size:26px;font-weight:700;color:#dc2626;letter-spacing:2px}
         /* ── CAPTCHA ── */
@@ -203,20 +203,20 @@
         .risk-lbl.low{color:#166534}.risk-lbl.med{color:#92400e}.risk-lbl.hi{color:#991b1b}
         .risk-score{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
         .risk-score.low{background:#dcfce7;color:#166534}.risk-score.med{background:#fef3c7;color:#92400e}.risk-score.hi{background:#fee2e2;color:#991b1b}
-        .risk-signals{display:flex;flex-direction:column;gap:3px}
-        .risk-sig{font-size:10.5px;color:var(--t2);display:flex;align-items:center;gap:5px;line-height:1.4}
-        .risk-sig::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.risk-signals{display:flex;flex-direction:column;gap:3px}
+.risk-sig{font-size:10.5px;color:var(--t2);display:flex;align-items:center;gap:5px;line-height:1.4}
+.risk-sig::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
         /* ── Attempts ── */
-        .attempts-row{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:6px;font-size:10.5px;color:var(--t3)}
+.attempts-row{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:6px;font-size:10.5px;color:var(--t3)}
         .att-dot{width:8px;height:8px;border-radius:50%;background:var(--bdr);border:1.5px solid var(--gm);transition:all .3s;flex-shrink:0}
-        .att-dot.used{background:#ef4444;border-color:#dc2626;box-shadow:0 0 5px rgba(220,38,38,.4)}
+.att-dot.used{background:#ef4444;border-color:#dc2626;box-shadow:0 0 5px rgba(220,38,38,.4)}
         /* ── Session info ── */
-        .session-info{background:var(--gl);border:1px solid var(--gm);border-radius:8px;padding:9px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
-        .session-info .si-ico{font-size:16px}
-        .session-info .si-tx{font-size:11px;color:var(--gd);line-height:1.5}
-        .session-info .si-tx strong{color:var(--gd)}
+.session-info{background:var(--gl);border:1px solid var(--gm);border-radius:8px;padding:9px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.session-info .si-ico{font-size:16px}
+.session-info .si-tx{font-size:11px;color:var(--gd);line-height:1.5}
+.session-info .si-tx strong{color:var(--gd)}
         /* ── Form locked ── */
-        .form-locked{pointer-events:none;opacity:.35;filter:blur(1px);transition:all .3s}
+.form-locked{pointer-events:none;opacity:.35;filter:blur(1px);transition:all .3s}
         /* ── Success ── */
         .sxwrap{text-align:center;padding:10px 0}
         .sxring{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--gl),#fff);border:3px solid var(--gm);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--g);box-shadow:var(--sh-g);animation:pop .5s cubic-bezier(.16,1,.3,1)}
@@ -246,72 +246,72 @@
         .fade{animation:sd .35s ease}
         @media(max-width:820px){.lp{display:none}.rgrid{grid-template-columns:1fr 1fr}}
         @media(max-width:480px){.rgrid{grid-template-columns:1fr 1fr}.cbody{padding:20px 16px 16px}.card{border-radius:14px}}
-    </style>
+</style>
 </head>
 <body>
 
 <!-- ═══════════════ LEFT BRAND PANEL ═══════════════ -->
 <div class="lp" role="complementary" aria-label="UniHealth system status">
     <div class="flag" aria-hidden="true"></div>
-    <div class="li">
-        <div>
-            <div class="brand">
+  <div class="li">
+    <div>
+      <div class="brand">
                 <div class="brand-sq" aria-hidden="true"><i data-feather="activity" style="color:#7beba4;width:20px;height:20px"></i></div>
-                <div>
-                    <div class="brand-nm">UniHealth EHR</div>
+        <div>
+          <div class="brand-nm">UniHealth EHR</div>
                     <div class="brand-tg">Model National Health System</div>
-                </div>
-            </div>
+        </div>
+      </div>
             <div class="sys-pill">
                 <div class="dot" aria-hidden="true"></div>
                 Central Health Authority · UniHealth EHR · 2026
             </div>
-        </div>
-        <div class="hero">
+    </div>
+    <div class="hero">
             <p class="eyebrow">National Health Network</p>
             <h1 class="hl">One login.<br><em>Every hospital</em><br>in the network.</h1>
             <p class="hd">Secure, unified access to your health records across the national health network — protected by multi-factor authentication and AI‑powered security.</p>
-        </div>
+    </div>
 
-        <!-- AI Security Monitor -->
+      <!-- AI Security Monitor -->
         <div class="ai-monitor" role="status" aria-live="polite" aria-label="AI Security Monitor">
-            <div class="ai-hd">
+        <div class="ai-hd">
                 <div class="ai-pulse" aria-hidden="true"></div>
-                <div class="ai-title">AI Security Monitor — Live</div>
-            </div>
-            <div class="ai-rows">
-                <div class="ai-row"><div class="ai-lbl">Threat Detection (NIDS)</div><div class="ai-val ok">ACTIVE</div></div>
-                <div class="ai-row"><div class="ai-lbl">Anomaly Detection (ML)</div><div class="ai-val ok">NOMINAL</div></div>
-                <div class="ai-row"><div class="ai-lbl">Intrusion Attempts (1hr)</div><div class="ai-val warn" id="aiAttempts">0</div></div>
-                <div class="ai-row"><div class="ai-lbl">Auth Servers (Redundant)</div><div class="ai-val live">3/3 UP</div></div>
-                <div class="ai-row"><div class="ai-lbl">UEBA Behaviour Model</div><div class="ai-val ok">RUNNING</div></div>
-            </div>
-            <div class="ai-bar-row">
-                <div class="ai-bar-lbl">System Security Score <span id="secScore">98.4%</span></div>
-                <div class="ai-bar"><div class="ai-bar-f" id="secBar" style="width:98.4%"></div></div>
-            </div>
+          <div class="ai-title">AI Security Monitor — Live</div>
         </div>
+        <div class="ai-rows">
+          <div class="ai-row"><div class="ai-lbl">Threat Detection (NIDS)</div><div class="ai-val ok">ACTIVE</div></div>
+          <div class="ai-row"><div class="ai-lbl">Anomaly Detection (ML)</div><div class="ai-val ok">NOMINAL</div></div>
+          <div class="ai-row"><div class="ai-lbl">Intrusion Attempts (1hr)</div><div class="ai-val warn" id="aiAttempts">0</div></div>
+          <div class="ai-row"><div class="ai-lbl">Auth Servers (Redundant)</div><div class="ai-val live">3/3 UP</div></div>
+          <div class="ai-row"><div class="ai-lbl">UEBA Behaviour Model</div><div class="ai-val ok">RUNNING</div></div>
+        </div>
+        <div class="ai-bar-row">
+          <div class="ai-bar-lbl">System Security Score <span id="secScore">98.4%</span></div>
+                <div class="ai-bar"><div class="ai-bar-f" id="secBar" style="width:98.4%"></div></div>
+        </div>
+      </div>
 
         <!-- Audit Ticker -->
         <div class="audit-ticker" role="log" aria-live="polite" aria-label="Append-only audit log">
             <div class="at-lbl">Append‑Only Audit Log · Tamper‑Evident</div>
             <div class="at-entry" id="at1">→ AUTH LOGIN_ATTEMPT role=patient ip=192.0.2.x</div>
             <div class="at-entry" id="at2">→ AUTH SESSION_EXPIRE uid=dr_osei_crh</div>
-            <div class="at-entry" id="at3">→ RBAC ACCESS_GRANTED ward=4B role=nurse</div>
-        </div>
+        <div class="at-entry" id="at3">→ RBAC ACCESS_GRANTED ward=4B role=nurse</div>
+      </div>
 
         <div class="lfooter">
             <span>Model Data Protection Act · Model Health Records Act · ISO 27001</span>
             <span>© Model Health Authority 2026</span>
         </div>
-    </div>
+  </div>
 </div>
 
 <!-- ═══════════════ RIGHT CARD ═══════════════ -->
 <main class="rp">
     <div class="card" role="region" aria-label="Authentication">
         <div class="cstripe" aria-hidden="true"></div>
-        <div class="cbody">
+    <div class="cbody">
 
             <!-- ═══ STEP 1: Role Selection ═══ -->
             <section id="s1" class="fade" aria-label="Step 1: Select your role">
@@ -321,12 +321,12 @@
                     <div class="sdot" role="listitem" aria-label="Step 2">2</div>
                     <div class="sline" aria-hidden="true"></div>
                     <div class="sdot" role="listitem" aria-label="Step 3">3</div>
-                </div>
-                <div class="shd">
+        </div>
+        <div class="shd">
                     <div class="sico" aria-hidden="true"><i data-feather="users"></i></div>
-                    <div class="stitle">Select your role</div>
-                    <div class="ssub">Your role determines which verification system is used</div>
-                </div>
+          <div class="stitle">Select your role</div>
+          <div class="ssub">Your role determines which verification system is used</div>
+        </div>
                 <div class="rgrid" role="radiogroup" aria-label="Select authentication role">
                     <button class="rc" data-role="doctor" aria-pressed="false" aria-label="Doctor — Physician or Specialist" type="button">
                         <div class="rchk" aria-hidden="true"><i data-feather="check"></i></div>
@@ -364,15 +364,15 @@
                         <div class="rnm">Laboratory</div>
                         <div class="rds">Sample processing &amp; results</div>
                     </button>
-                </div>
+          </div>
                 <div id="roleNote" class="nbox grn hidden" role="status" aria-live="polite">
                     <span class="ni" id="roleNoteIco" aria-hidden="true"><i data-feather="info"></i></span>
-                    <span id="roleNoteTxt"></span>
-                </div>
+          <span id="roleNoteTxt"></span>
+        </div>
                 <button class="btn" id="s1btn" type="button" disabled aria-disabled="true">
-                    Continue
+          Continue
                     <i data-feather="arrow-right" aria-hidden="true"></i>
-                </button>
+        </button>
             </section>
 
             <!-- ═══ STEP 2: Credentials ═══ -->
@@ -383,127 +383,127 @@
                     <div class="sdot act" role="listitem" aria-label="Step 2, current">2</div>
                     <div class="sline" aria-hidden="true"></div>
                     <div class="sdot" role="listitem" aria-label="Step 3">3</div>
-                </div>
+        </div>
                 <button class="bkbn" id="s2BackBtn" type="button" aria-label="Back to role selection">
                     <i data-feather="arrow-left" aria-hidden="true"></i> Back
                 </button>
-                <div class="shd">
+        <div class="shd">
                     <div class="sico" id="s2ico" aria-hidden="true"><i data-feather="stethoscope"></i></div>
-                    <div class="stitle" id="s2title">Sign in</div>
-                    <div class="ssub" id="s2sub">Enter your credentials below</div>
-                </div>
+          <div class="stitle" id="s2title">Sign in</div>
+          <div class="ssub" id="s2sub">Enter your credentials below</div>
+        </div>
 
-                <!-- STAFF FORM -->
-                <div id="staffForm">
+        <!-- STAFF FORM -->
+        <div id="staffForm">
                     <div class="lockout" id="lockoutBanner" role="alert" aria-live="assertive">
                         <div class="lockout-ico" aria-hidden="true"><i data-feather="lock"></i></div>
-                        <div class="lockout-ti">Account Temporarily Locked</div>
-                        <div class="lockout-su">Too many failed attempts. Account locked for security.<br>Your attempt has been logged in the audit trail.</div>
+            <div class="lockout-ti">Account Temporarily Locked</div>
+            <div class="lockout-su">Too many failed attempts. Account locked for security.<br>Your attempt has been logged in the audit trail.</div>
                         <div class="lockout-cd" id="lockoutTimer" aria-label="Lockout countdown">00:30</div>
-                        <div style="font-size:10.5px;color:#b91c1c">AI anomaly detection has been notified. Contact your facility administrator if this wasn't you.</div>
-                    </div>
+            <div style="font-size:10.5px;color:#b91c1c">AI anomaly detection has been notified. Contact your facility administrator if this wasn't you.</div>
+          </div>
                     <div id="captchaWrap" class="captcha-wrap hidden" role="group" aria-label="Security CAPTCHA check">
                         <div class="captcha-lbl"><i data-feather="cpu" aria-hidden="true"></i> Security Check — Confirm you are human</div>
                         <div class="captcha-q" id="captchaQ" aria-live="polite">12 + 7 = ?</div>
-                        <div class="captcha-row">
+            <div class="captcha-row">
                             <input type="text" id="captchaIn" inputmode="numeric" placeholder="Your answer" maxlength="4" autocomplete="off" aria-label="CAPTCHA answer">
                             <button class="captcha-refresh" id="captchaRefreshBtn" type="button" aria-label="Get a new CAPTCHA question">
                                 <i data-feather="refresh-cw" aria-hidden="true"></i>
                             </button>
-                        </div>
-                    </div>
-                    <div id="staffFormInner">
+            </div>
+          </div>
+          <div id="staffFormInner">
                         <div class="nbox grn" id="staffNote" role="note">
                             <span class="ni" aria-hidden="true"><i data-feather="lock"></i></span>
-                            <span id="staffNoteTxt">Registration number + institutional email + password, then SMS/email OTP.</span>
-                        </div>
+            <span id="staffNoteTxt">Registration number + institutional email + password, then SMS/email OTP.</span>
+          </div>
                         <div id="staffErr" class="errbanner" role="alert" aria-live="assertive">
                             <span aria-hidden="true"><i data-feather="alert-triangle"></i></span>
                             <span id="staffErrTxt">Please check your credentials and try again.</span>
-                        </div>
-                        <div class="fields">
-                            <div class="field">
+          </div>
+          <div class="fields">
+            <div class="field">
                                 <label id="regLbl" for="regIn">Medical Registration No.</label>
-                                <div class="fw">
+              <div class="fw">
                                     <span class="fi" aria-hidden="true"><i data-feather="user"></i></span>
                                     <input type="text" id="regIn" placeholder="e.g. A4821" autocomplete="username" aria-required="true" aria-describedby="regHint">
-                                </div>
-                                <span class="fhint" id="regHint">As printed on your professional licence</span>
-                            </div>
-                            <div class="field">
+              </div>
+              <span class="fhint" id="regHint">As printed on your professional licence</span>
+            </div>
+            <div class="field">
                                 <label for="emailIn">Institutional Email</label>
-                                <div class="fw">
+              <div class="fw">
                                     <span class="fi" aria-hidden="true"><i data-feather="mail"></i></span>
                                     <input type="email" id="emailIn" placeholder="you@hospital.health" autocomplete="email" aria-required="true">
-                                </div>
-                            </div>
-                            <div class="field">
-                                <div class="lbl-row">
+              </div>
+            </div>
+            <div class="field">
+              <div class="lbl-row">
                                     <label for="pwIn">Password</label>
                                     <button class="fgt" id="forgotPwBtn" type="button">Forgot password?</button>
-                                </div>
-                                <div class="fw">
+              </div>
+              <div class="fw">
                                     <span class="fi" aria-hidden="true"><i data-feather="key"></i></span>
                                     <input type="password" id="pwIn" placeholder="········" autocomplete="current-password" aria-required="true" aria-describedby="pwStrengthWrap">
                                     <button class="eyebn" id="togglePwBtn" type="button" aria-label="Show password" aria-pressed="false">
                                         <i data-feather="eye" id="eyeico" aria-hidden="true"></i>
-                                    </button>
-                                </div>
+                </button>
+              </div>
                                 <div class="pw-strength" id="pwStrengthWrap" style="display:none" aria-live="polite">
-                                    <div class="pw-bars">
-                                        <div class="pw-bar" id="pb1"></div>
-                                        <div class="pw-bar" id="pb2"></div>
-                                        <div class="pw-bar" id="pb3"></div>
-                                        <div class="pw-bar" id="pb4"></div>
-                                    </div>
-                                    <div class="pw-lbl" id="pwStrengthLbl">Enter a password</div>
+                <div class="pw-bars">
+                  <div class="pw-bar" id="pb1"></div>
+                  <div class="pw-bar" id="pb2"></div>
+                  <div class="pw-bar" id="pb3"></div>
+                  <div class="pw-bar" id="pb4"></div>
+                </div>
+                <div class="pw-lbl" id="pwStrengthLbl">Enter a password</div>
                                     <div class="pw-reqs" aria-label="Password requirements">
-                                        <div class="req" id="req-len">At least 8 characters</div>
-                                        <div class="req" id="req-upper">Uppercase letter (A–Z)</div>
-                                        <div class="req" id="req-num">Number (0–9)</div>
-                                        <div class="req" id="req-sym">Special character (!@#$…)</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                  <div class="req" id="req-len">At least 8 characters</div>
+                  <div class="req" id="req-upper">Uppercase letter (A–Z)</div>
+                  <div class="req" id="req-num">Number (0–9)</div>
+                  <div class="req" id="req-sym">Special character (!@#$…)</div>
+                </div>
+              </div>
+            </div>
+          </div>
                         <div class="attempts-row" id="attemptsRow" style="display:none" role="status" aria-live="polite">
-                            <span style="font-size:10px">Attempts:</span>
+            <span style="font-size:10px">Attempts:</span>
                             <div class="att-dot" id="ad1" aria-hidden="true"></div>
                             <div class="att-dot" id="ad2" aria-hidden="true"></div>
                             <div class="att-dot" id="ad3" aria-hidden="true"></div>
-                            <span id="attemptsLeft" style="font-size:10px;color:var(--r);font-weight:700"></span>
-                        </div>
+            <span id="attemptsLeft" style="font-size:10px;color:var(--r);font-weight:700"></span>
+          </div>
                         <button class="btn" id="staffBtn" type="button" style="margin-top:10px">
                             <div class="bspin" id="staffSp" aria-hidden="true"></div>
-                            <span id="staffBtnTxt">Sign In</span>
+            <span id="staffBtnTxt">Sign In</span>
                             <i data-feather="arrow-right" id="staffArr" aria-hidden="true"></i>
-                        </button>
-                        <div class="orline"><span>or sign in with</span></div>
-                        <div class="alt-row">
+          </button>
+          <div class="orline"><span>or sign in with</span></div>
+          <div class="alt-row">
                             <button class="altbn" data-alt="smartcard" type="button" aria-label="Sign in with Smart Card">
                                 <i data-feather="credit-card" aria-hidden="true"></i> Smart Card
                             </button>
                             <button class="altbn" data-alt="p360" type="button" aria-label="Sign in with Practice 360 app">
                                 <i data-feather="smartphone" aria-hidden="true"></i> Practice 360
                             </button>
-                        </div>
+          </div>
                     </div>
-                </div>
+        </div>
 
                 <!-- PATIENT FORM -->
-                <div id="patForm" class="hidden">
+        <div id="patForm" class="hidden">
                     <div class="nbox blu" role="note">
                         <span class="ni" aria-hidden="true"><i data-feather="shield"></i></span>
                         <span><strong>ModelCover Portal login:</strong> Select your ID type, enter your ID number and your 4‑digit ModelCover PIN, then verify via SMS OTP or fingerprint biometric.</span>
-                    </div>
+          </div>
                     <div id="patErr" class="errbanner" role="alert" aria-live="assertive">
                         <span aria-hidden="true"><i data-feather="alert-triangle"></i></span>
                         <span id="patErrTxt">ID number or PIN is incorrect. Please try again.</span>
-                    </div>
-                    <div class="fields">
-                        <div class="field">
+          </div>
+          <div class="fields">
+            <div class="field">
                             <label for="idTypeIn">ID Type</label>
-                            <div class="fw">
+              <div class="fw">
                                 <span class="fi" aria-hidden="true"><i data-feather="credit-card"></i></span>
                                 <select id="idTypeIn" aria-required="true" aria-label="Select your identification type">
                                     <option value="national">National ID</option>
@@ -512,46 +512,46 @@
                                     <option value="refugee">Refugee ID</option>
                                     <option value="mandate">Mandate Number</option>
                                     <option value="temp">Temporary ID</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="field">
+                </select>
+              </div>
+            </div>
+            <div class="field">
                             <label id="patIdLbl" for="patIdIn">National ID Number</label>
-                            <div class="fw">
+              <div class="fw">
                                 <span class="fi" aria-hidden="true"><i data-feather="hash"></i></span>
                                 <input type="text" id="patIdIn" placeholder="e.g. 12345678" inputmode="numeric" maxlength="12" autocomplete="username" aria-required="true" aria-describedby="patIdHint">
-                            </div>
+              </div>
                             <span class="fhint" id="patIdHint">7 or 8‑digit number as shown on your ID card</span>
-                        </div>
-                        <div class="field">
-                            <div class="lbl-row">
+            </div>
+            <div class="field">
+              <div class="lbl-row">
                                 <label>4‑Digit ModelCover PIN</label>
                                 <button class="fgt" id="forgotPinBtn" type="button">Forgot PIN?</button>
-                            </div>
+              </div>
                             <div class="pin-grid" role="group" aria-label="4-digit ModelCover PIN">
                                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p1" autocomplete="one-time-code" aria-label="PIN digit 1">
                                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p2" aria-label="PIN digit 2">
                                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p3" aria-label="PIN digit 3">
                                 <input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p4" aria-label="PIN digit 4">
-                            </div>
+              </div>
                             <span class="fhint">The 4‑digit PIN you set when registering on ModelCover Portal</span>
-                        </div>
-                        <div class="field">
+            </div>
+            <div class="field">
                             <label for="patPhIn">Registered Phone Number</label>
-                            <div class="fw">
+              <div class="fw">
                                 <span class="fi" aria-hidden="true"><i data-feather="phone"></i></span>
                                 <input type="tel" id="patPhIn" placeholder="e.g. 0712 345 678" autocomplete="tel" aria-required="true">
-                            </div>
+              </div>
                             <span class="fhint">Phone number linked to your ModelCover account</span>
-                        </div>
-                    </div>
+            </div>
+          </div>
                     <button class="btn" id="patBtn" type="button">
                         <div class="bspin" id="patSp" aria-hidden="true"></div>
                         <span id="patBtnTxt">Verify with ModelCover</span>
                         <i data-feather="arrow-right" id="patArr" aria-hidden="true"></i>
-                    </button>
-                    <div class="orline"><span>or verify with</span></div>
-                    <div class="alt-row">
+          </button>
+          <div class="orline"><span>or verify with</span></div>
+          <div class="alt-row">
                         <button class="altbn" data-alt="bio" type="button" aria-label="Verify with fingerprint biometric">
                             <i data-feather="fingerprint" aria-hidden="true"></i> Biometric
                         </button>
@@ -561,8 +561,8 @@
                         <button class="altbn" data-alt="ussd" type="button" aria-label="Verify via USSD *147#">
                             <i data-feather="phone-call" aria-hidden="true"></i> *147# USSD
                         </button>
-                    </div>
-                </div>
+          </div>
+        </div>
             </section>
 
             <!-- ═══ STEP 3: MFA ═══ -->
@@ -573,7 +573,7 @@
                     <div class="sdot done" role="listitem" aria-label="Step 2, complete"><i data-feather="check" aria-hidden="true"></i></div>
                     <div class="sline done" aria-hidden="true"></div>
                     <div class="sdot act" role="listitem" aria-label="Step 3, current">3</div>
-                </div>
+        </div>
                 <button class="bkbn" id="s3BackBtn" type="button" aria-label="Back to credentials">
                     <i data-feather="arrow-left" aria-hidden="true"></i> Back
                 </button>
@@ -587,26 +587,26 @@
                     <button class="vtab" id="vt-p360" role="tab" aria-selected="false" aria-controls="pan-p360" type="button">
                         <i data-feather="smartphone" aria-hidden="true"></i> Practice 360
                     </button>
-                </div>
+        </div>
 
-                <!-- OTP panel -->
+        <!-- OTP panel -->
                 <div id="pan-otp" role="tabpanel" aria-labelledby="vt-otp">
-                    <div class="risk-panel low" id="riskPanel">
-                        <div class="risk-hd">
+          <div class="risk-panel low" id="riskPanel">
+            <div class="risk-hd">
                             <div class="risk-lbl low"><i data-feather="cpu" aria-hidden="true"></i> AI Risk Assessment</div>
-                            <div class="risk-score low" id="riskScore">LOW RISK</div>
-                        </div>
+              <div class="risk-score low" id="riskScore">LOW RISK</div>
+            </div>
                         <div class="risk-signals" id="riskSignals" aria-live="polite">
-                            <div class="risk-sig" style="color:#166534">Known device detected</div>
-                            <div class="risk-sig" style="color:#166534">Login time within normal hours</div>
+              <div class="risk-sig" style="color:#166534">Known device detected</div>
+              <div class="risk-sig" style="color:#166534">Login time within normal hours</div>
                             <div class="risk-sig" style="color:#166534">Location: Capital Region — consistent with history</div>
-                        </div>
-                    </div>
-                    <div class="shd" style="margin-bottom:10px">
+            </div>
+          </div>
+          <div class="shd" style="margin-bottom:10px">
                         <div class="sico" aria-hidden="true"><i data-feather="message-square"></i></div>
-                        <div class="stitle">Enter OTP</div>
+            <div class="stitle">Enter OTP</div>
                         <div class="ssub" id="otpNote" aria-live="polite">A 6‑digit code was sent via SMS to your registered number</div>
-                    </div>
+          </div>
                     <div class="otp-grid" role="group" aria-label="6-digit one-time password">
                         <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o1" aria-label="OTP digit 1">
                         <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o2" aria-label="OTP digit 2">
@@ -614,92 +614,92 @@
                         <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o4" aria-label="OTP digit 4">
                         <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o5" aria-label="OTP digit 5">
                         <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o6" aria-label="OTP digit 6">
-                    </div>
+          </div>
                     <button class="btn" id="otpBtn" type="button" disabled aria-disabled="true">
                         <div class="bspin" id="otpSp" aria-hidden="true"></div>
-                        <span id="otpBtnTxt">Verify Code</span>
-                    </button>
+            <span id="otpBtnTxt">Verify Code</span>
+          </button>
                     <div class="resend-row">
                         Didn't receive it?
                         <button id="resendBtn" type="button" disabled aria-disabled="true">Resend in <span id="timer">30</span>s</button>
-                    </div>
-                </div>
+          </div>
+        </div>
 
-                <!-- Biometric panel -->
+        <!-- Biometric panel -->
                 <div id="pan-bio" class="hidden" role="tabpanel" aria-labelledby="vt-bio">
-                    <div class="bio">
+          <div class="bio">
                         <div class="bio-ring" aria-hidden="true"><i data-feather="fingerprint"></i></div>
-                        <div class="bio-title">Fingerprint / Biometric</div>
-                        <div class="bio-desc">Place your registered finger on the UniHealth biometric reader. Biometric verification is required at 3 UniHealth touchpoints.</div>
+            <div class="bio-title">Fingerprint / Biometric</div>
+            <div class="bio-desc">Place your registered finger on the UniHealth biometric reader. Biometric verification is required at 3 UniHealth touchpoints.</div>
                         <div class="bio-3pts" aria-label="Biometric checkpoints">
                             <div class="bio-pt"><div class="dot2" aria-hidden="true"></div>Admission</div>
                             <div class="bio-pt"><div class="dot2" aria-hidden="true"></div>Procedure Auth.</div>
                             <div class="bio-pt"><div class="dot2" aria-hidden="true"></div>Discharge</div>
-                        </div>
+            </div>
                         <div class="nbox grn" style="text-align:left;margin-bottom:14px" role="note">
                             <span class="ni" aria-hidden="true"><i data-feather="check-circle"></i></span>
-                            <span>Biometric is now <strong>mandatory</strong> at all Level 4, 5 and 6 hospitals under UniHealth (August 2025). Fingerprint data is validated in real-time against the central UniHealth registry.</span>
-                        </div>
+              <span>Biometric is now <strong>mandatory</strong> at all Level 4, 5 and 6 hospitals under UniHealth (August 2025). Fingerprint data is validated in real-time against the central UniHealth registry.</span>
+            </div>
                         <button class="btn" id="bioBtn" type="button">
                             <div class="bspin" id="bioSp" aria-hidden="true"></div>
                             <span id="bioBtnTxt">Scan Fingerprint</span>
-                        </button>
-                    </div>
-                </div>
+            </button>
+          </div>
+        </div>
 
-                <!-- Practice 360 panel -->
+        <!-- Practice 360 panel -->
                 <div id="pan-p360" class="hidden" role="tabpanel" aria-labelledby="vt-p360">
-                    <div class="bio">
+          <div class="bio">
                         <div class="bio-ring" aria-hidden="true"><i data-feather="smartphone"></i></div>
-                        <div class="bio-title">Practice 360 App</div>
-                        <div class="bio-desc">Open the UniHealth <strong>Practice 360</strong> app on your registered device and tap <em>Approve</em> on the push notification to authorise this session.</div>
+            <div class="bio-title">Practice 360 App</div>
+            <div class="bio-desc">Open the UniHealth <strong>Practice 360</strong> app on your registered device and tap <em>Approve</em> on the push notification to authorise this session.</div>
                         <div class="nbox amb" style="text-align:left;margin-bottom:12px" role="note">
                             <span class="ni" aria-hidden="true"><i data-feather="map-pin"></i></span>
-                            <span><strong>Geo-fenced &amp; geo-tagged:</strong> Practice 360 verifies you are physically at the registered facility. Pre-authorisation codes can no longer be shared between healthcare workers (UniHealth policy Aug 2025).</span>
-                        </div>
+              <span><strong>Geo-fenced &amp; geo-tagged:</strong> Practice 360 verifies you are physically at the registered facility. Pre-authorisation codes can no longer be shared between healthcare workers (UniHealth policy Aug 2025).</span>
+            </div>
                         <div class="nbox blu" style="text-align:left;margin-bottom:14px" role="note">
                             <span class="ni" aria-hidden="true"><i data-feather="download"></i></span>
                             <span>Don't have the app? <a href="#" style="color:#1d4ed8;font-weight:700">Download Practice 360</a> using your UniHealth provider credentials.</span>
-                        </div>
+            </div>
                         <button class="btn" id="p360Btn" type="button">
                             <div class="bspin" id="p360Sp" aria-hidden="true"></div>
                             <span id="p360BtnTxt">Awaiting App Approval…</span>
-                        </button>
-                    </div>
-                </div>
+            </button>
+          </div>
+        </div>
             </section>
 
             <!-- ═══ STEP 4: Success ═══ -->
             <section id="s4" class="hidden fade" aria-label="Authentication successful" aria-live="polite">
-                <div class="sxwrap">
+        <div class="sxwrap">
                     <div class="sxring" aria-hidden="true"><i data-feather="check-circle"></i></div>
-                    <div class="sxtitle">Access Granted</div>
+          <div class="sxtitle">Access Granted</div>
                     <div class="sxsub" id="sxMsg">Welcome back!<br>Redirecting to your dashboard…</div>
-                    <div class="sxcard">
+          <div class="sxcard">
                         <span class="sxi" id="sxIco" aria-hidden="true"><i data-feather="stethoscope"></i></span>
-                        <div>
+            <div>
                             <div class="sxrole" id="sxRole">Doctor — Central Referral Hospital</div>
                             <div class="sxs">ModelCover verified · Model Data Protection Act · Session secured</div>
-                        </div>
-                    </div>
+            </div>
+          </div>
                     <div class="session-info" role="note">
                         <span class="si-ico" aria-hidden="true"><i data-feather="clock"></i></span>
-                        <div class="si-tx">
+            <div class="si-tx">
                             <strong>Session expires in 30 minutes</strong> of inactivity (Model Data Protection Act).<br>
                             TLS 1.3 encrypted · Append-only audit log active · Login recorded.
-                        </div>
-                    </div>
+            </div>
+          </div>
                     <button class="btn" id="launchBtn" type="button">
                         Launch Dashboard <i data-feather="arrow-right" aria-hidden="true"></i>
                     </button>
-                </div>
+        </div>
             </section>
 
-        </div>
-        <div class="cfoot">
-            <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">v2.0 · Model System · HAPI FHIR R5 · Kafka Streams · Redis Cluster</div>
-        </div>
     </div>
+    <div class="cfoot">
+            <div style="font-family:var(--mono);font-size:9px;color:var(--t3)">v2.0 · Model System · HAPI FHIR R5 · Kafka Streams · Redis Cluster</div>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -944,8 +944,8 @@ function updateAttemptDots() {
 
 function triggerLockout() {
     document.getElementById('lockoutBanner').style.display = 'flex';
-    document.getElementById('staffFormInner').classList.add('form-locked');
-    document.getElementById('captchaWrap').classList.add('hidden');
+  document.getElementById('staffFormInner').classList.add('form-locked');
+  document.getElementById('captchaWrap').classList.add('hidden');
     let secs = state.LOCKOUT_SECS;
 
     function tick() {
@@ -956,15 +956,15 @@ function triggerLockout() {
             clearInterval(state.lockoutRef);
             state.lockoutRef = null;
             document.getElementById('lockoutBanner').style.display = 'none';
-            document.getElementById('staffFormInner').classList.remove('form-locked');
+      document.getElementById('staffFormInner').classList.remove('form-locked');
             state.failedAttempts = 0;
             updateAttemptDots();
             document.getElementById('attemptsRow').style.display = 'none';
             const attEl = document.getElementById('aiAttempts');
             if (attEl) attEl.textContent = parseInt(attEl.textContent || '0') + 1;
-        }
-        secs--;
     }
+    secs--;
+  }
     tick();
     state.lockoutRef = setInterval(tick, 1000);
     addAuditEntry('SECURITY LOCKOUT_TRIGGERED role=' + state.role + ' attempts=3');
@@ -1035,12 +1035,12 @@ function goStep2() {
     document.getElementById('s2sub').textContent = cfg.sub;
 
     if (state.role === 'patient') {
-        document.getElementById('staffForm').classList.add('hidden');
-        document.getElementById('patForm').classList.remove('hidden');
-        updateIdLabel();
+    document.getElementById('staffForm').classList.add('hidden');
+    document.getElementById('patForm').classList.remove('hidden');
+    updateIdLabel();
     } else {
-        document.getElementById('patForm').classList.add('hidden');
-        document.getElementById('staffForm').classList.remove('hidden');
+    document.getElementById('patForm').classList.add('hidden');
+    document.getElementById('staffForm').classList.remove('hidden');
         document.getElementById('staffNoteTxt').textContent = cfg.staffNote;
         document.getElementById('regLbl').textContent = cfg.regLbl;
         document.getElementById('regIn').placeholder = cfg.regPH;
@@ -1099,7 +1099,7 @@ function clearForms() {
         const el = document.getElementById(id);
         if (el) { el.value = ''; el.classList.remove('f'); }
     });
-    hideErr('staffErr');
+  hideErr('staffErr');
     hideErr('patErr');
     const wrap = document.getElementById('pwStrengthWrap');
     if (wrap) wrap.style.display = 'none';
@@ -1202,7 +1202,7 @@ function submitPatientLogin() {
     const idVal = document.getElementById('patIdIn').value.replace(/\s/g, '');
     const pin = ['p1','p2','p3','p4'].map(id => document.getElementById(id).value).join('');
     const phone = document.getElementById('patPhIn').value.replace(/[\s\-]/g, '');
-    hideErr('patErr');
+  hideErr('patErr');
 
     if (!idVal || !idCfg.rx.test(idVal)) {
         showErr('patErr', idCfg.err);

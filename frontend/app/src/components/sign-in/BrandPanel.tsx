@@ -29,13 +29,13 @@ export function BrandPanel({ aiAttempts, auditLines }: Props) {
           <h1 className="hl">
             One login.
             <br />
-            <em>Every patient</em>
+            <em>Every patient,</em>
             <br />
-            hospital.
+            every hospital.
           </h1>
           <p className="hd">
-            Secure, unified access to your health records across the pilot hospital network — protected
-            by multi-factor authentication and AI-powered security.
+            Secure, unified access to health records across the pilot network — protected by
+            multi-factor authentication and AI-powered security monitoring.
           </p>
         </div>
 

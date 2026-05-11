@@ -58,7 +58,7 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
     }
     if (!ph || !PHONE_RX.test(ph)) {
       setPatErr(
-        "Enter your registered registered mobile phone number (e.g. 0712 345 678)."
+        "Enter your registered mobile phone number (e.g. 0712 345 678)."
       );
       return;
     }
@@ -95,12 +95,12 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
         <div className="ssub">{c.sub}</div>
       </div>
 
-      <div className="nbox blu">
-        <span className="ni">🏛️</span>
-        <span>
-          <strong>UniHealth Patient Portal login:</strong> Select your ID type, enter your ID number and
-          your 4-digit UniHealth PIN, then verify via SMS OTP or fingerprint biometric.
-        </span>
+      <div className="si-hint blu">
+        <span className="si-hint-ico" aria-hidden>🏛️</span>
+        <div className="si-hint-body">
+          <span className="si-hint-head">ID type · ID number · 4-digit UniHealth PIN</span>
+          <span className="si-hint-sub">Verify via SMS OTP or fingerprint biometric.</span>
+        </div>
       </div>
       <div className={`errbanner${patErr ? " is-visible" : ""}`} role="alert">
         <span>⚠️</span>

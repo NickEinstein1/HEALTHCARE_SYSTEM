@@ -114,7 +114,8 @@ export function SignInPage() {
             {step === 4 && role && <StepSuccess role={role} addAudit={addAudit} />}
           </div>
           <div className="cfoot">
-            <div style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--t3)" }}>v2.0</div>
+            <span>UniHealth EHR · Phase 1 Pilot · 2026</span>
+            <span>v2.0</span>
           </div>
         </div>
       </div>

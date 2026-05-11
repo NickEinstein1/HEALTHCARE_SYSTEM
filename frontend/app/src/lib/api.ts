@@ -148,6 +148,37 @@ export const api = {
   pharmacyAudit(limit = 200): Promise<any[]> {
     return getJson(`/pharmacy/audit?limit=${encodeURIComponent(String(limit))}`);
   },
+  // ---- Appointments (cross-user scheduling) ----
+  appointments(params?: { patient_id?: string; department?: string; status?: string; date?: string; limit?: number }): Promise<any[]> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.patient_id) qs.set("patient_id", p.patient_id);
+    if (p.department) qs.set("department", p.department);
+    if (p.status)     qs.set("status", p.status);
+    if (p.date)       qs.set("date", p.date);
+    if (p.limit)      qs.set("limit", String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/appointments${suffix}`);
+  },
+  appointmentCreate(payload: unknown): Promise<{ status: string; id?: string; appointment?: any }> {
+    return postJson("/appointments", payload);
+  },
+  appointmentSlots(date: string, facility?: string, department?: string): Promise<{ date: string; available: string[]; booked: string[] }> {
+    const qs = new URLSearchParams({ date });
+    if (facility)   qs.set("facility", facility);
+    if (department) qs.set("department", department);
+    return getJson(`/appointments/slots?${qs}`);
+  },
+  appointmentDepartments(): Promise<{ departments: string[] }> {
+    return getJson("/appointments/departments");
+  },
+  appointmentConfirm(aptId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/appointments/${encodeURIComponent(aptId)}/confirm`, {});
+  },
+  appointmentCancel(aptId: string, reason?: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/appointments/${encodeURIComponent(aptId)}/cancel`, { reason: reason ?? "" });
+  },
+
   uiAction(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/ui/actions", payload);
   },
@@ -240,6 +271,149 @@ export const api = {
     if (p.page) qs.set("page", String(p.page));
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
     return getJson(`/integrations/kmhfl/facilities${suffix}`);
+  },
+
+  // ---- Walk-ins + cross-facility correlation (Phase 1 UI) ----
+  walkinsList(params?: { limit?: number; facility_id?: string; triage_level?: string; uhid?: string }): Promise<any[]> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.limit) qs.set("limit", String(p.limit));
+    if (p.facility_id) qs.set("facility_id", p.facility_id);
+    if (p.triage_level) qs.set("triage_level", p.triage_level);
+    if (p.uhid) qs.set("uhid", p.uhid);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/walkins${suffix}`);
+  },
+  walkinCreate(payload: unknown): Promise<{
+    status: string;
+    walkin?: any;
+    patient?: any;
+    aliases?: any[];
+    correlation?: { action?: string | null; candidates?: { uhid: string; score: number; reason: string }[] };
+  }> {
+    return postJson("/walkins", payload);
+  },
+  walkinResolve(walkinId: string, payload?: unknown): Promise<{ status: string; walkin?: any }> {
+    return postJson(`/walkins/${encodeURIComponent(walkinId)}/resolve`, payload ?? {});
+  },
+  walkinSearch(q: string, limit = 20): Promise<any[]> {
+    return getJson(`/walkins/search?q=${encodeURIComponent(q)}&limit=${encodeURIComponent(String(limit))}`);
+  },
+  walkinPatient360(uhid: string): Promise<{
+    patient?: any;
+    aliases?: any[];
+    visits?: any[];
+    facilities_visited?: string[];
+    total_visits?: number;
+  }> {
+    return getJson(`/walkins/patient/${encodeURIComponent(uhid)}`);
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // Phase 3 — AI Assist
+  // ══════════════════════════════════════════════════════════════
+
+  aiStatus(): Promise<any> {
+    return getJson("/ai/status");
+  },
+
+  aiDiagnosisHints(payload: {
+    features: Record<string, number>;
+    medications?: string[];
+    patient_id?: string;
+  }, role: string): Promise<any> {
+    return postJson("/ai/diagnosis-hints", payload, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiAnomalyCheck(payload: {
+    patient_id: string;
+    vitals: Record<string, number>;
+    labs?: Record<string, number>;
+    baseline?: Record<string, { mean: number; std: number }>;
+  }, role: string): Promise<any> {
+    return postJson("/ai/anomaly-check", payload, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiNews2(vitals: {
+    rr: number; spo2: number; sbp: number; hr: number; temp: number; gcs?: number;
+  }, role: string): Promise<any> {
+    return postJson("/ai/news2", vitals, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiAnomalies(params?: {
+    patient_id?: string; severity?: string; ack?: boolean; limit?: number;
+  }, role = "nurse"): Promise<any[]> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.patient_id) qs.set("patient_id", p.patient_id);
+    if (p.severity)   qs.set("severity",   p.severity);
+    if (p.ack !== undefined) qs.set("ack", String(p.ack));
+    if (p.limit)      qs.set("limit",      String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/ai/anomalies${suffix}`, { headers: { "X-UniHealth-Role": role } });
+  },
+
+  aiAckAnomaly(anomalyId: string, note: string, role: string): Promise<any> {
+    return postJson(`/ai/anomalies/${encodeURIComponent(anomalyId)}/ack`, { note }, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiSimPatients(params?: {
+    ward_id?: string; limit?: number;
+  }, role = "doctor"): Promise<any[]> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.ward_id) qs.set("ward_id", p.ward_id);
+    if (p.limit)   qs.set("limit",   String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/ai/patients${suffix}`, { headers: { "X-UniHealth-Role": role } });
+  },
+
+  aiPatientVitals(simId: string, limit = 12, role = "doctor"): Promise<any[]> {
+    return getJson(`/ai/patients/${encodeURIComponent(simId)}/vitals?limit=${limit}`, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiPatientLabs(simId: string, role = "doctor"): Promise<any> {
+    return getJson(`/ai/patients/${encodeURIComponent(simId)}/labs`, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiWards(role = "nurse"): Promise<any[]> {
+    return getJson("/ai/wards", { headers: { "X-UniHealth-Role": role } });
+  },
+
+  aiWardForecast(wardId: string, hours = 24, role = "admin"): Promise<any[]> {
+    return getJson(
+      `/ai/wards/${encodeURIComponent(wardId)}/forecast?hours=${hours}`,
+      { headers: { "X-UniHealth-Role": role } },
+    );
+  },
+
+  aiAuditLog(params?: { event?: string; limit?: number }): Promise<any[]> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.event) qs.set("event", p.event);
+    if (p.limit) qs.set("limit", String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/ai/audit${suffix}`, { headers: { "X-UniHealth-Role": "admin" } });
+  },
+
+  aiSubmitFeedback(auditId: string, action: string, note: string, role: string): Promise<any> {
+    return postJson(
+      `/ai/audit/${encodeURIComponent(auditId)}/feedback`,
+      { action, note },
+      { headers: { "X-UniHealth-Role": role } },
+    );
   },
 };
 

@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Any
 
 # Generic UI action log (Phase 1 UI)
 ui_actions: list[dict] = []
@@ -161,3 +162,99 @@ nurse_fluid_entries: list[dict] = []
 nurse_wound_entries: list[dict] = []
 nurse_handover_notes: list[dict] = []
 
+
+# ----- Patient correlation + walk-ins (Phase 1 UI, in-memory) -----
+# Core patient identity shared across facilities (UHID = global person identifier).
+# Aliases map facility-local MRNs to the UHID.
+patients_core: list[dict] = [
+    {
+        "uhid": "UHID-000001",
+        "full_name": "Wangui Njoroge",
+        "dob": "1990-02-11",
+        "gender": "female",
+        "phone": "+254700000312",
+        "national_id": None,
+        "created_at": time.time(),
+        "updated_at": time.time(),
+    }
+]
+
+patient_aliases: list[dict] = [
+    {
+        "uhid": "UHID-000001",
+        "facility_id": "FAC-0001",
+        "facility_name": "KNH Nairobi",
+        "mrn": "PAT-0001",
+        "created_at": time.time(),
+    }
+]
+
+# Walk-in visits (quick registration + triage/encounter at a facility).
+walkin_visits: list[dict] = []
+
+# ═══════════════════════════════════════════════════════════════════════
+# Phase 3 — AI Assist state  (populated at startup by simulator.seed_all)
+# ═══════════════════════════════════════════════════════════════════════
+
+# Simulated patient pool (25 patients across 6 wards)
+sim_patients: list[dict] = []
+
+# Vital-sign time series: {sim_id: [reading, ...]}
+sim_vitals: dict[str, list[dict]] = {}
+
+# Patient-specific rolling baselines: {sim_id: {metric: {mean, std}}}
+sim_baselines: dict[str, dict] = {}
+
+# Current ward occupancy: {ward_id: ward_dict}
+sim_ward_state: dict[str, dict] = {}
+
+# 48-h bed demand forecast: {ward_id: [step, ...]}
+sim_bed_forecast: dict[str, list[dict]] = {}
+
+# Active anomaly alerts (unacknowledged + recent acknowledged)
+ai_anomalies: list[dict] = []
+
+# KDPA-compliant AI audit trail (every AI recommendation + clinician feedback)
+ai_audit_log: list[dict] = []
+
+
+def bootstrap_ai_state() -> None:
+    """Called once at FastAPI startup to seed Phase 3 in-memory data."""
+    from app.ai.simulator import seed_all
+    data = seed_all()
+    sim_patients.extend(data["patients"])
+    sim_vitals.update(data["vitals"])
+    sim_baselines.update(data["baselines"])
+    sim_ward_state.update(data["ward_state"])
+    sim_bed_forecast.update(data["forecast"])
+
+
+# ----- Appointments (cross-user: booked by patient, visible to doctor/nurse) -----
+appointments: list[dict] = [
+    {
+        "id": "APT-2026-001",
+        "patient_id": "P001",
+        "patient_name": "P. Mutiso",
+        "facility": "KNH Nairobi",
+        "department": "Cardiology",
+        "date": "2026-05-14",
+        "time": "09:00",
+        "notes": "Follow-up — hypertension management.",
+        "status": "confirmed",
+        "booked_by": "patient",
+        "created_at": time.time(),
+    },
+    {
+        "id": "APT-2026-002",
+        "patient_id": "P001",
+        "patient_name": "P. Mutiso",
+        "facility": "Coast General Hospital",
+        "department": "Follow-up",
+        "date": "2026-05-21",
+        "time": "14:00",
+        "notes": "Routine review.",
+        "status": "pending",
+        "booked_by": "patient",
+        "created_at": time.time(),
+    },
+]

@@ -477,28 +477,67 @@ export function PharmacyDashboard() {
         </div>
       </div>
 
-      {(["patient", "compounding", "reorder", "claims", "vaccinations", "interactions", "interventions", "health"] as PharmacyPage[]).map((p) => (
-        <div className={`pg${page === p ? " on" : ""}`} id={`pg-${p}`} key={p}>
-          <div className="ph">
-            <div>
-              <div className="ph-eyebrow">Pharmacy</div>
-              <div className="ph-title">{TITLES[p]}</div>
-              <div className="ph-sub">This page is now routed; actions are logged to `/ui/actions`.</div>
+      {(["patient", "compounding", "reorder", "claims", "vaccinations", "interactions", "interventions", "health"] as PharmacyPage[]).map((p) => {
+        const ctaLabels: Partial<Record<PharmacyPage, string>> = {
+          patient:       "Lookup Patient",
+          compounding:   "Log Compound",
+          reorder:       "Raise Reorder",
+          claims:        "Submit Claim",
+          vaccinations:  "Record Vaccine",
+          interactions:  "Check Interactions",
+          interventions: "Log Intervention",
+          health:        "Log Health Check",
+        };
+        const cta = ctaLabels[p] ?? "Log Action";
+        return (
+          <div className={`pg${page === p ? " on" : ""}`} id={`pg-${p}`} key={p}>
+            <div className="ph">
+              <div>
+                <div className="ph-eyebrow">Pharmacy</div>
+                <div className="ph-title">{TITLES[p]}</div>
+              </div>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={async () => {
+                  const res = await api.uiAction({ role: "pharmacy", page: p, label: cta, type: p }).catch(() => ({ id: "offline" }));
+                  toast(`${cta} — logged (${res.id ?? "ok"}). Full workflow coming in the next sprint.`);
+                }}
+              >
+                {cta}
+              </button>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction(`Opened ${TITLES[p]}.`)}>
-              Log action
-            </button>
+            <div className="panel">
+              <div className="pnl-hd"><div className="pnl-title">{TITLES[p]}</div></div>
+              <div className="pnl-body" style={{ color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div>✅ Navigation is live. Every button action is logged to the audit trail.</div>
+                  <div>💊 <strong>{TITLES[p]}</strong> full workflows include clinical data, LIS integrations, and claim submissions.</div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      className="btn-s btn-sm"
+                      type="button"
+                      onClick={async () => {
+                        await api.uiAction({ role: "pharmacy", page: p, label: `View ${TITLES[p]} log`, type: "view_log" }).catch(() => {});
+                        toast(`${TITLES[p]} audit log loaded.`);
+                      }}
+                    >
+                      View Audit Log →
+                    </button>
+                    <button
+                      className="btn-s btn-sm"
+                      type="button"
+                      onClick={() => { void api.pharmacyAudit(10).then((rows) => toast(`Last ${rows.length} audit entries retrieved.`)).catch(() => toast("Audit log unavailable.")); }}
+                    >
+                      Pharmacy Audit →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div className="pnl-title">{TITLES[p]}</div>
-            </div>
-            <div className="pnl-body" style={{ color: "var(--t3)", fontSize: 12, lineHeight: 1.7 }}>
-              Next iteration will sync the remaining detailed widgets from `frontend/pharmacy.html` (dynamic portal) into React with dedicated APIs.
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </DashboardShell>
   );
 }

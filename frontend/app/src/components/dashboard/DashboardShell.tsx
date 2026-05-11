@@ -6,9 +6,6 @@ const DashboardToastContext = createContext<null | ToastFn>(null);
 
 export function useDashboardToast() {
   const ctx = useContext(DashboardToastContext);
-  // Important: dashboards call this hook at the page component level, which is rendered
-  // before any DashboardShell in the tree. So we provide a safe fallback that dispatches
-  // a global event listened to by DashboardShell instances.
   if (ctx) return ctx;
   return (message: string) => {
     window.dispatchEvent(new CustomEvent("dash:toast", { detail: { message } }));
@@ -29,6 +26,16 @@ export type DashboardNavSection = {
 
 export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient" | "lab" | "pharmacy";
 
+// Role metadata: accent colour class, display label, icon
+const ROLE_META: Record<DashboardShellVariant, { label: string; icon: string; accentClass: string }> = {
+  admin:    { label: "Admin Console",        icon: "🛡️", accentClass: "role-admin"    },
+  doctor:   { label: "Clinical Workstation", icon: "🩺", accentClass: "role-doctor"   },
+  nurse:    { label: "Nurse Station",        icon: "💗", accentClass: "role-nurse"    },
+  patient:  { label: "Patient Portal",       icon: "🏃", accentClass: "role-patient"  },
+  lab:      { label: "Lab & Imaging",        icon: "🔬", accentClass: "role-lab"      },
+  pharmacy: { label: "Pharmacy Portal",      icon: "💊", accentClass: "role-pharmacy" },
+};
+
 export function DashboardShell(props: {
   title: string;
   crumb: string;
@@ -37,7 +44,6 @@ export function DashboardShell(props: {
   userName: string;
   userEmail: string;
   nav: DashboardNavSection[];
-  /** Sidebar / accent theme aligned with legacy HTML dashboards */
   shellVariant?: DashboardShellVariant;
   activeNavId?: string;
   onNavSelect?: (id: string) => void;
@@ -52,76 +58,50 @@ export function DashboardShell(props: {
   children: React.ReactNode;
 }) {
   const {
-    title,
-    crumb,
-    portalSubtitle,
-    userInitials,
-    userName,
-    userEmail,
-    nav,
-    shellVariant,
-    activeNavId,
-    onNavSelect,
-    topbarSearchPlaceholder,
-    topbarSearchValue,
-    onTopbarSearchChange,
-    onTopbarSearchFocus,
-    onTopbarSearchKeyDown,
-    onTopbarNotificationsClick,
-    onTopbarStatusClick,
-    onSignOutClick,
+    title, crumb, portalSubtitle, userInitials, userName, userEmail,
+    nav, shellVariant, activeNavId, onNavSelect,
+    topbarSearchPlaceholder, topbarSearchValue,
+    onTopbarSearchChange, onTopbarSearchFocus, onTopbarSearchKeyDown,
+    onTopbarNotificationsClick, onTopbarStatusClick, onSignOutClick,
     children,
   } = props;
 
-  const shellClass = shellVariant ? `dash-shell dash-shell--${shellVariant}` : "dash-shell";
+  const meta = shellVariant ? ROLE_META[shellVariant] : null;
+  const shellClass = [
+    "dash-shell",
+    shellVariant ? `dash-shell--${shellVariant}` : "",
+  ].filter(Boolean).join(" ");
 
-  const topbarBtnKey = (e: React.KeyboardEvent, fn?: () => void) => {
-    if (!fn) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      fn();
-    }
-  };
-
-  const navigate = useNavigate();
-
-  const [dateText, setDateText] = useState("");
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const navigate   = useNavigate();
+  const [dateText, setDateText]     = useState("");
+  const [timeText, setTimeText]     = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toastMsg, setToastMsg]     = useState<string | null>(null);
 
   useEffect(() => {
     const fmt = () => {
       const now = new Date();
-      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-      const months = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-      return `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      const days   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      const date   = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+      const h = now.getHours().toString().padStart(2, "0");
+      const m = now.getMinutes().toString().padStart(2, "0");
+      return { date, time: `${h}:${m}` };
     };
-    setDateText(fmt());
-    const id = window.setInterval(() => setDateText(fmt()), 30_000);
+    const { date, time } = fmt();
+    setDateText(date); setTimeText(time);
+    const id = window.setInterval(() => {
+      const { date: d, time: t } = fmt();
+      setDateText(d); setTimeText(t);
+    }, 15_000);
     return () => clearInterval(id);
   }, []);
 
-  const searchIcon = useMemo(
-    () => (
-      <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="#9ca3af" strokeWidth="2">
-        <circle cx="9" cy="9" r="6" />
-        <path d="m15 15-3-3" />
-      </svg>
-    ),
-    []
-  );
+  const searchIcon = useMemo(() => (
+    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.45, flexShrink: 0 }}>
+      <circle cx="9" cy="9" r="6" /><path d="m15 15-3-3" />
+    </svg>
+  ), []);
 
   const toast: ToastFn = useMemo(() => {
     return (message: string) => {
@@ -140,143 +120,226 @@ export function DashboardShell(props: {
     return () => window.removeEventListener("dash:toast", onToast as EventListener);
   }, [toast]);
 
+  // Count all badge items for the notification dot
+  const totalAlerts = nav.flatMap(s => s.items).filter(i => i.badge?.tone === "red").length;
+
+  const handleSignOut = () => {
+    try {
+      ["doc.admitted.v1","doc.labOrders.v1","doc.imagingOrders.v1","doc.rxDrafts.v1"]
+        .forEach(k => localStorage.removeItem(k));
+    } catch { /* ignore */ }
+    onSignOutClick?.();
+    if (!onSignOutClick) navigate("/sign-in");
+  };
+
   return (
     <DashboardToastContext.Provider value={toast}>
       <div className={shellClass}>
-      <nav className="sb" aria-label="Dashboard sidebar">
-        <div className="sb-flag" />
-        <div className="sb-in">
-          <div className="sb-brand">
-            <div className="sb-ico" aria-hidden>
-              🏥
-            </div>
-            <div>
-              <div className="sb-nm">UniHealth EHR</div>
-              <div className="sb-sub">{portalSubtitle}</div>
-            </div>
-            <div className="sb-live" aria-label="Live" />
-          </div>
 
-          {nav.map((sec) => (
-            <div className="sb-sec" key={sec.label}>
-              <div className="sb-sec-lbl">{sec.label}</div>
-              {sec.items.map((it, idx) => (
-                <div
-                  className={`ni${activeNavId ? (activeNavId === it.id ? " on" : "") : idx === 0 ? " on" : ""}`}
-                  key={it.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onNavSelect?.(it.id)}
-                  onKeyDown={(e) => {
-                    if (!onNavSelect) return;
-                    if (e.key === "Enter" || e.key === " ") onNavSelect(it.id);
-                  }}
-                >
-                  <span className="ni-ico" aria-hidden>
-                    {it.icon}
-                  </span>
-                  <span className="ni-lbl">{it.label}</span>
-                  {it.badge ? (
-                    <span className={`ni-badge ${it.badge.tone}`}>{it.badge.text}</span>
-                  ) : null}
+        {/* ── Mobile overlay ── */}
+        {sidebarOpen && (
+          <div className="sb-overlay" aria-hidden onClick={() => setSidebarOpen(false)} />
+        )}
+
+        {/* ══════════════════════════════════════════════════
+            SIDEBAR
+        ══════════════════════════════════════════════════ */}
+        <nav className={`sb${sidebarOpen ? " sb--open" : ""}`} aria-label="Main navigation">
+
+          {/* Kenya flag stripe */}
+          <div className="sb-flag" />
+
+          <div className="sb-in">
+
+            {/* ── Brand ── */}
+            <div className="sb-brand">
+              <div className="sb-logo">
+                <div className="sb-logo-inner">🏥</div>
+                <div className="sb-logo-glow" />
+              </div>
+              <div className="sb-brand-text">
+                <div className="sb-nm">UniHealth EHR</div>
+                <div className="sb-sub">{portalSubtitle}</div>
+              </div>
+              <div className="sb-status-dot" aria-label="System online" title="System Online">
+                <span className="sb-live" />
+              </div>
+              <button className="sb-close" type="button" aria-label="Close navigation" onClick={() => setSidebarOpen(false)}>✕</button>
+            </div>
+
+            {/* ── Role chip ── */}
+            {meta && (
+              <div className="sb-role-chip">
+                <span className="sb-role-icon" aria-hidden>{meta.icon}</span>
+                <span className="sb-role-label">{meta.label}</span>
+                <span className="sb-role-online">
+                  <span className="sb-role-dot" />
+                  LIVE
+                </span>
+              </div>
+            )}
+
+            {/* ── Navigation sections ── */}
+            <div className="sb-nav">
+              {nav.map((sec) => (
+                <div className="sb-sec" key={sec.label}>
+                  <div className="sb-sec-hd">
+                    <span className="sb-sec-lbl">{sec.label}</span>
+                    <div className="sb-sec-line" />
+                  </div>
+                  {sec.items.map((it, idx) => {
+                    const isActive = activeNavId
+                      ? activeNavId === it.id
+                      : idx === 0 && sec === nav[0];
+                    return (
+                      <button
+                        key={it.id}
+                        className={`ni${isActive ? " on" : ""}`}
+                        type="button"
+                        aria-current={isActive ? "page" : undefined}
+                        onClick={() => { onNavSelect?.(it.id); setSidebarOpen(false); }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onNavSelect?.(it.id);
+                            setSidebarOpen(false);
+                          }
+                        }}
+                      >
+                        <div className="ni-accent" aria-hidden />
+                        <div className="ni-ico-wrap" aria-hidden>
+                          <span className="ni-ico">{it.icon}</span>
+                        </div>
+                        <span className="ni-lbl">{it.label}</span>
+                        {it.badge && (
+                          <span className={`ni-badge ${it.badge.tone}`} aria-label={`${it.badge.text} alerts`}>
+                            {it.badge.text}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               ))}
             </div>
-          ))}
 
-          <div className="sb-user">
-            <div className="sb-av" aria-hidden>
-              {userInitials}
-            </div>
-            <div>
-              <div className="sb-un">{userName}</div>
-              <div className="sb-ue">{userEmail}</div>
-            </div>
-            <button
-              className="sb-signout"
-              type="button"
-              onClick={() => {
-                try {
-                  // clear any local demo state used by dashboards
-                  localStorage.removeItem("doc.admitted.v1");
-                  localStorage.removeItem("doc.labOrders.v1");
-                  localStorage.removeItem("doc.imagingOrders.v1");
-                  localStorage.removeItem("doc.rxDrafts.v1");
-                } catch {
-                  // ignore
-                }
-                onSignOutClick?.();
-                if (!onSignOutClick) navigate("/");
-              }}
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="main">
-        <header className="topbar" aria-label="Dashboard topbar">
-          <div>
-            <div className="tb-page">{title}</div>
-            <div className="tb-crumb">
-              UniHealth EHR › <b>{crumb}</b>
-            </div>
-          </div>
-          <div className="tb-gap" />
-          <div className="tb-search">
-            {searchIcon}
-            <input
-              placeholder={topbarSearchPlaceholder ?? "Search patients, staff, facilities…"}
-              value={topbarSearchValue ?? ""}
-              onChange={(e) => onTopbarSearchChange?.(e.target.value)}
-              onFocus={() => onTopbarSearchFocus?.()}
-              onKeyDown={(e) => onTopbarSearchKeyDown?.(e)}
-            />
-          </div>
-          <div
-            className="tb-btn"
-            title="Notifications"
-            role="button"
-            tabIndex={0}
-            onClick={() => onTopbarNotificationsClick?.()}
-            onKeyDown={(e) => topbarBtnKey(e, onTopbarNotificationsClick)}
-          >
-            🔔<div className="tb-dot" />
-          </div>
-          <div
-            className="tb-btn"
-            title="UniHealth Live Status"
-            role="button"
-            tabIndex={0}
-            onClick={() => onTopbarStatusClick?.()}
-            onKeyDown={(e) => topbarBtnKey(e, onTopbarStatusClick)}
-          >
-            🛡️
-          </div>
-          <div className="tb-datepill">{dateText}</div>
-        </header>
-
-        {toastMsg ? (
-          <div className="ds-toast" role="status" aria-live="polite">
-            <div className="ds-toast-in">
-              <span className="ds-toast-ico" aria-hidden>
-                ✅
-              </span>
-              <span>{toastMsg}</span>
-              <button className="ds-toast-x" type="button" onClick={() => setToastMsg(null)} aria-label="Dismiss">
-                ✕
+            {/* ── User footer ── */}
+            <div className="sb-user">
+              <div className="sb-av-wrap">
+                <div className="sb-av">{userInitials}</div>
+                <div className="sb-av-ring" />
+              </div>
+              <div className="sb-user-info">
+                <div className="sb-un">{userName}</div>
+                <div className="sb-ue">{userEmail}</div>
+              </div>
+              <button
+                className="sb-signout"
+                type="button"
+                title="Sign out"
+                aria-label="Sign out"
+                onClick={handleSignOut}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Sign out</span>
               </button>
             </div>
-          </div>
-        ) : null}
 
-        <main className="content">
-          <div className="content-in">{children}</div>
-        </main>
-      </div>
+            {/* ── System info footer ── */}
+            <div className="sb-sys-foot">
+              <span className="sb-sys-ver">v2.4 · MOH Kenya</span>
+              <span className="sb-sys-time">{timeText}</span>
+            </div>
+
+          </div>
+        </nav>
+
+        {/* ══════════════════════════════════════════════════
+            MAIN AREA
+        ══════════════════════════════════════════════════ */}
+        <div className="main">
+          <header className="topbar" aria-label="Dashboard topbar">
+
+            {/* Hamburger — mobile only */}
+            <button className="tb-hamburger" type="button" aria-label="Open navigation" onClick={() => setSidebarOpen(true)}>
+              <span /><span /><span />
+            </button>
+
+            <div className="tb-title-group">
+              <div className="tb-page">{title}</div>
+              <div className="tb-crumb">UniHealth EHR › <b>{crumb}</b></div>
+            </div>
+
+            <div className="tb-gap" />
+
+            {/* Search */}
+            <div className="tb-search">
+              {searchIcon}
+              <input
+                placeholder={topbarSearchPlaceholder ?? "Search patients, staff, facilities…"}
+                value={topbarSearchValue ?? ""}
+                onChange={(e) => onTopbarSearchChange?.(e.target.value)}
+                onFocus={() => onTopbarSearchFocus?.()}
+                onKeyDown={(e) => onTopbarSearchKeyDown?.(e)}
+                aria-label="Global search"
+              />
+            </div>
+
+            {/* Notification bell */}
+            <button
+              className="tb-btn"
+              type="button"
+              title="Notifications"
+              aria-label={`Notifications${totalAlerts > 0 ? ` — ${totalAlerts} alerts` : ""}`}
+              onClick={() => onTopbarNotificationsClick?.()}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {totalAlerts > 0 && <div className="tb-dot" />}
+            </button>
+
+            {/* Shield status */}
+            <button
+              className="tb-btn"
+              type="button"
+              title="UniHealth Live Status"
+              aria-label="System status"
+              onClick={() => onTopbarStatusClick?.()}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </button>
+
+            <div className="tb-datepill">
+              <span className="tb-date-txt">{dateText}</span>
+              <span className="tb-time-txt">{timeText}</span>
+            </div>
+
+          </header>
+
+          {/* Toast */}
+          {toastMsg && (
+            <div className="ds-toast" role="status" aria-live="polite">
+              <div className="ds-toast-in">
+                <span className="ds-toast-ico" aria-hidden>✦</span>
+                <span>{toastMsg}</span>
+                <button className="ds-toast-x" type="button" onClick={() => setToastMsg(null)} aria-label="Dismiss">✕</button>
+              </div>
+            </div>
+          )}
+
+          <main className="content" id="main-content">
+            <div className="content-in">{children}</div>
+          </main>
+        </div>
+
       </div>
     </DashboardToastContext.Provider>
   );
 }
-

@@ -249,7 +249,7 @@ export function LabDashboard() {
                 <div className="pnl-title">QC (live)</div>
                 <div className="pnl-sub">Latest instrument controls</div>
               </div>
-              <button className="btn-s btn-sm" type="button" onClick={() => void uiAction("QC refreshed.")}>
+              <button className="btn-s btn-sm" type="button" onClick={() => { qc.refresh(); void uiAction("QC refreshed."); }}>
                 Refresh
               </button>
             </div>
@@ -551,28 +551,59 @@ export function LabDashboard() {
         </div>
       ))}
 
-      {(["pathology", "microbiology", "bloodbank", "molecular", "reagents", "reports", "audit", "health"] as LabPage[]).map((p) => (
-        <div className={`pg${page === p ? " on" : ""}`} id={`pg-${p}`} key={p}>
-          <div className="ph">
-            <div>
-              <div className="ph-eyebrow">Lab & Compliance</div>
-              <div className="ph-title">{TITLES[p]}</div>
-              <div className="ph-sub">Phase 1 UI: actions are audited and the page is live-navigable.</div>
+      {(["pathology", "microbiology", "bloodbank", "molecular", "reagents", "reports", "audit", "health"] as LabPage[]).map((p) => {
+        const ctaLabels: Partial<Record<LabPage, string>> = {
+          pathology:     "Log Specimen",
+          microbiology:  "Log Culture",
+          bloodbank:     "Log Cross-match",
+          molecular:     "Log PCR Run",
+          reagents:      "Log Reorder",
+          reports:       "Generate Report",
+          audit:         "Export Audit Log",
+          health:        "Log Health Check",
+        };
+        const cta = ctaLabels[p] ?? "Log Action";
+        return (
+          <div className={`pg${page === p ? " on" : ""}`} id={`pg-${p}`} key={p}>
+            <div className="ph">
+              <div>
+                <div className="ph-eyebrow">Lab & Compliance</div>
+                <div className="ph-title">{TITLES[p]}</div>
+              </div>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={async () => {
+                  const res = await api.uiAction({ role: "lab", page: p, label: cta, type: p }).catch(() => ({ id: "offline" }));
+                  toast(`${cta} — logged (${res.id ?? "ok"}). Full workflow coming in the next sprint.`);
+                }}
+              >
+                {cta}
+              </button>
             </div>
-            <button className="btn-p" type="button" onClick={() => void uiAction(`Opened ${TITLES[p]}.`)}>
-              Log action
-            </button>
+            <div className="panel">
+              <div className="pnl-hd"><div className="pnl-title">{TITLES[p]}</div></div>
+              <div className="pnl-body" style={{ color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div>✅ Navigation and audit logging are live. Every action is recorded to <code>/ui/actions</code>.</div>
+                  <div>🔬 <strong>{TITLES[p]}</strong> workflows will be expanded with dedicated CRUD, LIS integrations, and reports.</div>
+                  <button
+                    className="btn-s btn-sm"
+                    type="button"
+                    style={{ alignSelf: "flex-start" }}
+                    onClick={async () => {
+                      const res = await api.uiAction({ role: "lab", page: p, label: `View ${TITLES[p]} log`, type: "view_log" }).catch(() => ({ id: "offline" }));
+                      toast(`${TITLES[p]} log viewed (${res.id ?? "ok"}).`);
+                    }}
+                  >
+                    View Recent Log →
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div className="pnl-title">{TITLES[p]}</div>
-            </div>
-            <div className="pnl-body" style={{ color: "var(--t3)", fontSize: 12, lineHeight: 1.7 }}>
-              This section is now routed and interactive. Next iteration can expand it with dedicated workflows from the new HTML (inventory, reports exports, and audit drilldowns).
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {newOrderOpen && (
         <>

@@ -165,3 +165,216 @@
   .nurse .pnl-bd{padding:16px 18px;}
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   HANDOVER PAGE — Professional SBAR layout
+══════════════════════════════════════════════════════════════════ */
+
+/* Shift summary banner */
+.nurse .ho-banner {
+  position: relative;
+  background: rgba(255,77,133,0.07);
+  border: 1px solid rgba(255,77,133,0.18);
+  border-radius: 16px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.nurse .ho-banner-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff4d85, #ff8aab, transparent);
+}
+.nurse .ho-banner-in {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 22px;
+  flex-wrap: wrap;
+}
+.nurse .ho-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 260px;
+}
+.nurse .ho-banner-icon {
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  background: rgba(255,77,133,0.15);
+  border: 1px solid rgba(255,77,133,0.28);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.nurse .ho-banner-ti {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: #ddf0ff;
+  letter-spacing: -.2px;
+  line-height: 1.2;
+}
+.nurse .ho-banner-su {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.nurse .ho-banner-stats {
+  display: flex;
+  gap: 0;
+  background: rgba(0,0,0,0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.nurse .ho-stat-cell {
+  padding: 12px 18px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+.nurse .ho-stat-cell:last-child { border-right: none; }
+.nurse .ho-stat-v {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.nurse .ho-stat-l {
+  font-size: 9px;
+  color: rgba(255,255,255,0.38);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 3px;
+}
+
+/* Main 2-column layout */
+.nurse .ho-grid-main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* SBAR cards */
+.nurse .sbar-card {
+  border-radius: 13px;
+  border: 1px solid;
+  overflow: hidden;
+}
+.nurse .sbar-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.nurse .sbar-content { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.nurse .sbar-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+}
+.nurse .sbar-row-ico {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 20px;
+  text-align: center;
+}
+.nurse .sbar-row strong { color: rgba(255,255,255,0.92); }
+
+/* S – blue tint */
+.nurse .sbar-s { background: rgba(0,210,255,0.04); border-color: rgba(0,210,255,0.14); }
+.nurse .sbar-s .sbar-label { color: rgba(0,210,255,0.60); background: rgba(0,210,255,0.05); }
+
+/* B – violet tint */
+.nurse .sbar-b { background: rgba(168,85,247,0.04); border-color: rgba(168,85,247,0.14); }
+.nurse .sbar-b .sbar-label { color: rgba(168,85,247,0.60); background: rgba(168,85,247,0.05); }
+
+/* A – amber tint */
+.nurse .sbar-a { background: rgba(255,184,48,0.04); border-color: rgba(255,184,48,0.14); }
+.nurse .sbar-a .sbar-label { color: rgba(255,184,48,0.65); background: rgba(255,184,48,0.05); }
+
+/* R – green tint */
+.nurse .sbar-r { background: rgba(0,229,160,0.04); border-color: rgba(0,229,160,0.14); }
+.nurse .sbar-r .sbar-label { color: rgba(0,229,160,0.60); background: rgba(0,229,160,0.05); }
+
+/* Patient rows in Assessment */
+.nurse .ho-patient-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.nurse .ho-patient-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.nurse .ho-patient-bed {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.nurse .ho-bed-red   { background: rgba(255,51,102,0.16); color: #ff6699; border: 1px solid rgba(255,51,102,0.25); }
+.nurse .ho-bed-amber { background: rgba(255,184,48,0.14); color: #ffc84a; border: 1px solid rgba(255,184,48,0.22); }
+.nurse .ho-bed-green { background: rgba(0,229,160,0.13);  color: #00e5a0; border: 1px solid rgba(0,229,160,0.22); }
+.nurse .ho-bed-blue  { background: rgba(0,160,255,0.12);  color: #60b0ff; border: 1px solid rgba(0,160,255,0.20); }
+
+.nurse .ho-patient-name { font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,0.85); }
+.nurse .ho-patient-note { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; line-height: 1.45; }
+
+.nurse .ho-status-tag {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 5px;
+  letter-spacing: .5px;
+  flex-shrink: 0;
+}
+.nurse .ho-tag-red   { background: rgba(255,51,102,0.18); color: #ff5e85;  border: 1px solid rgba(255,51,102,0.28); }
+.nurse .ho-tag-amber { background: rgba(255,184,48,0.16); color: #ffc84a;  border: 1px solid rgba(255,184,48,0.25); }
+.nurse .ho-tag-green { background: rgba(0,229,160,0.14);  color: #00e5a0;  border: 1px solid rgba(0,229,160,0.24); }
+.nurse .ho-tag-blue  { background: rgba(0,160,255,0.13);  color: #60b0ff;  border: 1px solid rgba(0,160,255,0.22); }
+
+/* Sign CTA card */
+.nurse .ho-sign-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(255,77,133,0.08);
+  border: 1px solid rgba(255,77,133,0.20);
+  border-radius: 13px;
+  flex-wrap: wrap;
+}
+.nurse .ho-sign-cta-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+.nurse .ho-sign-cta-ico {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* Responsive: stack on tablet */
+@media (max-width: 960px) {
+  .nurse .ho-grid-main { grid-template-columns: 1fr; }
+  .nurse .ho-banner-stats { width: 100%; justify-content: space-between; }
+  .nurse .ho-stat-cell { flex: 1; }
+}
+

@@ -189,9 +189,11 @@ export function StaffSignInForm({
       </div>
 
       <div id="staffFormInner" className={lockoutActive ? "form-locked" : ""}>
-        <div className="nbox grn">
-          <span className="ni">🔐</span>
-          <span>{c.staffNote}</span>
+        <div className="si-hint grn">
+          <span className="si-hint-ico" aria-hidden>🔐</span>
+          <div className="si-hint-body">
+            <span className="si-hint-head">{c.staffNote}</span>
+          </div>
         </div>
         <div className={`errbanner${staffErr ? " is-visible" : ""}`} role="alert">
           <span>⚠️</span>

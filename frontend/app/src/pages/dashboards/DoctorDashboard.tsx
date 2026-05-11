@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
@@ -43,6 +43,210 @@ export function DoctorDashboard() {
   const meds = usePolling(() => api.medicationRequests(patientId, 10), { intervalMs: 7000 });
 
   const apiErr = summary.error ?? obs.error ?? meds.error;
+
+  // ── Phase 3: AI Hints state ────────────────────────────────────────
+  const [aiHints, setAiHints] = useState<any | null>(null);
+  const [aiHintsLoading, setAiHintsLoading] = useState(false);
+  const [aiHintsOpen, setAiHintsOpen] = useState(false);
+  const [aiAlerts, setAiAlerts] = useState<any[]>([]);
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // WebSocket: receive real-time anomaly alerts
+  useEffect(() => {
+    const wsBase = (import.meta as any).env?.VITE_API_BASE_URL || "";
+    const wsUrl = (wsBase.replace(/^http/, "ws") || `ws://${window.location.host}`) +
+      "/ai/ws/alerts/doctor?token=dev-token-1";
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.event === "anomaly_alert") {
+            setAiAlerts(prev => [msg.data, ...prev].slice(0, 20));
+            toast(`🚨 Alert: ${msg.data.msg}`);
+          }
+        } catch { /* ignore */ }
+      };
+      ws.onerror = () => { /* silent in dev */ };
+      return () => { ws.close(); };
+    } catch { return undefined; }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll active anomalies from REST (fallback when WS not connected)
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const rows = await api.aiAnomalies({ ack: false, limit: 10 }, "doctor");
+        if (!cancelled) setAiAlerts(rows);
+      } catch { /* api offline */ }
+    };
+    void load();
+    const id = setInterval(load, 15000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  const fetchAiHints = useCallback(async () => {
+    setAiHintsLoading(true);
+    try {
+      // Build features from current observations + summary
+      const latestVitals = obs.data ?? [];
+      const vitalMap: Record<string, number> = {};
+      for (const o of latestVitals) {
+        const code = (o.code ?? "").toLowerCase();
+          const val  = parseFloat((o as any).valueQuantity?.value ?? (o as any).value ?? "");
+        if (!isNaN(val)) {
+          if (code.includes("respiratory") || code.includes("8867-4")) vitalMap.rr   = val;
+          if (code.includes("oxygen")      || code.includes("59408-5")) vitalMap.spo2 = val;
+          if (code.includes("systolic")    || code.includes("8480-6"))  vitalMap.sbp  = val;
+          if (code.includes("heart")       || code.includes("8867"))    vitalMap.hr   = val;
+          if (code.includes("temp")        || code.includes("8310-5"))  vitalMap.temp = val;
+          if (code.includes("glucose")     || code.includes("2339-0"))  vitalMap.glucose = val;
+          if (code.includes("creatinine")  || code.includes("2160-0"))  vitalMap.creatinine = val;
+          if (code.includes("potassium")   || code.includes("6298-4"))  vitalMap.potassium = val;
+        }
+      }
+      const activeMeds = (meds.data ?? []).map((m: any) =>
+        m.medicationCodeableConcept?.text ?? m.medication ?? ""
+      ).filter(Boolean);
+
+      const result = await api.aiDiagnosisHints(
+        { features: vitalMap, medications: activeMeds, patient_id: patientId },
+        "doctor",
+      );
+      setAiHints(result);
+      setAiHintsOpen(true);
+    } catch (e: any) {
+      toast(`AI hints unavailable: ${e?.message ?? "API offline"}`);
+    } finally {
+      setAiHintsLoading(false);
+    }
+  }, [obs.data, meds.data, patientId]);
+
+  const ackAlert = async (id: string) => {
+    try {
+      await api.aiAckAnomaly(id, "Reviewed by doctor", "doctor");
+      setAiAlerts(prev => prev.filter(a => a.id !== id));
+      toast("Alert acknowledged.");
+    } catch { /* offline */ }
+  };
+
+  // ── AI Hints Panel UI ─────────────────────────────────────────────
+  const aiHintsPanel = aiHintsOpen && aiHints ? (
+    <div style={{
+      background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.22)",
+      borderRadius: 14, padding: "18px 20px", marginBottom: 16,
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <span style={{ fontWeight: 700, color: "var(--p, #00d4ff)", fontSize: 14 }}>
+            AI Diagnosis Hints
+          </span>
+          <span style={{ marginLeft: 10, fontSize: 11, color: "var(--t3)", background: "rgba(0,212,255,0.10)",
+            border: "1px solid rgba(0,212,255,0.2)", borderRadius: 5, padding: "2px 7px" }}>
+            {aiHints.model_version}
+          </span>
+        </div>
+        <button onClick={() => setAiHintsOpen(false)}
+          style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 16 }}>✕</button>
+      </div>
+
+      {aiHints.differentials?.length > 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+          {aiHints.differentials.map((dx: any, i: number) => (
+            <div key={i} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+              background: "rgba(8,18,42,0.6)", borderRadius: 10,
+              border: `1px solid ${dx.confidence >= 90 ? "rgba(255,51,102,0.3)" : "rgba(0,212,255,0.12)"}`,
+            }}>
+              <div style={{ minWidth: 48, textAlign: "center" }}>
+                <div style={{ fontSize: 18, fontWeight: 800,
+                  color: dx.confidence >= 90 ? "#ff3366" : dx.confidence >= 80 ? "#ffb830" : "#00d4ff" }}>
+                  {dx.confidence}%
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--t1, #ddf0ff)" }}>
+                  {dx.diagnosis}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>
+                  ICD-10 {dx.icd10} · {dx.rationale}
+                </div>
+              </div>
+              <button onClick={() => {
+                  void api.aiSubmitFeedback(aiHints.audit_id, "accepted", dx.diagnosis, "doctor");
+                  toast(`Accepted: ${dx.diagnosis}`);
+                }}
+                style={{ padding: "4px 10px", background: "rgba(0,229,160,0.12)",
+                  border: "1px solid rgba(0,229,160,0.3)", borderRadius: 6,
+                  color: "#00e5a0", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>
+                Accept
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ color: "var(--t3)", fontSize: 13 }}>
+          No differential diagnoses matched from current vitals/labs. Add more values to improve results.
+        </p>
+      )}
+
+      {aiHints.drug_interactions?.length > 0 && (
+        <div style={{ borderTop: "1px solid rgba(255,184,48,0.2)", paddingTop: 12, marginTop: 4 }}>
+          <div style={{ fontWeight: 600, fontSize: 12, color: "#ffb830", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            Drug Interaction Alerts
+          </div>
+          {aiHints.drug_interactions.map((ix: any, i: number) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "8px 12px",
+              background: "rgba(255,184,48,0.06)", border: "1px solid rgba(255,184,48,0.2)",
+              borderRadius: 8, marginBottom: 6, fontSize: 13 }}>
+              <span style={{ color: ix.severity === "HIGH" ? "#ff3366" : "#ffb830", fontWeight: 700, flexShrink: 0 }}>
+                {ix.severity}
+              </span>
+              <span style={{ color: "var(--t2, #7ab8d8)" }}>
+                <strong style={{ color: "var(--t1)" }}>{ix.drug_a}</strong> + <strong style={{ color: "var(--t1)" }}>{ix.drug_b}</strong>
+                {" — "}{ix.detail}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: 10, fontSize: 11, color: "var(--t3)", fontStyle: "italic" }}>
+        {aiHints.disclaimer}
+      </div>
+    </div>
+  ) : null;
+
+  // ── Active Alerts Strip ───────────────────────────────────────────
+  const alertsStrip = aiAlerts.length > 0 ? (
+    <div style={{ marginBottom: 14 }}>
+      {aiAlerts.slice(0, 3).map((a: any) => (
+        <div key={a.id} style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "10px 14px", borderRadius: 10, marginBottom: 6,
+          background: a.severity === "CRITICAL" ? "rgba(255,51,102,0.08)" : "rgba(255,184,48,0.07)",
+          border: `1px solid ${a.severity === "CRITICAL" ? "rgba(255,51,102,0.3)" : "rgba(255,184,48,0.25)"}`,
+        }}>
+          <span style={{ fontSize: 16 }}>{a.severity === "CRITICAL" ? "🚨" : "⚠️"}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: a.severity === "CRITICAL" ? "#ff3366" : "#ffb830" }}>
+              {a.severity} · {(a.metric ?? "").toUpperCase()} = {a.value}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--t3)" }}>{a.msg} · Patient {a.patient_id}</div>
+          </div>
+          <button onClick={() => void ackAlert(a.id)}
+            style={{ padding: "4px 10px", background: "transparent",
+              border: "1px solid rgba(255,255,255,0.15)", borderRadius: 6,
+              color: "var(--t3)", fontSize: 11, cursor: "pointer" }}>
+            Ack
+          </button>
+        </div>
+      ))}
+    </div>
+  ) : null;
 
   const uiAction = async (label: string) => {
     try {
@@ -145,6 +349,86 @@ export function DoctorDashboard() {
   const [referralAdds, setReferralAdds] = useState<ReferralRowX[]>([]);
   const [procedureAdds, setProcedureAdds] = useState<ProcRowX[]>([]);
   const [scheduleBlocks, setScheduleBlocks] = useState<{ t: string; label: string }[]>([]);
+
+  // ── Clinical note state ────────────────────────────────────────────
+  const [noteType, setNoteType] = useState("Progress Note");
+  const [noteText, setNoteText] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [savedNotes, setSavedNotes] = useState<Array<{ id: string; type: string; text: string; patient: string; at: string }>>([]);
+
+  const saveNote = async () => {
+    if (!noteText.trim()) { toast("Enter a note before saving."); return; }
+    setNoteSaving(true);
+    try {
+      await api.ingestObservation({
+        resourceType: "Observation",
+        patient_id: patientId,
+        code: noteType.toLowerCase().replace(/\s+/g, "-"),
+        value_text: noteText.trim(),
+        effective_time: new Date().toISOString(),
+      });
+    } catch { /* offline */ }
+    try {
+      await api.uiAction({ role: "doctor", patient_id: patientId, label: `${noteType}: ${noteText.slice(0, 80)}`, type: "clinical_note" });
+    } catch { /* offline */ }
+    setSavedNotes((prev) => [{
+      id: `NOTE-${Date.now()}`,
+      type: noteType,
+      text: noteText.trim(),
+      patient: patientId,
+      at: new Date().toLocaleString("en-GB"),
+    }, ...prev]);
+    setNoteText("");
+    toast(`${noteType} saved to FHIR record.`);
+    setNoteSaving(false);
+  };
+
+  // ── Discharge state ────────────────────────────────────────────────
+  const [showDischarge, setShowDischarge] = useState(false);
+  const [dischargePatient, setDischargePatient] = useState("");
+  const [dischargeNotes, setDischargeNotes] = useState("");
+  const [dischargeBusy, setDischargeBusy] = useState(false);
+
+  const submitDischarge = async () => {
+    if (!dischargePatient.trim()) { toast("Select a patient for discharge."); return; }
+    setDischargeBusy(true);
+    try {
+      await api.uiAction({ role: "doctor", patient_id: dischargePatient, label: `Discharge initiated: ${dischargeNotes.slice(0, 80)}`, type: "discharge" });
+      setAdmitted((prev) => prev.filter((a) => a.fhirId !== dischargePatient));
+      toast(`Patient ${dischargePatient} discharged successfully.`);
+      setShowDischarge(false); setDischargeNotes("");
+    } catch { toast("Discharge request failed — please try again."); } finally {
+      setDischargeBusy(false);
+    }
+  };
+
+  // ── Walk-in state ──────────────────────────────────────────────────
+  const [showWalkin, setShowWalkin] = useState(false);
+  const [walkinForm, setWalkinForm] = useState({ name: "", gender: "male", dob: "", phone: "", facility_id: "FAC-0001", mrn: "", chief_complaint: "", triage_level: "3" });
+  const [walkinBusy, setWalkinBusy] = useState(false);
+
+  const submitWalkin = async () => {
+    if (!walkinForm.name.trim()) { toast("Patient name is required."); return; }
+    setWalkinBusy(true);
+    try {
+      const res = await api.walkinCreate({
+        full_name: walkinForm.name.trim(),
+        gender: walkinForm.gender,
+        dob: walkinForm.dob || undefined,
+        phone: walkinForm.phone || undefined,
+        facility_id: walkinForm.facility_id,
+        mrn: walkinForm.mrn || undefined,
+        chief_complaint: walkinForm.chief_complaint || undefined,
+        triage_level: Number(walkinForm.triage_level),
+        registered_by: "doctor",
+      });
+      toast(`Walk-in registered: UHID ${res.patient?.uhid ?? "—"}`);
+      setShowWalkin(false);
+      setWalkinForm({ name: "", gender: "male", dob: "", phone: "", facility_id: "FAC-0001", mrn: "", chief_complaint: "", triage_level: "3" });
+    } catch (e) { toast(e instanceof Error ? e.message : "Walk-in registration failed."); } finally {
+      setWalkinBusy(false);
+    }
+  };
 
   const [showAdmit, setShowAdmit] = useState(false);
   const [admitForm, setAdmitForm] = useState<AdmittedRow>({ bed: "", name: "", aflId: "", team: "IM", fhirId: patientId });
@@ -713,6 +997,7 @@ export function DoctorDashboard() {
             </div>
           </div>
           {patientIdPanel}
+          {alertsStrip}
           {liveChart}
         </div>
 
@@ -751,15 +1036,21 @@ export function DoctorDashboard() {
               <button
                 className="btn-s btn-sm"
                 type="button"
-                onClick={() => {
-                  setPage("notes");
-                  void uiAction("Discharge workflow started.");
-                }}
+                onClick={() => { setDischargePatient(patientId); setShowDischarge(true); }}
               >
                 🏠 Discharge
               </button>
               <button className="btn-s btn-sm" type="button" onClick={() => { setPage("referrals"); void uiAction("Opening referral form."); }}>
                 📋 Refer
+              </button>
+              <button
+                className="btn-s btn-sm"
+                type="button"
+                disabled={aiHintsLoading}
+                onClick={() => void fetchAiHints()}
+                style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.35)", color: "#00d4ff" }}
+              >
+                {aiHintsLoading ? "Analysing…" : "🤖 AI Hints"}
               </button>
               <button className="btn-p" type="button" onClick={() => { setPage("notes"); void uiAction("Add clinical note."); }}>
                 📝 Add Note
@@ -774,6 +1065,8 @@ export function DoctorDashboard() {
               <span className="allergy">Sulfa drugs — Rash</span>
             </div>
           </div>
+          {alertsStrip}
+          {aiHintsPanel}
           {liveChart}
           <div className="gcol3" style={{ marginTop: 14 }}>
             <div className="panel">
@@ -835,10 +1128,7 @@ export function DoctorDashboard() {
             <button
               className="btn-p"
               type="button"
-              onClick={() => {
-                setPage("queue");
-                void uiAction("Walk-in registration started.");
-              }}
+              onClick={() => setShowWalkin(true)}
             >
               + Add Walk-in
             </button>
@@ -1385,28 +1675,62 @@ export function DoctorDashboard() {
             </button>
           </div>
           {patientIdPanel}
-          <div className="panel" id="doc-note-composer">
+            <div className="panel" id="doc-note-composer">
             <div className="pnl-hd">
-              <div className="pnl-ti">Progress Note</div>
+              <div className="pnl-ti">New Clinical Note</div>
             </div>
             <div className="pnl-bd">
               <div className="ff">
                 <label>Note type</label>
-                <select>
+                <select value={noteType} onChange={(e) => setNoteType(e.target.value)}>
                   <option>Progress Note</option>
                   <option>Assessment</option>
                   <option>Discharge Summary</option>
+                  <option>Procedure Note</option>
+                  <option>Referral Note</option>
                 </select>
               </div>
               <div className="ff">
-                <label>Note</label>
-                <textarea placeholder="SOAP note, assessment, plan…" style={{ minHeight: 90 }} />
+                <label>Note content</label>
+                <textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="SOAP note, assessment, plan…"
+                  style={{ minHeight: 120 }}
+                />
               </div>
-              <button className="btn-p" type="button" style={{ width: "100%", justifyContent: "center" }} onClick={() => void uiAction("Note saved to record.")}>
-                Save Note to FHIR Record
+              <button
+                className="btn-p"
+                type="button"
+                style={{ width: "100%", justifyContent: "center" }}
+                disabled={noteSaving || !noteText.trim()}
+                onClick={() => void saveNote()}
+              >
+                {noteSaving ? "Saving…" : "Save Note to FHIR Record"}
               </button>
             </div>
           </div>
+
+          {savedNotes.length > 0 && (
+            <div className="panel" style={{ marginTop: 14 }}>
+              <div className="pnl-hd"><div className="pnl-ti">Saved Notes — This Session</div></div>
+              <div className="pnl-bd" style={{ padding: 0 }}>
+                <table className="tbl">
+                  <thead><tr><th>Type</th><th>Patient</th><th>Note</th><th>Time</th></tr></thead>
+                  <tbody>
+                    {savedNotes.map((n) => (
+                      <tr key={n.id}>
+                        <td><span className="tag b" style={{ fontSize: 9 }}>{n.type}</span></td>
+                        <td className="mono" style={{ fontSize: 11 }}>{n.patient}</td>
+                        <td style={{ maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11 }}>{n.text}</td>
+                        <td style={{ fontSize: 10, color: "var(--t3)" }}>{n.at}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className={`pg${page === "referrals" ? " on" : ""}`} id="pg-referrals">
@@ -1561,7 +1885,8 @@ export function DoctorDashboard() {
           <div className="ph">
             <div>
               <div className="ph-ey">Calendar</div>
-              <div className="ph-ti">My Schedule</div>
+              <div className="ph-ti">My Schedule & Appointments</div>
+              <div className="ph-su">Patient-booked appointments sync in real-time</div>
             </div>
             <button
               className="btn-p"
@@ -1575,31 +1900,212 @@ export function DoctorDashboard() {
               + Block Time
             </button>
           </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div className="pnl-ti">Today</div>
+
+          <div className="notice g">
+            <span className="notice-ico">📅</span>
+            <div className="notice-txt">Appointments booked by patients appear here automatically and sync with the nursing team.</div>
+          </div>
+
+          <div className="g2">
+            <div>
+              <PatientAppointmentsPanel />
             </div>
-            <div className="pnl-bd">
-              <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.8 }}>
-                {scheduleBlocks.map((b, i) => (
-                  <div key={`${b.label}-${i}`}>
-                    <strong>{b.t}</strong> — {b.label}
+            <div>
+              <div className="panel">
+                <div className="pnl-hd"><div className="pnl-ti">Blocked / Fixed Schedule</div></div>
+                <div className="pnl-bd">
+                  <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.8 }}>
+                    {scheduleBlocks.map((b, i) => (
+                      <div key={`${b.label}-${i}`}>
+                        <strong>{b.t}</strong> — {b.label}
+                      </div>
+                    ))}
+                    <div><strong>08:00</strong> — Ward round 4B</div>
+                    <div><strong>11:30</strong> — Outpatient clinic</div>
+                    <div><strong>14:00</strong> — MDT — Cardiology</div>
                   </div>
-                ))}
-                <div>
-                  <strong>08:00</strong> — Ward round 4B
-                </div>
-                <div>
-                  <strong>11:30</strong> — Outpatient clinic
-                </div>
-                <div>
-                  <strong>14:00</strong> — MDT — Cardiology
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── Discharge Modal ─────────────────────────────────────────── */}
+      {showDischarge && (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowDischarge(false); }}>
+          <div className="modal" style={{ maxWidth: 460, width: "95vw" }} role="dialog" aria-modal>
+            <div className="modal-hd">
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>🏠 Discharge Patient</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Complete the discharge summary</div>
+              </div>
+              <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowDischarge(false)}>✕</button>
+            </div>
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Patient (FHIR ID)</label>
+                <select
+                  value={dischargePatient}
+                  onChange={(e) => setDischargePatient(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}
+                >
+                  <option value="">— Select patient —</option>
+                  {admitted.map((a) => <option key={a.fhirId} value={a.fhirId}>{a.name} (Bed {a.bed})</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Discharge summary / instructions</label>
+                <textarea
+                  value={dischargeNotes}
+                  onChange={(e) => setDischargeNotes(e.target.value)}
+                  rows={4}
+                  placeholder="Discharge diagnosis, follow-up plan, medications on discharge…"
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, resize: "vertical", boxSizing: "border-box" }}
+                />
+              </div>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" className="btn-s btn-sm" onClick={() => setShowDischarge(false)}>Cancel</button>
+                <button
+                  type="button"
+                  className="btn-p btn-sm"
+                  disabled={dischargeBusy || !dischargePatient}
+                  onClick={() => void submitDischarge()}
+                  style={{ minWidth: 130, justifyContent: "center" }}
+                >
+                  {dischargeBusy ? "Processing…" : "Confirm Discharge"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Walk-in Registration Modal ──────────────────────────────── */}
+      {showWalkin && (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setShowWalkin(false); }}>
+          <div className="modal" style={{ maxWidth: 500, width: "95vw" }} role="dialog" aria-modal>
+            <div className="modal-hd">
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>🚶 Register Walk-in Patient</div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Quick registration + correlation across facilities</div>
+              </div>
+              <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowWalkin(false)}>✕</button>
+            </div>
+            <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 4 }}>Full name *</label>
+                  <input value={walkinForm.name} onChange={(e) => setWalkinForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder="Full name" style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 4 }}>Gender</label>
+                  <select value={walkinForm.gender} onChange={(e) => setWalkinForm((f) => ({ ...f, gender: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}>
+                    <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 4 }}>Phone</label>
+                  <input value={walkinForm.phone} onChange={(e) => setWalkinForm((f) => ({ ...f, phone: e.target.value }))}
+                    placeholder="+254…" style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 4 }}>Chief complaint</label>
+                  <input value={walkinForm.chief_complaint} onChange={(e) => setWalkinForm((f) => ({ ...f, chief_complaint: e.target.value }))}
+                    placeholder="e.g. chest pain" style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12, boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 4 }}>Triage level (1–5)</label>
+                  <select value={walkinForm.triage_level} onChange={(e) => setWalkinForm((f) => ({ ...f, triage_level: e.target.value }))}
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--bdr)", background: "var(--card)", color: "var(--t1)", fontSize: 12 }}>
+                    <option value="1">1 — Resuscitation</option><option value="2">2 — Emergent</option><option value="3">3 — Urgent</option>
+                    <option value="4">4 — Semi-urgent</option><option value="5">5 — Non-urgent</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                <button type="button" className="btn-s btn-sm" onClick={() => setShowWalkin(false)}>Cancel</button>
+                <button type="button" className="btn-p btn-sm" disabled={walkinBusy} onClick={() => void submitWalkin()} style={{ minWidth: 130, justifyContent: "center" }}>
+                  {walkinBusy ? "Registering…" : "Register Walk-in"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardShell>
+  );
+}
+
+function PatientAppointmentsPanel() {
+  const [appts, setAppts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = () => {
+      api.appointments({ limit: 50 })
+        .then(setAppts)
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    };
+    load();
+    const id = window.setInterval(load, 10000);
+    return () => clearInterval(id);
+  }, []);
+
+  const confirm = async (id: string) => {
+    await api.appointmentConfirm(id).catch(() => {});
+    setAppts((prev) => prev.map((a) => a.id === id ? { ...a, status: "confirmed" } : a));
+  };
+
+  if (loading) return <div className="panel"><div className="pnl-bd" style={{ fontSize: 12, color: "var(--t3)" }}>Loading patient appointments…</div></div>;
+
+  const upcoming = appts.filter((a) => a.status !== "cancelled" && a.status !== "completed");
+
+  return (
+    <div className="panel">
+      <div className="pnl-hd">
+        <div>
+          <div className="pnl-ti">Patient Appointments</div>
+          <div className="pnl-su">{upcoming.length} upcoming · booked via portal</div>
+        </div>
+        <span className="tag g dot" style={{ fontSize: 9 }}>LIVE</span>
+      </div>
+      <div className="pnl-bd" style={{ padding: 0 }}>
+        {upcoming.length === 0 ? (
+          <div style={{ padding: "12px 16px", fontSize: 12, color: "var(--t3)" }}>No upcoming patient appointments.</div>
+        ) : (
+          <table className="tbl">
+            <thead>
+              <tr><th>Patient</th><th>Date & Time</th><th>Department</th><th>Facility</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              {upcoming.map((a) => (
+                <tr key={a.id}>
+                  <td style={{ fontWeight: 700 }}>{a.patient_name}</td>
+                  <td className="mono">{a.date} {a.time}</td>
+                  <td>{a.department}</td>
+                  <td style={{ fontSize: 11, color: "var(--t3)" }}>{a.facility}</td>
+                  <td>
+                    <span className={`tag ${a.status === "confirmed" ? "g" : a.status === "cancelled" ? "r" : "am"}`} style={{ fontSize: 9 }}>
+                      {a.status}
+                    </span>
+                  </td>
+                  <td>
+                    {a.status === "pending" && (
+                      <button type="button" className="btn-s btn-sm" style={{ fontSize: 10, padding: "3px 9px" }} onClick={() => void confirm(a.id)}>
+                        Confirm
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
   );
 }

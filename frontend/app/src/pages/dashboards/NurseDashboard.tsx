@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
@@ -70,6 +70,267 @@ export function NurseDashboard() {
   const [page, setPage] = useState<NursePage>("home");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // ── Phase 3: AI state ──────────────────────────────────────────────
+  const [aiAlerts, setAiAlerts]       = useState<any[]>([]);
+  const [simPatients, setSimPatients] = useState<any[]>([]);
+  const [wardState, setWardState]     = useState<any[]>([]);
+  const [wardForecast, setWardForecast] = useState<any[]>([]);
+  const [_ewsResult, setEwsResult]    = useState<any | null>(null); void _ewsResult;
+  const wsRef = useRef<WebSocket | null>(null);
+
+  // WebSocket for live nurse alerts
+  useEffect(() => {
+    const wsBase = (import.meta as any).env?.VITE_API_BASE_URL || "";
+    const wsUrl = (wsBase.replace(/^http/, "ws") || `ws://${window.location.host}`) +
+      "/ai/ws/alerts/nurse?token=dev-token-1";
+    try {
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      ws.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.event === "anomaly_alert") {
+            setAiAlerts(prev => [msg.data, ...prev].slice(0, 20));
+            toast(`🚨 ${msg.data.severity}: ${msg.data.msg}`);
+          }
+        } catch { /* ignore */ }
+      };
+      ws.onerror = () => {};
+      return () => { ws.close(); };
+    } catch { return undefined; }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Poll anomalies, sim patients, wards
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const [alerts, patients, wards] = await Promise.all([
+          api.aiAnomalies({ ack: false, limit: 20 }, "nurse"),
+          api.aiSimPatients({ limit: 25 }, "nurse"),
+          api.aiWards("nurse"),
+        ]);
+        if (!cancelled) {
+          setAiAlerts(alerts);
+          setSimPatients(patients);
+          setWardState(wards);
+        }
+        // Fetch forecast for first ward
+        if (wards.length > 0 && !cancelled) {
+          const fc = await api.aiWardForecast(wards[0].ward_id, 24, "nurse");
+          if (!cancelled) setWardForecast(fc);
+        }
+      } catch { /* api offline */ }
+    };
+    void load();
+    const id = setInterval(load, 20000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  const _computeEws = async (rr: number, spo2: number, sbp: number, hr: number, temp: number) => {
+    try {
+      const res = await api.aiNews2({ rr, spo2, sbp, hr, temp, gcs: 15 }, "nurse");
+      setEwsResult(res);
+    } catch { /* offline */ }
+  }; void _computeEws;
+
+  const ackAlert = async (id: string) => {
+    try {
+      await api.aiAckAnomaly(id, "Reviewed by nurse", "nurse");
+      setAiAlerts(prev => prev.filter(a => a.id !== id));
+      toast("Alert acknowledged.");
+    } catch { /* offline */ }
+  };
+
+  // Constant for display (must be declared before use in JSX below)
+  const MODEL_VERSION_DISPLAY = "rule-v1.0.0";
+
+  // ── AI Live Alerts Rail ───────────────────────────────────────────
+  const aiAlertsRail = (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: "var(--t1)" }}>
+          Live Clinical Alerts
+          {aiAlerts.length > 0 && (
+            <span style={{ marginLeft: 8, background: "#ff3366", color: "#fff", borderRadius: 10,
+              padding: "1px 7px", fontSize: 11, fontWeight: 700 }}>
+              {aiAlerts.filter(a => !a.acknowledged).length}
+            </span>
+          )}
+        </div>
+        <span style={{ fontSize: 11, color: "var(--t3)" }}>Phase 3 · AI Anomaly Engine · {MODEL_VERSION_DISPLAY}</span>
+      </div>
+      {aiAlerts.length === 0 ? (
+        <div style={{ padding: "12px 14px", background: "rgba(0,229,160,0.05)",
+          border: "1px solid rgba(0,229,160,0.15)", borderRadius: 10, fontSize: 13, color: "var(--t3)" }}>
+          No active alerts — all patients within safe parameters.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {aiAlerts.slice(0, 5).map((a: any) => (
+            <div key={a.id} style={{
+              display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+              background: a.severity === "CRITICAL" ? "rgba(255,51,102,0.08)" : "rgba(255,184,48,0.07)",
+              border: `1px solid ${a.severity === "CRITICAL" ? "rgba(255,51,102,0.3)" : "rgba(255,184,48,0.2)"}`,
+              borderRadius: 10,
+            }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>{a.severity === "CRITICAL" ? "🚨" : "⚠️"}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 13,
+                  color: a.severity === "CRITICAL" ? "#ff3366" : "#ffb830" }}>
+                  {a.severity} · {(a.metric ?? "").toUpperCase()} = {a.value}
+                  {a.z_score && <span style={{ fontSize: 11, marginLeft: 6 }}>(z={a.z_score}σ)</span>}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 1 }}>
+                  {a.msg} · Patient {a.patient_id} · {a.type === "z_score" ? "Trend anomaly" : "Threshold breach"}
+                </div>
+              </div>
+              <button onClick={() => void ackAlert(a.id)}
+                style={{ padding: "3px 10px", background: "transparent",
+                  border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6,
+                  color: "var(--t3)", fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
+                Ack
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Ward Capacity Strip ───────────────────────────────────────────
+  const wardCapacityStrip = wardState.length > 0 ? (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--t1)", marginBottom: 10 }}>Ward Capacity</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 8 }}>
+        {wardState.map((w: any) => (
+          <div key={w.ward_id} style={{
+            padding: "12px 14px", background: "rgba(8,18,42,0.6)",
+            border: `1px solid ${w.pct >= 90 ? "rgba(255,51,102,0.3)" : w.pct >= 75 ? "rgba(255,184,48,0.25)" : "rgba(0,212,255,0.12)"}`,
+            borderRadius: 10,
+          }}>
+            <div style={{ fontSize: 12, color: "var(--t2)", marginBottom: 4 }}>{w.name}</div>
+            <div style={{ fontWeight: 800, fontSize: 20,
+              color: w.pct >= 90 ? "#ff3366" : w.pct >= 75 ? "#ffb830" : "#00e5a0" }}>
+              {w.pct}%
+            </div>
+            <div style={{ fontSize: 11, color: "var(--t3)" }}>{w.occupied}/{w.capacity} beds</div>
+            <div style={{ marginTop: 6, height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2 }}>
+              <div style={{ height: "100%", borderRadius: 2, width: `${w.pct}%`,
+                background: w.pct >= 90 ? "#ff3366" : w.pct >= 75 ? "#ffb830" : "#00e5a0",
+                transition: "width 0.6s ease" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      {wardForecast.length > 0 && (
+        <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(8,18,42,0.5)",
+          border: "1px solid rgba(0,212,255,0.10)", borderRadius: 10 }}>
+          <div style={{ fontSize: 12, color: "var(--t3)", marginBottom: 6 }}>
+            48-h Bed Demand Forecast · {wardState[0]?.name}
+          </div>
+          <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 50 }}>
+            {wardForecast.slice(0, 24).map((step: any, i: number) => (
+              <div key={i} title={`${step.ts}: ${step.predicted}/${step.capacity} (${step.pct}%)`}
+                style={{ flex: 1, height: `${step.pct}%`, minHeight: 2,
+                  background: step.status === "CRITICAL" ? "#ff3366" : step.status === "WARNING" ? "#ffb830" : "#00e5a0",
+                  borderRadius: "2px 2px 0 0", opacity: 0.8 }} />
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--t3)", marginTop: 3 }}>
+            <span>Now</span><span>+12h</span><span>+24h</span>
+          </div>
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  // ── Simulated Patients Table ──────────────────────────────────────
+  const simPatientsTable = simPatients.length > 0 ? (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--t1)", marginBottom: 10 }}>
+        AI Patient Monitor · {simPatients.length} patients
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid rgba(0,212,255,0.12)" }}>
+              {["Patient", "Ward", "Diagnosis", "NEWS2", "Risk", "Deteriorating"].map(h => (
+                <th key={h} style={{ padding: "6px 10px", textAlign: "left", color: "var(--t3)",
+                  fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", fontSize: 10 }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {simPatients.slice(0, 10).map((p: any) => (
+              <tr key={p.sim_id} style={{ borderBottom: "1px solid rgba(0,212,255,0.06)" }}>
+                <td style={{ padding: "7px 10px", color: "var(--t1)", fontWeight: 500 }}>{p.name}</td>
+                <td style={{ padding: "7px 10px", color: "var(--t2)" }}>{p.ward_id}</td>
+                <td style={{ padding: "7px 10px", color: "var(--t2)" }}>{p.diagnosis}</td>
+                <td style={{ padding: "7px 10px", fontWeight: 700,
+                  color: p.news2_score >= 7 ? "#ff3366" : p.news2_score >= 5 ? "#ffb830" : "#00e5a0" }}>
+                  {p.news2_score ?? "—"}
+                </td>
+                <td style={{ padding: "7px 10px" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 5,
+                    background: p.news2_risk === "HIGH" ? "rgba(255,51,102,0.15)"
+                      : p.news2_risk === "MEDIUM" ? "rgba(255,184,48,0.12)" : "rgba(0,229,160,0.10)",
+                    color: p.news2_risk === "HIGH" ? "#ff3366"
+                      : p.news2_risk === "MEDIUM" ? "#ffb830" : "#00e5a0",
+                    border: `1px solid ${p.news2_risk === "HIGH" ? "rgba(255,51,102,0.3)"
+                      : p.news2_risk === "MEDIUM" ? "rgba(255,184,48,0.25)" : "rgba(0,229,160,0.2)"}`,
+                  }}>
+                    {p.news2_risk}
+                  </span>
+                </td>
+                <td style={{ padding: "7px 10px" }}>
+                  {p.deteriorating
+                    ? <span style={{ color: "#ff3366", fontWeight: 700, fontSize: 11 }}>↓ Deteriorating</span>
+                    : <span style={{ color: "#00e5a0", fontSize: 11 }}>Stable</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  ) : null;
+
+
+  const [showWalkin, setShowWalkin] = useState(false);
+  const [walkinBusy, setWalkinBusy] = useState(false);
+  const [walkinForm, setWalkinForm] = useState<{
+    facility_id: string;
+    full_name: string;
+    phone: string;
+    dob: string;
+    gender: string;
+    national_id: string;
+    mrn: string;
+    chief_complaint: string;
+    triage_level: string;
+  }>({
+    facility_id: "FAC-0001",
+    full_name: "",
+    phone: "",
+    dob: "",
+    gender: "female",
+    national_id: "",
+    mrn: "",
+    chief_complaint: "",
+    triage_level: "Orange",
+  });
+  const [walkinMatches, setWalkinMatches] = useState<{ uhid: string; score: number; reason: string }[] | null>(null);
+  const [lastCreated, setLastCreated] = useState<{ uhid: string; walkinId: string; aliases: any[] } | null>(null);
+
+  const liveWalkins = usePolling(
+    () => api.walkinsList({ limit: 30, facility_id: walkinForm.facility_id || undefined }),
+    { intervalMs: 8000 },
+  );
+
   const uiAction = async (label: string, extra?: Record<string, unknown>) => {
     try {
       await api.uiAction({ role: "nurse", page, label, ...extra });
@@ -77,6 +338,41 @@ export function NurseDashboard() {
       // Keep the UX clean even if the API is offline.
     }
     toast(label);
+  };
+
+  const submitWalkin = async (chosenUhid?: string) => {
+    setWalkinBusy(true);
+    try {
+      const res = await api.walkinCreate({
+        ...walkinForm,
+        uhid: chosenUhid,
+      });
+      const candidates = res.correlation?.candidates ?? [];
+      const action = res.correlation?.action ?? "";
+      if (action !== "created_new" && candidates.length > 0 && !chosenUhid) {
+        // Present candidates to the nurse to choose from
+        setWalkinMatches(candidates);
+      } else {
+        setWalkinMatches(null);
+        setShowWalkin(false);
+        setLastCreated({
+          uhid: res.patient?.uhid ?? "",
+          walkinId: res.walkin?.id ?? "",
+          aliases: res.aliases ?? [],
+        });
+        setWalkinForm((s) => ({ ...s, full_name: "", phone: "", dob: "", national_id: "", mrn: "", chief_complaint: "" }));
+      }
+      void uiAction("Walk-in registered.", {
+        walkin_id: res.walkin?.id,
+        uhid: res.patient?.uhid,
+        correlation_action: action,
+      });
+      toast(`Walk-in: ${action === "created_new" ? "New patient — " : "Linked — "}${res.patient?.uhid ?? "UHID"}`);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Walk-in failed — is the API running?");
+    } finally {
+      setWalkinBusy(false);
+    }
   };
 
   const [showTask, setShowTask] = useState(false);
@@ -166,6 +462,7 @@ export function NurseDashboard() {
         priLabel: "Immediate",
         name: "James Otieno",
         id: "AFL-45678901",
+        fhirId: "P003",
         cc: "Chest pain, SOB, diaphoresis",
         time: "11:42",
         wait: "8 min",
@@ -178,6 +475,7 @@ export function NurseDashboard() {
         priLabel: "Urgent",
         name: "Mary Kamau",
         id: "AFL-56789012",
+        fhirId: "P004",
         cc: "Severe abdominal pain, fever 39.5°C",
         time: "11:35",
         wait: "15 min",
@@ -190,6 +488,7 @@ export function NurseDashboard() {
         priLabel: "Semi-urgent",
         name: "Ali Hassan",
         id: "AFL-67890123",
+        fhirId: "P005",
         cc: "Head injury — minor, GCS 15",
         time: "11:20",
         wait: "28 min",
@@ -202,6 +501,7 @@ export function NurseDashboard() {
         priLabel: "Non-urgent",
         name: "Samuel Wanjohi",
         id: "AFL-78901234",
+        fhirId: "P006",
         cc: "Cough & cold, 3 days",
         time: "11:05",
         wait: "43 min",
@@ -563,89 +863,123 @@ export function NurseDashboard() {
         )}
 
         {showHandover && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            style={{
-              position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%,-50%)",
-              width: "min(760px, calc(100vw - 28px))",
-              background: "#fff",
-              border: "1.5px solid var(--bdr)",
-              borderRadius: 14,
-              zIndex: 1000,
-              boxShadow: "0 20px 60px rgba(2,6,23,.25)",
-              overflow: "hidden",
-            }}
-          >
-            <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--bdr)", display: "flex", justifyContent: "space-between" }}>
-              <div style={{ fontWeight: 950, color: "var(--t1)" }}>Sign & submit handover</div>
-              <button className="btn-s btn-sm" type="button" onClick={() => setShowHandover(false)}>
-                Close
-              </button>
-            </div>
-            <div style={{ padding: 16 }}>
-              <div className="g2">
-                <div className="ff">
-                  <label>Ward</label>
-                  <input value={handoverForm.ward} onChange={(e) => setHandoverForm((s) => ({ ...s, ward: e.target.value }))} />
+          <>
+            <div
+              role="presentation"
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", zIndex: 998 }}
+              onClick={() => setShowHandover(false)}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sign handover"
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%,-50%)",
+                width: "min(820px, calc(100vw - 24px))",
+                maxHeight: "calc(100vh - 32px)",
+                background: "rgba(4,14,34,0.98)",
+                border: "1px solid rgba(0,210,255,0.20)",
+                borderRadius: 18,
+                zIndex: 1000,
+                boxShadow: "0 32px 100px rgba(0,0,0,0.80), 0 0 40px rgba(0,210,255,0.06)",
+                backdropFilter: "blur(18px)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              {/* Modal header */}
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(0,210,255,0.10)", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,77,133,0.16)", border: "1px solid rgba(255,77,133,0.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
+                  📝
                 </div>
-                <div className="ff">
-                  <label>Shift</label>
-                  <input value={handoverForm.shift} onChange={(e) => setHandoverForm((s) => ({ ...s, shift: e.target.value }))} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, color: "#ddf0ff", fontSize: 14 }}>Sign & Submit Shift Handover</div>
+                  <div style={{ fontSize: 11, color: "rgba(0,210,255,0.55)", marginTop: 2 }}>SBAR format · Ward 4B · {handoverForm.shift}</div>
                 </div>
+                <button className="btn-s btn-sm" type="button" onClick={() => setShowHandover(false)}>✕ Close</button>
               </div>
-              <div className="ff">
-                <label>Author</label>
-                <input value={handoverForm.author} onChange={(e) => setHandoverForm((s) => ({ ...s, author: e.target.value }))} />
-              </div>
-              <div className="ff">
-                <label>Ward summary</label>
-                <textarea value={handoverForm.summary} onChange={(e) => setHandoverForm((s) => ({ ...s, summary: e.target.value }))} style={{ minHeight: 90 }} />
-              </div>
-              <div className="ff">
-                <label>Patients requiring special attention</label>
-                <textarea
-                  value={handoverForm.special_attention}
-                  onChange={(e) => setHandoverForm((s) => ({ ...s, special_attention: e.target.value }))}
-                  style={{ minHeight: 80 }}
-                />
-              </div>
-              <div className="ff">
-                <label>
+
+              {/* Modal body */}
+              <div style={{ padding: "18px 20px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+                {/* S — Situation */}
+                <div style={{ padding: 14, background: "rgba(255,77,133,0.07)", border: "1px solid rgba(255,77,133,0.18)", borderRadius: 12 }}>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: 2, color: "rgba(255,77,133,0.70)", marginBottom: 10, fontWeight: 800 }}>S — SITUATION</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    <div className="ff">
+                      <label>Ward</label>
+                      <input value={handoverForm.ward} onChange={(e) => setHandoverForm((s) => ({ ...s, ward: e.target.value }))} />
+                    </div>
+                    <div className="ff">
+                      <label>Shift period</label>
+                      <input value={handoverForm.shift} onChange={(e) => setHandoverForm((s) => ({ ...s, shift: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="ff">
+                    <label>Handing-over nurse</label>
+                    <input value={handoverForm.author} onChange={(e) => setHandoverForm((s) => ({ ...s, author: e.target.value }))} />
+                  </div>
+                </div>
+
+                {/* B — Background */}
+                <div style={{ padding: 14, background: "rgba(0,210,255,0.05)", border: "1px solid rgba(0,210,255,0.13)", borderRadius: 12 }}>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: 2, color: "rgba(0,210,255,0.55)", marginBottom: 10, fontWeight: 800 }}>B — BACKGROUND · WARD SUMMARY</div>
+                  <div className="ff">
+                    <label>Ward summary</label>
+                    <textarea value={handoverForm.summary} onChange={(e) => setHandoverForm((s) => ({ ...s, summary: e.target.value }))} style={{ minHeight: 80 }} />
+                  </div>
+                </div>
+
+                {/* A+R — Assessment & Recommendation */}
+                <div style={{ padding: 14, background: "rgba(255,184,48,0.06)", border: "1px solid rgba(255,184,48,0.16)", borderRadius: 12 }}>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: 2, color: "rgba(255,184,48,0.65)", marginBottom: 10, fontWeight: 800 }}>A+R — ASSESSMENT & SPECIAL ATTENTION</div>
+                  <div className="ff">
+                    <label>Patients requiring special attention</label>
+                    <textarea value={handoverForm.special_attention} onChange={(e) => setHandoverForm((s) => ({ ...s, special_attention: e.target.value }))} style={{ minHeight: 80 }} />
+                  </div>
+                </div>
+
+                {/* Signature */}
+                <div style={{ padding: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, display: "flex", alignItems: "center", gap: 12 }}>
                   <input
                     type="checkbox"
+                    id="ho-signed"
                     checked={handoverForm.signed}
                     onChange={(e) => setHandoverForm((s) => ({ ...s, signed: e.target.checked }))}
-                    style={{ marginRight: 8 }}
+                    style={{ width: 16, height: 16, accentColor: "#00e5a0", flexShrink: 0 }}
                   />
-                  Signed
-                </label>
+                  <label htmlFor="ho-signed" style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontWeight: 600 }}>
+                    I, <strong style={{ color: "#ddf0ff" }}>{handoverForm.author}</strong>, confirm this handover is accurate and complete per NCC/NCK guidelines.
+                  </label>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                <button className="btn-s" type="button" onClick={() => setShowHandover(false)}>
-                  Cancel
-                </button>
+
+              {/* Modal footer */}
+              <div style={{ padding: "14px 20px", borderTop: "1px solid rgba(0,210,255,0.08)", display: "flex", gap: 10, justifyContent: "flex-end", flexShrink: 0 }}>
+                <button className="btn-s" type="button" onClick={() => setShowHandover(false)}>Cancel</button>
                 <button
                   className="btn-p"
                   type="button"
+                  disabled={!handoverForm.signed}
+                  style={{ opacity: handoverForm.signed ? 1 : 0.5 }}
                   onClick={async () => {
                     try {
                       const res = await api.nurseHandoverSubmit(handoverForm);
                       setShowHandover(false);
-                      toast(`Handover submitted (${res.id ?? "ok"}).`);
+                      toast(`✓ Handover signed & submitted (ref: ${res.id ?? "ok"}).`);
                     } catch (e) {
                       toast(`Handover submit failed: ${String(e)}`);
                     }
                   }}
                 >
-                  Submit handover
+                  ✍ Sign & Submit Handover
                 </button>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {showSupply && (
@@ -914,10 +1248,18 @@ export function NurseDashboard() {
               UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready
               for offline
             </span>
-            <button type="button" onClick={() => void uiAction("Manual UniHealth sync requested.")}>
+            <button type="button" onClick={() => {
+              obs.refresh(); summary.refresh(); meds.refresh(); supplyRequests.refresh();
+              void uiAction("Manual UniHealth sync requested.");
+            }}>
               Sync Now
             </button>
           </div>
+
+          {/* Phase 3: Live Alerts + Ward Capacity */}
+          {aiAlertsRail}
+          {wardCapacityStrip}
+          {simPatientsTable}
 
           <div className="ai-widget teal" style={{ animationDelay: ".08s" }}>
             <div className="ai-widget-hd">
@@ -1567,6 +1909,8 @@ export function NurseDashboard() {
           </div>
         </div>
 
+        <NurseAppointmentsWidget />
+
         <div className={pgOn(page === "triage")} id="pg-triage">
           <div className="ph">
             <div>
@@ -1574,17 +1918,40 @@ export function NurseDashboard() {
               <div className="ph-ti">Triage Queue</div>
               <div className="ph-su">Emergency and walk-in patients awaiting triage assessment</div>
             </div>
-            <button
-              className="btn-p"
-              type="button"
-              onClick={() => {
-                setPage("vitals");
-                void uiAction("Triage new patient — opening vitals entry.");
-              }}
-            >
-              + Triage New Patient
-            </button>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <button
+                className="btn-s"
+                type="button"
+                onClick={() => {
+                  setShowWalkin(true);
+                  setWalkinMatches(null);
+                  void uiAction("Walk-in modal opened.");
+                }}
+              >
+                + Walk-in
+              </button>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={() => {
+                  setPage("vitals");
+                  void uiAction("Triage new patient — opening vitals entry.");
+                }}
+              >
+                + Triage New Patient
+              </button>
+            </div>
           </div>
+          {walkinMatches && walkinMatches.length > 0 && (
+            <div className="notice am" style={{ marginBottom: 14 }}>
+              <span className="notice-e">🧬</span>
+              <div className="notice-tx">
+                <strong>Possible existing patient matches found:</strong>{" "}
+                {walkinMatches.slice(0, 3).map((m) => `${m.uhid} (${Math.round(m.score * 100)}%)`).join(", ")}
+                .
+              </div>
+            </div>
+          )}
           <div className="g4" style={{ marginBottom: 14 }}>
             <div className="kpi" style={{ borderTop: "3px solid #ef4444" }}>
               <div className="kpi-e">🔴</div>
@@ -1671,7 +2038,11 @@ export function NurseDashboard() {
                         <button
                           className={`${r.primary ? "btn-p" : "btn-s"} btn-sm`}
                           type="button"
-                          onClick={() => void uiAction("Triage opened.", { triage_patient: r.name, triage_id: r.id })}
+                          onClick={() => {
+                            setPatientId(r.fhirId ?? patientId);
+                            setPage("vitals");
+                            void uiAction("Triage opened.", { triage_patient: r.name, triage_id: r.id });
+                          }}
                         >
                           Triage →
                         </button>
@@ -1682,7 +2053,269 @@ export function NurseDashboard() {
               </table>
             </div>
           </div>
+
+          {/* ── Live walk-in visits from the API ── */}
+          <div className="panel" style={{ marginTop: 18 }}>
+            <div className="pnl-hd">
+              <div>
+                <div className="pnl-ti">Today's Walk-in Visits</div>
+                <div className="pnl-su">Registered via this facility · polling every 8 s</div>
+              </div>
+              <span className="tag g dot">SYNC</span>
+            </div>
+            <div className="pnl-bd" style={{ padding: 0 }}>
+              {liveWalkins.data && liveWalkins.data.length > 0 ? (
+                <table className="tbl">
+                  <thead>
+                    <tr>
+                      <th className="mono">Walk-in ID</th>
+                      <th className="mono">UHID</th>
+                      <th>Complaint</th>
+                      <th>Triage</th>
+                      <th className="mono">MRN</th>
+                      <th className="mono">Arrived</th>
+                      <th>Status</th>
+                      <th />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(liveWalkins.data as any[]).map((w) => {
+                      const level = String(w.triage_level ?? "");
+                      const statusResolved = String(w.status ?? "") === "Resolved";
+                      const dot =
+                        level === "Red" ? "red" : level === "Orange" ? "orange" : level === "Yellow" ? "yellow" : "green";
+                      return (
+                        <tr key={w.id}>
+                          <td className="mono" style={{ fontSize: 12 }}>{w.id}</td>
+                          <td className="mono" style={{ fontWeight: 900, color: "var(--p)" }}>{w.uhid}</td>
+                          <td>{w.chief_complaint ?? "—"}</td>
+                          <td>
+                            <span className={`triage-dot ${dot}`} style={{ display: "inline-block", marginRight: 5 }} />
+                            {level || "—"}
+                          </td>
+                          <td className="mono">{w.mrn ?? "—"}</td>
+                          <td className="mono" style={{ fontSize: 12 }}>{w.arrived_at ?? "—"}</td>
+                          <td>
+                            <span className={`tag ${statusResolved ? "g" : "am"}`}>
+                              {statusResolved ? "Resolved" : "Pending"}
+                            </span>
+                          </td>
+                          <td>
+                            {!statusResolved && (
+                              <button
+                                className="btn-s btn-sm"
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    await api.walkinResolve(w.id, { resolved_by: "Nurse" });
+                                    toast(`Walk-in ${w.id} resolved`);
+                                    void liveWalkins.refresh?.();
+                                  } catch {
+                                    toast("Resolve failed");
+                                  }
+                                }}
+                              >
+                                ✓ Resolve
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ padding: "20px 18px", color: "var(--t2)" }}>
+                  {liveWalkins.loading ? "Loading walk-ins…" : "No walk-ins registered yet for this facility."}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {lastCreated && (
+            <div className="notice g" style={{ marginTop: 14 }}>
+              <span className="notice-e">✅</span>
+              <div className="notice-tx" style={{ width: "100%" }}>
+                <strong>Walk-in created</strong> · UHID <span className="mono">{lastCreated.uhid}</span> · ID{" "}
+                <span className="mono">{lastCreated.walkinId}</span>
+                {lastCreated.aliases.length > 0 && (
+                  <div style={{ marginTop: 4, fontSize: 12, color: "var(--t2)" }}>
+                    Aliases:{" "}
+                    {lastCreated.aliases.map((a: any) => `${a.facility_id}/${a.mrn}`).join(", ")}
+                  </div>
+                )}
+                <button
+                  className="btn-s btn-sm"
+                  type="button"
+                  style={{ marginTop: 6 }}
+                  onClick={() => setLastCreated(null)}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+
+        {showWalkin && (
+          <div className="modal" role="dialog" aria-modal="true" aria-label="Register walk-in">
+            <div className="modal-card" style={{ maxWidth: 780 }}>
+              <div className="modal-hd">
+                <div>
+                  <div className="modal-ti">Register Walk-in</div>
+                  <div className="modal-su">Quick registration + cross-facility patient correlation (UHID)</div>
+                </div>
+                <button className="btn-x" type="button" onClick={() => setShowWalkin(false)} aria-label="Close">
+                  ✕
+                </button>
+              </div>
+              <div className="modal-bd">
+                {/* Row 1: facility + triage */}
+                <div className="g2" style={{ gap: 12 }}>
+                  <div>
+                    <div className="lbl">Facility ID</div>
+                    <input
+                      value={walkinForm.facility_id}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, facility_id: e.target.value }))}
+                      placeholder="e.g. FAC-0001"
+                      className="mono"
+                    />
+                  </div>
+                  <div>
+                    <div className="lbl">Triage Level</div>
+                    <select value={walkinForm.triage_level} onChange={(e) => setWalkinForm((s) => ({ ...s, triage_level: e.target.value }))}>
+                      {["Red", "Orange", "Yellow", "Green"].map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {/* Row 2: demographics */}
+                <div className="g2" style={{ gap: 12, marginTop: 12 }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <div className="lbl">Full name <span style={{ color: "var(--r)" }}>*</span></div>
+                    <input value={walkinForm.full_name} onChange={(e) => setWalkinForm((s) => ({ ...s, full_name: e.target.value }))} placeholder="e.g. Jane Wanjiku" />
+                  </div>
+                  <div>
+                    <div className="lbl">Phone</div>
+                    <input value={walkinForm.phone} onChange={(e) => setWalkinForm((s) => ({ ...s, phone: e.target.value }))} placeholder="+2547..." className="mono" />
+                  </div>
+                  <div>
+                    <div className="lbl">Date of birth</div>
+                    <input value={walkinForm.dob} onChange={(e) => setWalkinForm((s) => ({ ...s, dob: e.target.value }))} placeholder="YYYY-MM-DD" className="mono" />
+                  </div>
+                  <div>
+                    <div className="lbl">Gender</div>
+                    <select value={walkinForm.gender} onChange={(e) => setWalkinForm((s) => ({ ...s, gender: e.target.value }))}>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div className="lbl">National ID / Passport</div>
+                    <input
+                      value={walkinForm.national_id}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, national_id: e.target.value }))}
+                      placeholder="e.g. 12345678"
+                      className="mono"
+                    />
+                  </div>
+                </div>
+                {/* Row 3: local MRN + complaint */}
+                <div className="g2" style={{ gap: 12, marginTop: 12 }}>
+                  <div>
+                    <div className="lbl">Local MRN (facility record number)</div>
+                    <input
+                      value={walkinForm.mrn}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, mrn: e.target.value }))}
+                      placeholder="e.g. MRN-00482"
+                      className="mono"
+                    />
+                  </div>
+                  <div>
+                    <div className="lbl">Chief complaint <span style={{ color: "var(--r)" }}>*</span></div>
+                    <input
+                      value={walkinForm.chief_complaint}
+                      onChange={(e) => setWalkinForm((s) => ({ ...s, chief_complaint: e.target.value }))}
+                      placeholder="e.g. abdominal pain, fever"
+                    />
+                  </div>
+                </div>
+
+                {/* Correlation matches panel */}
+                {walkinMatches && walkinMatches.length > 0 && (
+                  <div className="notice am" style={{ marginTop: 14 }}>
+                    <span className="notice-e">🧬</span>
+                    <div className="notice-tx" style={{ width: "100%" }}>
+                      <strong>Possible existing records found — is this the same patient?</strong>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                        {walkinMatches.map((m) => (
+                          <div
+                            key={m.uhid}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 10,
+                              padding: "8px 10px",
+                              background: "var(--s)",
+                              borderRadius: 8,
+                            }}
+                          >
+                            <div>
+                              <span className="mono" style={{ fontWeight: 900, color: "var(--p)" }}>{m.uhid}</span>
+                              <span style={{ marginLeft: 8, color: "var(--t2)", fontWeight: 700 }}>
+                                {Math.round(m.score * 100)}% match
+                              </span>
+                              <div style={{ fontSize: 12, color: "var(--t2)", marginTop: 2 }}>{m.reason}</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <button
+                                className="btn-p btn-sm"
+                                type="button"
+                                disabled={walkinBusy}
+                                onClick={() => void submitWalkin(m.uhid)}
+                              >
+                                ✓ Link to this UHID
+                              </button>
+                              <button
+                                className="btn-s btn-sm"
+                                type="button"
+                                disabled={walkinBusy}
+                                onClick={() => {
+                                  setWalkinMatches(null);
+                                  void submitWalkin("__create_new__");
+                                }}
+                              >
+                                No, create new
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="modal-ft">
+                <button className="btn-s" type="button" onClick={() => setShowWalkin(false)} disabled={walkinBusy}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-p"
+                  type="button"
+                  onClick={() => void submitWalkin()}
+                  disabled={walkinBusy || !walkinForm.full_name.trim()}
+                >
+                  {walkinBusy ? "Creating…" : "Register walk-in"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className={pgOn(page === "vitals")} id="pg-vitals">
           <div className="ph">
@@ -2285,129 +2918,206 @@ export function NurseDashboard() {
         </div>
 
         <div className={pgOn(page === "handover")} id="pg-handover">
+
+          {/* ── Page header ── */}
           <div className="ph">
             <div>
-              <div className="ph-ey">Shift Documentation</div>
+              <div className="ph-ey">Shift Documentation · NCK Standard</div>
               <div className="ph-ti">Shift Handover</div>
-              <div className="ph-su">Morning handover notes — Ward 4B · 07:00 to 15:00</div>
+              <div className="ph-su">Morning Shift · Ward 4B · 07:00–15:00 · SBAR format</div>
             </div>
-            <button
-              className="btn-p"
-              type="button"
-              onClick={() => {
-                setShowHandover(true);
-              }}
-            >
-              ✍ Sign Handover
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="btn-s" type="button" onClick={() => window.print()}>🖨 Print Report</button>
+              <button className="btn-p" type="button" onClick={() => setShowHandover(true)}>✍ Sign Handover</button>
+            </div>
           </div>
 
-          <div className="handover-hero">
-            <div className="ho-in">
-              <div className="ho-ti">Morning Shift Handover — Ward 4B</div>
-              <div className="ho-su">Nurse Atieno Achieng (NCK/RN/2021/08432) · Handing over to Nurse Omondi (Night) · 15:00</div>
-              <div className="ho-grid">
-                <div className="ho-stat">
-                  <div className="ho-v">12</div>
-                  <div className="ho-l">Patients</div>
+          {/* ── Shift summary banner ── */}
+          <div className="ho-banner">
+            <div className="ho-banner-accent" />
+            <div className="ho-banner-in">
+              <div className="ho-banner-left">
+                <div className="ho-banner-icon">📋</div>
+                <div>
+                  <div className="ho-banner-ti">Morning Shift — Ward 4B</div>
+                  <div className="ho-banner-su">Nurse Atieno Achieng (NCK/RN/2021/08432) · Handing to Nurse Omondi · 15:00</div>
                 </div>
-                <div className="ho-stat">
-                  <div className="ho-v" style={{ color: "#f87171" }}>
-                    2
+              </div>
+              <div className="ho-banner-stats">
+                {([
+                  { v: "12", l: "Patients",     c: "#ddf0ff" },
+                  { v: "2",  l: "Critical",      c: "#ff6699" },
+                  { v: "3",  l: "Pending",        c: "#ffc84a" },
+                  { v: "18", l: "Completed",      c: "#00e5a0" },
+                  { v: "0",  l: "Missed doses",   c: "#00e5a0" },
+                ] as const).map(({ v, l, c }) => (
+                  <div key={l} className="ho-stat-cell">
+                    <div className="ho-stat-v" style={{ color: c }}>{v}</div>
+                    <div className="ho-stat-l">{l}</div>
                   </div>
-                  <div className="ho-l">Critical</div>
-                </div>
-                <div className="ho-stat">
-                  <div className="ho-v" style={{ color: "#fbbf24" }}>
-                    3
-                  </div>
-                  <div className="ho-l">Pending Tasks</div>
-                </div>
-                <div className="ho-stat">
-                  <div className="ho-v" style={{ color: "#86efac" }}>
-                    18
-                  </div>
-                  <div className="ho-l">Completed</div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
 
-          <div className="g2">
-            <div className="panel">
-              <div className="pnl-hd">
-                <div className="pnl-ti">Incoming Handover Notes</div>
-                <div className="pnl-su">From Night Shift — Nurse Osei</div>
+          {/* ── SBAR body + right column ── */}
+          <div className="ho-grid-main">
+
+            {/* Left: SBAR cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+              <div className="sbar-card sbar-s">
+                <div className="sbar-label">S — Situation</div>
+                <div className="sbar-content">
+                  {[
+                    { ico: "🏥", text: <><strong>Ward 4B</strong> · Morning shift 07:00–15:00 · General Medicine</> },
+                    { ico: "👩‍⚕️", text: <>Outgoing: <strong>Nurse Atieno Achieng</strong> · NCK/RN/2021/08432</> },
+                    { ico: "🔄", text: <>Incoming: <strong>Nurse Omondi</strong> (Night, 15:00–23:00)</> },
+                  ].map(({ ico, text }, i) => (
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                  ))}
+                </div>
               </div>
-              <div className="pnl-bd">
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "var(--t2)",
-                    lineHeight: 1.8,
-                    background: "var(--bg)",
-                    borderRadius: 9,
-                    padding: 14,
-                    border: "1.5px solid var(--bdr)",
-                  }}
-                >
-                  <div style={{ marginBottom: 8 }}>
-                    <strong>Bed 01 — Wangui Njoroge:</strong> Critical. K⁺ 6.8 on 03:00 bloods. Dr. Mutuku on call was notified.
-                  </div>
-                  <div style={{ marginBottom: 8 }}>
-                    <strong>Bed 02 — Omar Abdullahi:</strong> Abdominal pain well managed with morphine. Kept NBM for possible surgery today.
-                  </div>
+
+              <div className="sbar-card sbar-b">
+                <div className="sbar-label">B — Background</div>
+                <div className="sbar-content">
+                  {[
+                    { ico: "📊", text: <><strong>Ward status:</strong> 12 of 14 beds occupied. 1 discharge planned (Bed 07). Bed 09 reserved for A&amp;E transfer.</> },
+                    { ico: "💊", text: <><strong>Medications:</strong> 36 administered, 0 missed doses, 2 PRN given. IV lines patent on all patients.</> },
+                    { ico: "🧪", text: <><strong>Labs:</strong> FBC/U&amp;E pending for Bed 01 (13:00). Culture results expected for Bed 05 (17:00).</> },
+                  ].map(({ ico, text }, i) => (
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="sbar-card sbar-a">
+                <div className="sbar-label">A — Assessment · Patient Status</div>
+                <div className="sbar-content">
+                  {[
+                    { bed: "01", name: "Wangui Njoroge",  status: "CRITICAL", note: "K⁺ 6.8 on 03:00 bloods. Dr. Mutuku notified. ECG continuous. Fluid restriction 1.5L.", level: "red" as const },
+                    { bed: "02", name: "Omar Abdullahi",  status: "STABLE",   note: "Abdominal pain managed. NBM for theatre today. Morphine PCA running.",                  level: "amber" as const },
+                    { bed: "05", name: "Akinyi Adhiambo", status: "STABLE",   note: "Post-op Day 2 appendectomy. Tolerating oral fluids. Pain 3/10.",                        level: "green" as const },
+                    { bed: "09", name: "(Reserved)",       status: "INCOMING", note: "Transfer from A&E expected 16:00. Prep bed, IV access, monitoring.",                    level: "blue" as const },
+                  ].map(({ bed, name, status, note, level }) => (
+                    <div key={bed} className="ho-patient-row">
+                      <div className={`ho-patient-bed ho-bed-${level}`}>Bed {bed}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="ho-patient-name">{name}</div>
+                        <div className="ho-patient-note">{note}</div>
+                      </div>
+                      <span className={`ho-status-tag ho-tag-${level}`}>{status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="sbar-card sbar-r">
+                <div className="sbar-label">R — Recommendations for Next Shift</div>
+                <div className="sbar-content">
+                  {[
+                    { ico: "🔴", text: "BED 01: Repeat K⁺ at 13:00 — notify Dr. Mutuku immediately if > 6.0. Continue ECG & fluid restriction." },
+                    { ico: "🟡", text: "BED 02: Theatre team to confirm time. Keep NBM, update consent forms pre-transfer." },
+                    { ico: "🔵", text: "BED 09: Prepare monitoring bay — O₂, IV trolley, drug chart ready before A&E transfer arrives." },
+                    { ico: "📋", text: "Ward: Complete drug round at 14:30 before handover. Document all PRN given in MAR." },
+                  ].map(({ ico, text }, i) => (
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: incoming notes + AI + pending tasks + CTA */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+              <div className="panel">
+                <div className="pnl-hd">
                   <div>
-                    <strong>General:</strong> Bed 09 reserved for incoming patient from A&E.
+                    <div className="pnl-ti">📥 Incoming Handover</div>
+                    <div className="pnl-su">From Night Shift · Nurse Osei</div>
                   </div>
+                  <span className="tag am">00:00–07:00</span>
+                </div>
+                <div className="pnl-bd" style={{ padding: "12px 16px" }}>
+                  {[
+                    { bed: "01", name: "Wangui Njoroge",  note: "Critical — K⁺ 6.8 at 03:00. Dr. Mutuku on call notified. Continuous ECG." },
+                    { bed: "02", name: "Omar Abdullahi",  note: "Abdominal pain managed with morphine. Kept NBM for theatre today." },
+                    { bed: "09", name: "General",          note: "Bed 09 reserved for incoming patient from A&E, expected 16:00." },
+                  ].map(({ bed, name, note }) => (
+                    <div key={bed} style={{ padding: "9px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <span style={{ fontFamily: "var(--mono)", fontSize: 10, fontWeight: 800, color: "rgba(0,210,255,0.60)", flexShrink: 0, marginTop: 2 }}>BED {bed}</span>
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.82)" }}>{name}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2, lineHeight: 1.5 }}>{note}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-            <div className="panel">
-              <div className="ai-widget amber" style={{ marginBottom: 16 }}>
+
+              <div className="ai-widget amber">
                 <div className="ai-widget-hd">
                   <div>
-                    <div className="ai-widget-ti">🤖 AI Shift Summary (Auto-generated)</div>
-                    <div style={{ fontSize: 11.5, color: "var(--t2)", marginTop: 3, fontWeight: 650 }}>
-                      Based on vitals, MAR and tasks for this shift
-                    </div>
+                    <div className="ai-widget-ti">🤖 AI Shift Summary</div>
+                    <div style={{ fontSize: 11, color: "var(--t2)", marginTop: 2, fontWeight: 600 }}>Auto-generated · Vitals + MAR + Tasks</div>
                   </div>
                   <span className="tag am">07:00–15:00</span>
                 </div>
-                <div className="ai-row">
-                  <span className="ai-row-ico">📊</span>
-                  <div className="ai-row-body">
-                    <div className="ai-row-ti">Shift Statistics</div>
-                    <div className="ai-row-su">12 patients · 48 vitals · 36 medications given · 0 missed doses</div>
+                {[
+                  { ico: "📊", ti: "Shift Stats",        su: "12 patients · 48 vitals recorded · 36 meds administered · 0 missed" },
+                  { ico: "⚠️",  ti: "1 Critical Alert",  su: "Bed 01 — Hyperkalaemia. Escalated to on-call physician at 03:15." },
+                  { ico: "✅", ti: "All Tasks Logged",   su: "18 of 21 tasks complete. 3 deferred to next shift (documented)." },
+                ].map(({ ico, ti, su }) => (
+                  <div key={ti} className="ai-row">
+                    <span className="ai-row-ico">{ico}</span>
+                    <div className="ai-row-body">
+                      <div className="ai-row-ti">{ti}</div>
+                      <div className="ai-row-su">{su}</div>
+                    </div>
                   </div>
-                </div>
+                ))}
                 <div className="audit-notice">⛓️ FHIR synced · Shift audit trail verified</div>
               </div>
-              <div className="pnl-hd">
-                <div className="pnl-ti">My Outgoing Notes</div>
+
+              <div className="panel">
+                <div className="pnl-hd">
+                  <div className="pnl-ti">Deferred to Next Shift</div>
+                  <span className="tag r">3 pending</span>
+                </div>
+                <div className="pnl-bd" style={{ padding: 0 }}>
+                  <table className="tbl">
+                    <thead><tr><th>Task</th><th>Bed</th><th>Due</th><th>Priority</th></tr></thead>
+                    <tbody>
+                      {[
+                        { task: "K⁺ blood draw repeat", bed: "01", due: "13:00", pri: "URGENT", pc: "r" },
+                        { task: "Theatre consent form",  bed: "02", due: "14:00", pri: "HIGH",   pc: "am" },
+                        { task: "Bed 09 incoming setup", bed: "09", due: "15:30", pri: "HIGH",   pc: "am" },
+                      ].map(({ task, bed, due, pri, pc }) => (
+                        <tr key={task}>
+                          <td style={{ fontWeight: 600 }}>{task}</td>
+                          <td className="mono">Bed {bed}</td>
+                          <td className="mono" style={{ color: "rgba(0,210,255,0.70)" }}>{due}</td>
+                          <td><span className={`tag ${pc}`}>{pri}</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <div className="pnl-bd">
-                <div className="ff">
-                  <label>Ward Summary</label>
-                  <textarea style={{ minHeight: 100 }} defaultValue="Ward 4B — 12 patients stable except Bed 01 (critical K⁺). ECG continuous." />
+
+              <div className="ho-sign-cta">
+                <div className="ho-sign-cta-text">
+                  <span className="ho-sign-cta-ico">✍</span>
+                  <div>
+                    <div style={{ fontWeight: 700, color: "#ddf0ff", fontSize: 13 }}>Ready to sign off?</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Complete SBAR and submit your digital handover to the incoming nurse.</div>
+                  </div>
                 </div>
-                <div className="ff">
-                  <label>Patients Requiring Special Attention</label>
-                  <textarea style={{ minHeight: 80 }} defaultValue="BED 01: K⁺ repeat due at 13:00. Strict fluid restriction 1.5L." />
-                </div>
-                <button
-                  className="btn-p"
-                  style={{ width: "100%", justifyContent: "center", marginTop: 4 }}
-                  type="button"
-                  onClick={() => setShowHandover(true)}
-                >
-                  Sign & Submit Handover
-                </button>
+                <button className="btn-p" type="button" onClick={() => setShowHandover(true)}>✍ Sign & Submit</button>
               </div>
             </div>
           </div>
-
-          {/* Clean UI: keep endpoints working, hide system tables/badges */}
         </div>
 
         <div className={pgOn(page === "incidents")} id="pg-incidents">
@@ -2616,5 +3326,72 @@ export function NurseDashboard() {
         </div>
       </div>
     </DashboardShell>
+  );
+}
+
+function NurseAppointmentsWidget() {
+  const [appts, setAppts] = useState<any[]>([]);
+  const [expanded, setExpanded] = useState(true);
+
+  useEffect(() => {
+    const load = () => {
+      api.appointments({ status: "pending", limit: 20 })
+        .then(setAppts)
+        .catch(() => {});
+    };
+    load();
+    const id = window.setInterval(load, 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const pending = appts.filter((a) => a.status === "pending");
+  if (pending.length === 0) return null;
+
+  return (
+    <div
+      style={{
+        margin: "0 0 16px",
+        background: "rgba(255,184,48,0.05)",
+        border: "1px solid rgba(255,184,48,0.20)",
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px", cursor: "pointer" }}
+        onClick={() => setExpanded((v) => !v)}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 16 }}>📅</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 13, color: "var(--am)" }}>
+              Pending Patient Appointments ({pending.length})
+            </div>
+            <div style={{ fontSize: 10.5, color: "var(--t3)" }}>Booked via portal — awaiting confirmation</div>
+          </div>
+        </div>
+        <span style={{ color: "var(--t3)", fontSize: 12 }}>{expanded ? "▲" : "▼"}</span>
+      </div>
+      {expanded && (
+        <div style={{ padding: "0 16px 12px" }}>
+          <table className="tbl">
+            <thead>
+              <tr><th>Patient</th><th>Date</th><th>Time</th><th>Dept</th><th>Facility</th></tr>
+            </thead>
+            <tbody>
+              {pending.map((a) => (
+                <tr key={a.id}>
+                  <td style={{ fontWeight: 700 }}>{a.patient_name}</td>
+                  <td className="mono">{a.date}</td>
+                  <td className="mono">{a.time}</td>
+                  <td>{a.department}</td>
+                  <td style={{ fontSize: 10.5, color: "var(--t3)" }}>{a.facility}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

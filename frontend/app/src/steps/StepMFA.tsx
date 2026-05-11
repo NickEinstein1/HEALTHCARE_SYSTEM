@@ -121,13 +121,13 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
       </button>
       <div className="vtabs">
         <button type="button" className={`vtab${tab === "otp" ? " act" : ""}`} onClick={() => setTab("otp")}>
-          📱 SMS OTP
+          📲 SMS / Email OTP
         </button>
         <button type="button" className={`vtab${tab === "bio" ? " act" : ""}`} onClick={() => setTab("bio")}>
           👁️ Biometric
         </button>
         <button type="button" className={`vtab${tab === "p360" ? " act" : ""}`} onClick={() => setTab("p360")}>
-          📱 Practice 360
+          🔒 Practice 360
         </button>
       </div>
 
@@ -188,15 +188,17 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
           </button>
         </div>
         <div
-          className={`nbox amb${role === "patient" ? "" : " hidden"}`}
+          className={`si-hint amb${role === "patient" ? "" : " hidden"}`}
           style={{ marginTop: 12 }}
         >
-          <span className="ni">⚠️</span>
-          <span>
-            At Level 4, 5 and 6 facilities, <strong>UniHealth no longer accepts OTP</strong> for service
-            approvals (August 2025). Switch to <strong>Biometric</strong> or <strong>Practice 360</strong> tab if
-            you are at a hospital.
-          </span>
+          <span className="si-hint-ico" aria-hidden>⚠️</span>
+          <div className="si-hint-body">
+            <span className="si-hint-head">OTP policy note for hospital patients</span>
+            <span className="si-hint-sub">
+              At Level 4, 5 &amp; 6 facilities, UniHealth no longer accepts OTP for service approvals (Aug 2025).
+              Switch to Biometric or Practice 360 if you are at a hospital.
+            </span>
+          </div>
         </div>
       </div>
 
@@ -222,12 +224,15 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
               Discharge
             </div>
           </div>
-          <div className="nbox grn" style={{ textAlign: "left", marginBottom: 14 }}>
-            <span className="ni">✅</span>
-            <span>
-              Biometric is now <strong>mandatory</strong> at all Level 4, 5 and 6 hospitals under UniHealth
-              (August 2025). Fingerprint data is validated in real-time against the central UniHealth registry.
-            </span>
+          <div className="si-hint grn" style={{ marginBottom: 14 }}>
+            <span className="si-hint-ico" aria-hidden>✅</span>
+            <div className="si-hint-body">
+              <span className="si-hint-head">Biometric mandatory — Level 4 · 5 · 6 hospitals</span>
+              <span className="si-hint-sub">
+                Fingerprint data is validated in real-time against the central UniHealth registry.
+                Required at all Level 4, 5, and 6 facilities (Aug 2025).
+              </span>
+            </div>
           </div>
           <button className="btn" type="button" onClick={doBio} disabled={bioLoading}>
             <div className="bspin" style={{ display: bioLoading ? "block" : "none" }} />
@@ -244,23 +249,25 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
             Open the UniHealth <strong>Practice 360</strong> app on your registered device and tap{" "}
             <em>Approve</em> on the push notification to authorise this session.
           </div>
-          <div className="nbox amb" style={{ textAlign: "left", marginBottom: 12 }}>
-            <span className="ni">📍</span>
-            <span>
-              <strong>Geo-fenced &amp; geo-tagged:</strong> Practice 360 verifies you are physically at the
-              registered facility. Pre-authorisation codes can no longer be shared between healthcare workers
-              (UniHealth policy Aug 2025).
-            </span>
+          <div className="si-hint amb" style={{ marginBottom: 12 }}>
+            <span className="si-hint-ico" aria-hidden>📍</span>
+            <div className="si-hint-body">
+              <span className="si-hint-head">Geo-fenced &amp; geo-tagged verification</span>
+              <span className="si-hint-sub">
+                Practice 360 verifies you are physically at the registered facility.
+                Pre-authorisation codes can no longer be shared between healthcare workers (Aug 2025).
+              </span>
+            </div>
           </div>
-          <div className="nbox blu" style={{ textAlign: "left", marginBottom: 14 }}>
-            <span className="ni">📱</span>
-            <span>
-              Don&apos;t have the app?{" "}
-              <a href="#" style={{ color: "#1d4ed8", fontWeight: 700 }}>
-                Download Practice 360 from Google Play
-              </a>{" "}
-              using your UniHealth provider credentials.
-            </span>
+          <div className="si-hint blu" style={{ marginBottom: 14 }}>
+            <span className="si-hint-ico" aria-hidden>📱</span>
+            <div className="si-hint-body">
+              <span className="si-hint-head">Don&apos;t have the app?</span>
+              <span className="si-hint-sub">
+                <a href="#" className="si-hint-link">Download Practice 360 from Google Play</a>{" "}
+                using your UniHealth provider credentials.
+              </span>
+            </div>
           </div>
           <button className="btn" type="button" onClick={doP360} disabled={p360Loading}>
             <div className="bspin" style={{ display: p360Loading ? "block" : "none" }} />
