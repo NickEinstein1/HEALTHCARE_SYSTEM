@@ -4,14 +4,166 @@
    All visible UI elements use solid, high-contrast colour values.
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Page shell ─────────────────────────────────────────────────── */
+/* ── UniHealth Clinical Command theatre (CSS + Canvas) ───────────── */
+.unihealth-med-scene {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+
+/* Atmospheric depth — surgical-teal moonlight vs cardiac-green rim */
+.unihealth-med-scene-css {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  background:
+    radial-gradient(ellipse 110% 70% at 50% -5%, rgba(0, 212, 255, 0.16) 0%, transparent 52%),
+    radial-gradient(ellipse 90% 55% at 95% 90%, rgba(168, 85, 247, 0.12) 0%, transparent 46%),
+    radial-gradient(ellipse 80% 55% at 5% 75%, rgba(0, 229, 160, 0.10) 0%, transparent 42%),
+    radial-gradient(circle at 62% 48%, rgba(20, 60, 140, 0.25) 0%, transparent 45%),
+    linear-gradient(168deg, #030814 0%, #071938 42%, #020510 100%) !important;
+  animation: uniSceneMesh 20s ease-in-out infinite alternate;
+}
+
+@keyframes uniSceneMesh {
+  0% {
+    opacity: 0.92;
+    filter: saturate(1) hue-rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    filter: saturate(1.08) hue-rotate(18deg);
+  }
+}
+
+.unihealth-med-scene-grid {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  opacity: 0.45 !important;
+  mix-blend-mode: screen !important;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px) !important;
+  background-size: 44px 44px !important;
+  mask-image: radial-gradient(ellipse 92% 75% at 50% 48%, rgba(0, 0, 0, 0.85) 0%, transparent 75%) !important;
+}
+
+.unihealth-med-scene-scan {
+  position: absolute !important;
+  left: -5% !important;
+  width: 110% !important;
+  height: 22vh !important;
+  max-height: 220px !important;
+  top: -25vh !important;
+  z-index: 2 !important;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 212, 255, 0.03) 40%,
+    rgba(0, 229, 160, 0.07) 50%,
+    rgba(0, 212, 255, 0.04) 60%,
+    transparent 100%
+  ) !important;
+  opacity: 0.9 !important;
+  animation: uniSceneScan 11s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+  filter: blur(0.5px) !important;
+}
+
+@keyframes uniSceneScan {
+  0% {
+    transform: translateY(-5vh);
+  }
+  100% {
+    transform: translateY(155vh);
+  }
+}
+
+.unihealth-med-scene-canvas.unihealth-medical-bg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  z-index: 3 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unihealth-med-scene-css {
+    animation: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .unihealth-med-scene-scan {
+    animation: none !important;
+    transform: translateY(40vh) !important;
+    opacity: 0.4 !important;
+  }
+}
+
+/* Auth pages: match canvas base so no “flat” body flash */
+html.unihealth-auth-bg,
+body.unihealth-auth-bg {
+  background-color: #020510 !important;
+}
+
+/* ── Animated background (below #root content; canvas is inside routes) ─ */
+#root {
+  position: relative !important;
+  z-index: 1 !important;
+  background: transparent !important;
+}
+
+/* ── Auth route wrapper (background first child fixed z-0, UI above z-1) ─ */
+.sign-in-route {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  align-self: stretch;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.sign-in-route > .sign-in-root {
+  flex: 1;
+}
+
+/* ── Page shell — transparent so MedicalBackground canvas is visible ─ */
 .sign-in-root {
   display: flex !important;
   min-height: 100vh !important;
   width: 100% !important;
   flex-direction: row !important;
-  background: #030a18 !important;
+  background: transparent !important;
   position: relative !important;
+  z-index: 3 !important;
+}
+
+/* Left brand rail: glass over the animated scene (not an opaque plate) */
+.sign-in-root .lp {
+  background: transparent !important;
+}
+.sign-in-root .lp::before {
+  background:
+    radial-gradient(ellipse 100% 60% at 0% 100%, rgba(0, 212, 255, 0.18) 0%, transparent 58%),
+    radial-gradient(ellipse 72% 58% at 100% 0%, rgba(168, 85, 247, 0.11) 0%, transparent 54%),
+    linear-gradient(165deg, rgba(2, 8, 28, 0.72) 0%, rgba(4, 16, 42, 0.48) 48%, rgba(6, 24, 56, 0.36) 100%) !important;
+}
+.sign-in-root .lp::after {
+  background-image:
+    linear-gradient(rgba(0, 210, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 210, 255, 0.04) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
 }
 
 /* ── Right panel — glassmorphism backdrop ───────────────────────── */
@@ -27,23 +179,23 @@
     radial-gradient(ellipse 60% 70% at 50% 50%, rgba(0,212,255,0.045) 0%, transparent 70%) !important;
 }
 
-/* Vignette edges on right panel */
+/* Vignette: keep readability but let the HUD / figures read through */
 .sign-in-root .rp::before {
   content: '' !important;
   position: absolute !important;
   inset: 0 !important;
   background:
-    linear-gradient(to right,  rgba(3,10,24,0.5) 0%, transparent 18%),
-    linear-gradient(to left,   rgba(3,10,24,0.5) 0%, transparent 18%),
-    linear-gradient(to bottom, rgba(3,10,24,0.4) 0%, transparent 14%),
-    linear-gradient(to top,    rgba(3,10,24,0.4) 0%, transparent 14%) !important;
+    linear-gradient(to right,  rgba(3,10,24,0.22) 0%, transparent 22%),
+    linear-gradient(to left,   rgba(3,10,24,0.22) 0%, transparent 22%),
+    linear-gradient(to bottom, rgba(3,10,24,0.18) 0%, transparent 16%),
+    linear-gradient(to top,    rgba(3,10,24,0.18) 0%, transparent 16%) !important;
   pointer-events: none !important;
   z-index: 0 !important;
 }
 
 /* ── Card container ─────────────────────────────────────────────── */
 .sign-in-root .card {
-  background: rgba(8,18,40,0.88) !important;
+  background: rgba(8,18,40,0.78) !important;
   border: 1.5px solid rgba(0,180,255,0.20) !important;
   border-radius: 22px !important;
   box-shadow:

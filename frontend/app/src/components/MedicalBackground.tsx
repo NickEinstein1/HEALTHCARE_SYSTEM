@@ -21,7 +21,8 @@
  * 15.  Corner HUD brackets + live readouts
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { createPortal, flushSync } from "react-dom";
 
 // ── Colour palette ──────────────────────────────────────────────────
 const C = {
@@ -90,6 +91,26 @@ const PT_VITALS = [
   { label: "MEDICATION",   val: "Metformin 500 mg",   col: C.amber  },
   { label: "ALLERGIES",    val: "Penicillin  ⚠",      col: C.pink   },
 ];
+
+// ── Safe rounded-rect (replaces ctx.roundRect for broad compatibility) ─
+function rrect(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  r: number | [number, number, number, number] = 0,
+) {
+  const [tl, tr, br, bl] = Array.isArray(r) ? r : [r, r, r, r];
+  ctx.beginPath();
+  ctx.moveTo(x + tl, y);
+  ctx.lineTo(x + w - tr, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + tr);
+  ctx.lineTo(x + w, y + h - br);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+  ctx.lineTo(x + bl, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - bl);
+  ctx.lineTo(x, y + tl);
+  ctx.quadraticCurveTo(x, y, x + tl, y);
+  ctx.closePath();
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────
 function drawHelix(
@@ -238,8 +259,7 @@ function drawDoctor(
   ctx.stroke();
   // Clipboard/tablet shape
   ctx.strokeStyle = hl;
-  ctx.beginPath();
-  ctx.roundRect(cx + s * 0.18, cy - s * 0.20, s * 0.10, s * 0.13, 3);
+  rrect(ctx, cx + s * 0.18, cy - s * 0.20, s * 0.10, s * 0.13, 3);
   ctx.stroke();
   ctx.setLineDash([2, 3]);
   ctx.beginPath();
@@ -342,8 +362,7 @@ function drawPatient(
 
   // ── Pillow ─────────────────────────────────────────────────────
   ctx.strokeStyle = `rgba(100,180,255,${alpha * 0.4})`; ctx.lineWidth = 0.8;
-  ctx.beginPath();
-  ctx.roundRect(cx - s * 0.38, cy - s * 0.09, s * 0.14, s * 0.10, 4);
+  rrect(ctx, cx - s * 0.38, cy - s * 0.09, s * 0.14, s * 0.10, 4);
   ctx.stroke();
 
   // ── Patient body (reclining) ───────────────────────────────────
@@ -412,7 +431,8 @@ function drawPatient(
   // Vitals monitor (small screen above bed)
   const monX = cx - s * 0.10, monY = cy - s * 0.30;
   ctx.strokeStyle = `rgba(0,212,255,${alpha * 0.55})`; ctx.lineWidth = 0.9;
-  ctx.beginPath(); ctx.roundRect(monX, monY, s * 0.22, s * 0.13, 4); ctx.stroke();
+  rrect(ctx, monX, monY, s * 0.22, s * 0.13, 4);
+  ctx.stroke();
   ctx.fillStyle = `rgba(0,212,255,${alpha * 0.04})`; ctx.fill();
   // Mini ECG trace in monitor
   ctx.strokeStyle = `rgba(0,229,160,${alpha * 0.55})`; ctx.lineWidth = 0.8;
@@ -428,8 +448,7 @@ function drawPatient(
 
   // ── Wristband ─────────────────────────────────────────────────
   ctx.strokeStyle = `rgba(0,212,255,${alpha * 0.5})`; ctx.lineWidth = 0.9;
-  ctx.beginPath();
-  ctx.roundRect(cx + s * 0.03, cy - s * 0.16, s * 0.03, s * 0.05, 2);
+  rrect(ctx, cx + s * 0.03, cy - s * 0.16, s * 0.03, s * 0.05, 2);
   ctx.stroke();
 }
 
@@ -519,13 +538,13 @@ function drawVitalsPanel(
 
   // Panel bg
   ctx.fillStyle = `rgba(3,14,38,${alpha * 0.72})`;
-  ctx.beginPath(); ctx.roundRect(x, y, W, H, 7); ctx.fill();
+  rrect(ctx, x, y, W, H, 7); ctx.fill();
   ctx.strokeStyle = `${borderCol}${alpha * 0.40})`; ctx.lineWidth = 1.0;
-  ctx.beginPath(); ctx.roundRect(x, y, W, H, 7); ctx.stroke();
+  rrect(ctx, x, y, W, H, 7); ctx.stroke();
 
   // Top accent bar
   ctx.fillStyle = `${borderCol}${alpha * 0.55})`;
-  ctx.beginPath(); ctx.roundRect(x, y, W, 2.5, [7, 7, 0, 0]); ctx.fill();
+  rrect(ctx, x, y, W, 3, [7, 7, 0, 0]); ctx.fill();
 
   ctx.font = "bold 9px 'JetBrains Mono', monospace";
   rows.forEach((row, i) => {
@@ -558,24 +577,90 @@ function drawMedCross(
 
 // ── Main component ──────────────────────────────────────────────────
 export function MedicalBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const [sceneHost, setSceneHost] = useState<HTMLDivElement | null>(null);
+
+  // Mount scene as a sibling of #root so `position: fixed` is not trapped or
+  // flattened under #root’s stacking context (fixes invisible / flat auth BG).
+  useLayoutEffect(() => {
+    const rootEl = document.getElementById("root");
+    const parent = rootEl?.parentNode;
+    if (!rootEl || !(parent instanceof HTMLElement)) return undefined;
+
+    const mount = document.createElement("div");
+    mount.className = "unihealth-med-scene";
+    mount.setAttribute("aria-hidden", "true");
+    parent.insertBefore(mount, rootEl);
+    setSceneHost(mount);
+
+    return () => {
+      flushSync(() => setSceneHost(null));
+      mount.remove();
+    };
+  }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
+    document.documentElement.classList.add("unihealth-auth-bg");
+    document.body.classList.add("unihealth-auth-bg");
+    return () => {
+      document.documentElement.classList.remove("unihealth-auth-bg");
+      document.body.classList.remove("unihealth-auth-bg");
+    };
+  }, []);
 
-    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+  useEffect(() => {
+    const canvas = canvasEl;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.warn("[MedicalBackground] 2D canvas context unavailable");
+      return;
+    }
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let lw = window.innerWidth;
+    let lh = window.innerHeight;
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      lw = window.innerWidth;
+      lh = window.innerHeight;
+      canvas.style.width = `${lw}px`;
+      canvas.style.height = `${lh}px`;
+      canvas.width = Math.max(1, Math.floor(lw * dpr));
+      canvas.height = Math.max(1, Math.floor(lh * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const W = () => lw;
+    const H = () => lh;
+
+    if (reduceMotion) {
+      const repaintStatic = () => {
+        resize();
+        const w = W(), h = H();
+        const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
+        bg.addColorStop(0, "#07122a");
+        bg.addColorStop(0.75, "#040c1e");
+        bg.addColorStop(1, "#020510");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(0,212,255,0.05)";
+        ctx.fillRect(0, 0, w, Math.min(h * 0.12, 96));
+      };
+      repaintStatic();
+      window.addEventListener("resize", repaintStatic);
+      return () => window.removeEventListener("resize", repaintStatic);
+    }
+
     resize();
     window.addEventListener("resize", resize);
-
-    const W = () => canvas.width;
-    const H = () => canvas.height;
 
     // State
     interface Particle { x: number; y: number; vx: number; vy: number; r: number; alpha: number }
     const PTS: Particle[] = Array.from({ length: 45 }, () => ({
-      x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight,
+      x: Math.random() * lw, y: Math.random() * lh,
       vx: (Math.random() - 0.5) * 0.28, vy: (Math.random() - 0.5) * 0.28,
       r: 1.2 + Math.random() * 1.6, alpha: 0.18 + Math.random() * 0.38,
     }));
@@ -598,6 +683,7 @@ export function MedicalBackground() {
     let raf = 0;
 
     const draw = () => {
+      try {
       const w = W(), h = H();
       ctx.clearRect(0, 0, w, h);
 
@@ -730,7 +816,7 @@ export function MedicalBackground() {
       // ── 6. Patient figure (left side) ─────────────────────────
       const patCX = w * 0.20, patCY = h * 0.58;
       const patScale = Math.min(w, h) * 0.20;
-      drawPatient(ctx, patCX, patCY, patScale, 0.45, now);
+      drawPatient(ctx, patCX, patCY, patScale, 0.58, now);
 
       // Patient vitals HUD
       const ptPanelX = patCX - 100, ptPanelY = patCY - patScale * 0.68;
@@ -748,7 +834,7 @@ export function MedicalBackground() {
       // ── 7. Doctor figure (right side) ─────────────────────────
       const drCX = w * 0.82, drCY = h * 0.52;
       const drScale = Math.min(w, h) * 0.26;
-      drawDoctor(ctx, drCX, drCY, drScale, 0.50, now);
+      drawDoctor(ctx, drCX, drCY, drScale, 0.64, now);
 
       // Doctor vitals HUD
       const drPanelX = drCX - 220, drPanelY = drCY - drScale * 0.50;
@@ -766,7 +852,7 @@ export function MedicalBackground() {
       // ── 8. Anatomy wireframe (centre, transparent) ────────────
       const bodyCX = w * 0.51, bodyCY = h * 0.50;
       const bodyScale = Math.min(w, h) * 0.24;
-      drawBodyWireframe(ctx, bodyCX, bodyCY, bodyScale, 0.038);
+      drawBodyWireframe(ctx, bodyCX, bodyCY, bodyScale, 0.052);
 
       // Organ nodes
       ORGANS.forEach(org => {
@@ -893,25 +979,24 @@ export function MedicalBackground() {
         bodyCX + bodyScale * 0.25,
         bodyCY + (ctScanY - 0.5) * bodyScale * 1.2);
 
+      } catch (e) {
+        console.error("[MedicalBackground] draw error:", e);
+      }
       raf = requestAnimationFrame(draw);
     };
 
     raf = requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
-  }, []);
+  }, [canvasEl]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      style={{
-        position:      "fixed",
-        top: 0, left: 0,
-        width:         "100%",
-        height:        "100%",
-        pointerEvents: "none",
-        zIndex:        0,
-      }}
-    />
+  const sceneInterior = (
+    <>
+      <div className="unihealth-med-scene-css" />
+      <div className="unihealth-med-scene-grid" aria-hidden />
+      <div className="unihealth-med-scene-scan" aria-hidden />
+      <canvas ref={setCanvasEl} className="unihealth-med-scene-canvas unihealth-medical-bg" aria-hidden />
+    </>
   );
+
+  return sceneHost ? createPortal(sceneInterior, sceneHost) : null;
 }

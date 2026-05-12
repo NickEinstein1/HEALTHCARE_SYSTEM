@@ -13,19 +13,19 @@ export function App() {
         <Route
           path="/sign-in"
           element={
-            <>
+            <div className="sign-in-route">
               <MedicalBackground />
               <SignInPage />
-            </>
+            </div>
           }
         />
         <Route
           path="/register"
           element={
-            <>
+            <div className="sign-in-route">
               <MedicalBackground />
               <CreateAccountPage />
-            </>
+            </div>
           }
         />
         <Route path="/dashboard/:role" element={<DashboardPage />} />

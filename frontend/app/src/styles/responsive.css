@@ -520,14 +520,17 @@
    CANVAS BACKGROUND — Don't render on very slow/small devices
    ════════════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  canvas[aria-hidden] { opacity: 0.4; }
+  /* Only dashboard canvases; sign-in HUD uses `.unihealth-medical-bg` and stays full-opacity */
+  canvas[aria-hidden]:not(.unihealth-medical-bg) { opacity: 0.4; }
 }
 
 /* ════════════════════════════════════════════════════════════════════
    PRINT — clean minimal layout
    ════════════════════════════════════════════════════════════════════ */
 @media print {
-  .sb, .topbar, .ds-toast, canvas { display: none !important; }
+  .sb, .topbar, .ds-toast,
+  .unihealth-med-scene,
+  canvas { display: none !important; }
   .main { margin-left: 0 !important; }
   .content { padding: 0 !important; overflow: visible !important; }
   .panel, .kpi { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
