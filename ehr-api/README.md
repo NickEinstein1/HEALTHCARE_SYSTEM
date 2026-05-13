@@ -71,6 +71,17 @@ curl -s -X POST http://localhost:8000/consent/revoke \\
    curl http://localhost:8000/fhir/r5/Patient/P001/summary?encounters=5
    ```
 
+## Testing — Phase 3 AI Assist pilot
+
+Runs **without Redis/Postgres** (slim `/ai` app + in-memory simulator only):
+
+```bash
+cd ehr-api
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+PYTHONPATH=. pytest tests/test_ai_phase3_pilot.py -q
+```
+
 ## Environment
 
 | Variable | Default | Description |
@@ -78,6 +89,31 @@ curl -s -X POST http://localhost:8000/consent/revoke \\
 | EHR_REDIS_URL | redis://localhost:6379/0 | Redis connection |
 | EHR_POSTGRES_DSN | postgresql://ehr:...@localhost:5432/ehr | PostgreSQL connection |
 | EHR_CACHE_TTL_SECONDS | 300 | Cache TTL for patient summary |
+| EHR_AI_CENSUS_INTEGRATION_SECRET | _(empty)_ | When set: enables integration POST routes (`/ai/integration/...`, including HL7 ADT stub); send header `X-AI-Census-Secret`; empty = **404** on those paths |
+| EHR_WARD_CENSUS_SQLITE_PATH | _(empty)_ | When set: each appended census snapshot is also written to this SQLite file (WAL mode); survives process restarts for pilot durability |
+| EHR_REPLAY_WARD_CENSUS_SQLITE | false | When `true` **and** `EHR_WARD_CENSUS_SQLITE_PATH` is set: on API startup, tail rows from SQLite are merged into in-memory census history before recomputing forecasts |
+
+Automation census **example** (after setting the secret in the gateway environment):
+
+```bash
+curl -s -X POST "http://localhost:8000/ai/integration/wards/WARD-A/census-snapshot" \
+  -H "Content-Type: application/json" \
+  -H "X-AI-Census-Secret: YOUR_SECRET" \
+  -d '{"occupied":12,"source":"hl7/ADT_A01_facility_JOB","idempotency_key":"job-run-uuid"}'
+```
+
+Optional JSON field ``idempotency_key``: duplicate POSTs within ~7 days (single process) replay the first JSON response with ``"idempotent_replay": true`` — use for retried feeders.
+
+**HL7 ADT pilot** (±1 census heuristic; same secret header):
+
+```bash
+curl -s -X POST "http://localhost:8000/ai/integration/hl7/adt" \
+  -H "Content-Type: application/json" \
+  -H "X-AI-Census-Secret: YOUR_SECRET" \
+  -d '{"message":"MSH|^~\\\&|S|R|UH|UH|202601011200||ADT^A01|x|P|2.5\rPV1|1|I|WARD-A","ward_id_override":"WARD-A"}'
+```
+
+Use JSON field ``message`` (alias ``raw``) for ER7 text. Optional ``ward_id_override`` if PV1-3 does not include a simulated ward token. Optional ``idempotency_key``; otherwise the inferred **MSH-10** adjacent to ``ADT^…`` dedupes repeats. Non-delta ADT triggers return ``{"status":"ignored"}``.
 
 ## Later (Phase 2+)
 
