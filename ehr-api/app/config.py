@@ -11,6 +11,13 @@ class Settings(BaseSettings):
     # - permissive: allow reads if no explicit consent record exists (Phase 1 default for pilot)
     # - strict: deny reads unless an active consent exists for (patient, facility, scope)
     consent_mode: str = "permissive"
+    # When non-empty: enables POST /ai/integration/wards/{ward_id}/census-snapshot
+    # with matching X-AI-Census-Secret header (automation/ADT feeder path).
+    ai_census_integration_secret: str = ""
+    # Optional Phase 3 pilot: append SQLite rows on each hourly census mutation.
+    ward_census_sqlite_path: str = ""
+    # On API startup, replace simulator census histories + rollups when SQLite rows exist for a ward.
+    replay_ward_census_sqlite: bool = False
 
     class Config:
         env_prefix = "EHR_"
