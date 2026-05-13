@@ -33,3 +33,7 @@ jobs:
       - name: Unit tests
         run: |
           pytest -q tests
+
+      - name: Phase 3 AI Assist API pilot (sim / no DB required)
+        run: |
+          cd ehr-api && PYTHONPATH=. pytest tests/test_ai_phase3_pilot.py -q
