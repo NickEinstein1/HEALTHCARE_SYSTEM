@@ -1,14 +1,11 @@
 """
-UniHealth Phase 3 — Rule-Based AI Engine (v1)
-=============================================
-Provides three clinical decision-support capabilities:
-
-  1. diagnosis_hints  — differential diagnosis from vitals + labs + demographics
-  2. anomaly_check    — Z-score + hard-threshold patient deterioration detection
+UniHealth Phase 3 — Clinical decision-support (v2)
+================================================
+  1. diagnosis_hints  — expanded rule-based differential patterns
+  2. anomaly_check    — hard thresholds + NEWS2 composite + z-score vs series baselines
   3. ews_score        — NEWS2 Early Warning Score wrapper
 
-All logic is deterministic, auditable, and KDPA-transparent.
-Model version is stamped on every response for audit trail purposes.
+Deterministic & auditable for KDPA transparency.
 """
 
 from __future__ import annotations
@@ -16,15 +13,10 @@ from __future__ import annotations
 import time
 from typing import Any
 
+from app.ai.baselines import MIN_SAMPLES_Z, MIN_STD
 from app.ai.simulator import news2
 
-MODEL_VERSION = "rule-v1.0.0"
-_AUDIT_TTL_SECONDS = 7 * 24 * 3600  # 7 days in-memory retention
-
-
-# ══════════════════════════════════════════════════════════════════
-# 1. DIAGNOSIS HINTS
-# ══════════════════════════════════════════════════════════════════
+MODEL_VERSION = "rule-v2.1.0"
 
 # Each rule: (fn(features) -> bool, diagnosis, icd10, confidence, rationale)
 _DX_RULES: list[tuple[Any, str, str, int, str]] = [
@@ -88,6 +80,47 @@ _DX_RULES: list[tuple[Any, str, str, int, str]] = [
         "Pulmonary Embolism (possible)", "I26.9", 65,
         "Tachypnoea + desaturation + tachycardia — PE on differential, needs CTPA.",
     ),
+    (
+        lambda f: f.get("rr", 14) >= 22 and f.get("sbp", 120) <= 100,
+        "Sepsis risk (qSOFA-style screen)", "R65.2", 71,
+        "RR ≥22 + SBP ≤100 — with infection suspicion, escalate sepsis bundle + lactate.",
+    ),
+    (
+        lambda f: f.get("sbp", 120) <= 90 and f.get("creatinine", 88) >= 150 and f.get("lactate", 0) >= 1.5,
+        "Acute Kidney Injury — hypo-perfusion / shock", "N17.9", 82,
+        "Hypotension + elevated creatinine + lactate rise — optimise perfusion.",
+    ),
+    (
+        lambda f: f.get("platelets", 200) <= 120 and f.get("wbc", 8) <= 5.5 and f.get("temp", 37) >= 38.0,
+        "DIC syndrome — early consideration", "D65", 74,
+        "Thrombocytopenia + leukopenia tendency + fever — consumptive coagulopathy differential.",
+    ),
+    (
+        lambda f: min(f.get("sodium", 140), f.get("na", 140)) <= 126
+        and f.get("glasgow", f.get("gcs", 15)) <= 14,
+        "Symptomatic hyponatraemia risk", "E87.1", 81,
+        "Severe hyponatraemia with reduced GCS — controlled correction pathways.",
+    ),
+    (
+        lambda f: f.get("glucose", 5) <= 3.3 and f.get("hr", 80) >= 90,
+        "Hypoglycaemia", "E16.2", 88,
+        "Glucose ≤3.3 mmol/L with sympathetic surge — urgent correction + cause search.",
+    ),
+    (
+        lambda f: f.get("alt", 40) >= 280 and max(f.get("bilirubin", 12), f.get("bil", 12)) >= 48,
+        "Acute hepatic dysfunction", "K72.0", 79,
+        "Marked transaminase + bilirubin rise — toxin / viral / ischaemic hepatitis differential.",
+    ),
+    (
+        lambda f: f.get("inr", 1.0) >= 3.5 and f.get("platelets", 200) <= 115,
+        "Coagulopathy with thrombocytopenia", "D68.9", 76,
+        "Elevated INR + falling platelets — liver failure vs consumptive process.",
+    ),
+    (
+        lambda f: f.get("bicarb", 24) <= 17 and f.get("spo2", 98) <= 93 and f.get("rr", 18) >= 22,
+        "Hypercapnic COPD exacerbation risk", "J44.1", 70,
+        "Metabolic alkalosis/compensation discordance + respiratory distress — ABG review.",
+    ),
 ]
 
 # Drug interaction rule pairs: (drug_a_substring, drug_b_substring, severity, detail)
@@ -100,6 +133,8 @@ _DRUG_INTERACTIONS: list[tuple[str, str, str, str]] = [
     ("carvedilol",     "amlodipine",      "LOW",    "Enhanced antihypertensive effect — monitor BP closely"),
     ("morphine",       "midazolam",       "HIGH",   "Synergistic respiratory depression — reduce doses, monitor SpO₂"),
     ("insulin",        "metformin",       "LOW",    "Combined hypoglycaemia risk — monitor BG 4-hourly"),
+    ("aspirin",        "ticagrelor",      "HIGH",   "Dual antiplatelet — major bleeding vigilance"),
+    ("clarithromycin", "simvastatin",    "HIGH",   "CYP3A4 interaction → rhabdomyolysis risk — stop statin or substitute macrolide"),
 ]
 
 
@@ -145,7 +180,7 @@ def diagnosis_hints(features: dict, medications: list[str] | None = None) -> dic
                 })
 
     return {
-        "differentials":      differentials[:8],
+        "differentials":      differentials[:12],
         "drug_interactions":  interactions,
         "model_version":      MODEL_VERSION,
         "generated_at":       time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -173,6 +208,12 @@ _CRITICAL_THRESHOLDS: list[dict] = [
     {"metric": "glucose",   "op": "gt", "value": 25.0, "severity": "CRITICAL", "msg": "Severe hyperglycaemia — assess for DKA/HHS"},
     {"metric": "lactate",   "op": "gt", "value": 4.0,  "severity": "CRITICAL", "msg": "Severe lactic acidosis — septic shock until proven otherwise"},
     {"metric": "troponin",  "op": "gt", "value": 0.1,  "severity": "CRITICAL", "msg": "Significant troponin rise — activate ACS pathway"},
+    {"metric": "creatinine","op": "gt", "value": 528, "severity": "CRITICAL", "msg": "Kidney Injury stage 3 concern (absolute Cr) — renal consult"},  # µmol/L
+    {"metric": "creatinine","op": "gt", "value": 310, "severity": "HIGH",     "msg": "Marked creatinine rise — compare to baseline, hold nephrotoxins"},
+    {"metric": "na",       "op": "lt", "value": 123,  "severity": "CRITICAL", "msg": "Critical hyponatraemia — slow correction, endocrine input"},
+    {"metric": "sodium",   "op": "lt", "value": 123,  "severity": "CRITICAL", "msg": "Critical hyponatraemia — slow correction, endocrine input"},
+    {"metric": "glucose",  "op": "lt", "value": 2.8,  "severity": "CRITICAL", "msg": "Severe hypoglycaemia — IV dextrose if unconscious/incoherent"},
+    {"metric": "wbc",      "op": "gt", "value": 32,   "severity": "HIGH",     "msg": "Extreme leukocytosis — infection vs leukaemic presentation"},
 ]
 
 
@@ -188,17 +229,50 @@ def _check_threshold(metric: str, value: float, threshold: dict) -> bool:
     return False
 
 
+def _news2_composite_anomaly(patient_id: str, payload: dict, now_str: str) -> dict | None:
+    """Single composite alert from Royal College NEWS2 aggregation."""
+    try:
+        rr   = int(float(payload.get("rr", 0) or 0))
+        spo2 = int(float(payload.get("spo2", 0) or 0))
+        sbp  = int(float(payload.get("sbp", 0) or 0))
+        hr   = int(float(payload.get("hr", 0) or 0))
+        temp = float(payload.get("temp", 37) or 37)
+        gcs  = int(float(payload.get("gcs", payload.get("glasgow", 15)) or 15))
+    except (TypeError, ValueError):
+        return None
+    if rr <= 0 or spo2 <= 0 or sbp <= 0 or hr <= 0:
+        return None
+
+    nw = news2(rr, spo2, sbp, hr, temp, gcs)
+    score = int(nw.get("score", 0))
+    if score < 5:
+        return None
+    sev = "CRITICAL" if score >= 7 or nw.get("any_single_3") else "HIGH"
+
+    return {
+        "id":            f"ANO-{patient_id}-NEWS2-{int(time.time() * 1000)}",
+        "patient_id":    patient_id,
+        "metric":        "NEWS2",
+        "value":         float(score),
+        "severity":      sev,
+        "msg":           f"NEWS2 score {score} ({nw['risk']}) — {nw['action']}",
+        "type":          "news2_composite",
+        "model_version": MODEL_VERSION,
+        "generated_at":  now_str,
+        "acknowledged":    False,
+        "ews_components": nw.get("components"),
+    }
+
+
 def anomaly_check(patient_id: str, vitals: dict, labs: dict | None = None,
                   baseline: dict | None = None) -> list[dict]:
     """
     Check vitals + labs for anomalies.
 
-    Returns list of anomaly dicts:
-      {patient_id, metric, value, severity, msg, type, z_score?, generated_at}
-
-    Two detection modes:
-      - Hard threshold: metric vs absolute clinical limit
-      - Z-score (if baseline provided): |value - mean| / std > 3.0 (3-sigma rule)
+    Modes:
+      - Absolute critical thresholds (_CRITICAL_THRESHOLDS)
+      - Per-metric z-score vs population baseline (requires ≥ MIN_SAMPLES_Z vitals readings)
+      - Composite NEWS2-based alert when full vital set supplied
     """
     anomalies: list[dict] = []
     now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -206,6 +280,9 @@ def anomaly_check(patient_id: str, vitals: dict, labs: dict | None = None,
     combined: dict = {**vitals}
     if labs:
         combined.update(labs)
+
+    skip_z_for: set[str] = set()
+    taken_metrics: set[str] = set()
 
     for metric, value in combined.items():
         if not isinstance(value, (int, float)):
@@ -215,39 +292,57 @@ def anomaly_check(patient_id: str, vitals: dict, labs: dict | None = None,
         # Hard threshold check
         for thresh in _CRITICAL_THRESHOLDS:
             if _check_threshold(metric, fval, thresh):
+                oid = f"ANO-{patient_id}-{metric}-{int(time.time() * 1000)}"
                 anomalies.append({
-                    "id":           f"ANO-{patient_id}-{metric}-{int(time.time()*1000)}",
-                    "patient_id":   patient_id,
-                    "metric":       metric,
-                    "value":        fval,
-                    "severity":     thresh["severity"],
-                    "msg":          thresh["msg"],
-                    "type":         "threshold",
+                    "id":            oid,
+                    "patient_id":    patient_id,
+                    "metric":        metric,
+                    "value":         fval,
+                    "severity":      thresh["severity"],
+                    "msg":           thresh["msg"],
+                    "type":          "threshold",
                     "model_version": MODEL_VERSION,
-                    "generated_at": now_str,
-                    "acknowledged": False,
+                    "generated_at":  now_str,
+                    "acknowledged":  False,
                 })
-                break  # one alert per metric per check
+                taken_metrics.add(metric)
+                skip_z_for.add(metric)
+                break
 
-        # Z-score check (patient's own baseline)
-        if baseline and metric in baseline:
+        # Z-score vs patient-specific baseline (from vital time series)
+        if baseline and metric in baseline and metric not in skip_z_for:
             bl = baseline[metric]
-            std = bl.get("std", 1.0) or 1.0
-            z = abs(fval - bl["mean"]) / std
-            if z >= 3.0 and not any(a["metric"] == metric for a in anomalies):
+            if not isinstance(bl, dict):
+                continue
+            n = int(bl.get("n", 0))
+            if n < MIN_SAMPLES_Z:
+                continue
+            mean = float(bl.get("mean", 0))
+            std = float(bl.get("std", MIN_STD) or MIN_STD)
+            std_eff = max(std, MIN_STD)
+            z = abs(fval - mean) / std_eff
+            if z >= 3.0 and metric not in taken_metrics:
                 anomalies.append({
-                    "id":           f"ANO-{patient_id}-{metric}-z-{int(time.time()*1000)}",
-                    "patient_id":   patient_id,
-                    "metric":       metric,
-                    "value":        fval,
-                    "z_score":      round(z, 2),
-                    "severity":     "HIGH" if z >= 4 else "MEDIUM",
-                    "msg":          f"{metric.upper()} deviates {z:.1f}σ from patient baseline (mean {bl['mean']}, SD {std})",
-                    "type":         "z_score",
+                    "id":            f"ANO-{patient_id}-{metric}-z-{int(time.time() * 1000)}",
+                    "patient_id":    patient_id,
+                    "metric":        metric,
+                    "value":         fval,
+                    "z_score":       round(z, 2),
+                    "severity":      "HIGH" if z >= 4 else "MEDIUM",
+                    "msg": (
+                        f"{metric.upper()} deviates {z:.1f}σ vs patient baseline μ={mean}, σ={std_eff}, n={n}"
+                    ),
+                    "type":          "z_score",
                     "model_version": MODEL_VERSION,
-                    "generated_at": now_str,
-                    "acknowledged": False,
+                    "generated_at":  now_str,
+                    "acknowledged":  False,
+                    "baseline_n":    n,
                 })
+                taken_metrics.add(metric)
+
+    comp = _news2_composite_anomaly(patient_id, combined, now_str)
+    if comp:
+        anomalies.append(comp)
 
     return anomalies
 
