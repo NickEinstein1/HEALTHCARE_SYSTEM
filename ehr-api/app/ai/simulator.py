@@ -2,7 +2,8 @@
 UniHealth Phase 3 — Clinical Data Simulator
 ============================================
 Generates realistic in-memory patient records, vital-sign time series,
-lab results, ward occupancy, and 48-hour bed-demand forecasts.
+lab results, ward occupancy, and 48-hour bed-demand forecasts (**trained OLS model**
+on diurnal + occupancy autoregressive features).
 
 All data is synthetic and de-identified by design (KDPA s.25).
 No real patient information is used or inferred.
@@ -12,6 +13,9 @@ import math
 import random
 import time
 from typing import Any
+
+from app.ai.baselines import compute_baselines_from_readings
+from app.ai.bed_forecast_ml import build_ml_forecast_all, _build_hourly_occ_series
 
 # ── deterministic seed for reproducible test runs ──────────────────────
 _RNG = random.Random(42)
@@ -345,7 +349,7 @@ def build_ward_state(patients: list[dict]) -> dict[str, dict]:
 
 
 # ── bed demand forecast (48 h, hourly) ────────────────────────────────
-def build_bed_forecast(ward_state: dict[str, dict]) -> dict[str, list[dict]]:
+def build_bed_forecast_heuristic(ward_state: dict[str, dict]) -> dict[str, list[dict]]:
     """
     Simple rule-based forecast:
       - Base occupancy oscillates on a 24-h sine wave (peak at 10:00, trough at 04:00)
@@ -377,6 +381,25 @@ def build_bed_forecast(ward_state: dict[str, dict]) -> dict[str, list[dict]]:
     return forecasts
 
 
+def seed_ward_occ_history(ward_state: dict[str, dict], rng: random.Random) -> dict[str, list[dict]]:
+    """Bootstrap hourly census ring buffer ending at live simulated occupancy."""
+    hist: dict[str, list[dict]] = {}
+    for wid, ws in ward_state.items():
+        cap = int(ws["capacity"])
+        occ_now = int(ws["occupied"])
+        series, start_ep = _build_hourly_occ_series(occ_now, cap, rng, history_hours=168)
+        hist[wid] = [
+            {
+                "ts_epoch": float(start_ep + i * 3600),
+                "occupied": int(o),
+                "capacity": cap,
+                "source":   "sim_seed",
+            }
+            for i, o in enumerate(series)
+        ]
+    return hist
+
+
 # ── master seeding function called at startup ──────────────────────────
 def seed_all() -> dict[str, Any]:
     """
@@ -386,28 +409,17 @@ def seed_all() -> dict[str, Any]:
     patients  = build_simulated_patients(25)
     vitals    = build_vitals_series(patients, hours=48)
     ward_st   = build_ward_state(patients)
-    forecast  = build_bed_forecast(ward_st)
-    baselines = _compute_baselines(vitals)
-    return {
-        "patients":  patients,
-        "vitals":    vitals,
-        "ward_state": ward_st,
-        "forecast":  forecast,
-        "baselines": baselines,
-    }
-
-
-def _compute_baselines(vitals: dict[str, list[dict]]) -> dict[str, dict]:
-    """Per-patient rolling baseline: mean ± SD for each vital metric."""
+    ward_hist = seed_ward_occ_history(ward_st, _RNG)
+    forecast  = build_ml_forecast_all(ward_st, _RNG, ward_hist)
     baselines: dict[str, dict] = {}
-    metrics = ["rr", "spo2", "sbp", "hr", "temp"]
-    for sim_id, readings in vitals.items():
-        bl: dict[str, dict] = {}
-        for m in metrics:
-            vals = [r[m] for r in readings if m in r]
-            if vals:
-                mean = sum(vals) / len(vals)
-                std  = (sum((v - mean) ** 2 for v in vals) / len(vals)) ** 0.5
-                bl[m] = {"mean": round(mean, 2), "std": round(max(std, 0.5), 2)}
-        baselines[sim_id] = bl
-    return baselines
+    for sid, readings in vitals.items():
+        baselines[sid] = compute_baselines_from_readings(readings)
+
+    return {
+        "patients":          patients,
+        "vitals":            vitals,
+        "ward_state":        ward_st,
+        "ward_occ_history":  ward_hist,
+        "forecast":          forecast,
+        "baselines":         baselines,
+    }
