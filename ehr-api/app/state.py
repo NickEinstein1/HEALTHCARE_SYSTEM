@@ -211,6 +211,9 @@ sim_ward_state: dict[str, dict] = {}
 # 48-h bed demand forecast: {ward_id: [step, ...]}
 sim_bed_forecast: dict[str, list[dict]] = {}
 
+# Hourly ward census snapshots for ML forecasting (ring buffer, max ~720 entries/ward)
+sim_ward_occ_history: dict[str, list[dict]] = {}
+
 # Active anomaly alerts (unacknowledged + recent acknowledged)
 ai_anomalies: list[dict] = []
 
@@ -218,15 +221,61 @@ ai_anomalies: list[dict] = []
 ai_audit_log: list[dict] = []
 
 
+def _merge_sqlite_census_history_if_enabled() -> None:
+    """Optional SQLite replay over simulator census — see ``EHR_REPLAY_WARD_CENSUS_SQLITE``."""
+    from app.config import settings as cfg
+
+    if not cfg.replay_ward_census_sqlite:
+        return
+    sqlite_path = (cfg.ward_census_sqlite_path or "").strip()
+    if not sqlite_path:
+        return
+    from app.ai.sqlite_census_store import tail_history
+    from app.ai.ward_history import MAX_SNAPSHOTS, recompute_all_forecasts
+
+    tails = tail_history(sqlite_path, max_tail=MAX_SNAPSHOTS)
+    if not tails:
+        return
+
+    mutated = False
+    for wid, rows in tails.items():
+        if wid not in sim_ward_state or not rows:
+            continue
+        mutated = True
+        sim_ward_occ_history[wid] = [dict(r) for r in rows]
+        sw = sim_ward_state[wid]
+        cap = int(sw["capacity"])
+        oc = max(0, min(cap, int(rows[-1]["occupied"])))
+        sw["occupied"] = oc
+        sw["available"] = cap - oc
+        sw["pct"] = round(oc / cap * 100, 1) if cap else 0.0
+
+    if mutated:
+        recompute_all_forecasts()
+
+
 def bootstrap_ai_state() -> None:
-    """Called once at FastAPI startup to seed Phase 3 in-memory data."""
+    """Replace Phase 3 simulation slices in memory (safe to call again — e.g. tests, reload)."""
     from app.ai.simulator import seed_all
+
+    sim_patients.clear()
+    sim_vitals.clear()
+    sim_baselines.clear()
+    sim_ward_state.clear()
+    sim_bed_forecast.clear()
+    sim_ward_occ_history.clear()
+    ai_anomalies.clear()
+    ai_audit_log.clear()
+
     data = seed_all()
     sim_patients.extend(data["patients"])
     sim_vitals.update(data["vitals"])
     sim_baselines.update(data["baselines"])
     sim_ward_state.update(data["ward_state"])
     sim_bed_forecast.update(data["forecast"])
+    sim_ward_occ_history.update(data.get("ward_occ_history", {}))
+
+    _merge_sqlite_census_history_if_enabled()
 
 
 # ----- Appointments (cross-user: booked by patient, visible to doctor/nurse) -----
