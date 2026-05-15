@@ -42,6 +42,44 @@ const POLICY_DEFS: { name: string; desc: string }[] = [
   { name: "Strict RBAC guard", desc: "Block access to AI Monitor without Security Admin role" },
 ];
 
+function downloadCsvFile(filename: string, content: string) {
+  const blob = new Blob(["\ufeff", content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildWardCensusCsv(wardId: string, rows: any[]): string {
+  const sorted = [...rows].sort((a, b) => Number(a.ts_epoch) - Number(b.ts_epoch));
+  const headers = ["ts_epoch", "ts_iso", "ward_id", "occupied", "capacity", "pct", "source"];
+  const esc = (v: unknown) => {
+    const s = String(v ?? "");
+    if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  };
+  const lines: string[] = [headers.join(",")];
+  for (const r of sorted) {
+    const cap = Math.max(1, Number(r.capacity) || 1);
+    const occ = Number(r.occupied);
+    const pct = Math.round((occ / cap) * 10000) / 100;
+    lines.push(
+      [
+        esc(r.ts_epoch),
+        esc(r.ts_iso),
+        esc(wardId),
+        esc(occ),
+        esc(cap),
+        esc(pct),
+        esc(r.source),
+      ].join(","),
+    );
+  }
+  return lines.join("\n");
+}
+
 export function AdminDashboard() {
   const toast = useDashboardToast();
   const metrics = usePolling(() => api.metricsJson(), { intervalMs: 5000 });
@@ -86,6 +124,13 @@ export function AdminDashboard() {
   const [aiAnomalies, setAiAnomalies]   = useState<any[]>([]);
   const [aiAudit, setAiAudit]           = useState<any[]>([]);
   const [aiStatus, setAiStatus]         = useState<any | null>(null);
+  const [aiRefreshTick, setAiRefreshTick] = useState(0);
+  const [aiRecomputeBusy, setAiRecomputeBusy] = useState(false);
+  const [censusDraftAdmin, setCensusDraftAdmin] = useState<Record<string, string>>({});
+  const [adminHistoryWardId, setAdminHistoryWardId] = useState("");
+  const [adminHistoryLimit, setAdminHistoryLimit] = useState(48);
+  const [adminHistoryRows, setAdminHistoryRows] = useState<any[]>([]);
+  const [adminHistoryLoading, setAdminHistoryLoading] = useState(false);
 
   useEffect(() => {
     if (page !== "ai") return;
@@ -115,7 +160,32 @@ export function AdminDashboard() {
     };
     void load();
     return () => { cancelled = true; };
-  }, [page]);
+  }, [page, aiRefreshTick]);
+
+  useEffect(() => {
+    if (page !== "ai" || aiWards.length === 0) return;
+    setAdminHistoryWardId((prev) => {
+      if (prev && aiWards.some((w: any) => w.ward_id === prev)) return prev;
+      return String(aiWards[0]?.ward_id ?? "");
+    });
+  }, [page, aiWards]);
+
+  useEffect(() => {
+    if (page !== "ai" || !adminHistoryWardId) return;
+    let cancelled = false;
+    setAdminHistoryLoading(true);
+    void (async () => {
+      try {
+        const rows = await api.aiWardHistory(adminHistoryWardId, adminHistoryLimit, "admin");
+        if (!cancelled) setAdminHistoryRows(rows);
+      } catch {
+        if (!cancelled) setAdminHistoryRows([]);
+      } finally {
+        if (!cancelled) setAdminHistoryLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [page, adminHistoryWardId, adminHistoryLimit, aiRefreshTick]);
 
   const ackAdminAnomaly = async (id: string) => {
     try {
@@ -2599,7 +2669,7 @@ export function AdminDashboard() {
             <div className="ph-eyebrow">Phase 3 — AI Assist</div>
             <div className="ph-title">Capacity Intelligence</div>
             <div className="ph-sub">
-              Real-time ward occupancy · 48-h bed demand forecast · Anomaly audit trail
+              Real-time ward occupancy · ADT census history · 48-h bed demand forecast · anomaly audit
               {aiStatus && (
                 <span style={{ marginLeft: 12, fontSize: 11, color: "var(--g)", background: "rgba(0,229,160,0.08)",
                   border: "1px solid rgba(0,229,160,0.2)", borderRadius: 5, padding: "2px 8px" }}>
@@ -2618,6 +2688,22 @@ export function AdminDashboard() {
                 } catch { toast("AI Engine: unreachable"); }
               }}>
               Ping AI Engine
+            </button>
+            <button className="btn-s btn-sm" type="button" disabled={aiRecomputeBusy}
+              onClick={() => void (async () => {
+                try {
+                  setAiRecomputeBusy(true);
+                  const res = await api.aiRecomputeForecasts();
+                  const n = Object.keys(res.training_source_by_ward ?? {}).length;
+                  toast(`Forecasts rebuilt for ${n} wards.`);
+                  setAiRefreshTick(t => t + 1);
+                } catch {
+                  toast("Rebuild failed — API offline?");
+                } finally {
+                  setAiRecomputeBusy(false);
+                }
+              })()}>
+              {aiRecomputeBusy ? "Rebuilding…" : "Rebuild All Forecasts"}
             </button>
             <button className="btn-p btn-sm" type="button"
               onClick={async () => {
@@ -2675,11 +2761,249 @@ export function AdminDashboard() {
                       ))}
                     </div>
                   )}
+                  {(() => {
+                    const meta = aiForecasts[w.ward_id]?.[0]?.forecast_meta;
+                    const src = meta?.training_source as string | undefined;
+                    const label = src === "persisted_census"
+                      ? `Trainer: persisted census · ${meta?.history_points ?? "—"} snapshots`
+                      : src === "synthetic_bootstrap"
+                        ? "Trainer: synthetic bootstrap (not enough history yet)"
+                        : meta?.model === "heuristic_diurnal_fallback"
+                          ? "Trainer: heuristic fallback (OLS unavailable)"
+                          : meta
+                            ? `Trainer: ${meta.model ?? "—"}`
+                            : null;
+                    return label ? (
+                      <div style={{ fontSize: 10, color: "var(--t3)", marginTop: 8, lineHeight: 1.35 }}>
+                        {label}
+                        {meta?.rmse_estimate_beds != null && (
+                          <span> · RMSE ≈ {meta.rmse_estimate_beds} beds</span>
+                        )}
+                      </div>
+                    ) : null;
+                  })()}
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 10 }}>
+                    <input
+                      type="number"
+                      min={0}
+                      max={w.capacity}
+                      placeholder={`e.g. ${w.occupied}`}
+                      value={censusDraftAdmin[w.ward_id] ?? ""}
+                      onChange={(e) => setCensusDraftAdmin((prev) => ({ ...prev, [w.ward_id]: e.target.value }))}
+                      style={{
+                        width: 72, fontSize: 11, padding: "5px 8px", borderRadius: 6,
+                        border: "1px solid var(--bdr)", background: "var(--bg)", color: "var(--t1)",
+                      }}
+                    />
+                    <button className="btn-s btn-sm" type="button" style={{ fontSize: 11 }}
+                      onClick={() => void (async () => {
+                        const raw = (censusDraftAdmin[w.ward_id] ?? "").trim();
+                        if (!raw) {
+                          toast("Enter occupied bed count.");
+                          return;
+                        }
+                        const occ = parseInt(raw, 10);
+                        if (Number.isNaN(occ) || occ < 0 || occ > w.capacity) {
+                          toast(`Occupied must be 0–${w.capacity}.`);
+                          return;
+                        }
+                        try {
+                          await api.aiWardCensusSnapshot(w.ward_id, {
+                            occupied: occ,
+                            source: "admin_capacity_ui",
+                          }, "admin");
+                          toast(`Census logged for ${w.name}.`);
+                          setCensusDraftAdmin((prev) => {
+                            const next = { ...prev };
+                            delete next[w.ward_id];
+                            return next;
+                          });
+                          setAiRefreshTick((t) => t + 1);
+                        } catch {
+                          toast("Could not log census.");
+                        }
+                      })()}>
+                      Log census
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        {/* ADT census ring buffer — trainer input */}
+        {aiWards.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div className="pnl-hd" style={{ marginBottom: 10 }}>
+              <div className="pnl-title">ADT Census History</div>
+              <span className="tag b" style={{ fontSize: 10 }}>
+                {adminHistoryLoading ? "Loading…" : `${adminHistoryRows.length} hourly rows`}
+              </span>
+            </div>
+            <div style={{
+              padding: "14px 16px",
+              background: "var(--card)",
+              borderRadius: 12,
+              border: "1px solid var(--bdr)",
+            }}>
+              <div style={{
+                fontSize: 12,
+                color: "var(--t3)",
+                marginBottom: 12,
+                lineHeight: 1.45,
+              }}>
+                Hourly occupancy buckets (max 720) that feed the OLS bed-demand model.
+                Sources include simulator seed, <strong style={{ color: "var(--t2)" }}>Log census</strong> entries, and integrations.
+              </div>
+              <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 10,
+                alignItems: "center",
+                marginBottom: 14,
+              }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--t2)" }}>
+                  Ward
+                  <select
+                    value={adminHistoryWardId}
+                    onChange={(e) => setAdminHistoryWardId(e.target.value)}
+                    style={{
+                      minWidth: 180,
+                      fontSize: 12,
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      border: "1px solid var(--bdr)",
+                      background: "var(--bg)",
+                      color: "var(--t1)",
+                    }}
+                  >
+                    {aiWards.map((w: any) => (
+                      <option key={w.ward_id} value={w.ward_id}>
+                        {w.name} ({w.ward_id})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--t2)" }}>
+                  Window
+                  <select
+                    value={adminHistoryLimit}
+                    onChange={(e) => setAdminHistoryLimit(Number(e.target.value))}
+                    style={{
+                      fontSize: 12,
+                      padding: "6px 10px",
+                      borderRadius: 8,
+                      border: "1px solid var(--bdr)",
+                      background: "var(--bg)",
+                      color: "var(--t1)",
+                    }}
+                  >
+                    {[24, 48, 168, 720].map((n) => (
+                      <option key={n} value={n}>{n} h</option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className="btn-s btn-sm"
+                  style={{ fontSize: 11 }}
+                  disabled={adminHistoryLoading}
+                  onClick={() => setAiRefreshTick((t) => t + 1)}
+                >
+                  Refresh history
+                </button>
+                <button
+                  type="button"
+                  className="btn-s btn-sm"
+                  style={{ fontSize: 11 }}
+                  disabled={adminHistoryLoading || adminHistoryRows.length === 0}
+                  onClick={() => {
+                    const csv = buildWardCensusCsv(adminHistoryWardId, adminHistoryRows);
+                    const stamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, "");
+                    downloadCsvFile(
+                      `unihealth-census-${adminHistoryWardId}-${adminHistoryLimit}h-${stamp}.csv`,
+                      csv,
+                    );
+                    toast("CSV export started.");
+                  }}
+                >
+                  Export CSV
+                </button>
+              </div>
+              {adminHistoryRows.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, color: "var(--t3)", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    Occupancy trend ({Math.min(48, adminHistoryRows.length)}h tail)
+                  </div>
+                  <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 44 }}>
+                    {adminHistoryRows.slice(-48).map((r: any, i: number) => {
+                      const cap = Math.max(1, Number(r.capacity) || 1);
+                      const pct = Math.min(100, (Number(r.occupied) / cap) * 100);
+                      return (
+                        <div
+                          key={`${r.ts_epoch}-${i}`}
+                          title={`${r.ts_iso ?? r.ts_epoch}: ${r.occupied}/${r.capacity} · ${r.source ?? "—"}`}
+                          style={{
+                            flex: 1,
+                            height: `${Math.max(6, pct)}%`,
+                            minHeight: 3,
+                            borderRadius: "2px 2px 0 0",
+                            background: pct >= 90 ? "var(--r)" : pct >= 75 ? "var(--am)" : "var(--g)",
+                            opacity: 0.75,
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              <div style={{ maxHeight: 220, overflow: "auto", borderRadius: 8, border: "1px solid var(--bdr)" }}>
+                <table className="tbl" style={{ margin: 0, fontSize: 11 }}>
+                  <thead style={{ position: "sticky", top: 0, background: "var(--card)", zIndex: 1 }}>
+                    <tr>
+                      <th>Time (UTC)</th>
+                      <th>Occupied</th>
+                      <th>Capacity</th>
+                      <th>%</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adminHistoryLoading ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: "14px", color: "var(--t3)", textAlign: "center" }}>
+                          Loading census rows…
+                        </td>
+                      </tr>
+                    ) : adminHistoryRows.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} style={{ padding: "14px", color: "var(--t3)", textAlign: "center" }}>
+                          No history for this ward yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      [...adminHistoryRows].reverse().slice(0, 24).map((r: any, idx: number) => {
+                        const cap = Math.max(1, Number(r.capacity) || 1);
+                        const occ = Number(r.occupied);
+                        const p = Math.round((occ / cap) * 1000) / 10;
+                        return (
+                          <tr key={`${r.ts_epoch}-${idx}`}>
+                            <td className="mono" style={{ fontSize: 10 }}>{r.ts_iso ?? r.ts_epoch}</td>
+                            <td>{occ}</td>
+                            <td>{cap}</td>
+                            <td>{p}%</td>
+                            <td style={{ color: "var(--t3)" }}>{String(r.source ?? "—")}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Active Anomalies */}
         <div style={{ marginBottom: 20 }}>
