@@ -10,9 +10,15 @@ Endpoints
   POST /ai/anomalies/{id}/ack      — clinician acknowledges an anomaly
   GET  /ai/patients                — list simulated patients
   GET  /ai/patients/{sim_id}/vitals — time-series vitals for one patient
+  GET  /ai/patients/{sim_id}/baselines — mean/SD/n baseline for z-score path
   GET  /ai/patients/{sim_id}/labs  — lab results for one patient
   GET  /ai/wards                   — current ward occupancy
-  GET  /ai/wards/{ward_id}/forecast — 48-h bed demand forecast
+  GET  /ai/wards/{ward_id}/forecast — 48-h bed demand forecast (clinician read)
+  GET  /ai/wards/{ward_id}/history — hourly census ring buffer (trainer input; clinician read)
+  POST /ai/wards/{ward_id}/census-snapshot — append census + refresh ward forecast
+  POST /ai/wards/recompute-forecasts — rebuild all forecasts from histories (admin)
+  POST /ai/integration/wards/{ward_id}/census-snapshot — automation census entry (secret-gated when configured)
+  POST /ai/integration/hl7/adt — raw HL7 ADT ±1 census heuristic (same secret gate)
   GET  /ai/audit                   — AI recommendation audit trail (admin only)
   POST /ai/audit/{hint_id}/feedback — clinician feedback on a diagnosis hint
   GET  /ai/simulate/trigger-alert  — dev: inject a test critical alert
@@ -22,7 +28,8 @@ Security
   - All REST endpoints validate X-UniHealth-Role header (role-gating).
   - WebSocket endpoint validates ?token= query parameter.
   - All AI recommendations are KDPA-logged to ai_audit_log.
-  - Rate limiting: 60 AI hint requests per minute per client IP.
+  - Optional integration census: ``EHR_AI_CENSUS_INTEGRATION_SECRET`` + header ``X-AI-Census-Secret``.
+  - Integration idempotency: JSON ``idempotency_key`` or HL7 ``MSH-10`` replay (~seven-day TTL in-process).
 """
 
 from __future__ import annotations
@@ -35,7 +42,18 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query, WebSocket, W
 from fastapi.requests import Request
 
 import app.state as st
+from app.config import settings
+from app.ai.baselines import resolve_baseline_from_vitals
 from app.ai.models import MODEL_VERSION, anomaly_check, compute_news2, diagnosis_hints
+from app.ai.integration_dedupe import remember_response, replay_if_recent
+from app.ai.hl7_adt_stub import (
+    apply_adt_delta_to_snapshot,
+    extract_adt_trigger,
+    extract_msh10_message_control_id,
+    pv1_assigned_location_field,
+    resolve_ward_id,
+)
+from app.ai.ward_history import append_ward_census_snapshot, recompute_all_forecasts
 from app.ai.ws_manager import VALID_ROLES, alert_manager
 
 router = APIRouter(prefix="/ai")
@@ -64,6 +82,15 @@ def _client_ip(request: Request) -> str:
     if forwarded:
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
+
+
+def _require_ai_integration_secret(request: Request) -> None:
+    """Raise 404 when disabled, 401 on bad credential (opaque to scanners)."""
+    secret = (settings.ai_census_integration_secret or "").strip()
+    if not secret:
+        raise HTTPException(status_code=404, detail="Not Found")
+    if request.headers.get("X-AI-Census-Secret", "").strip() != secret:
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 # ── role guard ──────────────────────────────────────────────────────────
@@ -110,7 +137,7 @@ async def ai_status():
     return {
         "status":          "operational",
         "model_version":   MODEL_VERSION,
-        "model_type":      "rule-based-v1",
+        "model_type":      "clinical-v2-rules+news2+zscore; beds=ols-diurnal-ar-v1",
         "ws_connections":  alert_manager.status(),
         "active_anomalies": len([a for a in st.ai_anomalies if not a.get("acknowledged")]),
         "audit_log_count": len(st.ai_audit_log),
@@ -145,12 +172,25 @@ async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
 async def run_anomaly_check(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
     role       = _require_role(request, ["doctor", "nurse", "lab", "admin"])
-    patient_id = payload.get("patient_id", "unknown")
+    patient_id = str(payload.get("patient_id", "unknown"))
     vitals     = payload.get("vitals", {})
     labs       = payload.get("labs")
-    baseline   = payload.get("baseline") or st.sim_baselines.get(patient_id)
 
-    anomalies = anomaly_check(patient_id, vitals, labs, baseline)
+    # Series-derived baselines (always refreshed from vital history when enabled)
+    use_series = payload.get("use_series_baseline", True)
+    baseline: dict = {}
+    if use_series:
+        baseline.update(resolve_baseline_from_vitals(patient_id, st.sim_vitals))
+    seed_bl = st.sim_baselines.get(patient_id)
+    if isinstance(seed_bl, dict) and seed_bl:
+        for mk, mv in seed_bl.items():
+            if mk not in baseline and isinstance(mv, dict):
+                baseline[mk] = dict(mv)
+    pb = payload.get("baseline")
+    if isinstance(pb, dict):
+        baseline.update(pb)
+
+    anomalies = anomaly_check(patient_id, vitals, labs, baseline or None)
 
     # Persist new anomalies and broadcast via WebSocket
     new_count = 0
@@ -269,6 +309,25 @@ async def get_patient_vitals(
     return vitals[-limit:]
 
 
+@router.get("/patients/{sim_id}/baselines", summary="Per-metric baseline mean/σ from vital time-series (z-score anchor).")
+async def get_patient_baselines(sim_id: str, request: Request):
+    _require_role(request, ["doctor", "nurse", "admin", "lab"])
+    bl = resolve_baseline_from_vitals(sim_id, st.sim_vitals)
+    # locate canonical vitals bucket (alias match)
+    n_read = len(st.sim_vitals.get(sim_id, []))
+    if n_read == 0:
+        for k in st.sim_vitals:
+            if k.strip().upper() == sim_id.strip().upper():
+                n_read = len(st.sim_vitals[k])
+                break
+    return {
+        "patient_id":    sim_id,
+        "baseline":      bl,
+        "reading_count": n_read,
+        "model_version": MODEL_VERSION,
+    }
+
+
 @router.get("/patients/{sim_id}/labs", summary="Lab results for a simulated patient.")
 async def get_patient_labs(sim_id: str, request: Request):
     _require_role(request, ["doctor", "nurse", "lab", "admin"])
@@ -297,11 +356,191 @@ async def get_ward_forecast(
     ward_id: str, request: Request,
     hours: int = Query(default=24, ge=1, le=48),
 ):
-    _require_role(request, ["nurse", "admin"])
+    _require_role(request, ["doctor", "nurse", "admin"])
     forecast = st.sim_bed_forecast.get(ward_id)
     if not forecast:
         raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
     return forecast[:hours]
+
+
+@router.get("/wards/{ward_id}/history", summary="Hourly ward census snapshots used to train bed forecasts.")
+async def get_ward_history(
+    ward_id: str,
+    request: Request,
+    limit: int = Query(default=168, ge=8, le=720),
+):
+    _require_role(request, ["doctor", "nurse", "admin"])
+    if ward_id not in st.sim_ward_state:
+        raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
+    rows = st.sim_ward_occ_history.get(ward_id)
+    if rows is None:
+        raise HTTPException(status_code=404, detail=f"Ward {ward_id} has no census history")
+    tail = sorted(rows, key=lambda r: float(r["ts_epoch"]))[-limit:]
+    out: list[dict] = []
+    for r in tail:
+        ts_ep = float(r["ts_epoch"])
+        out.append({
+            **r,
+            "ts_iso": time.strftime("%Y-%m-%d %H:%M:%SZ", time.gmtime(ts_ep)),
+        })
+    return out
+
+
+@router.post("/wards/{ward_id}/census-snapshot", summary="Record ward occupancy (hour bucket) and refresh ML forecast.")
+async def post_ward_census_snapshot(
+    ward_id: str,
+    request: Request,
+    payload: dict = Body(...),
+):
+    role = _require_role(request, ["nurse", "admin"])
+    if "occupied" not in payload:
+        raise HTTPException(status_code=400, detail="'occupied' is required")
+    try:
+        occ = int(payload["occupied"])
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="'occupied' must be an integer")
+    src = str(payload.get("source", "manual_entry")).strip() or "manual_entry"
+    try:
+        result = append_ward_census_snapshot(ward_id, occ, source=src)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
+    _audit("ward_census_snapshot", role, None, {"ward_id": ward_id, "occupied": occ})
+    return result
+
+
+@router.post(
+    "/integration/wards/{ward_id}/census-snapshot",
+    summary="Automation / feeder census (KDPA audited). Disabled unless EHR_AI_CENSUS_INTEGRATION_SECRET is set.",
+)
+async def post_integration_census_snapshot(
+    ward_id: str,
+    request: Request,
+    payload: dict = Body(...),
+):
+    """
+    Intended for HL7/ADT bridges or facility cron jobs — not human clinical UI.
+    Returns 404 when integration is disabled so the route is non-enumerable in default deploys.
+
+    Duplicate requests with identical ``idempotency_key`` replay the cached JSON (~7-day TTL).
+    """
+    _require_ai_integration_secret(request)
+    ikey = str(payload.get("idempotency_key") or "").strip()
+    dedupe_k = f"integration:census:{ward_id}:{ikey}" if ikey else ""
+    if dedupe_k:
+        rep = replay_if_recent(key=dedupe_k)
+        if rep:
+            return {**rep, "idempotent_replay": True}
+    if "occupied" not in payload:
+        raise HTTPException(status_code=400, detail="'occupied' is required")
+    try:
+        occ = int(payload["occupied"])
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="'occupied' must be an integer")
+    src = str(payload.get("source", "integration_feed")).strip() or "integration_feed"
+    try:
+        result = append_ward_census_snapshot(ward_id, occ, source=src)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
+    _audit(
+        "ward_census_integration",
+        "integration",
+        None,
+        {"ward_id": ward_id, "occupied": occ, "source": src},
+    )
+    if dedupe_k:
+        remember_response(dedupe_k, dict(result))
+    return result
+
+
+@router.post(
+    "/integration/hl7/adt",
+    summary="Raw HL7 v2 ADT message → ±1 pilot census heuristic (KDPA audited). Requires integration secret.",
+)
+async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
+    """
+    Minimal pilot parser: reads MSH/EVN trigger and PV1-3 location, matches a simulated ward token,
+    then bumps occupied ±1 for common admit/discharge triggers.
+
+    Optionally set JSON ``ward_id_override`` when your feeder cannot populate PV1 cleanly.
+
+    Idempotency: JSON ``idempotency_key``, else ``MSH-10`` inferred from adjacent ``ADT^x`` payload.
+    """
+    _require_ai_integration_secret(request)
+    msg = payload.get("message")
+    if msg is None and isinstance(payload.get("raw"), str):
+        msg = payload.get("raw")
+    if not isinstance(msg, str) or not msg.strip():
+        raise HTTPException(status_code=400, detail="JSON field 'message' or 'raw' (HL7 ER7 text) is required")
+
+    ik = str(payload.get("idempotency_key") or "").strip()
+    if ik:
+        dedupe_k = f"integration:hl7:key:{ik}"
+    else:
+        m10 = extract_msh10_message_control_id(msg)
+        dedupe_k = f"integration:hl7:msh10:{m10}" if m10 else ""
+
+    if dedupe_k:
+        replay = replay_if_recent(key=dedupe_k)
+        if replay:
+            return {**replay, "idempotent_replay": True}
+
+    override = str(payload.get("ward_id_override") or "").strip()
+    if override and override not in st.sim_ward_state:
+        raise HTTPException(status_code=400, detail=f"Unknown ward_id_override: {override}")
+
+    trigger = extract_adt_trigger(msg)
+    if not trigger:
+        raise HTTPException(status_code=400, detail="Could not parse ADT trigger (MSH message type / EVN)")
+
+    loc = pv1_assigned_location_field(msg)
+    known = frozenset(st.sim_ward_state.keys())
+    wid = override or resolve_ward_id(loc, known)
+    if not wid:
+        raise HTTPException(
+            status_code=400,
+            detail=f"ward_id not resolved; set ward_id_override or place a known ward id in PV1-3 (PV1-3 was {loc!r})",
+        )
+
+    try:
+        result = apply_adt_delta_to_snapshot(wid, trigger)
+    except ValueError:
+        raise HTTPException(status_code=404, detail=f"Ward {wid} not found")
+
+    if result is None:
+        out = {"status": "ignored", "ward_id": wid, "trigger": trigger}
+        _audit("ward_census_hl7_integration", "integration", None, {**out, "reason": "non_delta_trigger"})
+        if dedupe_k:
+            remember_response(dedupe_k, dict(out))
+        return out
+
+    if result.get("skipped"):
+        _audit(
+            "ward_census_hl7_integration",
+            "integration",
+            None,
+            {"ward_id": wid, "trigger": trigger, "skipped": True, "occupied": result.get("occupied")},
+        )
+        if dedupe_k:
+            remember_response(dedupe_k, dict(result))
+        return result
+
+    _audit(
+        "ward_census_hl7_integration",
+        "integration",
+        None,
+        {"ward_id": wid, "trigger": trigger, "occupied": result.get("occupied")},
+    )
+    if dedupe_k:
+        remember_response(dedupe_k, dict(result))
+    return result
+
+
+@router.post("/wards/recompute-forecasts", summary="Rebuild every ward forecast from current census histories.")
+async def post_recompute_forecasts(request: Request):
+    role = _require_role(request, ["admin"])
+    summary = recompute_all_forecasts()
+    _audit("ward_forecasts_recompute", role, None, {"wards": len(summary)})
+    return {"status": "ok", "training_source_by_ward": summary}
 
 
 @router.get("/audit", summary="AI recommendation audit trail (admin only — KDPA).")
