@@ -388,6 +388,13 @@ export const api = {
     });
   },
 
+  /** Per-metric mean/σ/n from Phase-3 vital time-series (z-score anomalies). */
+  aiPatientBaselines(simId: string, role = "doctor"): Promise<any> {
+    return getJson(`/ai/patients/${encodeURIComponent(simId)}/baselines`, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
   aiWards(role = "nurse"): Promise<any[]> {
     return getJson("/ai/wards", { headers: { "X-UniHealth-Role": role } });
   },
@@ -397,6 +404,30 @@ export const api = {
       `/ai/wards/${encodeURIComponent(wardId)}/forecast?hours=${hours}`,
       { headers: { "X-UniHealth-Role": role } },
     );
+  },
+
+  /** Hourly census snapshots (ring buffer); readable by doctor/nurse/admin. */
+  aiWardHistory(wardId: string, limit = 168, role = "nurse"): Promise<any[]> {
+    return getJson(
+      `/ai/wards/${encodeURIComponent(wardId)}/history?limit=${limit}`,
+      { headers: { "X-UniHealth-Role": role } },
+    );
+  },
+
+  aiWardCensusSnapshot(
+    wardId: string,
+    payload: { occupied: number; source?: string },
+    role = "nurse",
+  ): Promise<any> {
+    return postJson(`/ai/wards/${encodeURIComponent(wardId)}/census-snapshot`, payload, {
+      headers: { "X-UniHealth-Role": role },
+    });
+  },
+
+  aiRecomputeForecasts(): Promise<{ status: string; training_source_by_ward: Record<string, string> }> {
+    return postJson("/ai/wards/recompute-forecasts", {}, {
+      headers: { "X-UniHealth-Role": "admin" },
+    });
   },
 
   aiAuditLog(params?: { event?: string; limit?: number }): Promise<any[]> {
