@@ -34,6 +34,8 @@ const DOC_TITLES: Record<DocPage, string> = {
   schedule: "My Schedule",
 };
 
+const DOC_LS_FORECAST_WARD = "unihealth.phase3.doctorForecastWard";
+
 export function DoctorDashboard() {
   const toast = useDashboardToast();
   const [page, setPage] = useState<DocPage>("home");
@@ -50,6 +52,13 @@ export function DoctorDashboard() {
   const [aiHintsOpen, setAiHintsOpen] = useState(false);
   const [aiAlerts, setAiAlerts] = useState<any[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Phase 3 — facility capacity on Ward / Beds (read-only; census entry is nurse/admin).
+  const [docCapWards, setDocCapWards] = useState<any[]>([]);
+  const [docCapWardId, setDocCapWardId] = useState("");
+  const [docCapForecast, setDocCapForecast] = useState<any[]>([]);
+  const [docCapHist, setDocCapHist] = useState<any[]>([]);
+  const [docCapLoading, setDocCapLoading] = useState(false);
 
   // WebSocket: receive real-time anomaly alerts
   useEffect(() => {
@@ -87,6 +96,49 @@ export function DoctorDashboard() {
     const id = setInterval(load, 15000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
+
+  useEffect(() => {
+    if (page !== "ward") return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const wards = await api.aiWards("doctor");
+        if (cancelled) return;
+        setDocCapWards(wards);
+        setDocCapWardId((prev) => {
+          if (prev && wards.some((w: any) => w.ward_id === prev)) return prev;
+          let s = "";
+          try {
+            s = sessionStorage.getItem(DOC_LS_FORECAST_WARD) ?? "";
+          } catch { /* private mode */ }
+          const pick = s && wards.some((w: any) => w.ward_id === s) ? s : (wards[0]?.ward_id ?? "");
+          return pick;
+        });
+      } catch { /* gateway offline */ }
+    })();
+    return () => { cancelled = true; };
+  }, [page]);
+
+  useEffect(() => {
+    if (page !== "ward" || !docCapWardId) return;
+    let cancelled = false;
+    void (async () => {
+      setDocCapLoading(true);
+      try {
+        const [fc, hist] = await Promise.all([
+          api.aiWardForecast(docCapWardId, 24, "doctor"),
+          api.aiWardHistory(docCapWardId, 24, "doctor"),
+        ]);
+        if (cancelled) return;
+        setDocCapForecast(fc);
+        setDocCapHist(hist);
+      } catch { /* gateway offline */ }
+      finally {
+        if (!cancelled) setDocCapLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [page, docCapWardId]);
 
   const fetchAiHints = useCallback(async () => {
     setAiHintsLoading(true);
@@ -1221,29 +1273,191 @@ export function DoctorDashboard() {
               + Admit Patient
             </button>
           </div>
+
+          {/* Phase 3 — live facility capacity & demand (doctor read-only) */}
+          <div className="panel" style={{ marginBottom: 14 }}>
+            <div className="pnl-hd">
+              <div className="pnl-ti">Hospital bed capacity — Phase 3 (live)</div>
+              <span className="tag b" style={{ fontSize: 10 }}>
+                {docCapLoading ? "Sync…" : "AI engine"}
+              </span>
+            </div>
+            <div className="pnl-bd">
+              <div style={{ fontSize: 12, color: "var(--t3)", marginBottom: 12 }}>
+                Aggregate ward occupancy plus a 48-hour demand projection from persisted hourly census (OLS).
+                <strong style={{ display: "block", marginTop: 6, color: "var(--t2)", fontWeight: 600 }}>
+                  Census changes are nurse / administrator actions — coordination via handover or bed board.
+                </strong>
+              </div>
+              {docCapWards.length === 0 ? (
+                <div style={{ fontSize: 13, color: "var(--t3)", padding: "8px 0" }}>
+                  {docCapLoading ? "Loading wards from gateway…" : "No ward data — is the AI API reachable?"}
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: 10, marginBottom: 14 }}>
+                    {docCapWards.map((w: any) => (
+                      <button
+                        key={w.ward_id}
+                        type="button"
+                        onClick={() => {
+                          setDocCapWardId(w.ward_id);
+                          try {
+                            sessionStorage.setItem(DOC_LS_FORECAST_WARD, w.ward_id);
+                          } catch { /* ignore */ }
+                        }}
+                        style={{
+                          textAlign: "left",
+                          padding: "12px 14px",
+                          borderRadius: 10,
+                          border: `1px solid ${docCapWardId === w.ward_id ? "var(--pu, #7c6fff)" : "var(--bdr)"}`,
+                          background: docCapWardId === w.ward_id ? "rgba(124,111,255,0.06)" : "var(--bg)",
+                          cursor: "pointer",
+                          color: "var(--t1)",
+                        }}
+                      >
+                        <div style={{ fontSize: 12, fontWeight: 700 }}>{w.name}</div>
+                        <div style={{ fontSize: 11, color: "var(--t3)", marginBottom: 4 }}>{w.facility ?? w.ward_id}</div>
+                        <div style={{ fontSize: 20, fontWeight: 900,
+                          color: w.pct >= 90 ? "var(--r)" : w.pct >= 75 ? "var(--am)" : "var(--g)",
+                        }}>
+                          {w.pct}%
+                        </div>
+                        <div style={{ fontSize: 11, color: "var(--t3)" }}>{w.occupied}/{w.capacity} beds</div>
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--t2)" }}>
+                      Focus ward
+                      <select
+                        value={docCapWardId}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          setDocCapWardId(id);
+                          try {
+                            sessionStorage.setItem(DOC_LS_FORECAST_WARD, id);
+                          } catch { /* ignore */ }
+                        }}
+                        disabled={docCapLoading}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          border: "1px solid var(--bdr)",
+                          background: "var(--bg)",
+                          color: "var(--t1)",
+                          minWidth: 200,
+                        }}
+                      >
+                        {docCapWards.map((w: any) => (
+                          <option key={w.ward_id} value={w.ward_id}>
+                            {w.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                  {docCapForecast.length > 0 && (
+                    <div style={{ marginBottom: 14, paddingTop: 4,
+                      opacity: docCapLoading ? 0.72 : 1, transition: "opacity 0.2s ease" }}>
+                      <div style={{ fontSize: 11, color: "var(--t3)", marginBottom: 8 }}>
+                        48-hour bed demand projection — selected ward (bars = modelled occupancy %)
+                      </div>
+                      <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 56 }}>
+                        {docCapForecast.slice(0, 24).map((step: any, i: number) => (
+                          <div
+                            key={i}
+                            title={`${step.ts}: ${step.predicted}/${step.capacity}`}
+                            style={{
+                              flex: 1,
+                              height: `${step.pct}%`,
+                              minHeight: 4,
+                              background: step.status === "CRITICAL" ? "var(--r)"
+                                : step.status === "WARNING" ? "var(--am)" : "var(--g)",
+                              borderRadius: "2px 2px 0 0",
+                              opacity: 0.82,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      {(() => {
+                        const meta = docCapForecast[0]?.forecast_meta as Record<string, unknown> | undefined;
+                        const src = meta?.training_source as string | undefined;
+                        const line =
+                          src === "persisted_census"
+                            ? `Model: persisted census (${meta?.history_points ?? "—"} hourly rows) · RMSE ≈ ${meta?.rmse_estimate_beds ?? "—"}`
+                            : src === "synthetic_bootstrap"
+                              ? "Model: synthetic bootstrap until enough census is recorded"
+                              : String(meta?.model ?? "ols");
+                        return meta ? (
+                          <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 10, lineHeight: 1.45 }}>
+                            {line}
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                  )}
+                  {docCapHist.length > 0 && (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ fontSize: 11, color: "var(--t3)", marginBottom: 8 }}>
+                        Recent hourly census ({docCapHist.length} rows in API window)
+                      </div>
+                      <div style={{ overflowX: "auto", maxHeight: 160, overflowY: "auto", borderRadius: 8,
+                        border: "1px solid var(--bdr)" }}>
+                        <table className="tbl" style={{ fontSize: 11, margin: 0 }}>
+                          <thead>
+                            <tr>
+                              <th>Time (UTC)</th>
+                              <th>Occupied</th>
+                              <th>Cap</th>
+                              <th>Source</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {[...docCapHist].reverse().slice(0, 12).map((r: any) => (
+                              <tr key={String(r.ts_epoch)}>
+                                <td className="mono" style={{ fontSize: 10 }}>{r.ts_iso ?? r.ts_epoch}</td>
+                                <td>{r.occupied}</td>
+                                <td>{r.capacity}</td>
+                                <td style={{ color: "var(--t3)" }}>{String(r.source ?? "—")}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
           <div className="g4" style={{ marginBottom: 14 }}>
             <div className="kpi" style={{ borderTop: "3px solid var(--r)" }}>
               <div className="kpi-l">Occupied</div>
               <div className="kpi-v" style={{ color: "var(--r)" }}>
-                12
+                {docCapWards.find((w: any) => w.ward_id === docCapWardId)?.occupied ?? "…"}
               </div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid var(--g)" }}>
               <div className="kpi-l">Available</div>
               <div className="kpi-v" style={{ color: "var(--g)" }}>
-                3
+                {(() => {
+                  const w = docCapWards.find((x: any) => x.ward_id === docCapWardId);
+                  return w != null ? w.available ?? Math.max(0, w.capacity - w.occupied) : "…";
+                })()}
               </div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid var(--am)" }}>
               <div className="kpi-l">Maintenance</div>
               <div className="kpi-v" style={{ color: "var(--am)" }}>
-                1
+                —
               </div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid var(--pu)" }}>
-              <div className="kpi-l">Discharges</div>
+              <div className="kpi-l">Occupancy %</div>
               <div className="kpi-v" style={{ color: "var(--pu)" }}>
-                3
+                {docCapWards.find((w: any) => w.ward_id === docCapWardId)?.pct ?? "…"}
               </div>
             </div>
           </div>
