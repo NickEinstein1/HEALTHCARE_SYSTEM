@@ -12,6 +12,8 @@
     />
   </head>
   <body>
+    <!-- Fixed fullscreen layer behind #root; React portals the clinical HUD here -->
+    <div id="unihealth-med-scene-host" class="unihealth-med-scene" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
