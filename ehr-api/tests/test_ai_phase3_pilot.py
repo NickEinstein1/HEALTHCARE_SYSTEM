@@ -14,6 +14,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from app.ai.integration_dedupe import clear_recent_responses_for_tests
 from app.api.routers import ai as ai_router
 from app.state import bootstrap_ai_state
 
@@ -21,13 +22,9 @@ from app.state import bootstrap_ai_state
 @pytest.fixture(autouse=True)
 def _clear_integration_idempotency_cache():
     """Avoid cross-test collisions on shared MSH-10 / idempotency keys."""
-    from app.ai import integration_dedupe as dedupe
-
-    with dedupe._lock:
-        dedupe._recent.clear()
+    clear_recent_responses_for_tests()
     yield
-    with dedupe._lock:
-        dedupe._recent.clear()
+    clear_recent_responses_for_tests()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -394,3 +391,42 @@ def test_integration_hl7_ward_override_without_pv1_ward_match(
         headers={"X-AI-Census-Secret": "hl7-test-secret-3"},
     )
     assert r.status_code == 200
+
+
+def test_bootstrap_merges_sqlite_census_when_replay_enabled(
+    first_ward_id: str,
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """EHR_REPLAY_WARD_CENSUS_SQLITE + path: startup merges SQLite tails into simulator state."""
+    from app import state as st
+    from app.ai.sqlite_census_store import persist_census_snapshot
+    from app.config import settings
+    from app.state import bootstrap_ai_state
+
+    wid = first_ward_id
+    cap = int(st.sim_ward_state[wid]["capacity"])
+    occ = min(cap, 7)
+    ts_epoch = 946_684_800.0
+
+    db = tmp_path / "replay.sqlite"
+    persist_census_snapshot(
+        str(db),
+        ward_id=wid,
+        ts_epoch=ts_epoch,
+        occupied=occ,
+        capacity=cap,
+        source="sqlite_bootstrap_test",
+    )
+
+    monkeypatch.setattr(settings, "ward_census_sqlite_path", str(db), raising=False)
+    monkeypatch.setattr(settings, "replay_ward_census_sqlite", True, raising=False)
+    try:
+        bootstrap_ai_state()
+        assert st.sim_ward_state[wid]["occupied"] == occ
+        hist = st.sim_ward_occ_history.get(wid, [])
+        assert any(str(r.get("source")) == "sqlite_bootstrap_test" for r in hist)
+    finally:
+        monkeypatch.setattr(settings, "ward_census_sqlite_path", "", raising=False)
+        monkeypatch.setattr(settings, "replay_ward_census_sqlite", False, raising=False)
+        bootstrap_ai_state()
