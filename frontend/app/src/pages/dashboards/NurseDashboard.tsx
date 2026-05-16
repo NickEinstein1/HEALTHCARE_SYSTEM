@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
@@ -47,6 +47,9 @@ const NURSE_CRUMBS: Record<NursePage, string> = {
   supplies: "Docs › Supplies",
 };
 
+/** Persist nurse’s ward focus for the Phase 3 bed-demand chart across refresh. */
+const LS_PHASE3_FORECAST_WARD = "unihealth.phase3.forecastWardId";
+
 function pgOn(active: boolean) {
   return `pg${active ? " on" : ""}`;
 }
@@ -75,6 +78,15 @@ export function NurseDashboard() {
   const [simPatients, setSimPatients] = useState<any[]>([]);
   const [wardState, setWardState]     = useState<any[]>([]);
   const [wardForecast, setWardForecast] = useState<any[]>([]);
+  const [forecastWardId, setForecastWardId] = useState(() => {
+    try {
+      return sessionStorage.getItem(LS_PHASE3_FORECAST_WARD) ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const [forecastLoading, setForecastLoading] = useState(false);
+  const [nurseCensusDraft, setNurseCensusDraft] = useState<Record<string, string>>({});
   const [_ewsResult, setEwsResult]    = useState<any | null>(null); void _ewsResult;
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -101,32 +113,76 @@ export function NurseDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const refreshWardStrip = useCallback(
+    async (focusWardId?: string) => {
+      try {
+        const wards = await api.aiWards("nurse");
+        setWardState(wards);
+        let wid = "";
+        if (focusWardId && wards.some((w: any) => w.ward_id === focusWardId)) {
+          wid = focusWardId;
+        } else if (forecastWardId && wards.some((w: any) => w.ward_id === forecastWardId)) {
+          wid = forecastWardId;
+        } else {
+          wid = wards[0]?.ward_id ?? "";
+        }
+        if (wid && wid !== forecastWardId) {
+          setForecastWardId(wid);
+          try {
+            sessionStorage.setItem(LS_PHASE3_FORECAST_WARD, wid);
+          } catch { /* private mode */ }
+        }
+        if (wid) {
+          const fc = await api.aiWardForecast(wid, 24, "nurse");
+          setWardForecast(fc);
+        } else {
+          setWardForecast([]);
+        }
+      } catch { /* api offline */ }
+    },
+    [forecastWardId],
+  );
+
+  const selectForecastWard = useCallback(
+    async (wardId: string) => {
+      if (!wardId) return;
+      setForecastLoading(true);
+      setForecastWardId(wardId);
+      try {
+        sessionStorage.setItem(LS_PHASE3_FORECAST_WARD, wardId);
+      } catch { /* ignore */ }
+      try {
+        const fc = await api.aiWardForecast(wardId, 24, "nurse");
+        setWardForecast(fc);
+      } catch {
+        toast("Could not load forecast for that ward.");
+      } finally {
+        setForecastLoading(false);
+      }
+    },
+    [toast],
+  );
+
   // Poll anomalies, sim patients, wards
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       try {
-        const [alerts, patients, wards] = await Promise.all([
+        const [alerts, patients] = await Promise.all([
           api.aiAnomalies({ ack: false, limit: 20 }, "nurse"),
           api.aiSimPatients({ limit: 25 }, "nurse"),
-          api.aiWards("nurse"),
         ]);
         if (!cancelled) {
           setAiAlerts(alerts);
           setSimPatients(patients);
-          setWardState(wards);
         }
-        // Fetch forecast for first ward
-        if (wards.length > 0 && !cancelled) {
-          const fc = await api.aiWardForecast(wards[0].ward_id, 24, "nurse");
-          if (!cancelled) setWardForecast(fc);
-        }
+        if (!cancelled) await refreshWardStrip();
       } catch { /* api offline */ }
     };
     void load();
     const id = setInterval(load, 20000);
     return () => { cancelled = true; clearInterval(id); };
-  }, []);
+  }, [refreshWardStrip]);
 
   const _computeEws = async (rr: number, spo2: number, sbp: number, hr: number, temp: number) => {
     try {
@@ -221,14 +277,114 @@ export function NurseDashboard() {
                 background: w.pct >= 90 ? "#ff3366" : w.pct >= 75 ? "#ffb830" : "#00e5a0",
                 transition: "width 0.6s ease" }} />
             </div>
+            <div style={{ marginTop: 8, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+              <input
+                type="number"
+                min={0}
+                max={w.capacity}
+                placeholder={`e.g. ${w.occupied}`}
+                value={nurseCensusDraft[w.ward_id] ?? ""}
+                onChange={(e) =>
+                  setNurseCensusDraft((prev) => ({ ...prev, [w.ward_id]: e.target.value }))}
+                style={{
+                  width: 64, fontSize: 11, padding: "4px 6px", borderRadius: 6,
+                  border: "1px solid rgba(0,212,255,0.2)", background: "rgba(0,0,0,0.25)",
+                  color: "var(--t1)",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => void (async () => {
+                  const raw = (nurseCensusDraft[w.ward_id] ?? "").trim();
+                  if (!raw) {
+                    toast("Enter occupied bed count.");
+                    return;
+                  }
+                  const occ = parseInt(raw, 10);
+                  if (Number.isNaN(occ) || occ < 0 || occ > w.capacity) {
+                    toast(`Occupied must be 0–${w.capacity}.`);
+                    return;
+                  }
+                  try {
+                    await api.aiWardCensusSnapshot(
+                      w.ward_id,
+                      { occupied: occ, source: "nurse_home_strip" },
+                      "nurse",
+                    );
+                    toast(`Logged census · ${w.name}`);
+                    setNurseCensusDraft((prev) => {
+                      const next = { ...prev };
+                      delete next[w.ward_id];
+                      return next;
+                    });
+                    await refreshWardStrip(w.ward_id);
+                  } catch {
+                    toast("Could not log census.");
+                  }
+                })()}
+                style={{
+                  padding: "4px 10px", borderRadius: 6, border: "1px solid rgba(0,212,255,0.22)",
+                  background: "rgba(0,212,255,0.08)", color: "var(--t2)", fontSize: 11, cursor: "pointer",
+                }}
+              >
+                Log census
+              </button>
+            </div>
           </div>
         ))}
       </div>
       {wardForecast.length > 0 && (
         <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(8,18,42,0.5)",
-          border: "1px solid rgba(0,212,255,0.10)", borderRadius: 10 }}>
-          <div style={{ fontSize: 12, color: "var(--t3)", marginBottom: 6 }}>
-            48-h Bed Demand Forecast · {wardState[0]?.name}
+          border: "1px solid rgba(0,212,255,0.10)", borderRadius: 10,
+          opacity: forecastLoading ? 0.72 : 1, transition: "opacity 0.2s ease" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 8,
+          }}>
+            <div style={{ fontSize: 12, color: "var(--t3)" }}>
+              48-h Bed Demand Forecast
+              <span style={{ color: "var(--t2)", marginLeft: 6 }}>
+                · {(wardState.find((w: any) => w.ward_id === forecastWardId) ?? wardState[0])?.name ?? "Ward"}
+              </span>
+              {forecastLoading && (
+                <span style={{ marginLeft: 8, fontSize: 10, color: "#00d4ff" }}>Updating…</span>
+              )}
+            </div>
+            <label style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 11,
+              color: "var(--t2)",
+              marginLeft: "auto",
+            }}>
+              <span style={{ color: "var(--t3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Ward</span>
+              <select
+                value={forecastWardId || wardState[0]?.ward_id || ""}
+                onChange={(e) => void selectForecastWard(e.target.value)}
+                disabled={forecastLoading || wardState.length === 0}
+                style={{
+                  minWidth: 140,
+                  fontSize: 12,
+                  padding: "5px 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(0,212,255,0.25)",
+                  background: "rgba(0,0,0,0.35)",
+                  color: "var(--t1)",
+                  cursor: wardState.length ? "pointer" : "not-allowed",
+                }}
+              >
+                {wardState.map((w: any) => (
+                  <option key={w.ward_id} value={w.ward_id}>
+                    {w.name} ({w.ward_id})
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
           <div style={{ display: "flex", gap: 4, alignItems: "flex-end", height: 50 }}>
             {wardForecast.slice(0, 24).map((step: any, i: number) => (
@@ -241,6 +397,24 @@ export function NurseDashboard() {
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--t3)", marginTop: 3 }}>
             <span>Now</span><span>+12h</span><span>+24h</span>
           </div>
+          {(() => {
+            const meta = wardForecast[0]?.forecast_meta as Record<string, unknown> | undefined;
+            const src = meta?.training_source as string | undefined;
+            const line = src === "persisted_census"
+              ? `Trainer: persisted census (${meta?.history_points ?? "—"} hourly snapshots)`
+              : src === "synthetic_bootstrap"
+                ? "Trainer: synthetic bootstrap"
+                : (meta?.model as string | undefined) === "heuristic_diurnal_fallback"
+                  ? "Trainer: heuristic fallback"
+                  : meta?.model != null
+                    ? `Trainer: ${String(meta.model)}`
+                    : null;
+            return line ? (
+              <div style={{ fontSize: 10, color: "var(--t3)", marginTop: 8, lineHeight: 1.4 }}>
+                {line}
+              </div>
+            ) : null;
+          })()}
         </div>
       )}
     </div>
