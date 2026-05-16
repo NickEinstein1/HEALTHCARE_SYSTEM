@@ -29,7 +29,7 @@ Security
   - WebSocket endpoint validates ?token= query parameter.
   - All AI recommendations are KDPA-logged to ai_audit_log.
   - Optional integration census: ``EHR_AI_CENSUS_INTEGRATION_SECRET`` + header ``X-AI-Census-Secret``.
-  - Integration idempotency: JSON ``idempotency_key`` or HL7 ``MSH-10`` replay (~seven-day TTL in-process).
+  - Integration idempotency: JSON ``idempotency_key`` or HL7 ``MSH-10`` replay (~seven-day TTL). Optional ``EHR_INTEGRATION_IDEMPOTENCY_REDIS`` shares replays across workers via ``EHR_REDIS_URL``.
 """
 
 from __future__ import annotations
