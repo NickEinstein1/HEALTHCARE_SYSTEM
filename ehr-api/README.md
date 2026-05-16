@@ -87,6 +87,7 @@ PYTHONPATH=. pytest tests/test_ai_phase3_pilot.py -q
 | Variable | Default | Description |
 |----------|--------|-------------|
 | EHR_REDIS_URL | redis://localhost:6379/0 | Redis connection |
+| EHR_INTEGRATION_IDEMPOTENCY_REDIS | false | When `true`, integration census/HL7 idempotency replays are stored in Redis (same URL) so **multiple API workers or replicas** see the same cached response; when `false`, replay is **in-process memory only** (single worker) |
 | EHR_POSTGRES_DSN | postgresql://ehr:...@localhost:5432/ehr | PostgreSQL connection |
 | EHR_CACHE_TTL_SECONDS | 300 | Cache TTL for patient summary |
 | EHR_AI_CENSUS_INTEGRATION_SECRET | _(empty)_ | When set: enables integration POST routes (`/ai/integration/...`, including HL7 ADT stub); send header `X-AI-Census-Secret`; empty = **404** on those paths |
