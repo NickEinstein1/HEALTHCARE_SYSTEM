@@ -45,8 +45,9 @@
   position: absolute !important;
   inset: 0 !important;
   z-index: 1 !important;
-  opacity: 0.45 !important;
-  mix-blend-mode: screen !important;
+  opacity: 0.34 !important;
+  /* Avoid `mix-blend-mode: screen` — it can wipe out the grid on Safari / some GPUs */
+  mix-blend-mode: normal !important;
   background-image:
     linear-gradient(rgba(0, 212, 255, 0.055) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 212, 255, 0.04) 1px, transparent 1px) !important;
@@ -117,11 +118,23 @@ body.unihealth-auth-bg {
   background-color: #020510 !important;
 }
 
-/* ── Animated background (below #root content; canvas is inside routes) ─ */
+/* ── Sign-in/register: portal scene is #unihealth-med-scene-host, a sibling BEHIND #root ─ */
+#unihealth-med-scene-host.unihealth-med-scene {
+  position: fixed !important;
+}
+
+#root.unihealth-auth-root,
 #root {
   position: relative !important;
   z-index: 1 !important;
   background: transparent !important;
+  background-color: transparent !important;
+}
+
+body.unihealth-auth-bg {
+  min-height: 100dvh;
+  /* unihealth.css uses display:flex row; keep #root full-width reliably */
+  flex-direction: column !important;
 }
 
 /* ── Auth route wrapper (background first child fixed z-0, UI above z-1) ─ */
