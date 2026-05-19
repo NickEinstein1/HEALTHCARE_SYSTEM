@@ -1,8 +1,22 @@
-# UniHealth EHR
+# UniHealth
 
-Next-generation national Electronic Health Record system (see [Blueprint](docs/UniHealth-EHR-Blueprint.md)). This repo contains **Phase 1: MVP** — edge FHIR gateway, event pipeline, and load tests targeting **P95 &lt;50 ms** for patient + recent encounter lookup.
+Next-generation national Electronic Health Record system (see [Blueprint](docs/UniHealth-EHR-Blueprint.md)). This repo contains **Phase 1: MVP** (complete) — edge FHIR gateway, event pipeline, and load tests targeting **P95 &lt;50 ms** for patient + recent encounter lookup. Sign-off: [docs/phase1-complete.md](docs/phase1-complete.md).
 
-## Phase 1 quick start
+## Laptop staging (recommended)
+
+Full stack with OIDC on **:8100** + UI on **:5173**:
+
+```bash
+./scripts/run_staging.sh
+./scripts/setup_frontend_staging.sh
+cd frontend/app && npm run dev
+```
+
+**Full walkthrough (backend → frontend → sign-in):** **[docs/getting-started.md](docs/getting-started.md)**  
+
+See also **[docs/runbook-staging.md](docs/runbook-staging.md)** for LAN access, smoke checks, and running on other machines.
+
+## Phase 1 quick start (local dev, no Keycloak)
 
 **One-shot full flow (after Docker is running):**
 
@@ -47,7 +61,14 @@ curl -H "X-Facility-Id: FAC-A" http://localhost:8000/fhir/r5/Patient/P001/summar
 Install [k6](https://k6.io), then:
 
 ```bash
-k6 run load-tests/gateway-latency.js
+BASE_URL=http://localhost:8000 k6 run load-tests/gateway-latency.js
+```
+
+Phase 1 verification (gateway running):
+
+```bash
+./scripts/smoke_phase1.sh
+./scripts/verify_phase1_e2e.sh   # needs consumer + Kafka
 ```
 
 ## Full flow (event-driven path)
@@ -88,16 +109,35 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 
    First request hits Postgres (cache miss); subsequent requests are served from Redis (&lt;50 ms).
 
+## Documentation style
+
+All Markdown files use a shared [markdown style guide](docs/markdown-style.md) and [`.markdownlint.jsonc`](.markdownlint.jsonc). **Tables:** use **aligned** `|` columns (see the guide). VS Code/Cursor load rules from [`.vscode/settings.json`](.vscode/settings.json) and [`.cursor/rules/markdown.mdc`](.cursor/rules/markdown.mdc).
+
 ## Repo layout
 
-| Path | Description |
-| ------ | ------------- |
-| [docs/](docs/) | Blueprint, Phase 1 plan |
-| [infra/](infra/) | Docker Compose (Kafka, Redis, PostgreSQL) |
-| [ehr-api/](ehr-api/) | Edge FHIR gateway (FastAPI; Redis → Postgres) |
-| [edge-pipeline/](edge-pipeline/) | Kafka consumer → Redis + Postgres |
-| [load-tests/](load-tests/) | k6 latency test |
-| [scripts/](scripts/) | Seed data, Kafka producer for sample events |
+| Path                         | Description                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------- |
+| [docs/](docs/)               | Blueprint, Phase 1 plan, [markdown style guide](docs/markdown-style.md)                  |
+| [infra/](infra/)             | Docker Compose (Kafka, Redis, PostgreSQL)                                                |
+| [ehr-api/](ehr-api/)         | Edge FHIR gateway (FastAPI; Redis → Postgres) + **Phase 3** `/ai` simulator                |
+| [frontend/](frontend/)       | React clinician portals (Doctor / Nurse / Admin; consumes gateway)                       |
+| [edge-pipeline/](edge-pipeline/) | Kafka consumer → Redis + Postgres                                                    |
+| [load-tests/](load-tests/)   | k6 latency test                                                                          |
+| [scripts/](scripts/)         | Seed data, Kafka producer, **Phase 3 AI smoke** (`smoke_phase3_ai.sh`), full flow         |
+
+## Frontend (portal)
+
+See **[frontend/README.md](frontend/README.md)** for the five former “next step” gaps (React split, tokens, auth, proxy/production routing, deployment pattern) — each is solved or intentionally scoped for pilot vs production OAuth.
+
+Quick start:
+
+```bash
+cd frontend/app && npm install && npm run dev
+```
+
+Ensure the gateway is listening on **`http://localhost:8000`** while using the Vite dev server (proxies **`/ai`**, **`/fhir`**, **`/appointments`**, **`/consent`**, etc.).
+
+Production build checks run in CI (`npm run lint` + `npm run build`).
 
 ## Phase 1 success criteria
 
@@ -107,13 +147,40 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 
 See [docs/phase1-plan.md](docs/phase1-plan.md) for full scope and timeline.
 
+## Phase 3 AI Assist pilot (integrated)
+
+Phase 3 lives on the **same gateway** (`ehr-api`). It exposes `/ai/*` (diagnosis hints, anomalies, NEWS2, **ward occupancy + bed forecasts**, WebSocket alerts) with an in-memory simulator that bootstraps on startup.
+
+| What                                                                               | Where                                                                                                      |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Env vars (`EHR_AI_CENSUS_INTEGRATION_SECRET`, SQLite replay, Redis idempotency, …) | [ehr-api/README.md — Environment](ehr-api/README.md#environment)                                           |
+| Doctor / Nurse UI (ward forecast, census inputs)                                   | [frontend/](frontend/README.md); run `cd frontend/app && npm run dev` → open the doctor or nurse dashboard |
+| Contract tests                                                                     | `cd ehr-api && PYTHONPATH=. pytest tests/ -q`                                                              |
+
+Quick sanity (gateway must be listening; default port from your run):
+
+```bash
+curl -s "http://localhost:8000/ai/status"
+curl -s -H "X-UniHealth-Role: doctor" "http://localhost:8000/ai/wards" | head -c 300
+echo
+```
+
+Standalone smoke script:
+
+```bash
+./scripts/smoke_phase3_ai.sh            # assumes http://localhost:8000
+EHR_GATEWAY_URL=http://localhost:8100 ./scripts/smoke_phase3_ai.sh
+```
+
+For **multi-worker production**, set **`EHR_INTEGRATION_IDEMPOTENCY_REDIS=true`** against your shared Redis (`EHR_REDIS_URL`). See **ehr-api/README.md** for integration census and HL7 pilot routes.
+
 ## CI/CD (GitHub Actions)
 
 This repo includes two workflows:
 
 - `CI` (`.github/workflows/ci.yml`)
   - Triggers on push to `main` and pull requests.
-  - Runs Python lint checks (`ruff`) and unit tests (`pytest`).
+  - Runs Python lint checks (`ruff`), root `pytest`, **all** `ehr-api/tests/` (Phase 3 + idempotency), and **frontend** `npm run lint` + `npm run build`.
 
 - `k6 Scheduled Smoke` (`.github/workflows/k6-scheduled.yml`)
   - Runs nightly and can also be triggered manually.
