@@ -30,10 +30,31 @@ jobs:
         run: |
           ruff check . --select E9,F63,F7,F82
 
-      - name: Unit tests
+      - name: Markdown lint (project rules; see docs/markdown-style.md)
+        run: |
+          npx --yes markdownlint-cli2 \
+            "README.md" \
+            "docs/**/*.md" \
+            "ehr-api/README.md" \
+            "infra/README.md" \
+            "edge-pipeline/README.md" \
+            "frontend/README.md"
+
+      - name: Unit tests (repo root + edge/scripts)
         run: |
           pytest -q tests
 
-      - name: Phase 3 AI Assist API pilot (sim / no DB required)
+      - name: EHR API tests (Phase 1 FHIR contracts + Phase 3 pilot; no Postgres required)
         run: |
-          cd ehr-api && PYTHONPATH=. pytest tests/test_ai_phase3_pilot.py -q
+          cd ehr-api && PYTHONPATH=. pytest tests/ -q
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/app/package-lock.json
+
+      - name: Frontend typecheck & build
+        run: |
+          cd frontend/app && npm ci && npm run lint && npm run build
