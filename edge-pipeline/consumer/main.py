@@ -261,6 +261,56 @@ def process_medication_request(payload: dict, conn, redis_client):
     redis_client.delete(f"patient:{pid}:med_requests")
 
 
+def process_allergy_intolerance(payload: dict, conn, redis_client):
+    a = payload.get("resource", payload)
+    aid = a.get("id") or payload.get("allergyIntoleranceId")
+    subj = a.get("patient") or a.get("subject") or {}
+    ref = subj.get("reference", "") if isinstance(subj, dict) else ""
+    pid = a.get("patient_id") or a.get("patientId") or (ref.split("/")[-1] if ref else None)
+    if not aid or not pid:
+        return
+    _ensure_patient_exists(conn, pid)
+
+    code = a.get("code") if isinstance(a.get("code"), str) else _extract_code(a)
+    substance = a.get("substance_text")
+    if substance is None and isinstance(a.get("code"), dict):
+        substance = (a.get("code") or {}).get("text")
+    if substance is None:
+        substance = a.get("substance")
+
+    recorded = a.get("recorded_date") or a.get("recordedDate")
+    if recorded is None and isinstance(a.get("recordedDateTime"), str):
+        recorded = a.get("recordedDateTime")
+    rec_dt = parse_datetime(recorded) if recorded else None
+
+    clinical_status = a.get("clinical_status") or a.get("clinicalStatus")
+    if isinstance(clinical_status, dict):
+        clinical_status = clinical_status.get("coding", [{}])[0].get("code") if clinical_status.get("coding") else None
+
+    criticality = a.get("criticality")
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO allergy_intolerances (
+                id, patient_id, code, substance_text, clinical_status, criticality, recorded_date, resource_json
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+            ON CONFLICT (id) DO UPDATE SET
+                patient_id = EXCLUDED.patient_id,
+                code = EXCLUDED.code,
+                substance_text = EXCLUDED.substance_text,
+                clinical_status = EXCLUDED.clinical_status,
+                criticality = EXCLUDED.criticality,
+                recorded_date = EXCLUDED.recorded_date,
+                resource_json = EXCLUDED.resource_json,
+                updated_at = NOW()
+            """,
+            (aid, pid, code, substance, clinical_status, criticality, rec_dt, json.dumps(a)),
+        )
+    redis_client.delete(f"patient:{pid}:allergies")
+
+
 def run():
     _require_runtime_deps()
     print(f"Edge consumer starting. bootstrap={KAFKA_BOOTSTRAP}", flush=True)
@@ -274,9 +324,19 @@ def run():
         }
     )
     consumer.subscribe(
-        ["ehr.patient", "ehr.encounter", "ehr.observation", "ehr.medication_request"]
+        [
+            "ehr.patient",
+            "ehr.encounter",
+            "ehr.observation",
+            "ehr.medication_request",
+            "ehr.allergy_intolerance",
+        ]
     )
-    print("Subscribed to topics: ehr.patient, ehr.encounter, ehr.observation, ehr.medication_request", flush=True)
+    print(
+        "Subscribed to topics: ehr.patient, ehr.encounter, ehr.observation, "
+        "ehr.medication_request, ehr.allergy_intolerance",
+        flush=True,
+    )
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
     conn = psycopg2.connect(POSTGRES_DSN)
     # Avoid "transaction aborted" cascading failures in dev.
@@ -318,6 +378,8 @@ def run():
                     process_observation(payload, conn, redis_client)
                 elif topic == "ehr.medication_request":
                     process_medication_request(payload, conn, redis_client)
+                elif topic == "ehr.allergy_intolerance":
+                    process_allergy_intolerance(payload, conn, redis_client)
             except Exception as exc:
                 try:
                     conn.rollback()
