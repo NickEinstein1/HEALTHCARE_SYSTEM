@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routers import (
-    admin, appointments, fhir, integrations,
+    admin, appointments, auth_status, fhir, integrations,
     lab, metrics, nurse, pharmacy, ui, walkins,
 )
 from app.api.routers import ai as ai_router_module
@@ -20,6 +20,9 @@ api_router.include_router(ui.router, tags=["ui"])
 
 # Metrics
 api_router.include_router(metrics.router, tags=["metrics"])
+
+# Auth (OIDC status / whoami)
+api_router.include_router(auth_status.router)
 
 # FHIR + consent
 api_router.include_router(fhir.router, tags=["fhir"])
