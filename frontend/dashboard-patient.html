@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
+    <link rel="stylesheet" href="brand.css" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UniHealth — My Health Portal</title>
@@ -460,7 +462,7 @@ body{display:flex;min-height:100vh;}
 
     <div class="sb-brand">
       <div class="sb-logo-row">
-        <div class="sb-ico">🏥</div>
+        <div class="sb-ico" aria-hidden="true"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--sb" /></div>
         <div>
           <div class="sb-nm">UniHealth</div>
           <div class="sb-tag">My Health Portal</div>
@@ -485,7 +487,7 @@ body{display:flex;min-height:100vh;}
       <div class="sb-sec-lbl">My Health</div>
       <div class="ni on"  onclick="nav('home',this)">        <span class="ni-ico">🏠</span><span class="ni-lbl">My Dashboard</span></div>
       <div class="ni"     onclick="nav('appointments',this)"><span class="ni-ico">📅</span><span class="ni-lbl">Appointments</span><span class="ni-badge">2</span></div>
-      <div class="ni"     onclick="nav('visits',this)">      <span class="ni-ico">🏥</span><span class="ni-lbl">Visit History</span></div>
+      <div class="ni"     onclick="nav('visits',this)">      <span class="ni-ico">📋</span><span class="ni-lbl">Visit History</span></div>
       <div class="ni"     onclick="nav('results',this)">     <span class="ni-ico">🧪</span><span class="ni-lbl">Test Results</span></div>
       <div class="ni"     onclick="nav('medications',this)"> <span class="ni-ico">💊</span><span class="ni-lbl">Medications</span></div>
       <div class="ni"     onclick="nav('vitals',this)">      <span class="ni-ico">💗</span><span class="ni-lbl">Vitals &amp; Trends</span></div>
@@ -1078,7 +1080,7 @@ body{display:flex;min-height:100vh;}
           </div>
           <div class="pnl-bd">
             <div class="consent-row">
-              <span class="consent-ico">🏥</span>
+              <span class="consent-ico"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--consent" /></span>
               <div class="consent-body">
                 <div class="consent-ti">Treatment — Clinical Care</div>
                 <div class="consent-su">Allow your attending doctors and nurses at UniHealth-registered facilities to access your health records for direct treatment purposes.</div>
@@ -1352,7 +1354,7 @@ mkAppts(document.getElementById('apptPast'),PAST);
 // Facilities
 var FACS=['KNH Nairobi — Level 6','Coast General Hospital — Level 5','Kisumu County Referral — Level 5'];
 var fl=document.getElementById('facList');
-FACS.forEach(function(f){fl.innerHTML+='<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--bdr)"><div style="width:36px;height:36px;border-radius:9px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🏥</div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:var(--t1)">'+f+'</div></div><span class="tag g">Cover ✓</span><button class="btn-p btn-sm" onclick="mo(\'bookAppt\')">Book</button></div>';});
+FACS.forEach(function(f){fl.innerHTML+='<div style="display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--bdr)"><div style="width:36px;height:36px;border-radius:9px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--inline" /></div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:var(--t1)">'+f+'</div></div><span class="tag g">Cover ✓</span><button class="btn-p btn-sm" onclick="mo(\'bookAppt\')">Book</button></div>';});
 
 // ── DATA: MEDICATIONS ──
 var MEDS=[
@@ -1387,11 +1389,11 @@ mkRes(document.getElementById('prevResults'),[
 
 // ── DATA: VISITS ──
 var VISITS=[
-  {ico:'🏥',bg:'var(--gl)',name:'Outpatient — Cardiology',det:'KNH Nairobi · Dr. Karimi · Hypertension follow‑up',dt:'4 Mar 2026',cost:'UniHealth Covered',cc:'var(--g)'},
+  {ico:'<img src="brand-mark.svg" alt="" class="uh-brand uh-brand--rep" />',bg:'var(--gl)',name:'Outpatient — Cardiology',det:'KNH Nairobi · Dr. Karimi · Hypertension follow‑up',dt:'4 Mar 2026',cost:'UniHealth Covered',cc:'var(--g)'},
   {ico:'🧪',bg:'var(--bl)',name:'Laboratory — Blood Panel',det:'KNH Nairobi · Full blood count, lipids, glucose · 5 tests',dt:'4 Mar 2026',cost:'UniHealth Covered',cc:'var(--g)'},
-  {ico:'🏥',bg:'var(--pul)',name:'Outpatient — General',det:'Coast General · Dr. Oduor · Annual checkup',dt:'21 Jan 2026',cost:'Ksh 600',cc:'var(--b)'},
+  {ico:'<img src="brand-mark.svg" alt="" class="uh-brand uh-brand--rep" />',bg:'var(--pul)',name:'Outpatient — General',det:'Coast General · Dr. Oduor · Annual checkup',dt:'21 Jan 2026',cost:'Ksh 600',cc:'var(--b)'},
   {ico:'🚑',bg:'var(--rl)',name:'Emergency — A&E',det:'KNH Nairobi · Severe headache · Discharged same day',dt:'3 Nov 2025',cost:'UniHealth Covered',cc:'var(--g)'},
-  {ico:'🏥',bg:'var(--al)',name:'Outpatient — Gynaecology',det:'Coast General · Dr. Atieno · Routine check',dt:'18 Sep 2025',cost:'Ksh 1,200',cc:'var(--b)'},
+  {ico:'<img src="brand-mark.svg" alt="" class="uh-brand uh-brand--rep" />',bg:'var(--al)',name:'Outpatient — Gynaecology',det:'Coast General · Dr. Atieno · Routine check',dt:'18 Sep 2025',cost:'Ksh 1,200',cc:'var(--b)'},
 ];
 var vl=document.getElementById('visitList');
 VISITS.forEach(function(v){vl.innerHTML+='<div class="visit"><div class="visit-ico" style="background:'+v.bg+'">'+v.ico+'</div><div style="flex:1"><div class="visit-name">'+v.name+'</div><div class="visit-det">'+v.det+'</div></div><div style="text-align:right"><div class="visit-date">'+v.dt+'</div><div class="visit-cost" style="color:'+v.cc+'">'+v.cost+'</div></div></div>';});

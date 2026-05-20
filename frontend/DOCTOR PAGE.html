@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
+    <link rel="stylesheet" href="brand.css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniHealth EHR — My Health Portal</title>
+    <title>UniHealth — My Health Portal</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
@@ -1770,9 +1772,9 @@
         <div class="sb-in">
             <div class="sb-brand">
                 <div class="sb-logo-row">
-                    <div class="sb-ico"><i data-feather="activity" style="color:#7beba4"></i></div>
+                    <div class="sb-ico" aria-hidden="true"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--sb" /></div>
                     <div>
-                        <div class="sb-nm">UniHealth EHR</div>
+                        <div class="sb-nm">UniHealth</div>
                         <div class="sb-tag">My Health Portal</div>
                     </div>
                 </div>
@@ -1815,7 +1817,7 @@
         <header class="topbar">
             <div>
                 <div class="tb-pg" id="tbTitle">My Dashboard</div>
-                <div class="tb-cr">UniHealth EHR › <b id="tbCrumb">Home</b></div>
+                <div class="tb-cr">UniHealth › <b id="tbCrumb">Home</b></div>
             </div>
             <div class="tb-gap"></div>
             <div class="tb-srch"><i data-feather="search" style="width:12px;height:12px;color:var(--t3)"></i><input placeholder="Search records, results, bills…" id="globalSearch"></div>
@@ -1877,13 +1879,13 @@
                     dt: '4 Mar' },
                 ],
                 visits: [
-                    { ico: '🏥', bg: 'var(--gl)', name: 'Outpatient — Cardiology',
+                    { ico: '📋', bg: 'var(--gl)', name: 'Outpatient — Cardiology',
                         det: 'Central Referral Hospital · Dr. Karimi', dt: '4 Mar 2026', cost: 'ModelCover Covered',
                         cc: 'var(--g)' },
                     { ico: '🧪', bg: '#eff6ff', name: 'Laboratory — Blood Panel',
                         det: 'Central Referral Hospital · Full blood count, lipids', dt: '4 Mar 2026',
                         cost: 'ModelCover Covered', cc: 'var(--g)' },
-                    { ico: '🏥', bg: '#f5f3ff', name: 'Outpatient — General',
+                    { ico: '📋', bg: '#f5f3ff', name: 'Outpatient — General',
                         det: 'Coastal Regional Hospital · Dr. Oduor', dt: '21 Jan 2026', cost: 'Ksh 600',
                     cc: 'var(--b)' },
                 ],

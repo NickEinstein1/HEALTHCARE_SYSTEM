@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
+    <link rel="stylesheet" href="brand.css" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniHealth EHR — Admin Dashboard</title>
+<title>UniHealth — Admin Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -495,9 +497,9 @@ body{display:flex}
   <div class="sb-in">
 
     <div class="sb-brand">
-      <div class="sb-ico">🏥</div>
+      <div class="sb-ico" aria-hidden="true"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--sb" /></div>
       <div>
-        <div class="sb-nm">UniHealth EHR</div>
+        <div class="sb-nm">UniHealth</div>
         <div class="sb-sub">Admin Portal · MOH Kenya</div>
       </div>
       <div class="sb-live"></div>
@@ -521,7 +523,7 @@ body{display:flex}
       <div class="sb-sec-lbl">Main</div>
       <div class="ni on"  onclick="go('overview',this)"><span class="ni-ico">📊</span><span class="ni-lbl">Overview</span></div>
       <div class="ni"     onclick="go('users',this)" id="nav-users"><span class="ni-ico">👥</span><span class="ni-lbl">User Management</span><span class="ni-badge red">12</span></div>
-      <div class="ni"     onclick="go('facilities',this)"><span class="ni-ico">🏥</span><span class="ni-lbl">Facilities</span></div>
+      <div class="ni"     onclick="go('facilities',this)"><span class="ni-ico"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--ni" /></span><span class="ni-lbl">Facilities</span></div>
       <div class="ni"     onclick="go('counties',this)"><span class="ni-ico">🗺️</span><span class="ni-lbl">County Coverage</span></div>
     </div>
 
@@ -565,7 +567,7 @@ body{display:flex}
   <header class="topbar">
     <div>
       <div class="tb-page" id="tbTitle">Overview</div>
-      <div class="tb-crumb">UniHealth EHR › <b id="tbCrumb">Dashboard</b></div>
+      <div class="tb-crumb">UniHealth › <b id="tbCrumb">Dashboard</b></div>
     </div>
     <div class="tb-gap"></div>
     <div class="tb-search">
@@ -605,7 +607,7 @@ body{display:flex}
       <div class="qa">
         <div class="qa-item" onclick="go('users',null)"><span class="qa-e">👤</span><span class="qa-t">Add Staff</span></div>
         <div class="qa-item" onclick="modal('addPatient')"><span class="qa-e">🧑‍⚕️</span><span class="qa-t">Register Patient</span></div>
-        <div class="qa-item" onclick="modal('facility')"><span class="qa-e">🏥</span><span class="qa-t">New Facility</span></div>
+        <div class="qa-item" onclick="modal('facility')"><span class="qa-e"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--qa" /></span><span class="qa-t">New Facility</span></div>
         <div class="qa-item" onclick="go('unihealth',null)"><span class="qa-e">🏛️</span><span class="qa-t">UniHealth Claims</span></div>
         <div class="qa-item" onclick="go('reports',null)"><span class="qa-e">📋</span><span class="qa-t">Generate Report</span></div>
         <div class="qa-item" onclick="go('audit',null)"><span class="qa-e">⛓️</span><span class="qa-t">Audit Log</span></div>
@@ -615,9 +617,9 @@ body{display:flex}
 
       <!-- KPIs row 1 -->
       <div class="kpis">
-        <div class="kpi" style="animation-delay:.05s"><div class="kpi-bar g"></div><div class="kpi-ico">🏥</div><div class="kpi-lbl">Registered Patients</div><div class="kpi-val">55.2M</div><div class="kpi-meta up">▲ 2.1% this month</div></div>
+        <div class="kpi" style="animation-delay:.05s"><div class="kpi-bar g"></div><div class="kpi-ico">👥</div><div class="kpi-lbl">Registered Patients</div><div class="kpi-val">55.2M</div><div class="kpi-meta up">▲ 2.1% this month</div></div>
         <div class="kpi" style="animation-delay:.1s"><div class="kpi-bar b"></div><div class="kpi-ico">👥</div><div class="kpi-lbl">Active Staff</div><div class="kpi-val">48,914</div><div class="kpi-meta up">▲ 340 new this week</div></div>
-        <div class="kpi" style="animation-delay:.15s"><div class="kpi-bar am"></div><div class="kpi-ico">🏥</div><div class="kpi-lbl">Facilities Online</div><div class="kpi-val">2,387</div><div class="kpi-meta fl">— 13 degraded</div></div>
+        <div class="kpi" style="animation-delay:.15s"><div class="kpi-bar am"></div><div class="kpi-ico"><img src="brand-mark.svg" alt="" class="uh-brand uh-brand--kpi" /></div><div class="kpi-lbl">Facilities Online</div><div class="kpi-val">2,387</div><div class="kpi-meta fl">— 13 degraded</div></div>
         <div class="kpi" style="animation-delay:.2s"><div class="kpi-bar r"></div><div class="kpi-ico">⚠️</div><div class="kpi-lbl">Pending Approvals</div><div class="kpi-val">127</div><div class="kpi-meta dn">▼ Needs attention</div></div>
       </div>
 
@@ -968,7 +970,7 @@ body{display:flex}
     <!-- ══ SETTINGS ══ -->
     <div id="pg-settings" class="pg">
       <div class="ph">
-        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div><div class="ph-sub">Configure UniHealth EHR authentication, RBAC policies and integration preferences</div></div>
+        <div><div class="ph-eyebrow">System</div><div class="ph-title">System Settings</div><div class="ph-sub">Configure UniHealth authentication, RBAC policies and integration preferences</div></div>
         <button class="btn-p" onclick="logAudit('MODIFY settings saved by '+ROLES[currentRole].lbl);showToast('✅','Settings saved','Changes logged to audit trail')">Save Changes</button>
       </div>
       <div class="g2e">
@@ -1321,7 +1323,7 @@ body{display:flex}
             <div class="backup-ico">🟢</div>
             <div class="backup-info">
               <div class="backup-name">Full Backup — Production DB</div>
-              <div class="backup-meta">UniHealth EHR · All 12 regions · AES-256 · Stored: Nairobi + Mombasa DR sites</div>
+              <div class="backup-meta">UniHealth · All 12 regions · AES-256 · Stored: Nairobi + Mombasa DR sites</div>
             </div>
             <div class="backup-right">
               <div class="backup-size">847 GB</div>
@@ -1504,7 +1506,7 @@ function go(pg,el){
 
 // ── SIGN OUT ──
 function signOut(){
-  if(confirm('Sign out of UniHealth EHR admin portal?')){
+  if(confirm('Sign out of UniHealth admin portal?')){
     logAudit('LOGOUT by '+currentRole);
     window.location.href='unihealth-login.html';
   }
@@ -1873,7 +1875,7 @@ var REPS=[
   {ico:'📊',bg:'var(--gl)',n:'System Overview Report',d:'Full system health, uptime, FHIR events and KPIs across all 12 regions.',tag:'PDF · XLSX',u:'Updated daily'},
   {ico:'🏛️',bg:'var(--bl)',n:'UniHealth Claims Summary',d:'Claims processed, disbursements, fraud flags and biometric compliance rates.',tag:'PDF · CSV',u:'Updated hourly'},
   {ico:'👥',bg:'var(--pul)',n:'User Activity Report',d:'Login attempts, auth methods used, failed logins and account changes.',tag:'PDF · XLSX',u:'Updated daily'},
-  {ico:'🏥',bg:'var(--al)',n:'Facility Status Report',d:'Node latency, uptime, bed occupancy and UniHealth accreditation status.',tag:'PDF · XLSX',u:'Updated hourly'},
+  {ico:'<img src="brand-mark.svg" alt="" class="uh-brand uh-brand--rep" />',bg:'var(--al)',n:'Facility Status Report',d:'Node latency, uptime, bed occupancy and UniHealth accreditation status.',tag:'PDF · XLSX',u:'Updated hourly'},
   {ico:'🗺️',bg:'var(--gl)',n:'County Coverage Analysis',d:'Connectivity, patient registrations and UniHealth claims per county.',tag:'PDF · CSV',u:'Updated weekly'},
   {ico:'⛓️',bg:'#fdf2f8',n:'Blockchain Audit Export',d:'Full immutable audit trail from Hyperledger Fabric ledger.',tag:'JSON · CSV',u:'On demand'},
 ];
