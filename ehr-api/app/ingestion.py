@@ -69,3 +69,14 @@ def send_medication_request(resource: dict) -> None:
     payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
     get_producer().produce("ehr.medication_request", value=payload)
     get_producer().flush()
+
+
+def send_allergy_intolerance(resource: dict) -> None:
+    """Publish AllergyIntolerance to ehr.allergy_intolerance."""
+    aid = resource.get("id")
+    pid = resource.get("patient_id") or (resource.get("patient") or {}).get("reference", "").split("/")[-1]
+    if not aid or not pid:
+        raise ValueError("AllergyIntolerance must have 'id' and 'patient_id' (or patient.reference)")
+    payload = json.dumps({"resource": resource}, default=_default_serializer).encode("utf-8")
+    get_producer().produce("ehr.allergy_intolerance", value=payload)
+    get_producer().flush()
