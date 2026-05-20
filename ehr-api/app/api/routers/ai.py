@@ -55,6 +55,7 @@ from app.ai.hl7_adt_stub import (
 )
 from app.ai.ward_history import append_ward_census_snapshot, recompute_all_forecasts
 from app.ai.ws_manager import VALID_ROLES, alert_manager
+from app.auth import require_role
 
 router = APIRouter(prefix="/ai")
 
@@ -91,21 +92,6 @@ def _require_ai_integration_secret(request: Request) -> None:
         raise HTTPException(status_code=404, detail="Not Found")
     if request.headers.get("X-AI-Census-Secret", "").strip() != secret:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
-
-# ── role guard ──────────────────────────────────────────────────────────
-def _require_role(request: Request, allowed: list[str]) -> str:
-    role = request.headers.get("X-UniHealth-Role", "").strip().lower()
-    if not role:
-        raise HTTPException(status_code=401, detail="X-UniHealth-Role header required")
-    if role not in VALID_ROLES:
-        raise HTTPException(status_code=403, detail=f"Unknown role: {role}")
-    if role not in allowed:
-        raise HTTPException(
-            status_code=403,
-            detail=f"Role '{role}' is not permitted to access this endpoint",
-        )
-    return role
 
 
 # ── AI audit logger ─────────────────────────────────────────────────────
@@ -149,7 +135,7 @@ async def ai_status():
 @router.post("/diagnosis-hints", summary="Differential diagnosis from clinical features.")
 async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
-    role = _require_role(request, ["doctor", "nurse", "admin"])
+    role = require_role(request, ["doctor", "nurse", "admin"])
 
     features   = payload.get("features", {})
     medications = payload.get("medications", [])
@@ -171,7 +157,7 @@ async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
 @router.post("/anomaly-check", summary="Run anomaly detection on a single vital/lab set.")
 async def run_anomaly_check(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
-    role       = _require_role(request, ["doctor", "nurse", "lab", "admin"])
+    role       = require_role(request, ["doctor", "nurse", "lab", "admin"])
     patient_id = str(payload.get("patient_id", "unknown"))
     vitals     = payload.get("vitals", {})
     labs       = payload.get("labs")
@@ -210,7 +196,7 @@ async def run_anomaly_check(request: Request, payload: dict = Body(...)):
 @router.post("/news2", summary="Compute NEWS2 Early Warning Score from vitals.")
 async def compute_ews(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
 
     try:
         result = compute_news2(
@@ -235,7 +221,7 @@ async def list_anomalies(
     ack: Optional[bool]       = Query(default=None),
     limit: int                = Query(default=50, ge=1, le=200),
 ):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     rows = list(st.ai_anomalies)
     if patient_id:
         rows = [a for a in rows if a.get("patient_id") == patient_id]
@@ -248,7 +234,7 @@ async def list_anomalies(
 
 @router.post("/anomalies/{anomaly_id}/ack", summary="Acknowledge an anomaly alert.")
 async def acknowledge_anomaly(anomaly_id: str, request: Request, payload: dict = Body(default={})):
-    role = _require_role(request, ["doctor", "nurse", "admin"])
+    role = require_role(request, ["doctor", "nurse", "admin"])
     for a in st.ai_anomalies:
         if a.get("id") == anomaly_id:
             a["acknowledged"]   = True
@@ -267,7 +253,7 @@ async def list_sim_patients(
     icd10:    Optional[str] = Query(default=None),
     limit:    int           = Query(default=50, ge=1, le=100),
 ):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     rows = list(st.sim_patients)
     if ward_id:
         rows = [p for p in rows if p.get("ward_id") == ward_id]
@@ -302,7 +288,7 @@ async def get_patient_vitals(
     sim_id: str, request: Request,
     limit: int = Query(default=24, ge=1, le=100),
 ):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     vitals = st.sim_vitals.get(sim_id)
     if vitals is None:
         raise HTTPException(status_code=404, detail=f"Patient {sim_id} not found in simulation data")
@@ -311,7 +297,7 @@ async def get_patient_vitals(
 
 @router.get("/patients/{sim_id}/baselines", summary="Per-metric baseline mean/σ from vital time-series (z-score anchor).")
 async def get_patient_baselines(sim_id: str, request: Request):
-    _require_role(request, ["doctor", "nurse", "admin", "lab"])
+    require_role(request, ["doctor", "nurse", "admin", "lab"])
     bl = resolve_baseline_from_vitals(sim_id, st.sim_vitals)
     # locate canonical vitals bucket (alias match)
     n_read = len(st.sim_vitals.get(sim_id, []))
@@ -330,7 +316,7 @@ async def get_patient_baselines(sim_id: str, request: Request):
 
 @router.get("/patients/{sim_id}/labs", summary="Lab results for a simulated patient.")
 async def get_patient_labs(sim_id: str, request: Request):
-    _require_role(request, ["doctor", "nurse", "lab", "admin"])
+    require_role(request, ["doctor", "nurse", "lab", "admin"])
     patient = next((p for p in st.sim_patients if p.get("sim_id") == sim_id), None)
     if not patient:
         raise HTTPException(status_code=404, detail=f"Patient {sim_id} not found")
@@ -347,7 +333,7 @@ async def get_patient_labs(sim_id: str, request: Request):
 
 @router.get("/wards", summary="Current ward occupancy across all wards.")
 async def get_wards(request: Request):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     return list(st.sim_ward_state.values())
 
 
@@ -356,7 +342,7 @@ async def get_ward_forecast(
     ward_id: str, request: Request,
     hours: int = Query(default=24, ge=1, le=48),
 ):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     forecast = st.sim_bed_forecast.get(ward_id)
     if not forecast:
         raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
@@ -369,7 +355,7 @@ async def get_ward_history(
     request: Request,
     limit: int = Query(default=168, ge=8, le=720),
 ):
-    _require_role(request, ["doctor", "nurse", "admin"])
+    require_role(request, ["doctor", "nurse", "admin"])
     if ward_id not in st.sim_ward_state:
         raise HTTPException(status_code=404, detail=f"Ward {ward_id} not found")
     rows = st.sim_ward_occ_history.get(ward_id)
@@ -392,7 +378,7 @@ async def post_ward_census_snapshot(
     request: Request,
     payload: dict = Body(...),
 ):
-    role = _require_role(request, ["nurse", "admin"])
+    role = require_role(request, ["nurse", "admin"])
     if "occupied" not in payload:
         raise HTTPException(status_code=400, detail="'occupied' is required")
     try:
@@ -537,7 +523,7 @@ async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
 
 @router.post("/wards/recompute-forecasts", summary="Rebuild every ward forecast from current census histories.")
 async def post_recompute_forecasts(request: Request):
-    role = _require_role(request, ["admin"])
+    role = require_role(request, ["admin"])
     summary = recompute_all_forecasts()
     _audit("ward_forecasts_recompute", role, None, {"wards": len(summary)})
     return {"status": "ok", "training_source_by_ward": summary}
@@ -549,7 +535,7 @@ async def get_audit_log(
     event:   Optional[str] = Query(default=None),
     limit:   int           = Query(default=100, ge=1, le=500),
 ):
-    _require_role(request, ["admin"])
+    require_role(request, ["admin"])
     rows = list(st.ai_audit_log)
     if event:
         rows = [r for r in rows if r.get("event") == event]
@@ -560,7 +546,7 @@ async def get_audit_log(
 async def submit_feedback(
     audit_id: str, request: Request, payload: dict = Body(...),
 ):
-    role = _require_role(request, ["doctor", "nurse"])
+    role = require_role(request, ["doctor", "nurse"])
     action   = payload.get("action", "").strip()
     note     = payload.get("note", "").strip()
 
@@ -586,7 +572,7 @@ async def submit_feedback(
 
 @router.get("/simulate/trigger-alert", summary="Dev: inject a simulated critical alert.")
 async def trigger_test_alert(request: Request):
-    _require_role(request, ["admin"])
+    require_role(request, ["admin"])
     test_anomaly = {
         "id":           f"ANO-TEST-{int(time.time()*1000)}",
         "patient_id":   "SIM-001",
