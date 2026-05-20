@@ -4,9 +4,17 @@ import time
 from fastapi import APIRouter, Body, HTTPException, Header, Query, Response
 
 from app.config import settings
-from app.ingestion import send_encounter, send_medication_request, send_observation, send_patient
-from app.models import MedicationRequest, Observation, PatientSummary
+from app.ingestion import (
+    send_allergy_intolerance,
+    send_encounter,
+    send_medication_request,
+    send_observation,
+    send_patient,
+)
+from app.models import AllergyIntolerance, MedicationRequest, Observation, PatientSummary
 from app.store import (
+    get_allergies_from_cache,
+    get_allergies_from_db,
     get_med_requests_from_cache,
     get_med_requests_from_db,
     get_observations_from_cache,
@@ -17,6 +25,7 @@ from app.store import (
     has_active_consent,
     patient_exists,
     revoke_consent,
+    set_allergies_in_cache,
     set_med_requests_in_cache,
     set_observations_in_cache,
     set_summary_in_cache,
@@ -240,4 +249,51 @@ async def patient_med_requests(
     if response is not None:
         response.headers["X-Cache-Source"] = "postgres-miss"
     return meds
+
+
+@router.post(
+    "/fhir/r5/AllergyIntolerance",
+    status_code=202,
+    summary="Ingest AllergyIntolerance (pilot EMR). Publishes to Kafka; consumer updates Postgres/Redis.",
+)
+async def ingest_allergy_intolerance(payload: dict = Body(...)):
+    try:
+        send_allergy_intolerance(payload)
+        return {"status": "accepted", "resourceType": "AllergyIntolerance", "id": payload.get("id")}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Ingestion failed: {e}")
+
+
+@router.get(
+    "/fhir/r5/Patient/{patient_id}/allergy-intolerances",
+    response_model=list[AllergyIntolerance],
+    summary="Get patient allergies (edge cache + warm store).",
+)
+async def patient_allergy_intolerances(
+    patient_id: str,
+    limit: int = Query(default=20, ge=1, le=200),
+    x_facility_id: str | None = Header(default=None, alias="X-Facility-Id"),
+    scope: str = Query(default="treatment", description="Consent scope: treatment|emergency"),
+    response: Response = None,
+):
+    facility_id = x_facility_id
+    strict_consent = settings.consent_mode.lower() == "strict"
+    if strict_consent and scope != "emergency" and facility_id:
+        allowed = await has_active_consent(patient_id, facility_id, scope)
+        if not allowed:
+            raise HTTPException(status_code=403, detail="Consent denied")
+
+    cached = await get_allergies_from_cache(patient_id)
+    if cached is not None:
+        if response is not None:
+            response.headers["X-Cache-Source"] = "redis-hit"
+        return cached[:limit]
+
+    rows = await get_allergies_from_db(patient_id, limit)
+    await set_allergies_in_cache(patient_id, rows)
+    if response is not None:
+        response.headers["X-Cache-Source"] = "postgres-miss"
+    return rows
 
