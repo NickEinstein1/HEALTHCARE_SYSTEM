@@ -23,5 +23,13 @@ class Settings(BaseSettings):
     # Phase 3 integration: persist idempotency replay in Redis (EHR_REDIS_URL) so all workers share state.
     integration_idempotency_redis: bool = False
 
+    # OIDC (Keycloak) — staging/production; header fallback for local dev.
+    oidc_enabled: bool = False
+    oidc_issuer_url: str = ""
+    oidc_jwks_url: str = ""
+    oidc_audience: str = "unihealth-gateway"
+    oidc_role_claim: str = "unihealth_role"
+    oidc_allow_header_fallback: bool = True
+
 
 settings = Settings()
