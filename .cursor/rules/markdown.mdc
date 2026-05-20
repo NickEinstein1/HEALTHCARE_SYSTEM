@@ -1,0 +1,34 @@
+---
+description: Markdown tables and lint rules for every .md file in the repo
+globs: **/*.md
+alwaysApply: false
+---
+
+# Markdown in this repository
+
+**Put new documentation in `docs/`** (index: [docs/README.md](docs/README.md)). Only the repo root `README.md` and short pointer READMEs under `ehr-api/`, `infra/`, `edge-pipeline/`, and `frontend/` live outside `docs/`.
+
+Before creating or editing **any** Markdown file, follow [docs/markdown-style.md](docs/markdown-style.md).
+
+## Tables — mandatory (aligned pipes)
+
+- Use **aligned** column style: every `|` must line up vertically across header, separator, and body rows.
+- Copy the template from `docs/markdown-style.md`; never use a compact separator like `|------|--------|` with padded body rows in the **same** table.
+- After editing a table, verify columns align in a monospaced font.
+
+## URLs (MD034)
+
+- In prose, tables, and lists: **`[label](https://…)`** — never bare `http://…` / `https://…`.
+- Labels like `localhost:8100/docs` are fine; put the full URL only in the link target.
+- Bare URLs in **` ```bash ` / ` ```text `** fences are OK.
+
+## Ordered lists (MD029)
+
+- After a code fence or major break, restart with **`1.`** (not `2.` / `3.` continuing a prior list).
+
+## Do not
+
+- Mix table styles in one table (this caused MD060 warnings before we standardized the guide).
+- Edit `node_modules/**/*.md`.
+
+Lint config: `.markdownlint.jsonc` at repo root. Verify: `npx --yes markdownlint-cli2 "docs/**/*.md"` from repo root.

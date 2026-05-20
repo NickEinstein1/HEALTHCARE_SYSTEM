@@ -1,4 +1,6 @@
-# Phase 1 – What’s Next
+# Phase 1 — Status
+
+**Phase 1 MVP is complete** in this repository. See **[phase1-complete.md](phase1-complete.md)** for sign-off, verification commands, and benchmark evidence.
 
 ## Done
 
@@ -6,28 +8,27 @@
 - [x] Edge FHIR gateway (patient + encounters, Redis → Postgres)
 - [x] Event pipeline (Kafka consumer → Postgres/Redis)
 - [x] Sample producer + seed data
-- [x] k6 load test (P95 &lt;50 ms target)
-- [x] Run and lock P95 (documented in `docs/benchmarks/phase1-baseline.md`)
-- [x] Venvs + run script
-- [x] **Pilot EMR ingestion API** – POST /fhir/r5/Patient and POST /fhir/r5/Encounter (ehr-api → Kafka)
-- [x] **Observations + medications** (ehr.observation / ehr.medication_request) + gateway read paths
-- [x] **Simple consent check** (strict mode 403/200 enforcement validated)
-- [x] **CI** (GitHub Actions: lint + unit tests + optional scheduled k6 workflow)
+- [x] k6 load test (P95 &lt;50 ms — documented PASS)
+- [x] Pilot EMR ingestion API (Patient, Encounter, Observation, MedicationRequest)
+- [x] Simple consent (grant/revoke + strict mode)
+- [x] CI (lint, pytest, frontend build)
+- [x] Smoke scripts: `scripts/smoke_phase1.sh`, `scripts/verify_phase1_e2e.sh`
+- [x] Contract tests: `ehr-api/tests/test_phase1_fhir.py`
 
-## Recommended next steps (in order)
+## Laptop staging (run everywhere on your machine / LAN)
 
-| # | Item | Why |
-| --- | --- | --- |
-| **1** | **Pilot EMR ingestion API** | Let a “pilot hospital” push Patient/Encounter via HTTP → Kafka instead of only the script. Enables testing the full path: EMR → Kafka → consumer → gateway. |
-| **2** | **Simple consent check** | Before returning summary, check consent (e.g. same facility or emergency). Store: patient_id, scope, facility_id; gateway checks on read. |
-| **3** | **Observations + medications** | Add `ehr.observation` and `ehr.medication` topics, consumer logic, and optional gateway fields (e.g. last N observations). |
-| **4** | **Run and lock P95** | Run full flow + k6 locally; document actual P95; add latency metric in gateway (e.g. Prometheus or response header). |
-| **5** | **CI** | GitHub Actions: lint (ruff/black), test (pytest for gateway + consumer), optional k6 on schedule. |
+1. `./scripts/run_staging.sh` — Docker stack on **:8100**
+2. `./scripts/setup_frontend_staging.sh` && `cd frontend/app && npm run dev` — UI on **:5173**
+3. [runbook-staging.md](runbook-staging.md) — tablet on Wi‑Fi, cloud VM, smoke checks
 
-## If you have only 1–2 hours now
+## What to run next (Blueprint Phase 2)
 
-- Do **#2** (consent): add a simple consent store and check in the gateway before returning patient summary (e.g. allow by facility or emergency).
+| Priority | Item                                                       |
+| -------- | ---------------------------------------------------------- |
+| 1        | Production deploy pattern (K8s/K3s edge, TLS reverse proxy) |
+| 2        | Production OIDC hardening (mTLS, no password grant, no header fallback) |
+| 3        | Patient mobile app MVP                                     |
+| 4        | National analytics aggregates pipeline                     |
+| 5        | Consent engine hardening (FHIR `Consent` resource)         |
 
----
-
-*After that:* observations/medications (#3), then measure and CI (#4–5).
+Do **not** treat the in-repo **“Phase 3 AI Assist”** pilot as Blueprint Phase 3 — see root README and [UniHealth-EHR-Blueprint.md](UniHealth-EHR-Blueprint.md) §5.
