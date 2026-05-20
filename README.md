@@ -111,13 +111,13 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 
 ## Documentation style
 
-All Markdown files use a shared [markdown style guide](docs/markdown-style.md) and [`.markdownlint.jsonc`](.markdownlint.jsonc). **Tables:** use **aligned** `|` columns (see the guide). VS Code/Cursor load rules from [`.vscode/settings.json`](.vscode/settings.json) and [`.cursor/rules/markdown.mdc`](.cursor/rules/markdown.mdc).
+**Documentation** lives under **[docs/](docs/)** ([index](docs/README.md)). The root `README.md` is the repo entry point only. All docs use [markdown-style.md](docs/markdown-style.md) and [`.markdownlint.jsonc`](.markdownlint.jsonc). VS Code/Cursor: [`.cursor/rules/markdown.mdc`](.cursor/rules/markdown.mdc).
 
 ## Repo layout
 
 | Path                         | Description                                                                              |
 | ---------------------------- | ---------------------------------------------------------------------------------------- |
-| [docs/](docs/)               | Blueprint, Phase 1 plan, [markdown style guide](docs/markdown-style.md)                  |
+| [docs/](docs/)               | **All documentation** — [index](docs/README.md), blueprint, runbooks, component guides |
 | [infra/](infra/)             | Docker Compose (Kafka, Redis, PostgreSQL)                                                |
 | [ehr-api/](ehr-api/)         | Edge FHIR gateway (FastAPI; Redis → Postgres) + **Phase 3** `/ai` simulator                |
 | [frontend/](frontend/)       | React clinician portals (Doctor / Nurse / Admin; consumes gateway)                       |
@@ -127,7 +127,7 @@ All Markdown files use a shared [markdown style guide](docs/markdown-style.md) a
 
 ## Frontend (portal)
 
-See **[frontend/README.md](frontend/README.md)** for the five former “next step” gaps (React split, tokens, auth, proxy/production routing, deployment pattern) — each is solved or intentionally scoped for pilot vs production OAuth.
+See **[docs/frontend.md](docs/frontend.md)** for the five former “next step” gaps (React split, tokens, auth, proxy/production routing, deployment pattern) — each is solved or intentionally scoped for pilot vs production OAuth.
 
 Quick start:
 
@@ -153,8 +153,8 @@ Phase 3 lives on the **same gateway** (`ehr-api`). It exposes `/ai/*` (diagnosis
 
 | What                                                                               | Where                                                                                                      |
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Env vars (`EHR_AI_CENSUS_INTEGRATION_SECRET`, SQLite replay, Redis idempotency, …) | [ehr-api/README.md — Environment](ehr-api/README.md#environment)                                           |
-| Doctor / Nurse UI (ward forecast, census inputs)                                   | [frontend/](frontend/README.md); run `cd frontend/app && npm run dev` → open the doctor or nurse dashboard |
+| Env vars (`EHR_AI_CENSUS_INTEGRATION_SECRET`, SQLite replay, Redis idempotency, …) | [docs/ehr-api.md — Environment](docs/ehr-api.md#environment)                                               |
+| Doctor / Nurse UI (ward forecast, census inputs)                                   | [docs/frontend.md](docs/frontend.md); run `cd frontend/app && npm run dev` → doctor or nurse dashboard   |
 | Contract tests                                                                     | `cd ehr-api && PYTHONPATH=. pytest tests/ -q`                                                              |
 
 Quick sanity (gateway must be listening; default port from your run):
@@ -172,7 +172,7 @@ Standalone smoke script:
 EHR_GATEWAY_URL=http://localhost:8100 ./scripts/smoke_phase3_ai.sh
 ```
 
-For **multi-worker production**, set **`EHR_INTEGRATION_IDEMPOTENCY_REDIS=true`** against your shared Redis (`EHR_REDIS_URL`). See **ehr-api/README.md** for integration census and HL7 pilot routes.
+For **multi-worker production**, set **`EHR_INTEGRATION_IDEMPOTENCY_REDIS=true`** against your shared Redis (`EHR_REDIS_URL`). See **[docs/ehr-api.md](docs/ehr-api.md)** for integration census and HL7 pilot routes.
 
 ## CI/CD (GitHub Actions)
 
