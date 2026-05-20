@@ -1,0 +1,6 @@
+# Dependencies and generated output — not authored project docs
+node_modules/
+**/node_modules/**
+**/.venv/**
+frontend/app/dist/
+frontend/app/node_modules/

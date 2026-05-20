@@ -1,0 +1,27 @@
+{
+  // UniHealth — lint README.md + docs/**/*.md (see docs/markdown-style.md).
+  // Table rules: docs/markdown-style.md
+  "default": true,
+
+  // MD060 disabled: legacy blueprint tables use mixed styles; new docs follow docs/markdown-style.md.
+  "MD060": false,
+
+  // Tech docs: allow long lines, inline HTML entities, and flexible first heading.
+  "MD013": false,
+  "MD033": false,
+  "MD041": false,
+
+  // Legacy blueprint spacing; fix when editing those files.
+  "MD009": false,
+  "MD012": false,
+  "MD022": false,
+  "MD038": false,
+
+  // Repo trees in docs often omit language tags on fenced blocks.
+  "MD040": false,
+
+  // Duplicate headings are common in long blueprint docs.
+  "MD024": {
+    "siblings_only": true
+  }
+}
