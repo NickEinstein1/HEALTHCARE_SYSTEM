@@ -6,7 +6,14 @@ from typing import Optional
 import asyncpg
 import redis.asyncio as redis
 from app.config import settings
-from app.models import Encounter, MedicationRequest, Observation, Patient, PatientSummary
+from app.models import (
+    AllergyIntolerance,
+    Encounter,
+    MedicationRequest,
+    Observation,
+    Patient,
+    PatientSummary,
+)
 
 _pg_pool: asyncpg.Pool | None = None
 _redis_client: redis.Redis | None = None
@@ -73,7 +80,11 @@ async def get_summary_from_cache(patient_id: str) -> Optional[PatientSummary]:
     raw = await client.get(key)
     if raw is None:
         return None
-    return _json_to_summary(raw)
+    try:
+        return _json_to_summary(raw)
+    except Exception:
+        await client.delete(key)
+        return None
 
 
 async def set_summary_in_cache(patient_id: str, summary: PatientSummary) -> None:
@@ -139,8 +150,12 @@ async def get_observations_from_cache(patient_id: str) -> Optional[list[Observat
     raw = await client.get(key)
     if raw is None:
         return None
-    data = json.loads(raw)
-    return [Observation.model_validate(item) for item in data]
+    try:
+        data = json.loads(raw)
+        return [Observation.model_validate(item) for item in data]
+    except Exception:
+        await client.delete(key)
+        return None
 
 
 async def set_observations_in_cache(patient_id: str, observations: list[Observation]) -> None:
@@ -186,8 +201,12 @@ async def get_med_requests_from_cache(patient_id: str) -> Optional[list[Medicati
     raw = await client.get(key)
     if raw is None:
         return None
-    data = json.loads(raw)
-    return [MedicationRequest.model_validate(item) for item in data]
+    try:
+        data = json.loads(raw)
+        return [MedicationRequest.model_validate(item) for item in data]
+    except Exception:
+        await client.delete(key)
+        return None
 
 
 async def set_med_requests_in_cache(patient_id: str, meds: list[MedicationRequest]) -> None:
@@ -222,6 +241,54 @@ async def get_med_requests_from_db(patient_id: str, limit: int) -> list[Medicati
                 status=str(r["status"]) if r["status"] else None,
                 authored_on=r["authored_on"],
                 dosage_text=str(r["dosage_text"]) if r["dosage_text"] else None,
+            )
+            for r in rows
+        ]
+
+
+async def get_allergies_from_cache(patient_id: str) -> Optional[list[AllergyIntolerance]]:
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:allergies"
+    raw = await client.get(key)
+    if raw is None:
+        return None
+    data = json.loads(raw)
+    return [AllergyIntolerance.model_validate(item) for item in data]
+
+
+async def set_allergies_in_cache(patient_id: str, rows: list[AllergyIntolerance]) -> None:
+    client = _require_redis_client()
+    key = f"patient:{patient_id}:allergies"
+    await client.set(
+        key,
+        json.dumps([a.model_dump(mode="json") for a in rows]),
+        ex=settings.cache_ttl_seconds,
+    )
+
+
+async def get_allergies_from_db(patient_id: str, limit: int) -> list[AllergyIntolerance]:
+    pool = _require_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT id, patient_id, code, substance_text, clinical_status, criticality, recorded_date
+            FROM allergy_intolerances
+            WHERE patient_id = $1
+            ORDER BY recorded_date DESC NULLS LAST, created_at DESC
+            LIMIT $2
+            """,
+            patient_id,
+            limit,
+        )
+        return [
+            AllergyIntolerance(
+                id=str(r["id"]),
+                patient_id=str(r["patient_id"]),
+                code=str(r["code"]) if r["code"] else None,
+                substance_text=str(r["substance_text"]) if r["substance_text"] else None,
+                clinical_status=str(r["clinical_status"]) if r["clinical_status"] else None,
+                criticality=str(r["criticality"]) if r["criticality"] else None,
+                recorded_date=r["recorded_date"],
             )
             for r in rows
         ]
