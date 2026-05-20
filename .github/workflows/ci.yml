@@ -32,13 +32,7 @@ jobs:
 
       - name: Markdown lint (project rules; see docs/markdown-style.md)
         run: |
-          npx --yes markdownlint-cli2 \
-            "README.md" \
-            "docs/**/*.md" \
-            "ehr-api/README.md" \
-            "infra/README.md" \
-            "edge-pipeline/README.md" \
-            "frontend/README.md"
+          npx --yes markdownlint-cli2 "README.md" "docs/**/*.md"
 
       - name: Unit tests (repo root + edge/scripts)
         run: |
