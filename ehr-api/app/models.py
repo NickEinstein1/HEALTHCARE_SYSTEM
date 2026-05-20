@@ -47,3 +47,13 @@ class MedicationRequest(BaseModel):
     status: Optional[str] = None
     authored_on: Optional[datetime] = None
     dosage_text: Optional[str] = None
+
+
+class AllergyIntolerance(BaseModel):
+    id: str
+    patient_id: str
+    code: Optional[str] = None
+    substance_text: Optional[str] = None
+    clinical_status: Optional[str] = None
+    criticality: Optional[str] = None
+    recorded_date: Optional[datetime] = None
