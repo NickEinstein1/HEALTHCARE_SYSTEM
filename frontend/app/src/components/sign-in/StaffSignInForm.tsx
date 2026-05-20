@@ -3,6 +3,7 @@ import type { RoleKey } from "../../theme/tokens";
 import { ROLE_CONFIG } from "../../lib/signInConfig";
 import { newCaptchaChallenge } from "../../lib/captcha";
 import { computePasswordStrength } from "../../lib/passwordStrength";
+import { fetchPasswordGrantToken, oidcEnabled } from "../../lib/oidc";
 
 const MAX_ATTEMPTS = 3;
 const LOCKOUT_SECS = 30;
@@ -114,10 +115,21 @@ export function StaffSignInForm({
 
     setLoading(true);
     addAudit(`AUTH LOGIN_ATTEMPT role=${role} email=${email.replace(/(.{2}).+(@.+)/, "$1***$2")}`);
-    window.setTimeout(() => {
-      setLoading(false);
-      onSuccess(email, "email");
-    }, 1700);
+    (async () => {
+      try {
+        if (oidcEnabled()) {
+          await fetchPasswordGrantToken(role, pw);
+          addAudit(`AUTH OIDC_TOKEN role=${role}`);
+        }
+        onSuccess(email, "email");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Sign-in failed";
+        setStaffErr(msg);
+        addAudit(`AUTH OIDC_FAILED role=${role}`);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   const lockoutDisplay =

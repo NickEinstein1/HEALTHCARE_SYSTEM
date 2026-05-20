@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { RoleKey } from "../theme/tokens";
 import { BrandPanel } from "../components/sign-in/BrandPanel";
+import { SignInCardBrand } from "../components/sign-in/SignInCardBrand";
+import { SignInMobileBrand } from "../components/sign-in/SignInMobileBrand";
 import { StaffSignInForm } from "../components/sign-in/StaffSignInForm";
 import { PatientSignInForm } from "../components/sign-in/PatientSignInForm";
 import { StepSelectRole } from "../steps/StepSelectRole";
@@ -73,9 +75,12 @@ export function SignInPage() {
     <div className="sign-in-root">
       <BrandPanel aiAttempts={aiAttempts} auditLines={auditLines} />
       <div className="rp">
-        <div className="card">
+        <div className="sign-in-rp-inner">
+          <SignInMobileBrand />
+          <div className="card">
           <div className="cstripe" />
           <div className="cbody">
+            <SignInCardBrand />
             {step === 1 && (
               <StepSelectRole
                 selected={role}
@@ -114,8 +119,9 @@ export function SignInPage() {
             {step === 4 && role && <StepSuccess role={role} addAudit={addAudit} />}
           </div>
           <div className="cfoot">
-            <span>UniHealth EHR · Phase 1 Pilot · 2026</span>
+            <span>UniHealth · Phase 1 Pilot · 2026</span>
             <span>v2.0</span>
+          </div>
           </div>
         </div>
       </div>

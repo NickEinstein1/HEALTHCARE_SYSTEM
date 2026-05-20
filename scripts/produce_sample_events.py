@@ -6,6 +6,7 @@ Topics:
 - ehr.encounter
 - ehr.observation
 - ehr.medication_request
+- ehr.allergy_intolerance
 
 Run after: infra (Kafka) is up. Consumer will upsert into Postgres and invalidate Redis caches.
 Usage: python scripts/produce_sample_events.py
@@ -161,6 +162,35 @@ def main():
             callback=delivery_report,
         )
         print(f"Sent medication_request {m['id']} (patient {m['patient_id']})")
+        producer.poll(0)
+
+    allergies = [
+        {
+            "id": "A001",
+            "patient_id": "P001",
+            "code": "penicillin",
+            "substance_text": "Penicillin",
+            "clinical_status": "active",
+            "criticality": "high",
+            "recordedDate": to_zulu(base),
+        },
+        {
+            "id": "A002",
+            "patient_id": "P002",
+            "code": "nkda",
+            "substance_text": "No known drug allergies",
+            "clinical_status": "active",
+            "criticality": "low",
+            "recordedDate": to_zulu(base - timedelta(days=3)),
+        },
+    ]
+    for a in allergies:
+        producer.produce(
+            "ehr.allergy_intolerance",
+            value=json.dumps({"resource": a}, default=str).encode("utf-8"),
+            callback=delivery_report,
+        )
+        print(f"Sent allergy_intolerance {a['id']} (patient {a['patient_id']})")
         producer.poll(0)
 
     remaining = producer.flush(15)

@@ -26,9 +26,10 @@ docker compose -f infra/docker-compose.yml exec -T postgres \
 
 echo "=== 3. Virtual environments (create + install if missing) ==="
 for dir in ehr-api edge-pipeline; do
-  rm -rf "$dir/.venv"
-  python3 -m venv "$dir/.venv"
-  "$dir/.venv/bin/pip" install -q -r "$dir/requirements.txt"
+  if [ ! -d "$dir/.venv" ]; then
+    python3 -m venv "$dir/.venv"
+    "$dir/.venv/bin/pip" install -q -r "$dir/requirements.txt"
+  fi
 done
 # Producer script dependencies (uses confluent-kafka)
 edge-pipeline/.venv/bin/pip install -q -r "$ROOT/scripts/requirements.txt"
@@ -98,13 +99,29 @@ done
 curl -s -H "X-Facility-Id: FAC-A" "http://localhost:${PORT}/fhir/r5/Patient/P001/summary?encounters=5" | head -c 500
 echo ""
 
+echo "=== 7b. Phase 3 AI Assist (simulator, no extra services) ==="
+curl -s -o /dev/null -w "GET /ai/status HTTP %{http_code}\n" "http://localhost:${PORT}/ai/status" || true
+curl -s -o /dev/null -w "GET /ai/wards (doctor) HTTP %{http_code}\n" -H "X-UniHealth-Role: doctor" "http://localhost:${PORT}/ai/wards" || true
+
 echo "Granting consent (Phase 1) ..."
 curl -s -X POST "http://localhost:${PORT}/consent/grant" \
   -H "Content-Type: application/json" \
   -d '{"patient_id":"P001","facility_id":"FAC-A","scope":"treatment"}' | head -c 400
 echo ""
 
+echo "=== 8. Phase 1 smoke (read path + consent) ==="
+EHR_GATEWAY_URL="http://localhost:${PORT}" "$ROOT/scripts/smoke_phase1.sh"
+
+if [ "${RUN_K6:-}" = "1" ] && command -v k6 >/dev/null 2>&1; then
+  echo "=== 9. k6 latency (P95 <50 ms) ==="
+  BASE_URL="http://localhost:${PORT}" VUS="${K6_VUS:-100}" DURATION="${K6_DURATION:-30s}" \
+    k6 run "$ROOT/load-tests/gateway-latency.js"
+elif [ "${RUN_K6:-}" = "1" ]; then
+  echo "RUN_K6=1 but k6 not installed — skip (https://k6.io)"
+fi
+
 echo ""
 echo "Full flow is running. Gateway: http://localhost:${PORT} (PID $GATEWAY_PID), Consumer: PID $CONSUMER_PID"
 echo "To stop: kill $GATEWAY_PID $CONSUMER_PID"
-echo "Load test: BASE_URL=http://localhost:${PORT} k6 run load-tests/gateway-latency.js"
+echo "Phase 1 E2E ingest: EHR_GATEWAY_URL=http://localhost:${PORT} ./scripts/verify_phase1_e2e.sh"
+echo "Load test: RUN_K6=1 ./scripts/run_full_flow.sh   # or: BASE_URL=http://localhost:${PORT} k6 run load-tests/gateway-latency.js"

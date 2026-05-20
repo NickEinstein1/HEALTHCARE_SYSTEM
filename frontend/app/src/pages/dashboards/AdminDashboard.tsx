@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { BRAND_ICON } from "../../components/brand/brandIcon";
+import { DashIcon } from "../../components/brand/DashIcon";
+import { SearchBarBrand } from "../../components/brand/SearchBarBrand";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type AdminUser = {
@@ -882,7 +885,7 @@ export function AdminDashboard() {
           items: [
             { id: "overview", icon: "📊", label: "Overview" },
             { id: "users", icon: "👥", label: "User Management", badge: { text: "12", tone: "red" } },
-            { id: "facilities", icon: "🏥", label: "Facilities" },
+            { id: "facilities", icon: BRAND_ICON, label: "Facilities" },
             { id: "counties", icon: "🗺️", label: "County Coverage" },
           ],
         },
@@ -981,7 +984,7 @@ export function AdminDashboard() {
               openCreateFacility();
             }}
           >
-            <span className="qa-e">🏥</span>
+            <DashIcon icon={BRAND_ICON} idPrefix="qa-facility" className="qa-e" />
             <span className="qa-t">New Facility</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("unihealth")}>
@@ -1009,7 +1012,7 @@ export function AdminDashboard() {
         <div className="kpis">
           <div className="kpi">
             <div className="kpi-bar g" />
-            <div className="kpi-ico">🏥</div>
+            <div className="kpi-ico">👥</div>
             <div className="kpi-lbl">Registered Patients</div>
             <div className="kpi-val">55.2M</div>
             <div className="kpi-meta up">▲ 2.1% this month</div>
@@ -1023,7 +1026,7 @@ export function AdminDashboard() {
           </div>
           <div className="kpi">
             <div className="kpi-bar am" />
-            <div className="kpi-ico">🏥</div>
+            <div className="kpi-ico"><DashIcon icon={BRAND_ICON} idPrefix="kpi-facilities" /></div>
             <div className="kpi-lbl">Facilities Online</div>
             <div className="kpi-val">2,387</div>
             <div className="kpi-meta fl">— 13 degraded</div>
@@ -1382,7 +1385,7 @@ export function AdminDashboard() {
 
         <div className="filter-row">
           <div className="fsearch">
-            <span aria-hidden>🔎</span>
+            <SearchBarBrand idPrefix="admin-fsearch" />
             <input value={userQ} onChange={(e) => setUserQ(e.target.value)} placeholder="Search name, email, reg. number…" />
           </div>
           <select className="fsel" value={userRole} onChange={(e) => setUserRole(e.target.value)}>
@@ -1612,7 +1615,7 @@ export function AdminDashboard() {
               </div>
               <div className="pnl-body" style={{ paddingTop: 12 }}>
                 <div className="fsearch" style={{ maxWidth: "none", marginBottom: 10 }}>
-                  <span aria-hidden>🔎</span>
+                  <SearchBarBrand idPrefix="admin-fsearch" />
                   <input
                     value={facQ}
                     onChange={(e) => setFacQ(e.target.value)}
@@ -1712,7 +1715,7 @@ export function AdminDashboard() {
         )}
         <div className="filter-row">
           <div className="fsearch">
-            <span aria-hidden>🔎</span>
+            <SearchBarBrand idPrefix="admin-fsearch" />
             <input value={facQ} onChange={(e) => setFacQ(e.target.value)} placeholder="Search facility name or ID…" />
           </div>
           <select className="fsel" value={facCounty} onChange={(e) => setFacCounty(e.target.value)}>
@@ -2321,7 +2324,7 @@ export function AdminDashboard() {
 
         <div className="filter-row">
           <div className="fsearch">
-            <span aria-hidden>🔎</span>
+            <SearchBarBrand idPrefix="admin-fsearch" />
             <input value={patQ} onChange={(e) => setPatQ(e.target.value)} placeholder="Search patient name, AFL ID, email, phone…" />
           </div>
           <select className="fsel" value={patFacility} onChange={(e) => setPatFacility(e.target.value)}>

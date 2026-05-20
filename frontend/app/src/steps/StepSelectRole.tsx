@@ -1,3 +1,5 @@
+import { DashIcon } from "../components/brand/DashIcon";
+import { isBrandIcon } from "../components/brand/brandIcon";
 import type { RoleKey } from "../theme/tokens";
 import { ROLE_CONFIG } from "../lib/signInConfig";
 
@@ -64,7 +66,12 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
       {/* ── Role notice box ── */}
       {cfg && (
         <div className={`role-note ${cfg.noteClass}`} role="status" aria-live="polite">
-          <span className="role-note-ico" aria-hidden>{cfg.noteIco}</span>
+          <DashIcon
+            icon={cfg.noteIco}
+            idPrefix={`role-note-${selected ?? "none"}`}
+            className="role-note-ico"
+            size={isBrandIcon(cfg.noteIco) ? 22 : undefined}
+          />
           <div className="role-note-content">
             <div className="role-note-head">{cfg.noteHead}</div>
             <div className="role-note-body">{cfg.noteBody}</div>

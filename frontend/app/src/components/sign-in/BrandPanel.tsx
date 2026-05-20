@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { UniHealthLogo } from "../brand/UniHealthLogo";
 
 type Props = {
   aiAttempts: number;
@@ -14,10 +15,12 @@ export function BrandPanel({ aiAttempts, auditLines }: Props) {
       <div className="li">
         <div>
           <div className="brand">
-            <div className="brand-sq">🏥</div>
+            <div className="brand-sq brand-sq--logo" aria-hidden>
+              <UniHealthLogo idPrefix="panel" className="unihealth-logo" />
+            </div>
             <div>
-              <div className="brand-nm">UniHealth EHR</div>
-              <div className="brand-tg">National Digital Health Network</div>
+              <div className="brand-nm">UniHealth</div>
+              <div className="brand-tg">Innovation at its core</div>
             </div>
           </div>
           <div className="sys-pill">

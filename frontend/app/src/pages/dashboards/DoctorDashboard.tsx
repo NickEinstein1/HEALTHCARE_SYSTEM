@@ -831,7 +831,7 @@ export function DoctorDashboard() {
           items: [
             { id: "notes", icon: "📝", label: "Clinical Notes" },
             { id: "referrals", icon: "📋", label: "Referrals" },
-            { id: "procedures", icon: "🏥", label: "Procedures" },
+            { id: "procedures", icon: "⚕️", label: "Procedures" },
             { id: "claims", icon: "🛡️", label: "UniHealth Claims" },
             { id: "schedule", icon: "📅", label: "My Schedule" },
           ],

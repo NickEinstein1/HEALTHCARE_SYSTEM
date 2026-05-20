@@ -1,5 +1,5 @@
 /**
- * UniHealth EHR — Create Account
+ * UniHealth — Create Account
  * ================================
  * Four-step registration flow, role-aware:
  *   Step 1 — Choose your role
@@ -10,6 +10,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { UniHealthLogo } from "../components/brand/UniHealthLogo";
 import type { RoleKey } from "../theme/tokens";
 
 // ── Colour tokens (mirrors the sign-in dark theme) ──────────────────
@@ -693,10 +694,12 @@ function RegisterBrandPanel({ step }: { step: number }) {
         {/* Brand */}
         <div style={{ marginBottom: 32 }}>
           <div className="brand">
-            <div className="brand-sq">🏥</div>
+            <div className="brand-sq brand-sq--logo" aria-hidden>
+              <UniHealthLogo idPrefix="register" className="unihealth-logo" />
+            </div>
             <div>
-              <div className="brand-nm">UniHealth EHR</div>
-              <div className="brand-tg">National Digital Health Network</div>
+              <div className="brand-nm">UniHealth</div>
+              <div className="brand-tg">Innovation at its core</div>
             </div>
           </div>
           <div className="sys-pill">
@@ -805,7 +808,7 @@ export function CreateAccountPage() {
             )}
           </div>
           <div className="cfoot">
-            <span>UniHealth EHR · Registration · 2026</span>
+            <span>UniHealth · Registration · 2026</span>
             <span>v2.0 · KDPA</span>
           </div>
         </div>

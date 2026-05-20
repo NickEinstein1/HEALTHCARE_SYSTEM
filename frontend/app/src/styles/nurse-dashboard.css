@@ -151,6 +151,14 @@
 .nurse .tag.b{background:var(--bl);color:#1e40af;border:1px solid var(--bm);}
 .nurse .tag.te{background:var(--tel);color:#0f766e;border:1px solid var(--tem);}
 
+.nurse .body-fig{padding:0;}
+.nurse .body-fig-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 14px 10px;border-bottom:1px solid var(--bdr);}
+.nurse .body-fig-ti{font-size:13px;font-weight:900;color:var(--t1);}
+.nurse .body-fig-su{font-size:10.5px;color:var(--t3);margin-top:3px;line-height:1.4;}
+.nurse .body-fig-in{position:relative;padding:14px 14px 0;min-height:520px;}
+.nurse .body-fig-ft{padding:12px 14px 14px;border-top:1px solid var(--bdr);}
+.nurse .nurse-vitals-figure-panel .pnl-bd{overflow:hidden;}
+
 @media (max-width: 1100px){
   .nurse .g2,.nurse .gcol2,.nurse .gcol3{grid-template-columns:1fr}
   .nurse .g3{grid-template-columns:1fr}

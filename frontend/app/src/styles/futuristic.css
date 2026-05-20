@@ -883,6 +883,15 @@ a:hover { color: #33ddff; text-shadow: 0 0 8px rgba(0,212,255,0.35); }
 .patient .body-fig-su { color: rgba(120,180,220,0.65) !important; }
 .patient .body-fig-ft { border-top: 1px solid rgba(0,210,255,0.08) !important; }
 
+.nurse .body-fig {
+  background: rgba(4,14,32,0.60) !important;
+  border: 1px solid rgba(0,210,255,0.12) !important;
+  border-radius: 14px;
+}
+.nurse .body-fig-ti { color: rgba(220,240,255,0.90) !important; font-weight: 800; }
+.nurse .body-fig-su { color: rgba(120,180,220,0.65) !important; }
+.nurse .body-fig-ft { border-top: 1px solid rgba(0,210,255,0.08) !important; }
+
 /* ════════════════════════════════════════════════════════════════════
    APPOINTMENT BOOKING MODAL — dark theme
    ════════════════════════════════════════════════════════════════════ */

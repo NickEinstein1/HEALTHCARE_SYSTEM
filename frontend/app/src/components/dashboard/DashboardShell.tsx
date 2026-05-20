@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DashIcon } from "../brand/DashIcon";
+import { SearchBarBrand } from "../brand/SearchBarBrand";
+import { UniHealthLogo } from "../brand/UniHealthLogo";
 
 type ToastFn = (message: string) => void;
 const DashboardToastContext = createContext<null | ToastFn>(null);
@@ -97,12 +100,6 @@ export function DashboardShell(props: {
     return () => clearInterval(id);
   }, []);
 
-  const searchIcon = useMemo(() => (
-    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" style={{ opacity: 0.45, flexShrink: 0 }}>
-      <circle cx="9" cy="9" r="6" /><path d="m15 15-3-3" />
-    </svg>
-  ), []);
-
   const toast: ToastFn = useMemo(() => {
     return (message: string) => {
       setToastMsg(message);
@@ -154,11 +151,13 @@ export function DashboardShell(props: {
             {/* ── Brand ── */}
             <div className="sb-brand">
               <div className="sb-logo">
-                <div className="sb-logo-inner">🏥</div>
+                <div className="sb-logo-inner sb-logo-inner--mark" aria-hidden>
+                  <UniHealthLogo idPrefix="dash" className="unihealth-logo" />
+                </div>
                 <div className="sb-logo-glow" />
               </div>
               <div className="sb-brand-text">
-                <div className="sb-nm">UniHealth EHR</div>
+                <div className="sb-nm">UniHealth</div>
                 <div className="sb-sub">{portalSubtitle}</div>
               </div>
               <div className="sb-status-dot" aria-label="System online" title="System Online">
@@ -208,7 +207,7 @@ export function DashboardShell(props: {
                       >
                         <div className="ni-accent" aria-hidden />
                         <div className="ni-ico-wrap" aria-hidden>
-                          <span className="ni-ico">{it.icon}</span>
+                          <DashIcon icon={it.icon} idPrefix={`nav-${it.id}`} className="ni-ico" />
                         </div>
                         <span className="ni-lbl">{it.label}</span>
                         {it.badge && (
@@ -271,14 +270,14 @@ export function DashboardShell(props: {
 
             <div className="tb-title-group">
               <div className="tb-page">{title}</div>
-              <div className="tb-crumb">UniHealth EHR › <b>{crumb}</b></div>
+              <div className="tb-crumb">UniHealth › <b>{crumb}</b></div>
             </div>
 
             <div className="tb-gap" />
 
             {/* Search */}
             <div className="tb-search">
-              {searchIcon}
+              <SearchBarBrand idPrefix="tb-search" />
               <input
                 placeholder={topbarSearchPlaceholder ?? "Search patients, staff, facilities…"}
                 value={topbarSearchValue ?? ""}

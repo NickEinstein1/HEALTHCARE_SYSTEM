@@ -1,5 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { BRAND_ICON } from "../components/brand/brandIcon";
+import { DashIcon } from "../components/brand/DashIcon";
+import { UniHealthLogo } from "../components/brand/UniHealthLogo";
+
+function LandingBrandMark({ size, idPrefix }: { size: number; idPrefix: string }) {
+  const radius = size <= 28 ? 7 : 8;
+  return (
+    <div
+      className="lp-brand-mark"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        background: "rgba(0,212,255,0.08)",
+        border: "1px solid rgba(0,212,255,0.22)",
+      }}
+      aria-hidden
+    >
+      <UniHealthLogo idPrefix={idPrefix} />
+    </div>
+  );
+}
 
 /* ─── hooks ─────────────────────────────────────────────────────────── */
 function useCounter(target: number, duration = 2000, start = false) {
@@ -40,7 +62,7 @@ const ROLES = [
   { id: "admin",    icon: "⚙",  label: "Admin",       color: "#a855f7", bg: "rgba(168,85,247,0.07)",  border: "rgba(168,85,247,0.28)", desc: "Facility management, user provisioning, KMHFL sync, audit trails, and real-time system analytics from one control plane." },
   { id: "doctor",   icon: "🩺", label: "Doctor",      color: "#00d4ff", bg: "rgba(0,212,255,0.07)",   border: "rgba(0,212,255,0.28)",  desc: "SOAP notes, AI-assisted diagnosis hints, e-prescriptions, FHIR patient timeline, referrals, and lab order management." },
   { id: "nurse",    icon: "💉", label: "Nurse",       color: "#00e5a0", bg: "rgba(0,229,160,0.07)",   border: "rgba(0,229,160,0.28)",  desc: "Structured SBAR handover, triage scoring, vital tracking, ward capacity view, and patient queue management." },
-  { id: "patient",  icon: "🏥", label: "Patient",     color: "#3d8ef8", bg: "rgba(61,142,248,0.07)",  border: "rgba(61,142,248,0.28)", desc: "Book appointments, view results instantly, manage medications, insurance coverage, and exercise KDPA data rights." },
+  { id: "patient",  icon: BRAND_ICON, label: "Patient",     color: "#3d8ef8", bg: "rgba(61,142,248,0.07)",  border: "rgba(61,142,248,0.28)", desc: "Book appointments, view results instantly, manage medications, insurance coverage, and exercise KDPA data rights." },
   { id: "lab",      icon: "🔬", label: "Laboratory",  color: "#ffb830", bg: "rgba(255,184,48,0.07)",  border: "rgba(255,184,48,0.28)", desc: "Lab order queue, specimen tracking, result entry, critical-value alerting, and diagnostic imaging requests." },
   { id: "pharmacy", icon: "💊", label: "Pharmacy",    color: "#ff3366", bg: "rgba(255,51,102,0.07)",  border: "rgba(255,51,102,0.28)", desc: "Prescription dispensing, drug interaction checks, real-time stock alerts, counselling notes, and insurance billing." },
 ];
@@ -223,9 +245,9 @@ export function LandingPage() {
   const Topbar = (
     <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 clamp(16px,4vw,48px)", height: 62, background: "rgba(5,9,26,0.88)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,212,255,0.09)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#00d4ff,#00e5a0)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 14, color: "#05091a" }}>U</div>
+        <LandingBrandMark size={32} idPrefix="lp-nav" />
         <span style={{ fontWeight: 800, fontSize: 16, color: "#ddf0ff", letterSpacing: "-0.01em" }}>UniHealth</span>
-        <span style={{ fontSize: 9, color: "#00d4ff", background: "rgba(0,212,255,0.10)", border: "1px solid rgba(0,212,255,0.22)", borderRadius: 4, padding: "2px 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>EHR</span>
+        <span style={{ fontSize: 9, color: "#00d4ff", background: "rgba(0,212,255,0.10)", border: "1px solid rgba(0,212,255,0.22)", borderRadius: 4, padding: "2px 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>Innovation at its core</span>
       </div>
       <div className="lp-hide-mobile" style={{ display: "flex", gap: 26, alignItems: "center" }}>
         {[["#features","Portals"],["#how-it-works","How It Works"],["#ai","AI"],["#metrics","Metrics"],["#trust","Trust"]].map(([href, label]) => (
@@ -383,7 +405,9 @@ export function LandingPage() {
                 opacity: rolesVisible ? 1 : 0, transform: rolesVisible ? "translateY(0)" : "translateY(28px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: r.bg, border: `1px solid ${r.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{r.icon}</div>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: r.bg, border: `1px solid ${r.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }} className="lp-role-icon">
+                  <DashIcon icon={r.icon} idPrefix={`lp-role-${r.id}`} />
+                </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 16, color: r.color }}>{r.label}</div>
                   <div style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.07em" }}>Portal</div>
@@ -596,7 +620,7 @@ export function LandingPage() {
     <section style={{ padding: "120px clamp(16px,5vw,60px)", textAlign: "center", position: "relative", overflow: "hidden", background: "rgba(0,0,0,0.18)" }}>
       <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(800px,90vw)", height: "min(500px,50vw)", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(0,212,255,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", maxWidth: 640, margin: "0 auto" }}>
-        <div style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 18 }}>UniHealth EHR · Kenya</div>
+        <div style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 18 }}>UniHealth · Kenya</div>
         <h2 style={{ fontSize: "clamp(28px,5vw,58px)", fontWeight: 900, color: "#ddf0ff", margin: "0 0 18px", letterSpacing: "-0.02em", lineHeight: 1.08 }}>
           The future of care<br /><span style={{ color: "#00d4ff" }}>starts here.</span>
         </h2>
@@ -628,8 +652,8 @@ export function LandingPage() {
     <footer style={{ borderTop: "1px solid rgba(0,212,255,0.07)", padding: "36px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 7, background: "linear-gradient(135deg,#00d4ff,#00e5a0)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: 12, color: "#05091a" }}>U</div>
-          <span style={{ fontWeight: 700, fontSize: 14, color: "#ddf0ff" }}>UniHealth EHR</span>
+          <LandingBrandMark size={28} idPrefix="lp-footer" />
+          <span style={{ fontWeight: 700, fontSize: 14, color: "#ddf0ff" }}>UniHealth</span>
         </div>
         <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
           {["KDPA Compliant", "FHIR R5", "ISO 27001", "MoH Approved"].map(b => (

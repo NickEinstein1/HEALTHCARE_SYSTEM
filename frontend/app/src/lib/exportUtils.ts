@@ -1,5 +1,5 @@
 /**
- * UniHealth EHR — Export Utilities
+ * UniHealth — Export Utilities
  * Provides CSV, JSON, and print-PDF export for any tabular or record data.
  */
 

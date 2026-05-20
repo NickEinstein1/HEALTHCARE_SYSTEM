@@ -53,3 +53,13 @@ export type MedicationRequest = {
   dosage_text?: string | null;
 };
 
+export type AllergyIntolerance = {
+  id: string;
+  patient_id: string;
+  code?: string | null;
+  substance_text?: string | null;
+  clinical_status?: string | null;
+  criticality?: string | null;
+  recorded_date?: string | null;
+};
+

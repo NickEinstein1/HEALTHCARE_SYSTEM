@@ -1,0 +1,98 @@
+/* Inline UniHealth mark (nav, KPI, search overlays, landing) */
+.dash-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.dash-icon--brand {
+  flex-shrink: 0;
+}
+
+.dash-icon__logo,
+.dash-icon--brand svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ni-ico-wrap .dash-icon--brand {
+  width: 15px;
+  height: 15px;
+}
+
+.ni-ico-wrap .dash-icon:not(.dash-icon--brand) {
+  font-size: 14px;
+}
+
+.kpi-ico .dash-icon--brand {
+  width: 26px;
+  height: 26px;
+  opacity: 0.55;
+}
+
+.qa-e .dash-icon--brand {
+  width: 20px;
+  height: 20px;
+}
+
+.consent-ico .dash-icon--brand,
+.ov-ico .dash-icon--brand {
+  width: 20px;
+  height: 20px;
+}
+
+/* role-note-ico and dash-icon--brand are on the same node */
+.role-note-ico.dash-icon--brand,
+.role-note-ico .dash-icon--brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  flex-shrink: 0;
+}
+
+.role-note-ico.dash-icon--brand svg,
+.role-note-ico.dash-icon--brand .unihealth-logo,
+.role-note-ico .dash-icon--brand svg {
+  width: 22px !important;
+  height: 22px !important;
+  max-width: 22px;
+  max-height: 22px;
+}
+
+.lp-role-icon .dash-icon--brand {
+  width: 22px;
+  height: 22px;
+}
+
+.lp-brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.lp-brand-mark .unihealth-logo,
+.lp-brand-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.facility-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.facility-mark .dash-icon--brand {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}

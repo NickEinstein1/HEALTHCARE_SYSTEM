@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type NursePage =
@@ -63,12 +64,28 @@ function initialsFromName(name: string) {
     .toUpperCase();
 }
 
+function obsCodeMatches(code: string | null | undefined, patterns: readonly string[]) {
+  const c = (code ?? "").toLowerCase();
+  return patterns.some((p) => c.includes(p));
+}
+
+const NURSE_VITALS_CATALOG = [
+  { key: "bp", label: "Blood Pressure", unit: "mmHg", icon: "🩸", range: "90–140 / 60–90", match: ["blood pressure", "bp"] as const },
+  { key: "hr", label: "Heart Rate", unit: "bpm", icon: "💗", range: "60–100", match: ["heart rate", "pulse", "hr"] as const },
+  { key: "rr", label: "Respiratory Rate", unit: "breaths/min", icon: "🫁", range: "12–20", match: ["respiratory", "rr"] as const },
+  { key: "temp", label: "Temperature", unit: "°C", icon: "🌡️", range: "36.1–37.2", match: ["temperature", "temp"] as const },
+  { key: "spo2", label: "SpO₂", unit: "%", icon: "🩺", range: "≥ 95", match: ["spo2", "oxygen", "o2"] as const },
+  { key: "glucose", label: "Random Glucose", unit: "mmol/L", icon: "🩸", range: "3.9–7.8", match: ["glucose", "rbg"] as const },
+  { key: "pain", label: "Pain Score", unit: "/10", icon: "😖", range: "0–10", match: ["pain"] as const },
+  { key: "avpu", label: "AVPU", unit: "", icon: "🧠", range: "A–U", match: ["avpu", "gcs"] as const },
+] as const;
+
 export function NurseDashboard() {
   const toast = useDashboardToast();
   const [patientId, setPatientId] = useState("P001");
-  const obs = usePolling(() => api.observations(patientId, 20), { intervalMs: 4000 });
-  const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 8000 });
-  const meds = usePolling(() => api.medicationRequests(patientId, 20), { intervalMs: 8000 });
+  const obs = usePolling(() => api.observations(patientId, 20, "nurse"), { intervalMs: 4000 });
+  const summary = usePolling(() => api.patientSummary(patientId, 5, "nurse"), { intervalMs: 8000 });
+  const meds = usePolling(() => api.medicationRequests(patientId, 20, "nurse"), { intervalMs: 8000 });
   const supplyRequests = usePolling(() => api.nurseSupplies(50), { intervalMs: 5000 });
   const [page, setPage] = useState<NursePage>("home");
   const [searchQuery, setSearchQuery] = useState("");
@@ -627,6 +644,42 @@ export function NurseDashboard() {
     pain: "0",
     notes: "",
   });
+  const [activeVital, setActiveVital] = useState<string | null>(null);
+
+  useEffect(() => {
+    setVitalsForm((s) => (s.patient_id === patientId ? s : { ...s, patient_id: patientId }));
+  }, [patientId]);
+
+  const nursePatientGender = useMemo((): "male" | "female" => {
+    const g = (summary.data?.patient.gender ?? "").toLowerCase();
+    return g.startsWith("f") ? "female" : "male";
+  }, [summary.data?.patient.gender]);
+
+  const nurseFigureVitals = useMemo(() => {
+    const formByKey: Record<string, string> = {
+      bp: vitalsForm.bp,
+      hr: vitalsForm.hr,
+      rr: vitalsForm.rr,
+      temp: vitalsForm.temp,
+      spo2: vitalsForm.spo2,
+      glucose: vitalsForm.glucose,
+      pain: vitalsForm.pain,
+      avpu: vitalsForm.avpu,
+    };
+    return NURSE_VITALS_CATALOG.map((v) => {
+      const formVal = formByKey[v.key]?.trim() ?? "";
+      const fromObs = (obs.data ?? []).find((o) => obsCodeMatches(o.code, v.match));
+      return {
+        key: v.key,
+        label: v.label,
+        icon: v.icon,
+        unit: v.unit,
+        range: v.range,
+        value: formVal || fromObs?.value_text || null,
+        measuredAt: fromObs?.effective_time ?? null,
+      };
+    });
+  }, [obs.data, vitalsForm]);
 
   const triageRows = useMemo(
     () => [
@@ -2518,7 +2571,8 @@ export function NurseDashboard() {
               Bed 10 (Mary K.). Next scheduled round: 12:00.
             </div>
           </div>
-          <div className="gcol3">
+          <div className="gcol3 nurse-vitals-layout">
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div className="panel">
               <div className="pnl-hd">
                 <div>
@@ -2682,6 +2736,18 @@ export function NurseDashboard() {
                 >
                   Save Vitals to EHR
                 </button>
+              </div>
+            </div>
+            </div>
+            <div className="panel nurse-vitals-figure-panel" style={{ position: "sticky", top: 10 }}>
+              <div className="pnl-bd" style={{ padding: 0 }}>
+                <BodyVitalsFigure
+                  vitals={nurseFigureVitals}
+                  gender={nursePatientGender}
+                  activeVital={activeVital}
+                  onVitalHover={setActiveVital}
+                  subtitle={`Ward 4B · ${vitalsForm.patient_id.trim() || patientId} · live preview`}
+                />
               </div>
             </div>
           </div>
@@ -3144,7 +3210,7 @@ export function NurseDashboard() {
                 <div className="sbar-label">S — Situation</div>
                 <div className="sbar-content">
                   {[
-                    { ico: "🏥", text: <><strong>Ward 4B</strong> · Morning shift 07:00–15:00 · General Medicine</> },
+                    { ico: "🏢", text: <><strong>Ward 4B</strong> · Morning shift 07:00–15:00 · General Medicine</> },
                     { ico: "👩‍⚕️", text: <>Outgoing: <strong>Nurse Atieno Achieng</strong> · NCK/RN/2021/08432</> },
                     { ico: "🔄", text: <>Incoming: <strong>Nurse Omondi</strong> (Night, 15:00–23:00)</> },
                   ].map(({ ico, text }, i) => (

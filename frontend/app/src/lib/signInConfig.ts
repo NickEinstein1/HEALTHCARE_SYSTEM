@@ -1,4 +1,5 @@
 import type { RoleKey } from "../theme/tokens";
+import { BRAND_ICON } from "../components/brand/brandIcon";
 
 export type RoleConfig = {
   ico: string;
@@ -26,7 +27,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     noteHead: "Medical Registration No. · email · password",
     noteBody: "Confirm identity via SMS or email OTP after sign-in.",
     noteClass: "grn",
-    noteIco: "🏥",
+    noteIco: BRAND_ICON,
     regLbl: "Medical Registration No.",
     regHint: "e.g. A4821 or M/12345 — as on your medical licence",
     regPH: "e.g. A4821",
@@ -43,7 +44,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     noteHead: "Nursing Registration No. · email · password",
     noteBody: "Confirm identity via SMS or email OTP after sign-in.",
     noteClass: "grn",
-    noteIco: "🏥",
+    noteIco: BRAND_ICON,
     regLbl: "Nursing Registration No.",
     regHint: "e.g. RN/12345 or CO/7890 — from your nursing certificate",
     regPH: "e.g. RN/12345",
@@ -105,7 +106,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     noteHead: "Pharmacy Registration ID · email · password",
     noteBody: "Confirm identity via email OTP after sign-in.",
     noteClass: "amb",
-    noteIco: "🏥",
+    noteIco: BRAND_ICON,
     regLbl: "Pharmacy Registration ID",
     regHint: "e.g. PHARM-00441 — as on your licence / facility roster",
     regPH: "e.g. PHARM-00441",

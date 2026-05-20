@@ -1,11 +1,26 @@
-import type { MedicationRequest, MetricsJson, Observation, PatientSummary } from "./apiTypes";
+import type {
+  AllergyIntolerance,
+  MedicationRequest,
+  MetricsJson,
+  Observation,
+  PatientSummary,
+} from "./apiTypes";
+import { authHeaders } from "./authHeaders";
 
 function apiBaseUrl() {
-  // optional: set VITE_API_BASE_URL in .env (e.g. http://localhost:8000)
+  // Staging: VITE_API_BASE_URL=http://localhost:8100 (see .env.staging.example)
   const fromEnv = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
   // Default to same-origin so Vite proxy (dev) or reverse proxy (prod)
   // can forward API requests without CORS issues.
   return (fromEnv && fromEnv.trim()) || "";
+}
+
+/** Pilot facility header for FHIR reads/writes (required when EHR_CONSENT_MODE=strict). */
+function fhirHeaders(role?: string): Record<string, string> {
+  return {
+    ...authHeaders(role),
+    "X-Facility-Id": "FAC-A",
+  };
 }
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -24,7 +39,11 @@ async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!res.ok) {
     const t = await res.text().catch(() => "");
-    throw new Error(`${res.status} ${res.statusText}${t ? ` — ${t}` : ""}`);
+    const hint =
+      res.status === 500 || res.status === 502
+        ? ` Check backend: ./scripts/run_staging.sh (gateway :8100) and frontend/app/.env with VITE_API_BASE_URL=http://localhost:8100`
+        : "";
+    throw new Error(`${res.status} ${res.statusText}${t ? ` — ${t}` : ""}${hint}`);
   }
   return (await res.json()) as T;
 }
@@ -57,15 +76,26 @@ export const api = {
   metricsJson(): Promise<MetricsJson> {
     return getJson("/metrics/json");
   },
-  patientSummary(patientId: string, encounters = 5): Promise<PatientSummary> {
-    return getJson(`/fhir/r5/Patient/${encodeURIComponent(patientId)}/summary?encounters=${encounters}`);
+  patientSummary(patientId: string, encounters = 5, role?: string): Promise<PatientSummary> {
+    return getJson(`/fhir/r5/Patient/${encodeURIComponent(patientId)}/summary?encounters=${encounters}`, {
+      headers: fhirHeaders(role),
+    });
   },
-  observations(patientId: string, limit = 20): Promise<Observation[]> {
-    return getJson(`/fhir/r5/Patient/${encodeURIComponent(patientId)}/observations?limit=${limit}`);
+  observations(patientId: string, limit = 20, role?: string): Promise<Observation[]> {
+    return getJson(`/fhir/r5/Patient/${encodeURIComponent(patientId)}/observations?limit=${limit}`, {
+      headers: fhirHeaders(role),
+    });
   },
-  medicationRequests(patientId: string, limit = 20): Promise<MedicationRequest[]> {
+  medicationRequests(patientId: string, limit = 20, role?: string): Promise<MedicationRequest[]> {
     return getJson(
-      `/fhir/r5/Patient/${encodeURIComponent(patientId)}/medication-requests?limit=${limit}`
+      `/fhir/r5/Patient/${encodeURIComponent(patientId)}/medication-requests?limit=${limit}`,
+      { headers: fhirHeaders(role) },
+    );
+  },
+  allergyIntolerances(patientId: string, limit = 20, role?: string): Promise<AllergyIntolerance[]> {
+    return getJson(
+      `/fhir/r5/Patient/${encodeURIComponent(patientId)}/allergy-intolerances?limit=${limit}`,
+      { headers: fhirHeaders(role) },
     );
   },
   ingestObservation(payload: unknown): Promise<{ status: string; resourceType?: string; id?: string }> {
@@ -323,7 +353,7 @@ export const api = {
     patient_id?: string;
   }, role: string): Promise<any> {
     return postJson("/ai/diagnosis-hints", payload, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
@@ -334,7 +364,7 @@ export const api = {
     baseline?: Record<string, { mean: number; std: number }>;
   }, role: string): Promise<any> {
     return postJson("/ai/anomaly-check", payload, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
@@ -342,7 +372,7 @@ export const api = {
     rr: number; spo2: number; sbp: number; hr: number; temp: number; gcs?: number;
   }, role: string): Promise<any> {
     return postJson("/ai/news2", vitals, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
@@ -356,12 +386,12 @@ export const api = {
     if (p.ack !== undefined) qs.set("ack", String(p.ack));
     if (p.limit)      qs.set("limit",      String(p.limit));
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
-    return getJson(`/ai/anomalies${suffix}`, { headers: { "X-UniHealth-Role": role } });
+    return getJson(`/ai/anomalies${suffix}`, { headers: authHeaders(role) });
   },
 
   aiAckAnomaly(anomalyId: string, note: string, role: string): Promise<any> {
     return postJson(`/ai/anomalies/${encodeURIComponent(anomalyId)}/ack`, { note }, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
@@ -373,36 +403,36 @@ export const api = {
     if (p.ward_id) qs.set("ward_id", p.ward_id);
     if (p.limit)   qs.set("limit",   String(p.limit));
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
-    return getJson(`/ai/patients${suffix}`, { headers: { "X-UniHealth-Role": role } });
+    return getJson(`/ai/patients${suffix}`, { headers: authHeaders(role) });
   },
 
   aiPatientVitals(simId: string, limit = 12, role = "doctor"): Promise<any[]> {
     return getJson(`/ai/patients/${encodeURIComponent(simId)}/vitals?limit=${limit}`, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
   aiPatientLabs(simId: string, role = "doctor"): Promise<any> {
     return getJson(`/ai/patients/${encodeURIComponent(simId)}/labs`, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
   /** Per-metric mean/σ/n from Phase-3 vital time-series (z-score anomalies). */
   aiPatientBaselines(simId: string, role = "doctor"): Promise<any> {
     return getJson(`/ai/patients/${encodeURIComponent(simId)}/baselines`, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
   aiWards(role = "nurse"): Promise<any[]> {
-    return getJson("/ai/wards", { headers: { "X-UniHealth-Role": role } });
+    return getJson("/ai/wards", { headers: authHeaders(role) });
   },
 
   aiWardForecast(wardId: string, hours = 24, role = "admin"): Promise<any[]> {
     return getJson(
       `/ai/wards/${encodeURIComponent(wardId)}/forecast?hours=${hours}`,
-      { headers: { "X-UniHealth-Role": role } },
+      { headers: authHeaders(role) },
     );
   },
 
@@ -410,7 +440,7 @@ export const api = {
   aiWardHistory(wardId: string, limit = 168, role = "nurse"): Promise<any[]> {
     return getJson(
       `/ai/wards/${encodeURIComponent(wardId)}/history?limit=${limit}`,
-      { headers: { "X-UniHealth-Role": role } },
+      { headers: authHeaders(role) },
     );
   },
 
@@ -420,13 +450,13 @@ export const api = {
     role = "nurse",
   ): Promise<any> {
     return postJson(`/ai/wards/${encodeURIComponent(wardId)}/census-snapshot`, payload, {
-      headers: { "X-UniHealth-Role": role },
+      headers: authHeaders(role),
     });
   },
 
   aiRecomputeForecasts(): Promise<{ status: string; training_source_by_ward: Record<string, string> }> {
     return postJson("/ai/wards/recompute-forecasts", {}, {
-      headers: { "X-UniHealth-Role": "admin" },
+      headers: authHeaders("admin"),
     });
   },
 
@@ -436,14 +466,14 @@ export const api = {
     if (p.event) qs.set("event", p.event);
     if (p.limit) qs.set("limit", String(p.limit));
     const suffix = qs.toString() ? `?${qs.toString()}` : "";
-    return getJson(`/ai/audit${suffix}`, { headers: { "X-UniHealth-Role": "admin" } });
+    return getJson(`/ai/audit${suffix}`, { headers: authHeaders("admin") });
   },
 
   aiSubmitFeedback(auditId: string, action: string, note: string, role: string): Promise<any> {
     return postJson(
       `/ai/audit/${encodeURIComponent(auditId)}/feedback`,
       { action, note },
-      { headers: { "X-UniHealth-Role": role } },
+      { headers: authHeaders(role) },
     );
   },
 };

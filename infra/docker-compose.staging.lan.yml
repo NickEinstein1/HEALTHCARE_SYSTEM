@@ -1,0 +1,22 @@
+# Optional overlay for LAN / second-device access (tablet, colleague laptop).
+# Set LAN_HOST to this machine's IP (e.g. 192.168.1.42), then:
+#
+#   export LAN_HOST=192.168.1.42
+#   docker compose -f infra/docker-compose.staging.yml \
+#     -f infra/docker-compose.staging.lan.yml \
+#     --env-file infra/.env.staging up -d --build
+#
+# Frontend on another device: copy frontend/app/.env.staging.lan.example → .env
+# and set VITE_* URLs to http://${LAN_HOST}:8100 and :8180.
+
+services:
+  keycloak:
+    environment:
+      KC_HOSTNAME: ${LAN_HOST:-localhost}
+      KC_HOSTNAME_PORT: 8180
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+
+  gateway:
+    environment:
+      EHR_OIDC_ISSUER_URL: http://${LAN_HOST:-localhost}:8180/realms/unihealth

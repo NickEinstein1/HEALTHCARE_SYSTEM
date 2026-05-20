@@ -74,3 +74,20 @@ CREATE TABLE IF NOT EXISTS medication_requests (
 
 CREATE INDEX IF NOT EXISTS idx_medreq_patient_time
     ON medication_requests(patient_id, authored_on DESC);
+
+-- AllergyIntolerance (Phase 1 — Blueprint sync)
+CREATE TABLE IF NOT EXISTS allergy_intolerances (
+    id              VARCHAR(64) PRIMARY KEY,
+    patient_id      VARCHAR(64) NOT NULL REFERENCES patients(id),
+    code            VARCHAR(128),
+    substance_text  VARCHAR(256),
+    clinical_status VARCHAR(32),
+    criticality     VARCHAR(32),
+    recorded_date   TIMESTAMPTZ,
+    resource_json   JSONB NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_allergy_patient_date
+    ON allergy_intolerances(patient_id, recorded_date DESC);

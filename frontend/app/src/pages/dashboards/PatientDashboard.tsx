@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { BRAND_ICON } from "../../components/brand/brandIcon";
+import { DashIcon } from "../../components/brand/DashIcon";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 import { ExportMenu } from "../../components/ExportMenu";
-import { HumanFigure3D } from "../../components/HumanFigure3D";
+import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 
 function fmtWhen(d: Date, hhmm: string) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -51,76 +53,6 @@ function bmiKgM2(weightKg: number | null, heightCm: number | null) {
   return weightKg / (m * m);
 }
 
-function BodyVitalsFigure(props: {
-  vitals: Array<{
-    key: string;
-    label: string;
-    icon: string;
-    unit: string;
-    range: string;
-    value: string | null;
-    measuredAt: string | null;
-  }>;
-  gender?: "male" | "female";
-  activeVital?: string | null;
-  onVitalHover?: (key: string | null) => void;
-}) {
-  const { vitals, gender = "male", activeVital, onVitalHover } = props;
-
-  // Map vitals to HumanFigure3D callout format
-  const figureVitals = useMemo(() => {
-    const regionMap: Record<string, "head" | "chest" | "abdomen" | "arm-l" | "arm-r" | "leg-l" | "leg-r"> = {
-      temp:    "head",
-      hr:      "chest",
-      rr:      "chest",
-      bp:      "arm-l",
-      spo2:    "arm-r",
-      glucose: "abdomen",
-      bmi:     "leg-l",
-      weight:  "leg-r",
-    };
-    return vitals
-      .filter((v) => regionMap[v.key])
-      .map((v) => ({
-        key:    v.key,
-        label:  v.label,
-        value:  v.value ?? "—",
-        unit:   v.unit,
-        icon:   v.icon,
-        region: regionMap[v.key]!,
-        status: (v.key === "bp" && v.value?.includes("14") ? "high" :
-                 v.key === "glucose" && Number(v.value ?? "0") > 7 ? "high" :
-                 "normal") as "normal" | "high",
-      }));
-  }, [vitals]);
-
-  return (
-    <div className="body-fig">
-      <div className="body-fig-hd">
-        <div>
-          <div className="body-fig-ti">3D Body Vitals Map</div>
-          <div className="body-fig-su">Anatomical exoskeleton · {gender === "female" ? "Female" : "Male"} · hover regions</div>
-        </div>
-        <span className="tag g dot">LIVE</span>
-      </div>
-
-      <div className="body-fig-in" style={{ position: "relative", padding: "8px 4px 4px" }}>
-        <HumanFigure3D
-          gender={gender}
-          vitals={figureVitals}
-          activeVital={activeVital ?? null}
-          onVitalHover={onVitalHover}
-        />
-      </div>
-
-      <div className="body-fig-ft">
-        <div style={{ fontSize: 10.5, color: "var(--t3)", lineHeight: 1.55 }}>
-          This visualization is a UI aid. Clinical interpretation depends on context (age, symptoms, comorbidities, and repeat measurements).
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -644,7 +576,7 @@ export function PatientDashboard() {
     () =>
       [
         { key: "appointments", label: "Appointments", sub: "Scheduling · Book, view and manage appointments", page: "appointments" as PatientPage, icon: "📅" },
-        { key: "visits", label: "Visit History", sub: "Clinical history · Encounters and facilities", page: "visits" as PatientPage, icon: "🏥" },
+        { key: "visits", label: "Visit History", sub: "Clinical history · Encounters and facilities", page: "visits" as PatientPage, icon: "📋" },
         { key: "results", label: "Test Results", sub: "Laboratory · Observations and diagnostics", page: "results" as PatientPage, icon: "🧪" },
         { key: "medications", label: "Medications", sub: "Pharmacy · Active prescriptions", page: "medications" as PatientPage, icon: "💊" },
         { key: "vitals", label: "Vitals & Trends", sub: "Monitoring · Latest vitals and charts", page: "vitals" as PatientPage, icon: "💗" },
@@ -711,7 +643,7 @@ export function PatientDashboard() {
           items: [
             { id: "home", icon: "🏠", label: "My Dashboard" },
             { id: "appointments", icon: "📅", label: "Appointments", badge: { text: "2", tone: "amber" } },
-            { id: "visits", icon: "🏥", label: "Visit History" },
+            { id: "visits", icon: "📋", label: "Visit History" },
             { id: "results", icon: "🧪", label: "Test Results" },
             { id: "medications", icon: "💊", label: "Medications" },
             { id: "vitals", icon: "💗", label: "Vitals & Trends" },
@@ -774,7 +706,7 @@ export function PatientDashboard() {
                         }}
                       >
                         <div className="ov-ico" aria-hidden>
-                          {x.icon}
+                          <DashIcon icon={x.icon} idPrefix={`search-${x.key}`} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="ov-title">{x.label}</div>
@@ -1397,7 +1329,7 @@ export function PatientDashboard() {
                         style={{ justifyContent: "space-between", textAlign: "left", width: "100%" }}
                         onClick={() => { setBookingFacility(fac); openBookModal(); }}
                       >
-                        <span>🏥 {fac}</span>
+                        <span className="facility-mark"><DashIcon icon={BRAND_ICON} idPrefix={`fac-${fac}`} /> {fac}</span>
                         <span style={{ fontSize: 10, opacity: 0.6 }}>Book →</span>
                       </button>
                     ))}
@@ -1889,6 +1821,7 @@ export function PatientDashboard() {
                     gender={patientGender}
                     activeVital={activeVital}
                     onVitalHover={setActiveVital}
+                    footerNote="This visualization is a UI aid. Clinical interpretation depends on context (age, symptoms, comorbidities, and repeat measurements)."
                   />
                 </div>
               </div>
@@ -2657,7 +2590,7 @@ export function PatientDashboard() {
               </div>
               <div className="pnl-bd">
                 <div className="consent-row">
-                  <span className="consent-ico">🏥</span>
+                  <span className="consent-ico"><DashIcon icon={BRAND_ICON} idPrefix="consent-treatment" /></span>
                   <div className="consent-body">
                     <div className="consent-ti">Treatment — Clinical Care</div>
                     <div className="consent-su">Allow clinicians at UniHealth-registered facilities to access your records for direct treatment.</div>

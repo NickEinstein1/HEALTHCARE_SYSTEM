@@ -457,16 +457,17 @@
    SIGN-IN PAGE — Responsive stacking
    ════════════════════════════════════════════════════════════════════ */
 @media (max-width: 820px) {
-  .sign-in-root { flex-direction: column !important; min-height: 100vh !important; }
-  .lp { display: none !important; }
-  .rp {
+  .sign-in-root { flex-direction: column !important; min-height: 100dvh !important; }
+  .sign-in-root .lp { display: none !important; }
+  .sign-in-root .rp {
     flex: 1 !important;
-    padding: 24px 16px !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-    min-height: 100vh;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    min-height: 100dvh;
   }
-  .card { max-width: 100% !important; border-radius: 16px !important; }
+  .sign-in-root .sign-in-mobile-brand { display: flex !important; }
+  .sign-in-root .sign-in-card-brand { display: none !important; }
+  .sign-in-root .card { max-width: 100% !important; border-radius: 16px !important; }
 }
 
 /* ════════════════════════════════════════════════════════════════════
