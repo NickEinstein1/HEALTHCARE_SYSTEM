@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="uh-g" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#00D4FF"/>
+      <stop offset="0.55" stop-color="#2B8FE8"/>
+      <stop offset="1" stop-color="#00E5A0"/>
+    </linearGradient>
+    <radialGradient id="uh-core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(32 30) rotate(90) scale(18)">
+      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#B8F0FF" stop-opacity="0.2"/>
+    </radialGradient>
+  </defs>
+  <path d="M32 6L52 16.5V30.5C52 42.8 43.2 52.6 32 57.5C20.8 52.6 12 42.8 12 30.5V16.5L32 6Z" fill="#06122a" stroke="url(#uh-g)" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="29" y="24" width="6" height="16" rx="1.5" fill="url(#uh-core)"/>
+  <rect x="24" y="29" width="16" height="6" rx="1.5" fill="url(#uh-core)"/>
+  <path d="M18 54H24L27 48L31 56L35 46L38 52H46" stroke="#00E5A0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
