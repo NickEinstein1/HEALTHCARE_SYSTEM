@@ -1,21 +1,44 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,
-    proxy: {
-      "/admin": "http://localhost:8000",
-      "/ui": "http://localhost:8000",
-      "/nurse": "http://localhost:8000",
-      "/walkins": "http://localhost:8000",
-      "/lab": "http://localhost:8000",
-      "/pharmacy": "http://localhost:8000",
-      "/fhir": "http://localhost:8000",
-      "/metrics": "http://localhost:8000",
-      "/integrations": "http://localhost:8000",
+const PROXY_PATHS = [
+  "/admin",
+  "/ai",
+  "/appointments",
+  "/auth",
+  "/consent",
+  "/ui",
+  "/nurse",
+  "/walkins",
+  "/lab",
+  "/pharmacy",
+  "/fhir",
+  "/metrics",
+  "/integrations",
+] as const;
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  // Staging compose exposes the gateway on :8100; local split dev uses :8000 via VITE_DEV_PROXY_TARGET.
+  const proxyTarget =
+    env.VITE_DEV_PROXY_TARGET?.trim() || "http://localhost:8100";
+  const proxy = Object.fromEntries(
+    PROXY_PATHS.map((path) => [
+      path,
+      {
+        target: proxyTarget,
+        changeOrigin: true,
+        ...(path === "/ai" ? { ws: true } : {}),
+      },
+    ]),
+  );
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 5173,
+      proxy,
     },
-  },
-  build: { outDir: "dist", sourcemap: true },
+    build: { outDir: "dist", sourcemap: true },
+  };
 });
