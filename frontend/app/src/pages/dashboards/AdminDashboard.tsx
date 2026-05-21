@@ -626,12 +626,14 @@ export function AdminDashboard() {
   const [kmhflCount, setKmhflCount] = useState<number | null>(null);
   const [kmhflNext, setKmhflNext] = useState<string | null>(null);
   const [kmhflResults, setKmhflResults] = useState<any[]>([]);
+  const [kmhflDemoNotice, setKmhflDemoNotice] = useState<string | null>(null);
 
   const loadKMHFL = async (opts?: { reset?: boolean }) => {
     const reset = opts?.reset ?? false;
     const nextPage = reset ? 1 : kmhflPage;
     setKmhflLoading(true);
     setKmhflError(null);
+    setKmhflDemoNotice(null);
     try {
       const res = await api.kmhflKenyaFacilities({
         search: facQ.trim() || undefined,
@@ -643,6 +645,13 @@ export function AdminDashboard() {
       const rows: any[] = Array.isArray(res?.results) ? res.results : [];
       setKmhflCount(typeof res?.count === "number" ? res.count : null);
       setKmhflNext(typeof res?.next === "string" ? res.next : null);
+      if (res?.demo_fallback) {
+        setKmhflDemoNotice(
+          "Showing pilot facility sample data. Set KMHFL_API_TOKEN (or KMHFL_USERNAME/PASSWORD) on the gateway for live MOH directory sync."
+        );
+      } else if (res?.source === "kmhfl-demo") {
+        setKmhflDemoNotice("Pilot KMHFL sample directory (MOH API credentials not configured).");
+      }
       setKmhflResults((prev) => (reset ? rows : [...prev, ...rows]));
       setKmhflPage(nextPage + 1);
     } catch (e) {
@@ -1623,6 +1632,12 @@ export function AdminDashboard() {
                   />
                 </div>
 
+                {kmhflDemoNotice ? (
+                  <div className="notice am" style={{ marginBottom: 12 }}>
+                    <span className="notice-e">ℹ️</span>
+                    <div className="notice-tx">{kmhflDemoNotice}</div>
+                  </div>
+                ) : null}
                 {kmhflError ? (
                   <div className="errbanner is-visible" role="alert">
                     <span>⚠️</span>
