@@ -1,8 +1,12 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="EHR_")
+
+    # development | staging | production — production enforces OIDC + strict consent defaults
+    deployment_env: str = "development"
 
     redis_url: str = "redis://localhost:6379/0"
     postgres_dsn: str = "postgresql://ehr:ehr_dev_password@localhost:5432/ehr"
@@ -30,6 +34,23 @@ class Settings(BaseSettings):
     oidc_audience: str = "unihealth-gateway"
     oidc_role_claim: str = "unihealth_role"
     oidc_allow_header_fallback: bool = True
+
+    @model_validator(mode="after")
+    def _apply_deployment_profile(self) -> "Settings":
+        env = (self.deployment_env or "development").strip().lower()
+        if env == "production":
+            self.consent_mode = "strict"
+            self.oidc_allow_header_fallback = False
+            if (self.oidc_issuer_url or "").strip():
+                self.oidc_enabled = True
+        elif env == "staging":
+            # Staging keeps permissive consent by default but can enable OIDC via env
+            pass
+        return self
+
+    @property
+    def is_production(self) -> bool:
+        return (self.deployment_env or "").strip().lower() == "production"
 
 
 settings = Settings()
