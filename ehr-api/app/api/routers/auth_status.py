@@ -11,10 +11,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.get("/status")
 async def auth_status():
     return {
+        "deployment_env": settings.deployment_env,
         "oidc_enabled": settings.oidc_enabled,
         "issuer": settings.oidc_issuer_url or None,
         "audience": settings.oidc_audience or None,
         "header_fallback": settings.oidc_allow_header_fallback,
+        "consent_mode": settings.consent_mode,
+        "production_profile": settings.is_production,
     }
 
 
