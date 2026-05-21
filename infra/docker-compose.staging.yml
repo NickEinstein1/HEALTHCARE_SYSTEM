@@ -95,7 +95,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        for t in ehr.patient ehr.encounter ehr.observation ehr.medication_request ehr.allergy_intolerance; do
+        for t in ehr.patient ehr.encounter ehr.observation ehr.medication_request ehr.allergy_intolerance ehr.analytics.aggregate; do
           kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic "$$t" --partitions 4 --replication-factor 1
         done
         echo "Kafka topics ready"
@@ -147,6 +147,8 @@ services:
       EHR_OIDC_JWKS_URL: http://keycloak:8080/realms/unihealth/protocol/openid-connect/certs
       EHR_OIDC_AUDIENCE: account
       EHR_OIDC_ALLOW_HEADER_FALLBACK: "true"
+      KMHFL_BASE_URL: https://api.kmhfr.health.go.ke
+      KMHFL_USE_DEMO_FALLBACK: "true"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
       interval: 10s
