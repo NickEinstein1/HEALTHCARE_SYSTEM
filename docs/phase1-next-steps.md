@@ -21,14 +21,18 @@
 2. `./scripts/setup_frontend_staging.sh` && `cd frontend/app && npm run dev` — UI on **:5173**
 3. [runbook-staging.md](runbook-staging.md) — tablet on Wi‑Fi, cloud VM, smoke checks
 
-## What to run next (Blueprint Phase 2)
+## Phase 2 (in progress — hospital onboarding later)
 
-| Priority | Item                                                       |
-| -------- | ---------------------------------------------------------- |
-| 1        | Production deploy pattern (K8s/K3s edge, TLS reverse proxy) |
-| 2        | Production OIDC hardening (mTLS, no password grant, no header fallback) |
-| 3        | Patient mobile app MVP                                     |
-| 4        | National analytics aggregates pipeline                     |
-| 5        | Consent engine hardening (FHIR `Consent` resource)         |
+Platform work is underway; **per-hospital enrollment is deferred**.
+
+| Priority | Item | Status |
+| -------- | ---- | ------ |
+| 1 | Production deploy (K8s, TLS) | Scaffolded — [phase2-production.md](phase2-production.md), `deploy/k8s/base/` |
+| 2 | Production OIDC hardening | `EHR_DEPLOYMENT_ENV=production` profile |
+| 3 | Patient mobile app MVP | Planned — [phase2-patient-app.md](phase2-patient-app.md) |
+| 4 | National analytics aggregates | Scaffolded — [phase2-analytics.md](phase2-analytics.md) |
+| 5 | FHIR `Consent` resource | API live — `GET/POST /fhir/r5/Consent` |
+
+**Plan:** [phase2-plan.md](phase2-plan.md) · **Smoke:** `./scripts/smoke_phase2.sh`
 
 Do **not** treat the in-repo **“Phase 3 AI Assist”** pilot as Blueprint Phase 3 — see root README and [UniHealth-EHR-Blueprint.md](UniHealth-EHR-Blueprint.md) §5.

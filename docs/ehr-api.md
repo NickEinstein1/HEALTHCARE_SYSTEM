@@ -116,6 +116,17 @@ curl -s -X POST "http://localhost:8000/ai/integration/hl7/adt" \
 
 Use JSON field ``message`` (alias ``raw``) for ER7 text. Optional ``ward_id_override`` if PV1-3 does not include a simulated ward token. Optional ``idempotency_key``; otherwise the inferred **MSH-10** adjacent to ``ADT^…`` dedupes repeats. Non-delta ADT triggers return ``{"status":"ignored"}``.
 
+## Kenya KMHFL directory (Admin facilities)
+
+Proxy: `GET /integrations/kmhfl/facilities` — upstream **`https://api.kmhfr.health.go.ke`** (not the legacy `kmhfl.health.go.ke` UI host).
+
+| Variable | Purpose |
+| -------- | ------- |
+| `KMHFL_BASE_URL` | API host (default `https://api.kmhfr.health.go.ke`) |
+| `KMHFL_USE_DEMO_FALLBACK` | `true` = pilot sample facilities when MOH token missing (default in staging) |
+| `KMHFL_API_TOKEN` | Django REST token (`Authorization: Token …`) |
+| `KMHFL_USERNAME` / `KMHFL_PASSWORD` | Login via `/api/rest-auth/login/` (email + password) |
+
 ## Later (Phase 2+)
 
 This service is intended to be replaced or wrapped by **HAPI FHIR R5** for full FHIR compliance; the latency pattern (Redis → Postgres) remains the same.
