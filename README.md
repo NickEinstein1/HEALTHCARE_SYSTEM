@@ -120,7 +120,8 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 | [docs/](docs/)               | **All documentation** — [index](docs/README.md), blueprint, runbooks, component guides |
 | [infra/](infra/)             | Docker Compose (Kafka, Redis, PostgreSQL)                                                |
 | [ehr-api/](ehr-api/)         | Edge FHIR gateway (FastAPI; Redis → Postgres) + **Phase 3** `/ai` simulator                |
-| [frontend/](frontend/)       | React clinician portals (Doctor / Nurse / Admin; consumes gateway)                       |
+| [frontend/](frontend/)       | React web portals (staff + patient dashboard; consumes gateway)                            |
+| [patient-app/](patient-app/) | Expo mobile patient app (same design + API as web patient portal)                        |
 | [edge-pipeline/](edge-pipeline/) | Kafka consumer → Redis + Postgres                                                    |
 | [load-tests/](load-tests/)   | k6 latency test                                                                          |
 | [scripts/](scripts/)         | Seed data, Kafka producer, **Phase 3 AI smoke** (`smoke_phase3_ai.sh`), full flow         |
@@ -138,6 +139,16 @@ cd frontend/app && npm install && npm run dev
 Ensure the gateway is listening on **`http://localhost:8000`** while using the Vite dev server (proxies **`/ai`**, **`/fhir`**, **`/appointments`**, **`/consent`**, etc.).
 
 Production build checks run in CI (`npm run lint` + `npm run build`).
+
+## Patient mobile app
+
+Expo app under **[patient-app/](patient-app/)** — mirrors the web **Patient Portal** (green hero, panels, FHIR data, appointments, consent). With staging running:
+
+```bash
+cd patient-app && cp .env.example .env && npm install && npx expo start
+```
+
+Use `EXPO_PUBLIC_API_BASE_URL=http://localhost:8100` (or your LAN IP on a physical device). Details: **[patient-app/README.md](patient-app/README.md)**.
 
 ## Phase 1 success criteria
 
