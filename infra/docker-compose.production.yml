@@ -1,0 +1,26 @@
+# Production-oriented overlay — use with staging compose file and production env.
+# Hospital-specific edge nodes are onboarded later; this is the regional control-plane pattern.
+#
+#   docker compose -f infra/docker-compose.staging.yml \
+#     -f infra/docker-compose.production.yml \
+#     --env-file infra/.env.production up -d --build
+
+services:
+  gateway:
+    environment:
+      EHR_DEPLOYMENT_ENV: production
+      EHR_CONSENT_MODE: strict
+      EHR_OIDC_ENABLED: "true"
+      EHR_OIDC_ALLOW_HEADER_FALLBACK: "false"
+    # Bind localhost only when nginx terminates TLS on the same host:
+    # ports:
+    #   - "127.0.0.1:8100:8000"
+
+  kafka-init:
+    command:
+      - |
+        for t in ehr.patient ehr.encounter ehr.observation ehr.medication_request ehr.allergy_intolerance ehr.analytics.aggregate; do
+          kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic "$$t" --partitions 4 --replication-factor 1
+        done
+        echo "Kafka topics ready (incl. analytics aggregate)"
+    restart: "no"
