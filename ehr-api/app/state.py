@@ -5,13 +5,9 @@ from typing import Any
 # Generic UI action log (Phase 1 UI)
 ui_actions: list[dict] = []
 
-# Integration: Kenya MOH Master Facility List (KMHFL)
+# Integration: Kenya MOH Master Facility List (KMHFL / KMHFR)
 kmhfl_cache: dict[str, tuple[float, dict]] = {}
 KMHFL_TTL_S = 300.0
-
-
-def kmhfl_base_url() -> str:
-    return (os.getenv("KMHFL_BASE_URL") or "https://kmhfl.health.go.ke").rstrip("/")
 
 
 # ----- Lab portal (Phase 1 UI, in-memory) -----
