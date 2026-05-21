@@ -368,3 +368,36 @@ async def revoke_consent(patient_id: str, facility_id: str, scope: str) -> int:
             return int(result.split()[-1])
         except Exception:
             return 0
+
+
+async def get_active_consent_by_resource_id(consent_resource_id: str) -> dict | None:
+    """Lookup active consent row by FHIR logical id (consent-{patient}-{facility}-{scope})."""
+    pool = _require_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            """
+            SELECT patient_id, facility_id, scope, active, granted_at
+            FROM consents
+            WHERE active = TRUE
+              AND ('consent-' || patient_id || '-' || facility_id || '-' || scope) = $1
+            LIMIT 1
+            """,
+            consent_resource_id,
+        )
+        return dict(row) if row else None
+
+
+async def list_active_consents_for_patient(patient_id: str) -> list[dict]:
+    """Return active consent rows for FHIR Consent search."""
+    pool = _require_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT patient_id, facility_id, scope, active, granted_at
+            FROM consents
+            WHERE patient_id = $1 AND active = TRUE
+            ORDER BY granted_at DESC
+            """,
+            patient_id,
+        )
+        return [dict(r) for r in rows]
