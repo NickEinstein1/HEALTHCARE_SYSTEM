@@ -1,9 +1,10 @@
+import os
 import time
 
-import httpx
 from fastapi import APIRouter, HTTPException, Query
 
-from app.state import KMHFL_TTL_S, kmhfl_base_url, kmhfl_cache
+from app.kmhfl_client import fetch_kmhfl_facilities, kmhfl_base_url
+from app.state import KMHFL_TTL_S, kmhfl_cache
 
 router = APIRouter()
 
@@ -19,37 +20,45 @@ async def kmhfl_facilities(
     page: int = Query(default=1, ge=1, le=5000),
 ):
     base = kmhfl_base_url()
-    url = f"{base}/api/facilities/facilities/"
-    params: dict[str, str] = {"page": str(page), "page_size": str(limit)}
-    if search:
-        params["search"] = search
-    if name:
-        params["name"] = name
-    if code:
-        params["code"] = code
-    if is_published is not None:
-        params["is_published"] = "true" if is_published else "false"
-    if is_classified is not None:
-        params["is_classified"] = "true" if is_classified else "false"
-
-    key = f"{url}?{sorted(params.items())}"
+    params_key = {
+        "search": search,
+        "name": name,
+        "code": code,
+        "is_published": is_published,
+        "is_classified": is_classified,
+        "limit": limit,
+        "page": page,
+    }
+    key = f"{base}?{sorted((k, str(v)) for k, v in params_key.items())}"
     now = time.time()
     cached = kmhfl_cache.get(key)
     if cached and (now - cached[0]) < KMHFL_TTL_S:
         return {"source": "kmhfl", "cached": True, "base_url": base, **cached[1]}
 
     try:
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            resp = await client.get(url, params=params, headers={"Accept": "application/json"})
+        data = await fetch_kmhfl_facilities(
+            search=search,
+            name=name,
+            code=code,
+            is_published=is_published,
+            is_classified=is_classified,
+            limit=limit,
+            page=page,
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"KMHFL fetch failed: {e}")
+        raise HTTPException(status_code=502, detail=f"KMHFL fetch failed: {e}") from e
 
-    if resp.status_code >= 400:
-        raise HTTPException(status_code=502, detail=f"KMHFL returned {resp.status_code}: {resp.text[:400]}")
-
-    data = resp.json()
-    if not isinstance(data, dict):
-        data = {"results": data}
+    source = "kmhfl-demo" if data.get("demo_fallback") else "kmhfl"
     kmhfl_cache[key] = (now, data)
-    return {"source": "kmhfl", "cached": False, "base_url": base, **data}
-
+    return {
+        "source": source,
+        "cached": False,
+        "base_url": base,
+        "auth_configured": bool(
+            (os.getenv("KMHFL_API_TOKEN") or "").strip()
+            or ((os.getenv("KMHFL_USERNAME") or "").strip() and (os.getenv("KMHFL_PASSWORD") or "").strip())
+        ),
+        **data,
+    }
