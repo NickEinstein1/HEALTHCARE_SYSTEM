@@ -10,7 +10,7 @@
 | Production OIDC + strict consent profile | **Implemented** | `EHR_DEPLOYMENT_ENV=production` |
 | FHIR `Consent` API | **Implemented** | `GET/POST /fhir/r5/Consent`, search by patient |
 | National analytics pipeline | **Scaffolded** | Topic `ehr.analytics.aggregate`, `analytics-pipeline/` consumer |
-| Patient mobile app MVP | **Planned** | See [phase2-patient-app.md](phase2-patient-app.md) |
+| Patient mobile app MVP | **In progress** | Expo app in `patient-app/` — see [phase2-patient-app.md](phase2-patient-app.md) |
 | Per-hospital K3s edge onboarding | **Later** | Registry, facility IDs, site agents |
 
 ## What was added in the repo
