@@ -147,6 +147,10 @@ Production build checks run in CI (`npm run lint` + `npm run build`).
 
 See [docs/phase1-plan.md](docs/phase1-plan.md) for full scope and timeline.
 
+## Phase 2 (in progress)
+
+National platform scaffold (production profile, FHIR Consent, K8s deploy, analytics topic). **Hospital onboarding comes later.** See **[docs/phase2-plan.md](docs/phase2-plan.md)**.
+
 ## Phase 3 AI Assist pilot (integrated)
 
 Phase 3 lives on the **same gateway** (`ehr-api`). It exposes `/ai/*` (diagnosis hints, anomalies, NEWS2, **ward occupancy + bed forecasts**, WebSocket alerts) with an in-memory simulator that bootstraps on startup.

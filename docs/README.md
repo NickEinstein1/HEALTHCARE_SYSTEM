@@ -17,7 +17,16 @@ All project Markdown lives here (except the repository root **[README.md](../REA
 | [phase1-plan.md](phase1-plan.md) | Scope and repo layout |
 | [phase1-complete.md](phase1-complete.md) | Sign-off and verification |
 | [phase1-staging.md](phase1-staging.md) | Staging compose and env |
-| [phase1-next-steps.md](phase1-next-steps.md) | After Phase 1 |
+| [phase1-next-steps.md](phase1-next-steps.md) | Handoff to Phase 2 |
+
+## Phase 2 (platform — hospitals onboard later)
+
+| Doc | Purpose |
+| --- | ------- |
+| [phase2-plan.md](phase2-plan.md) | Status and what was added |
+| [phase2-production.md](phase2-production.md) | TLS, OIDC, `EHR_DEPLOYMENT_ENV=production` |
+| [phase2-analytics.md](phase2-analytics.md) | Aggregate Kafka topic (no PII) |
+| [phase2-patient-app.md](phase2-patient-app.md) | Mobile MVP scope (planned) |
 
 ## Components
 
