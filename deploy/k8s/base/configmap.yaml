@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-config
+  namespace: unihealth
+data:
+  EHR_DEPLOYMENT_ENV: production
+  EHR_CONSENT_MODE: strict
+  EHR_OIDC_ENABLED: "true"
+  EHR_OIDC_ALLOW_HEADER_FALLBACK: "false"
+  EHR_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  EHR_REDIS_URL: redis://redis:6379/0
+  # Set via Secret or external secrets operator in real deploy:
+  # EHR_POSTGRES_DSN, EHR_OIDC_ISSUER_URL, EHR_OIDC_JWKS_URL, EHR_OIDC_AUDIENCE

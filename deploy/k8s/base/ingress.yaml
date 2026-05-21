@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: unihealth-gateway
+  namespace: unihealth
+  annotations:
+    # Use cert-manager in production, e.g. cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.unihealth.example
+      secretName: unihealth-api-tls
+  rules:
+    - host: api.unihealth.example
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ehr-gateway
+                port:
+                  number: 80
