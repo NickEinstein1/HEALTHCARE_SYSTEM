@@ -12,6 +12,7 @@ from app.ingestion import (
     send_patient,
 )
 from app.models import AllergyIntolerance, MedicationRequest, Observation, PatientSummary
+from app.consent_fhir import consent_id, parse_fhir_consent, row_to_fhir_consent
 from app.store import (
     get_allergies_from_cache,
     get_allergies_from_db,
@@ -21,8 +22,10 @@ from app.store import (
     get_observations_from_db,
     get_summary_from_cache,
     get_summary_from_db,
+    get_active_consent_by_resource_id,
     grant_consent,
     has_active_consent,
+    list_active_consents_for_patient,
     patient_exists,
     revoke_consent,
     set_allergies_in_cache,
@@ -108,6 +111,72 @@ async def consent_grant(payload: dict = Body(...)):
     except asyncpg.PostgresError as e:
         raise HTTPException(status_code=400, detail=f"Database error: {e}")
     return {"status": "granted", "patient_id": patient_id, "facility_id": facility_id, "scope": scope}
+
+
+@router.get(
+    "/fhir/r5/Consent",
+    summary="Search active Consent resources for a patient (FHIR R5 JSON Bundle)",
+)
+async def consent_search(patient: str = Query(..., description="Patient id (e.g. P001)")):
+    rows = await list_active_consents_for_patient(patient)
+    entries = [
+        {
+            "fullUrl": f"Consent/{consent_id(r['patient_id'], r['facility_id'], r['scope'])}",
+            "resource": row_to_fhir_consent(
+                patient_id=r["patient_id"],
+                facility_id=r["facility_id"],
+                scope=r["scope"],
+                active=True,
+                granted_at=r.get("granted_at"),
+            ),
+        }
+        for r in rows
+    ]
+    return {
+        "resourceType": "Bundle",
+        "type": "searchset",
+        "total": len(entries),
+        "entry": entries,
+    }
+
+
+@router.get(
+    "/fhir/r5/Consent/{consent_resource_id}",
+    summary="Read a single FHIR Consent by logical id",
+)
+async def consent_read(consent_resource_id: str):
+    row = await get_active_consent_by_resource_id(consent_resource_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Consent not found")
+    return row_to_fhir_consent(
+        patient_id=row["patient_id"],
+        facility_id=row["facility_id"],
+        scope=row["scope"],
+        active=True,
+        granted_at=row.get("granted_at"),
+    )
+
+
+@router.post(
+    "/fhir/r5/Consent",
+    status_code=201,
+    summary="Create/update consent from FHIR Consent resource (grants active permit)",
+)
+async def consent_ingest_fhir(resource: dict = Body(...)):
+    try:
+        patient_id, facility_id, scope = parse_fhir_consent(resource)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    if not await patient_exists(patient_id):
+        raise HTTPException(status_code=404, detail="Patient not found")
+    await grant_consent(patient_id=patient_id, facility_id=facility_id, scope=scope)
+    body = row_to_fhir_consent(
+        patient_id=patient_id,
+        facility_id=facility_id,
+        scope=scope,
+        active=True,
+    )
+    return body
 
 
 @router.post("/consent/revoke", status_code=200, summary="Revoke consent for (patient, facility, scope).")
