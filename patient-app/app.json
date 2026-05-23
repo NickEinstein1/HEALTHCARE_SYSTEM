@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "UniHealth Mobile App",
+    "slug": "unihealth-patient",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0a4a26"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ke.go.health.unihealth.patient"
+    },
+    "android": {
+      "package": "ke.go.health.unihealth.patient"
+    }
+  }
+}
