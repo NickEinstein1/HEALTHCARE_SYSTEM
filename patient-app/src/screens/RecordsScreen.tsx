@@ -1,0 +1,58 @@
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { PageHeader } from "../components/PageHeader";
+import { Panel } from "../components/ui/Panel";
+import { PrimaryButton } from "../components/ui/Buttons";
+import { Tag } from "../components/ui/Tag";
+import { usePatient } from "../context/PatientContext";
+import { HEALTH_RECORDS } from "../lib/patientPortalData";
+import { displayAflId } from "../lib/patientPortalData";
+import { colors } from "../theme/colors";
+import { fonts } from "../theme/typography";
+
+export function RecordsScreen() {
+  const { patientId, toast } = usePatient();
+
+  const Section = ({
+    title,
+    items,
+  }: {
+    title: string;
+    items: { icon: string; name: string; meta: string; tag: string }[];
+  }) => (
+    <Panel title={title}>
+      {items.map((item) => (
+        <View key={item.name} style={styles.item}>
+          <Text style={styles.ico}>{item.icon}</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.meta}>{item.meta}</Text>
+          </View>
+          <Tag label={item.tag} tone={item.tag === "Active" ? "red" : item.tag === "Current" ? "green" : "amber"} />
+        </View>
+      ))}
+    </Panel>
+  );
+
+  return (
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <PageHeader
+        eyebrow="FHIR R5 · KDPA"
+        title="Health Records"
+        subtitle={`Longitudinal record · ${displayAflId(patientId)}`}
+      />
+      <PrimaryButton label="Export Records" onPress={() => toast("Exporting FHIR bundle (PDF/CSV)…")} style={{ marginBottom: 14 }} />
+      <Section title="Diagnoses & conditions" items={HEALTH_RECORDS.diagnoses} />
+      <Section title="Allergies & alerts" items={HEALTH_RECORDS.allergies} />
+      <Section title="Immunisations" items={HEALTH_RECORDS.immunisations} />
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  scroll: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: 16, paddingBottom: 32 },
+  item: { flexDirection: "row", gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.bdr },
+  ico: { fontSize: 20 },
+  name: { fontFamily: fonts.sansExtra, fontSize: 12.5, color: colors.t1 },
+  meta: { fontFamily: fonts.sans, fontSize: 11, color: colors.t3, marginTop: 2 },
+});
