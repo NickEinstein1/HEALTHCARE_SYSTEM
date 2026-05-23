@@ -138,3 +138,33 @@ def complete_appointment(apt_id: str):
             r["updated_at"] = time.time()
             return {"status": "completed", "id": apt_id}
     raise HTTPException(404, f"Appointment {apt_id} not found")
+
+
+@router.put("/{apt_id}")
+def update_appointment(apt_id: str, payload: dict):
+    for r in state.appointments:
+        if r["id"] == apt_id:
+            for key in ("patient_id", "patient_name", "facility", "department", "date", "time", "notes", "status"):
+                if key in payload and payload[key] is not None:
+                    val = payload[key]
+                    if key == "status":
+                        st = str(val).strip().lower()
+                        if st and st not in VALID_STATUSES:
+                            raise HTTPException(400, f"invalid status: {val}")
+                        r["status"] = st
+                    elif key == "time":
+                        r["time"] = str(val).strip()
+                    else:
+                        r[key] = str(val).strip() if isinstance(val, str) else val
+            r["updated_at"] = time.time()
+            return {"status": "updated", "id": apt_id, "appointment": r}
+    raise HTTPException(404, f"Appointment {apt_id} not found")
+
+
+@router.delete("/{apt_id}")
+def delete_appointment(apt_id: str):
+    for i, r in enumerate(state.appointments):
+        if r["id"] == apt_id:
+            state.appointments.pop(i)
+            return {"status": "deleted", "id": apt_id}
+    raise HTTPException(404, f"Appointment {apt_id} not found")
