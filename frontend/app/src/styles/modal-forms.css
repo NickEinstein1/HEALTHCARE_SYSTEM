@@ -1,0 +1,110 @@
+/**
+ * Readable popup / modal forms on dark dashboards (all roles).
+ * Overrides inline white backgrounds on [role="dialog"] and standard .modal shells.
+ */
+
+.main [role="dialog"],
+.main .modal,
+.modal-card {
+  background: rgba(4, 14, 34, 0.98) !important;
+  border: 1px solid rgba(0, 210, 255, 0.2) !important;
+  border-radius: 16px !important;
+  color: rgba(220, 240, 255, 0.92) !important;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.75),
+    0 0 40px rgba(0, 180, 216, 0.06) !important;
+}
+
+.modal-card {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+  overflow: hidden;
+}
+
+.modal-su,
+.modal-sub {
+  font-size: 11.5px;
+  color: rgba(140, 190, 230, 0.85) !important;
+  margin-top: 3px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.main [role="dialog"] .ff label,
+.modal .ff label,
+.modal-card .ff label,
+.panel-editor .ff label {
+  color: rgba(160, 200, 230, 0.95) !important;
+  font-weight: 700;
+}
+
+.main [role="dialog"] input,
+.main [role="dialog"] textarea,
+.main [role="dialog"] select,
+.modal input,
+.modal textarea,
+.modal select,
+.modal-card input,
+.modal-card textarea,
+.modal-card select,
+.panel-editor input,
+.panel-editor textarea,
+.panel-editor select {
+  background: rgba(8, 18, 42, 0.9) !important;
+  border: 1.5px solid rgba(0, 210, 255, 0.22) !important;
+  color: rgba(220, 240, 255, 0.95) !important;
+}
+
+.main [role="dialog"] input::placeholder,
+.main [role="dialog"] textarea::placeholder,
+.modal input::placeholder,
+.modal textarea::placeholder {
+  color: rgba(120, 170, 210, 0.55) !important;
+}
+
+.main [role="dialog"] input:focus,
+.main [role="dialog"] textarea:focus,
+.main [role="dialog"] select:focus,
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
+  border-color: rgba(0, 210, 255, 0.55) !important;
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.12) !important;
+  outline: none !important;
+}
+
+.main [role="dialog"] select option,
+.modal select option {
+  background: #05091a;
+  color: rgba(220, 240, 255, 0.92);
+}
+
+.main [role="dialog"] [style*="font-weight: 950"],
+.main [role="dialog"] [style*="font-weight: 800"] {
+  color: #ddf0ff !important;
+}
+
+.panel-editor {
+  background: rgba(4, 14, 34, 0.72) !important;
+  border: 1px solid rgba(0, 210, 255, 0.14) !important;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.panel-editor .pnl-title,
+.panel-editor .pnl-ti {
+  color: #ddf0ff !important;
+}
+
+.panel-editor .pnl-sub,
+.panel-editor .pnl-su {
+  color: rgba(140, 190, 230, 0.8) !important;
+}
+
+.crud-row-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
