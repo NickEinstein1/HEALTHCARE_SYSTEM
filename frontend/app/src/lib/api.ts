@@ -107,11 +107,23 @@ export const api = {
   nurseIncidents(limit = 50): Promise<any[]> {
     return getJson(`/nurse/incidents?limit=${limit}`);
   },
+  nurseIncidentUpdate(incidentId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/incidents/${encodeURIComponent(incidentId)}`, payload, { method: "PUT" });
+  },
+  nurseIncidentDelete(incidentId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/incidents/${encodeURIComponent(incidentId)}`, {}, { method: "DELETE" });
+  },
   nurseSupplyRequest(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/supplies", payload);
   },
   nurseSupplies(limit = 50): Promise<any[]> {
     return getJson(`/nurse/supplies?limit=${limit}`);
+  },
+  nurseSupplyUpdate(reqId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/supplies/${encodeURIComponent(reqId)}`, payload, { method: "PUT" });
+  },
+  nurseSupplyDelete(reqId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/supplies/${encodeURIComponent(reqId)}`, {}, { method: "DELETE" });
   },
   nurseTaskCreate(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/tasks", payload);
@@ -122,11 +134,23 @@ export const api = {
   nurseTasks(limit = 200): Promise<any[]> {
     return getJson(`/nurse/tasks?limit=${limit}`);
   },
+  nurseTaskUpdate(taskId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/tasks/${encodeURIComponent(taskId)}`, payload, { method: "PUT" });
+  },
+  nurseTaskDelete(taskId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/tasks/${encodeURIComponent(taskId)}`, {}, { method: "DELETE" });
+  },
   nurseFluidCreate(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/fluids", payload);
   },
   nurseFluids(limit = 200): Promise<any[]> {
     return getJson(`/nurse/fluids?limit=${limit}`);
+  },
+  nurseFluidUpdate(entryId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/fluids/${encodeURIComponent(entryId)}`, payload, { method: "PUT" });
+  },
+  nurseFluidDelete(entryId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/fluids/${encodeURIComponent(entryId)}`, {}, { method: "DELETE" });
   },
   nurseWoundCreate(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/wounds", payload);
@@ -134,11 +158,23 @@ export const api = {
   nurseWounds(limit = 200): Promise<any[]> {
     return getJson(`/nurse/wounds?limit=${limit}`);
   },
+  nurseWoundUpdate(entryId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/wounds/${encodeURIComponent(entryId)}`, payload, { method: "PUT" });
+  },
+  nurseWoundDelete(entryId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/wounds/${encodeURIComponent(entryId)}`, {}, { method: "DELETE" });
+  },
   nurseHandoverSubmit(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/handover", payload);
   },
   nurseHandover(limit = 50): Promise<any[]> {
     return getJson(`/nurse/handover?limit=${limit}`);
+  },
+  nurseHandoverUpdate(noteId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/handover/${encodeURIComponent(noteId)}`, payload, { method: "PUT" });
+  },
+  nurseHandoverDelete(noteId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/nurse/handover/${encodeURIComponent(noteId)}`, {}, { method: "DELETE" });
   },
   // ---- Lab portal (Phase 1 UI) ----
   labOrders(limit = 200): Promise<any[]> {
@@ -147,11 +183,35 @@ export const api = {
   labOrderCreate(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/lab/orders", payload);
   },
+  labOrderUpdate(orderId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/orders/${encodeURIComponent(orderId)}`, payload, { method: "PUT" });
+  },
+  labOrderDelete(orderId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/orders/${encodeURIComponent(orderId)}`, {}, { method: "DELETE" });
+  },
   labResults(limit = 200): Promise<any[]> {
     return getJson(`/lab/results?limit=${encodeURIComponent(String(limit))}`);
   },
+  labResultCreate(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/lab/results", payload);
+  },
+  labResultUpdate(resultId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/results/${encodeURIComponent(resultId)}`, payload, { method: "PUT" });
+  },
+  labResultDelete(resultId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/results/${encodeURIComponent(resultId)}`, {}, { method: "DELETE" });
+  },
   labQc(limit = 200): Promise<any[]> {
     return getJson(`/lab/qc?limit=${encodeURIComponent(String(limit))}`);
+  },
+  labQcCreate(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/lab/qc", payload);
+  },
+  labQcUpdate(qcId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/qc/${encodeURIComponent(qcId)}`, payload, { method: "PUT" });
+  },
+  labQcDelete(qcId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/qc/${encodeURIComponent(qcId)}`, {}, { method: "DELETE" });
   },
   labImagingOrders(limit = 200): Promise<any[]> {
     return getJson(`/lab/imaging?limit=${encodeURIComponent(String(limit))}`);
@@ -159,9 +219,24 @@ export const api = {
   labImagingCreate(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/lab/imaging", payload);
   },
+  labImagingUpdate(imgId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/imaging/${encodeURIComponent(imgId)}`, payload, { method: "PUT" });
+  },
+  labImagingDelete(imgId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/lab/imaging/${encodeURIComponent(imgId)}`, {}, { method: "DELETE" });
+  },
   // ---- Pharmacy portal (Phase 1 UI) ----
   pharmacyPrescriptions(limit = 200): Promise<any[]> {
     return getJson(`/pharmacy/prescriptions?limit=${encodeURIComponent(String(limit))}`);
+  },
+  pharmacyPrescriptionCreate(payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson("/pharmacy/prescriptions", payload);
+  },
+  pharmacyPrescriptionUpdate(rxId: string, payload: unknown): Promise<{ status: string; id?: string }> {
+    return postJson(`/pharmacy/prescriptions/${encodeURIComponent(rxId)}`, payload, { method: "PUT" });
+  },
+  pharmacyPrescriptionDelete(rxId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/pharmacy/prescriptions/${encodeURIComponent(rxId)}`, {}, { method: "DELETE" });
   },
   pharmacyVerify(rxId: string): Promise<{ status: string; id?: string }> {
     return postJson(`/pharmacy/prescriptions/${encodeURIComponent(rxId)}/verify`, {});
@@ -174,6 +249,9 @@ export const api = {
   },
   pharmacyStockAdjust(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/pharmacy/stock/adjust", payload);
+  },
+  pharmacyStockDelete(itemName: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/pharmacy/stock/${encodeURIComponent(itemName)}`, {}, { method: "DELETE" });
   },
   pharmacyAudit(limit = 200): Promise<any[]> {
     return getJson(`/pharmacy/audit?limit=${encodeURIComponent(String(limit))}`);
@@ -207,6 +285,12 @@ export const api = {
   },
   appointmentCancel(aptId: string, reason?: string): Promise<{ status: string; id?: string }> {
     return postJson(`/appointments/${encodeURIComponent(aptId)}/cancel`, { reason: reason ?? "" });
+  },
+  appointmentUpdate(aptId: string, payload: unknown): Promise<{ status: string; id?: string; appointment?: any }> {
+    return postJson(`/appointments/${encodeURIComponent(aptId)}`, payload, { method: "PUT" });
+  },
+  appointmentDelete(aptId: string): Promise<{ status: string; id?: string }> {
+    return postJson(`/appointments/${encodeURIComponent(aptId)}`, {}, { method: "DELETE" });
   },
 
   uiAction(payload: unknown): Promise<{ status: string; id?: string }> {
