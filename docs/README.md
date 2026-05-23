@@ -26,7 +26,7 @@ All project Markdown lives here (except the repository root **[README.md](../REA
 | [phase2-plan.md](phase2-plan.md) | Status and what was added |
 | [phase2-production.md](phase2-production.md) | TLS, OIDC, `EHR_DEPLOYMENT_ENV=production` |
 | [phase2-analytics.md](phase2-analytics.md) | Aggregate Kafka topic (no PII) |
-| [phase2-patient-app.md](phase2-patient-app.md) | Mobile MVP scope (planned) |
+| [phase2-patient-app.md](phase2-patient-app.md) | Mobile patient app (Expo, `patient-app/`) |
 
 ## Components
 
