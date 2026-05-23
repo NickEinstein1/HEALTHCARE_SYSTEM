@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { CrudRowActions } from "../../components/CrudRowActions";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type LabPage =
@@ -67,12 +68,31 @@ export function LabDashboard() {
   };
 
   const [newOrderOpen, setNewOrderOpen] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [orderForm, setOrderForm] = useState({
     patient_id: "P001",
     afl_id: "AFL-78841209",
     panel: "U&E",
     priority: "Routine",
+    status: "Requested",
   });
+
+  const openOrderModal = (row?: Record<string, unknown>) => {
+    if (row) {
+      setEditingOrderId(String(row.id ?? ""));
+      setOrderForm({
+        patient_id: String(row.patient_id ?? "P001"),
+        afl_id: String(row.afl_id ?? ""),
+        panel: String(row.panel ?? "U&E"),
+        priority: String(row.priority ?? "Routine"),
+        status: String(row.status ?? "Requested"),
+      });
+    } else {
+      setEditingOrderId(null);
+      setOrderForm({ patient_id: "P001", afl_id: "AFL-78841209", panel: "U&E", priority: "Routine", status: "Requested" });
+    }
+    setNewOrderOpen(true);
+  };
 
   const [newImagingOpen, setNewImagingOpen] = useState(false);
   const [imagingForm, setImagingForm] = useState({
@@ -288,7 +308,7 @@ export function LabDashboard() {
             <div className="ph-title">Sample Collection</div>
             <div className="ph-sub">Create and track specimen collection requests.</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => setNewOrderOpen(true)}>
+          <button className="btn-p" type="button" onClick={() => openOrderModal()}>
             + Create collection order
           </button>
         </div>
@@ -304,6 +324,7 @@ export function LabDashboard() {
                   <th className="mono">Patient</th>
                   <th>Panel</th>
                   <th>Status</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -314,6 +335,21 @@ export function LabDashboard() {
                     <td style={{ fontWeight: 800 }}>{o.panel}</td>
                     <td>
                       <span className="tag grey">{o.status}</span>
+                    </td>
+                    <td>
+                      <CrudRowActions
+                        onEdit={() => openOrderModal(o)}
+                        onDelete={async () => {
+                          if (!window.confirm(`Delete order ${o.id}?`)) return;
+                          try {
+                            await api.labOrderDelete(String(o.id));
+                            orders.refresh();
+                            toast("Order deleted.");
+                          } catch (e) {
+                            toast(e instanceof Error ? e.message : "Delete failed");
+                          }
+                        }}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -344,6 +380,7 @@ export function LabDashboard() {
                   <th>Panel</th>
                   <th>Priority</th>
                   <th>Status</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -356,6 +393,21 @@ export function LabDashboard() {
                     </td>
                     <td>
                       <span className="tag grey">{o.status}</span>
+                    </td>
+                    <td>
+                      <CrudRowActions
+                        onEdit={() => openOrderModal(o)}
+                        onDelete={async () => {
+                          if (!window.confirm(`Delete order ${o.id}?`)) return;
+                          try {
+                            await api.labOrderDelete(String(o.id));
+                            orders.refresh();
+                            toast("Order deleted.");
+                          } catch (e) {
+                            toast(e instanceof Error ? e.message : "Delete failed");
+                          }
+                        }}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -611,8 +663,8 @@ export function LabDashboard() {
           <div className="modal" role="dialog" aria-modal="true">
             <div className="modal-hd">
               <div>
-                <div className="modal-ti">Create lab order</div>
-                <div className="modal-sub">Creates a Phase 1 order in `/lab/orders`.</div>
+                <div className="modal-ti">{editingOrderId ? "Edit lab order" : "Create lab order"}</div>
+                <div className="modal-sub">Phase 1 orders in `/lab/orders`.</div>
               </div>
               <button className="btn-s btn-sm" type="button" onClick={() => setNewOrderOpen(false)}>
                 Close
@@ -649,9 +701,28 @@ export function LabDashboard() {
                   </select>
                 </div>
               </div>
+              {editingOrderId ? (
+                <div className="ff" style={{ marginTop: 10 }}>
+                  <label>Status</label>
+                  <select value={orderForm.status} onChange={(e) => setOrderForm((s) => ({ ...s, status: e.target.value }))}>
+                    <option>Requested</option>
+                    <option>Collected</option>
+                    <option>In progress</option>
+                    <option>Completed</option>
+                    <option>Cancelled</option>
+                  </select>
+                </div>
+              ) : null}
             </div>
             <div className="modal-ft">
-              <button className="btn-s" type="button" onClick={() => setNewOrderOpen(false)}>
+              <button
+                className="btn-s"
+                type="button"
+                onClick={() => {
+                  setNewOrderOpen(false);
+                  setEditingOrderId(null);
+                }}
+              >
                 Cancel
               </button>
               <button
@@ -659,21 +730,29 @@ export function LabDashboard() {
                 type="button"
                 onClick={async () => {
                   try {
-                    await api.labOrderCreate({
+                    const body = {
                       patient_id: orderForm.patient_id.trim(),
                       afl_id: orderForm.afl_id.trim(),
                       panel: orderForm.panel,
                       priority: orderForm.priority,
-                    });
+                      status: orderForm.status,
+                    };
+                    if (editingOrderId) {
+                      await api.labOrderUpdate(editingOrderId, body);
+                      void uiAction("Lab order updated.");
+                    } else {
+                      await api.labOrderCreate(body);
+                      void uiAction("Lab order created.");
+                    }
                     setNewOrderOpen(false);
-                    void uiAction("Lab order created.");
+                    setEditingOrderId(null);
                     orders.refresh();
                   } catch (e) {
-                    toast(e instanceof Error ? e.message : "Create failed");
+                    toast(e instanceof Error ? e.message : "Save failed");
                   }
                 }}
               >
-                Create
+                {editingOrderId ? "Save" : "Create"}
               </button>
             </div>
           </div>
