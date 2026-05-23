@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { CrudRowActions } from "../../components/CrudRowActions";
+import { FormModal } from "../../components/FormModal";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
 type PharmacyPage =
@@ -63,6 +65,33 @@ export function PharmacyDashboard() {
   const verified = useMemo(() => filteredRx.filter((r) => String(r.status).toLowerCase().includes("ver")), [filteredRx]);
 
   const [stockAdjust, setStockAdjust] = useState({ name: "", qty: 0 });
+
+  const [rxModalOpen, setRxModalOpen] = useState(false);
+  const [editingRxId, setEditingRxId] = useState<string | null>(null);
+  const [rxForm, setRxForm] = useState({
+    patient: "",
+    patient_id: "P001",
+    drug: "",
+    dose: "",
+    status: "Pending",
+  });
+
+  const openRxModal = (row?: Record<string, unknown>) => {
+    if (row) {
+      setEditingRxId(String(row.id ?? ""));
+      setRxForm({
+        patient: String(row.patient ?? ""),
+        patient_id: String(row.patient_id ?? "P001"),
+        drug: String(row.drug ?? ""),
+        dose: String(row.dose ?? ""),
+        status: String(row.status ?? "Pending"),
+      });
+    } else {
+      setEditingRxId(null);
+      setRxForm({ patient: "", patient_id: "P001", drug: "", dose: "", status: "Pending" });
+    }
+    setRxModalOpen(true);
+  };
 
   return (
     <DashboardShell
@@ -232,9 +261,14 @@ export function PharmacyDashboard() {
             <div className="ph-title">Prescription Queue</div>
             <div className="ph-sub">Filter with the top search bar; actions are logged to audit.</div>
           </div>
-          <button className="btn-p" type="button" onClick={() => setPage("verify")}>
-            Verify & approve →
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn-s" type="button" onClick={() => openRxModal()}>
+              + Add prescription
+            </button>
+            <button className="btn-p" type="button" onClick={() => setPage("verify")}>
+              Verify & approve →
+            </button>
+          </div>
         </div>
         <div className="panel">
           <div className="pnl-hd">
@@ -250,6 +284,7 @@ export function PharmacyDashboard() {
                   <th>Drug</th>
                   <th>Dose</th>
                   <th>Status</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -263,6 +298,22 @@ export function PharmacyDashboard() {
                       <span className={`tag ${String(r.status).toLowerCase() === "dispensed" ? "g" : String(r.status).toLowerCase().includes("ver") ? "b" : "am"}`}>
                         {r.status}
                       </span>
+                    </td>
+                    <td>
+                      <CrudRowActions
+                        onEdit={() => openRxModal(r)}
+                        onDelete={async () => {
+                          if (!window.confirm(`Delete prescription ${r.id}?`)) return;
+                          try {
+                            await api.pharmacyPrescriptionDelete(r.id);
+                            rx.refresh();
+                            audit.refresh();
+                            toast("Prescription deleted.");
+                          } catch (e) {
+                            toast(e instanceof Error ? e.message : "Delete failed");
+                          }
+                        }}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -370,6 +421,7 @@ export function PharmacyDashboard() {
                     <th className="mono">Qty</th>
                     <th className="mono">Min</th>
                     <th>Status</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
@@ -384,6 +436,22 @@ export function PharmacyDashboard() {
                         <td className="mono">{s.min}</td>
                         <td>
                           <span className={`tag ${low ? "r" : "g"}`}>{low ? "Low" : "OK"}</span>
+                        </td>
+                        <td>
+                          <CrudRowActions
+                            onEdit={() => setStockAdjust({ name: s.name, qty: Number(s.qty) })}
+                            onDelete={async () => {
+                              if (!window.confirm(`Remove stock item ${s.name}?`)) return;
+                              try {
+                                await api.pharmacyStockDelete(s.name);
+                                stock.refresh();
+                                audit.refresh();
+                                toast("Stock item removed.");
+                              } catch (e) {
+                                toast(e instanceof Error ? e.message : "Delete failed");
+                              }
+                            }}
+                          />
                         </td>
                       </tr>
                     );
@@ -538,6 +606,90 @@ export function PharmacyDashboard() {
           </div>
         );
       })}
+
+      <FormModal
+        open={rxModalOpen}
+        title={editingRxId ? "Edit prescription" : "Add prescription"}
+        subtitle="Stored in `/pharmacy/prescriptions`."
+        onClose={() => {
+          setRxModalOpen(false);
+          setEditingRxId(null);
+        }}
+        footer={
+          <>
+            <button
+              className="btn-s"
+              type="button"
+              onClick={() => {
+                setRxModalOpen(false);
+                setEditingRxId(null);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn-p"
+              type="button"
+              onClick={async () => {
+                try {
+                  const body = {
+                    patient: rxForm.patient.trim() || "Unknown",
+                    patient_id: rxForm.patient_id.trim(),
+                    drug: rxForm.drug.trim(),
+                    dose: rxForm.dose.trim() || "—",
+                    status: rxForm.status,
+                  };
+                  if (editingRxId) {
+                    await api.pharmacyPrescriptionUpdate(editingRxId, body);
+                    toast("Prescription updated.");
+                  } else {
+                    await api.pharmacyPrescriptionCreate(body);
+                    toast("Prescription created.");
+                  }
+                  setRxModalOpen(false);
+                  setEditingRxId(null);
+                  rx.refresh();
+                  audit.refresh();
+                } catch (e) {
+                  toast(e instanceof Error ? e.message : "Save failed");
+                }
+              }}
+            >
+              {editingRxId ? "Save" : "Create"}
+            </button>
+          </>
+        }
+      >
+        <div className="g2">
+          <div className="ff">
+            <label>Patient name</label>
+            <input value={rxForm.patient} onChange={(e) => setRxForm((s) => ({ ...s, patient: e.target.value }))} />
+          </div>
+          <div className="ff">
+            <label>Patient ID</label>
+            <input className="mono" value={rxForm.patient_id} onChange={(e) => setRxForm((s) => ({ ...s, patient_id: e.target.value }))} />
+          </div>
+        </div>
+        <div className="g2">
+          <div className="ff">
+            <label>Drug</label>
+            <input value={rxForm.drug} onChange={(e) => setRxForm((s) => ({ ...s, drug: e.target.value }))} />
+          </div>
+          <div className="ff">
+            <label>Dose</label>
+            <input value={rxForm.dose} onChange={(e) => setRxForm((s) => ({ ...s, dose: e.target.value }))} />
+          </div>
+        </div>
+        <div className="ff">
+          <label>Status</label>
+          <select value={rxForm.status} onChange={(e) => setRxForm((s) => ({ ...s, status: e.target.value }))}>
+            <option>Pending</option>
+            <option>Verified</option>
+            <option>Dispensed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+      </FormModal>
     </DashboardShell>
   );
 }
