@@ -1,7 +1,8 @@
 import time
 
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body, HTTPException, Query
 
+from app.list_crud import delete_one, get_one, update_one
 from app.state import (
     nurse_fluid_entries,
     nurse_handover_notes,
@@ -17,7 +18,12 @@ router = APIRouter(prefix="/nurse")
 @router.post("/incidents", status_code=200, summary="Create a nurse incident report (Phase 1 UI).")
 async def nurse_create_incident(payload: dict = Body(...)):
     incident_id = payload.get("id") or f"INC-{int(time.time() * 1000)}"
-    row = {"id": incident_id, **payload, "created_at": time.time()}
+    row = {
+        "id": incident_id,
+        **payload,
+        "status": (payload.get("status") or "").strip() or "Under Review",
+        "created_at": time.time(),
+    }
     nurse_incidents.insert(0, row)
     return {"status": "created", "id": incident_id}
 
@@ -108,4 +114,96 @@ async def nurse_submit_handover(payload: dict = Body(...)):
 @router.get("/handover", status_code=200, summary="List handover submissions (Phase 1 UI).")
 async def nurse_list_handover(limit: int = Query(default=50, ge=1, le=200)):
     return nurse_handover_notes[:limit]
+
+
+@router.get("/incidents/{incident_id}", status_code=200, summary="Get one incident (Phase 1 UI).")
+async def nurse_get_incident(incident_id: str):
+    row = get_one(nurse_incidents, incident_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return row
+
+
+@router.put("/incidents/{incident_id}", status_code=200, summary="Update an incident (Phase 1 UI).")
+async def nurse_update_incident(incident_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_incidents, incident_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return {"status": "updated", "id": incident_id}
+
+
+@router.delete("/incidents/{incident_id}", status_code=200, summary="Delete an incident (Phase 1 UI).")
+async def nurse_delete_incident(incident_id: str):
+    if not delete_one(nurse_incidents, incident_id):
+        raise HTTPException(status_code=404, detail="Incident not found")
+    return {"status": "deleted", "id": incident_id}
+
+
+@router.put("/supplies/{req_id}", status_code=200, summary="Update a supply request (Phase 1 UI).")
+async def nurse_update_supply(req_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_supply_requests, req_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Supply request not found")
+    return {"status": "updated", "id": req_id}
+
+
+@router.delete("/supplies/{req_id}", status_code=200, summary="Delete a supply request (Phase 1 UI).")
+async def nurse_delete_supply(req_id: str):
+    if not delete_one(nurse_supply_requests, req_id):
+        raise HTTPException(status_code=404, detail="Supply request not found")
+    return {"status": "deleted", "id": req_id}
+
+
+@router.put("/tasks/{task_id}", status_code=200, summary="Update a nurse task (Phase 1 UI).")
+async def nurse_update_task(task_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_tasks, task_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"status": "updated", "id": task_id}
+
+
+@router.delete("/tasks/{task_id}", status_code=200, summary="Delete a nurse task (Phase 1 UI).")
+async def nurse_delete_task(task_id: str):
+    if not delete_one(nurse_tasks, task_id):
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"status": "deleted", "id": task_id}
+
+
+@router.put("/fluids/{entry_id}", status_code=200, summary="Update a fluid entry (Phase 1 UI).")
+async def nurse_update_fluid(entry_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_fluid_entries, entry_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Fluid entry not found")
+    return {"status": "updated", "id": entry_id}
+
+
+@router.delete("/fluids/{entry_id}", status_code=200, summary="Delete a fluid entry (Phase 1 UI).")
+async def nurse_delete_fluid(entry_id: str):
+    if not delete_one(nurse_fluid_entries, entry_id):
+        raise HTTPException(status_code=404, detail="Fluid entry not found")
+    return {"status": "deleted", "id": entry_id}
+
+
+@router.put("/wounds/{entry_id}", status_code=200, summary="Update a wound entry (Phase 1 UI).")
+async def nurse_update_wound(entry_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_wound_entries, entry_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Wound entry not found")
+    return {"status": "updated", "id": entry_id}
+
+
+@router.delete("/wounds/{entry_id}", status_code=200, summary="Delete a wound entry (Phase 1 UI).")
+async def nurse_delete_wound(entry_id: str):
+    if not delete_one(nurse_wound_entries, entry_id):
+        raise HTTPException(status_code=404, detail="Wound entry not found")
+    return {"status": "deleted", "id": entry_id}
+
+
+@router.put("/handover/{note_id}", status_code=200, summary="Update handover notes (Phase 1 UI).")
+async def nurse_update_handover(note_id: str, payload: dict = Body(...)):
+    if not update_one(nurse_handover_notes, note_id, {**payload, "updated_at": time.time()}):
+        raise HTTPException(status_code=404, detail="Handover note not found")
+    return {"status": "updated", "id": note_id}
+
+
+@router.delete("/handover/{note_id}", status_code=200, summary="Delete handover notes (Phase 1 UI).")
+async def nurse_delete_handover(note_id: str):
+    if not delete_one(nurse_handover_notes, note_id):
+        raise HTTPException(status_code=404, detail="Handover note not found")
+    return {"status": "deleted", "id": note_id}
 
