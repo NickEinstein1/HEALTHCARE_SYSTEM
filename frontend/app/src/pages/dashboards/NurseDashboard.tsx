@@ -2,7 +2,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
+import { CrudRowActions } from "../../components/CrudRowActions";
+import { FormModal } from "../../components/FormModal";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+
+function formatRowTime(ts?: number | string): string {
+  if (!ts) return "—";
+  if (typeof ts === "number") {
+    return new Date(ts * 1000).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  return String(ts);
+}
 
 type NursePage =
   | "home"
@@ -614,12 +629,44 @@ export function NurseDashboard() {
   });
 
   const [showIncident, setShowIncident] = useState(false);
-  const [incidentForm, setIncidentForm] = useState<{ type: string; severity: string; patient_id: string; notes: string }>({
+  const [editingIncidentId, setEditingIncidentId] = useState<string | null>(null);
+  const incidentsPoll = usePolling(() => api.nurseIncidents(100), { intervalMs: 5000 });
+  const [incidentForm, setIncidentForm] = useState<{
+    type: string;
+    severity: string;
+    patient_id: string;
+    notes: string;
+    status: string;
+  }>({
     type: "Patient fall",
     severity: "Moderate",
     patient_id: patientId,
     notes: "",
+    status: "Under Review",
   });
+
+  const openIncidentModal = (row?: Record<string, unknown>) => {
+    if (row) {
+      setEditingIncidentId(String(row.id ?? ""));
+      setIncidentForm({
+        type: String(row.type ?? "Patient fall"),
+        severity: String(row.severity ?? "Moderate"),
+        patient_id: String(row.patient_id ?? patientId),
+        notes: String(row.notes ?? ""),
+        status: String(row.status ?? "Under Review"),
+      });
+    } else {
+      setEditingIncidentId(null);
+      setIncidentForm({
+        type: "Patient fall",
+        severity: "Moderate",
+        patient_id: patientId,
+        notes: "",
+        status: "Under Review",
+      });
+    }
+    setShowIncident(true);
+  };
 
   const [vitalsForm, setVitalsForm] = useState<{
     patient_id: string;
@@ -1354,101 +1401,108 @@ export function NurseDashboard() {
           </div>
         )}
 
-        {showIncident && (
-          <>
-            <div
-              role="presentation"
-              onClick={() => setShowIncident(false)}
-              style={{ position: "fixed", inset: 0, background: "rgba(2,6,23,.38)", zIndex: 999 }}
-            />
-            <div
-              role="dialog"
-              aria-modal="true"
-              style={{
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-                width: "min(760px, calc(100vw - 28px))",
-                background: "#fff",
-                border: "1.5px solid var(--bdr)",
-                borderRadius: 14,
-                zIndex: 1000,
-                boxShadow: "0 20px 60px rgba(2,6,23,.25)",
-                overflow: "hidden",
-              }}
-            >
-              <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--bdr)", display: "flex", justifyContent: "space-between" }}>
-                <div style={{ fontWeight: 950, color: "var(--t1)" }}>Report incident</div>
-                <button className="btn-s btn-sm" type="button" onClick={() => setShowIncident(false)}>
-                  Close
-                </button>
-              </div>
-              <div style={{ padding: 16 }}>
-                <div className="g2">
-                  <div className="ff">
-                    <label>Patient ID</label>
-                    <input
-                      className="mono"
-                      value={incidentForm.patient_id}
-                      onChange={(e) => setIncidentForm((s) => ({ ...s, patient_id: e.target.value }))}
-                      placeholder="e.g. P001"
-                    />
-                  </div>
-                  <div className="ff">
-                    <label>Severity</label>
-                    <select value={incidentForm.severity} onChange={(e) => setIncidentForm((s) => ({ ...s, severity: e.target.value }))}>
-                      <option>Low</option>
-                      <option>Moderate</option>
-                      <option>High</option>
-                      <option>Critical</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="ff">
-                  <label>Incident type</label>
-                  <select value={incidentForm.type} onChange={(e) => setIncidentForm((s) => ({ ...s, type: e.target.value }))}>
-                    <option>Patient fall</option>
-                    <option>Near-miss — medication</option>
-                    <option>Equipment failure</option>
-                    <option>Needlestick injury</option>
-                    <option>Security</option>
-                  </select>
-                </div>
-                <div className="ff">
-                  <label>Notes</label>
-                  <textarea value={incidentForm.notes} onChange={(e) => setIncidentForm((s) => ({ ...s, notes: e.target.value }))} style={{ minHeight: 90 }} />
-                </div>
-                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button className="btn-s" type="button" onClick={() => setShowIncident(false)}>
-                    Cancel
-                  </button>
-                  <button
-                    className="btn-p"
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        const pid = incidentForm.patient_id.trim() || patientId;
-                        const res = await api.nurseIncident({
-                          patient_id: pid,
-                          type: incidentForm.type,
-                          severity: incidentForm.severity,
-                          notes: incidentForm.notes.trim(),
-                        });
-                        setShowIncident(false);
-                        toast(`Incident submitted (${res.id ?? "created"}).`);
-                      } catch (e) {
-                        toast(`Incident submit failed: ${String(e)}`);
-                      }
-                    }}
-                  >
-                    Submit incident
-                  </button>
-                </div>
-              </div>
+        <FormModal
+          open={showIncident}
+          title={editingIncidentId ? "Edit incident" : "Report incident"}
+          subtitle="Safety reports are stored in the nurse incidents API."
+          onClose={() => {
+            setShowIncident(false);
+            setEditingIncidentId(null);
+          }}
+          footer={
+            <>
+              <button
+                className="btn-s"
+                type="button"
+                onClick={() => {
+                  setShowIncident(false);
+                  setEditingIncidentId(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-p"
+                type="button"
+                onClick={async () => {
+                  try {
+                    const pid = incidentForm.patient_id.trim() || patientId;
+                    const body = {
+                      patient_id: pid,
+                      type: incidentForm.type,
+                      severity: incidentForm.severity,
+                      notes: incidentForm.notes.trim(),
+                      status: incidentForm.status,
+                    };
+                    if (editingIncidentId) {
+                      await api.nurseIncidentUpdate(editingIncidentId, body);
+                      toast("Incident updated.");
+                    } else {
+                      const res = await api.nurseIncident(body);
+                      toast(`Incident submitted (${res.id ?? "created"}).`);
+                    }
+                    setShowIncident(false);
+                    setEditingIncidentId(null);
+                    incidentsPoll.refresh();
+                  } catch (e) {
+                    toast(e instanceof Error ? e.message : "Save failed");
+                  }
+                }}
+              >
+                {editingIncidentId ? "Save changes" : "Submit incident"}
+              </button>
+            </>
+          }
+        >
+          <div className="g2">
+            <div className="ff">
+              <label>Patient ID</label>
+              <input
+                className="mono"
+                value={incidentForm.patient_id}
+                onChange={(e) => setIncidentForm((s) => ({ ...s, patient_id: e.target.value }))}
+                placeholder="e.g. P001"
+              />
             </div>
-          </>
-        )}
+            <div className="ff">
+              <label>Severity</label>
+              <select value={incidentForm.severity} onChange={(e) => setIncidentForm((s) => ({ ...s, severity: e.target.value }))}>
+                <option>Low</option>
+                <option>Moderate</option>
+                <option>High</option>
+                <option>Critical</option>
+              </select>
+            </div>
+          </div>
+          <div className="g2">
+            <div className="ff">
+              <label>Incident type</label>
+              <select value={incidentForm.type} onChange={(e) => setIncidentForm((s) => ({ ...s, type: e.target.value }))}>
+                <option>Patient fall</option>
+                <option>Near-miss — medication</option>
+                <option>Equipment failure</option>
+                <option>Needlestick injury</option>
+                <option>Security</option>
+              </select>
+            </div>
+            <div className="ff">
+              <label>Status</label>
+              <select value={incidentForm.status} onChange={(e) => setIncidentForm((s) => ({ ...s, status: e.target.value }))}>
+                <option>Under Review</option>
+                <option>Resolved</option>
+                <option>Closed</option>
+              </select>
+            </div>
+          </div>
+          <div className="ff">
+            <label>Notes</label>
+            <textarea
+              value={incidentForm.notes}
+              onChange={(e) => setIncidentForm((s) => ({ ...s, notes: e.target.value }))}
+              style={{ minHeight: 90 }}
+            />
+          </div>
+        </FormModal>
 
         <div className={pgOn(page === "home")} id="pg-home">
           <div className="ph">
@@ -3366,14 +3420,7 @@ export function NurseDashboard() {
               <div className="ph-ey">Safety</div>
               <div className="ph-ti">Incident Reports</div>
             </div>
-            <button
-              className="btn-p"
-              type="button"
-              onClick={() => {
-                setIncidentForm((s) => ({ ...s, patient_id: patientId }));
-                setShowIncident(true);
-              }}
-            >
+            <button className="btn-p" type="button" onClick={() => openIncidentModal()}>
               + Report Incident
             </button>
           </div>
@@ -3387,41 +3434,56 @@ export function NurseDashboard() {
                   <tr>
                     <th>Date/Time</th>
                     <th>Incident Type</th>
-                    <th>Patient</th>
-                    <th>Reported By</th>
+                    <th className="mono">Patient</th>
                     <th>Severity</th>
                     <th>Status</th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="mono" style={{ color: "var(--t2)", fontWeight: 700 }}>
-                      03 Mar 02:15
-                    </td>
-                    <td>Near-miss — medication</td>
-                    <td>Bed 03 — Kamau J.</td>
-                    <td>Nurse Osei</td>
-                    <td>
-                      <span className="tag am">Moderate</span>
-                    </td>
-                    <td>
-                      <span className="tag b">Under Review</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="mono" style={{ color: "var(--t2)", fontWeight: 700 }}>
-                      01 Mar 18:40
-                    </td>
-                    <td>Patient fall</td>
-                    <td>Bed 11 — Ali H.</td>
-                    <td>Nurse Atieno</td>
-                    <td>
-                      <span className="tag am">Moderate</span>
-                    </td>
-                    <td>
-                      <span className="tag g">Resolved</span>
-                    </td>
-                  </tr>
+                  {((incidentsPoll.data ?? []) as Record<string, unknown>[]).map((row) => (
+                    <tr key={String(row.id)}>
+                      <td className="mono" style={{ color: "var(--t2)", fontWeight: 700 }}>
+                        {formatRowTime(row.created_at as number | string | undefined)}
+                      </td>
+                      <td>{String(row.type ?? "—")}</td>
+                      <td className="mono">{String(row.patient_id ?? "—")}</td>
+                      <td>
+                        <span className="tag am">{String(row.severity ?? "—")}</span>
+                      </td>
+                      <td>
+                        <span
+                          className={`tag ${
+                            String(row.status).toLowerCase() === "resolved" ? "g" : "b"
+                          }`}
+                        >
+                          {String(row.status ?? "Under Review")}
+                        </span>
+                      </td>
+                      <td>
+                        <CrudRowActions
+                          onEdit={() => openIncidentModal(row)}
+                          onDelete={async () => {
+                            if (!window.confirm(`Delete incident ${row.id}?`)) return;
+                            try {
+                              await api.nurseIncidentDelete(String(row.id));
+                              incidentsPoll.refresh();
+                              toast("Incident deleted.");
+                            } catch (e) {
+                              toast(e instanceof Error ? e.message : "Delete failed");
+                            }
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                  {!incidentsPoll.loading && (incidentsPoll.data ?? []).length === 0 && (
+                    <tr>
+                      <td colSpan={6} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                        No incidents yet. Use + Report Incident to add one.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
