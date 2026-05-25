@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
+import { StyleSheet, Text, View } from "react-native";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
@@ -47,7 +48,7 @@ export function ConsentScreen() {
   };
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="KDPA 2019 — control which facilities can access your record." />
       <View style={styles.badge}>
         <Text style={styles.badgeText}>🔒 KDPA 2019 compliant</Text>
@@ -72,13 +73,11 @@ export function ConsentScreen() {
           ))
         )}
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   badge: {
     alignSelf: "flex-start",
     backgroundColor: colors.gl,

@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { CoverCard } from "../components/CoverCard";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
@@ -14,7 +15,7 @@ export function CoverageScreen() {
   const { toast, patientId } = usePatient();
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text={`Benefits & claims · ${MEMBER_ID}`} />
       <View style={styles.actions}>
         <SecondaryButton label="🔗 Link Account" onPress={() => toast("Opening insurer linking portal…")} />
@@ -44,13 +45,11 @@ export function CoverageScreen() {
         ))}
       </Panel>
       <Text style={styles.foot}>Patient {patientId} · UniHealth verified</Text>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   claim: { flexDirection: "row", alignItems: "center", gap: 8, padding: 14, borderBottomWidth: 1, borderBottomColor: colors.bdr },

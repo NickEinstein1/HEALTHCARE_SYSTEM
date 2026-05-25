@@ -2,16 +2,8 @@ import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { CompositeNavigationProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { CoverCard } from "../components/CoverCard";
 import { HeroCard } from "../components/HeroCard";
 import { QuickActions } from "../components/QuickActions";
@@ -19,7 +11,7 @@ import { Panel } from "../components/ui/Panel";
 import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
 import { useAppointments } from "../hooks/useAppointments";
-import { AI_INSIGHTS, DEMO_RESULTS, displayAflId, MEMBER_ID } from "../lib/patientPortalData";
+import { AI_INSIGHTS, REFERENCE_RESULTS, displayAflId, MEMBER_ID } from "../lib/patientPortalData";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 import type { HealthStackParamList, RootTabParamList } from "../navigation/types";
@@ -41,11 +33,7 @@ export function HomeScreen() {
   const medDose = (m: (typeof meds)[0]) => m.dosage_text ?? m.dosage ?? "—";
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.g} />}
-    >
+    <AnimatedScrollScreen refreshing={loading} onRefresh={refresh}>
       <HeroCard
         greeting={`Good morning, ${firstName} 👋`}
         subtitle="All your health information, in one secure place."
@@ -76,10 +64,10 @@ export function HomeScreen() {
 
       <CoverCard onPress={() => nav.navigate("Wallet", { screen: "Coverage" })} />
 
-      <View style={styles.demoBar}>
-        <Text style={styles.demoLabel}>Gateway patient ID</Text>
+      <View style={styles.idBar}>
+        <Text style={styles.idLabel}>Gateway patient ID</Text>
         <TextInput
-          style={styles.demoInput}
+          style={styles.idInput}
           value={patientId}
           onChangeText={(v) => {
             setPatientId(v);
@@ -177,7 +165,7 @@ export function HomeScreen() {
                 <Text style={styles.resVal}>{o.value_text ?? "—"}</Text>
               </Pressable>
             ))
-          : DEMO_RESULTS.slice(0, 2).map((r) => (
+          : REFERENCE_RESULTS.slice(0, 2).map((r) => (
               <Pressable key={r.name} style={styles.res} onPress={() => nav.navigate("Health", { screen: "Results" })}>
                 <View style={[styles.resDot, r.flag === "high" ? styles.resDotHigh : styles.resDotNorm]} />
                 <View style={{ flex: 1 }}>
@@ -201,13 +189,11 @@ export function HomeScreen() {
           ))}
         </View>
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 40 },
   idPills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12, marginTop: -8 },
   pill: {
     fontFamily: fonts.mono,
@@ -220,7 +206,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  demoBar: {
+  idBar: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -231,8 +217,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
-  demoLabel: { fontFamily: fonts.sansExtra, fontSize: 10, color: colors.t3 },
-  demoInput: {
+  idLabel: { fontFamily: fonts.sansExtra, fontSize: 10, color: colors.t3 },
+  idInput: {
     flex: 1,
     fontFamily: fonts.mono,
     fontSize: 12,

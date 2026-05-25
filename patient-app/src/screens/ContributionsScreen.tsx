@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PayMethodRow } from "../components/PayMethodRow";
@@ -14,7 +15,7 @@ export function ContributionsScreen() {
   const { toast } = usePatient();
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Monthly UniHealth health cover payment history." />
       <View style={styles.actions}>
         <SecondaryButton label="📥 Statement" onPress={() => toast("Downloading contribution statement…")} />
@@ -53,13 +54,11 @@ export function ContributionsScreen() {
           onPress={() => toast("PESALINK ref: AFL-MBR-884321")}
         />
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 14 },
   stats: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   row: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.bdr },
