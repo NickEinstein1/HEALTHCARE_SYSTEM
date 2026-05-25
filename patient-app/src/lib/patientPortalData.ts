@@ -1,4 +1,4 @@
-/** Demo + static portal content aligned with web PatientDashboard. */
+/** Static portal content aligned with web PatientDashboard (used when live API data is empty). */
 
 export const MEMBER_ID = "AFL-MBR-884321";
 
@@ -57,7 +57,7 @@ export const SEARCH_ITEMS: SearchItem[] = [
   { key: "profile", label: "My Profile", sub: "Personal details", icon: "👤", tab: "Menu", screen: "Profile" },
 ];
 
-export const DEMO_VISITS = [
+export const FALLBACK_VISITS = [
   { when: "04 Mar 2026", fac: "KNH Nairobi", type: "Outpatient", dept: "Cardiology", ref: "ENC-2026-1042" },
   { when: "12 Feb 2026", fac: "KNH Lab", type: "Lab", dept: "Phlebotomy", ref: "LAB-2026-0091" },
   { when: "03 Jan 2026", fac: "Coast General", type: "Inpatient", dept: "Internal Medicine", ref: "IP-2025-8831" },
@@ -107,7 +107,7 @@ export const CARE_TEAM = [
   { name: "Sr. Faith Muthoni", role: "Primary Nurse · KNH", initials: "FM" },
 ];
 
-export const DEMO_RESULTS = [
+export const REFERENCE_RESULTS = [
   { name: "Potassium (K⁺)", range: "Ref: 3.5–5.1 mmol/L", value: "6.8", flag: "high" as const, date: "2 Apr" },
   { name: "LDL Cholesterol", range: "Ref: < 3.0 mmol/L", value: "3.4", flag: "high" as const, date: "4 Mar" },
   { name: "HbA1c", range: "Ref: 4.0–6.0%", value: "5.6", flag: "normal" as const, date: "Feb" },
