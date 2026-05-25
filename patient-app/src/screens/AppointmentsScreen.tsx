@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
+import { Modal, StyleSheet, Text, TextInput, View } from "react-native";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
@@ -62,7 +63,7 @@ export function AppointmentsScreen() {
   };
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Book, view, and cancel appointments — same API as the web portal." />
       <PrimaryButton label="+ Book appointment" onPress={() => setBookOpen(true)} style={{ marginBottom: 14 }} />
 
@@ -125,13 +126,11 @@ export function AppointmentsScreen() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   empty: { padding: 16, fontFamily: fonts.sans, fontSize: 12, color: colors.t3 },
   row: {
     flexDirection: "row",
