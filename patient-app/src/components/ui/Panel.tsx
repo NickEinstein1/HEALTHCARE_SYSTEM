@@ -1,7 +1,9 @@
 import { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../../theme/colors";
 import { fonts } from "../../theme/typography";
+import { shadows } from "../../theme/shadows";
 
 type Props = {
   title: string;
@@ -23,7 +25,8 @@ export function Panel({ title, subtitle, right, actionLabel, onAction, children,
     ) : null);
 
   return (
-    <View style={styles.panel}>
+    <View style={[styles.panel, shadows.md]}>
+      <LinearGradient colors={[colors.g, colors.gd]} style={styles.accent} />
       <View style={styles.hd}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{title}</Text>
@@ -39,22 +42,31 @@ export function Panel({ title, subtitle, right, actionLabel, onAction, children,
 const styles = StyleSheet.create({
   panel: {
     backgroundColor: colors.card,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.bdr,
-    borderRadius: 14,
-    marginBottom: 14,
+    borderRadius: 16,
+    marginBottom: 16,
     overflow: "hidden",
+  },
+  accent: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
   },
   hd: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+    paddingVertical: 14,
+    paddingLeft: 18,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.bdr,
+    backgroundColor: colors.mesh2,
   },
-  title: { fontFamily: fonts.sansExtra, fontSize: 13, color: colors.t1 },
-  sub: { fontFamily: fonts.sans, fontSize: 11.5, color: colors.t3, marginTop: 3 },
-  link: { fontFamily: fonts.sansBold, fontSize: 11, color: colors.gd },
-  bd: { padding: 14 },
+  title: { fontFamily: fonts.sansExtra, fontSize: 14, color: colors.t1, letterSpacing: 0.1 },
+  sub: { fontFamily: fonts.sans, fontSize: 12, color: colors.t3, marginTop: 4, lineHeight: 17 },
+  link: { fontFamily: fonts.sansBold, fontSize: 12, color: colors.gd },
+  bd: { padding: 16, paddingLeft: 18 },
 });
