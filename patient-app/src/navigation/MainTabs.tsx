@@ -1,8 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Text, View } from "react-native";
+import { Platform } from "react-native";
+import { AnimatedTabIcon } from "../components/navigation/AnimatedTabIcon";
 import { PortalChrome, usePortalChrome } from "./PortalChrome";
-import { PortalStackHeader, portalHeader } from "./PortalStackHeader";
+import { shadows } from "../theme/shadows";
+import { portalHeader, renderPortalStackHeader } from "./PortalStackHeader";
 import { fastStackScreenOptions } from "./navigationConfig";
 import { HomeScreen } from "../screens/HomeScreen";
 import { HealthHubScreen } from "../screens/hubs/HealthHubScreen";
@@ -38,16 +40,9 @@ const MenuStack = createNativeStackNavigator<MenuStackParamList>();
 
 const stackOptions = {
   ...fastStackScreenOptions,
-  header: PortalStackHeader,
+  headerShown: true,
+  header: renderPortalStackHeader,
 };
-
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return (
-    <View style={{ alignItems: "center" }}>
-      <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.55 }}>{icon}</Text>
-    </View>
-  );
-}
 
 function HealthNavigator() {
   return (
@@ -174,11 +169,14 @@ function MainTabsInner({ onSignOut }: { onSignOut: () => void }) {
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: colors.bdr,
-          borderTopWidth: 1.5,
-          height: 58,
-          paddingBottom: 6,
+          borderTopWidth: 1,
+          height: Platform.OS === "ios" ? 84 : 64,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === "ios" ? 24 : 8,
+          ...shadows.tabBar,
         },
-        tabBarLabelStyle: { fontFamily: fonts.sansBold, fontSize: 9 },
+        tabBarLabelStyle: { fontFamily: fonts.sansBold, fontSize: 9, letterSpacing: 0.3 },
+        tabBarItemStyle: { paddingVertical: 2 },
       }}
     >
       <Tab.Screen
@@ -187,18 +185,18 @@ function MainTabsInner({ onSignOut }: { onSignOut: () => void }) {
         options={{
           headerShown: true,
           header: () => <>{renderHeader("My Dashboard", "Home", true)}</>,
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
+          tabBarIcon: ({ focused }) => <AnimatedTabIcon icon="🏠" focused={focused} />,
         }}
       />
       <Tab.Screen
         name="Health"
         component={HealthNavigator}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon icon="💗" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <AnimatedTabIcon icon="💗" focused={focused} /> }}
       />
       <Tab.Screen
         name="Wallet"
         component={WalletNavigator}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon icon="💳" focused={focused} /> }}
+        options={{ tabBarIcon: ({ focused }) => <AnimatedTabIcon icon="💳" focused={focused} /> }}
       />
       <Tab.Screen
         name="Messages"
@@ -206,10 +204,10 @@ function MainTabsInner({ onSignOut }: { onSignOut: () => void }) {
         options={{
           headerShown: true,
           header: () => <>{renderHeader("Messages", "Inbox")}</>,
-          tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
+          tabBarIcon: ({ focused }) => <AnimatedTabIcon icon="💬" focused={focused} />,
         }}
       />
-      <Tab.Screen name="Menu" options={{ tabBarIcon: ({ focused }) => <TabIcon icon="☰" focused={focused} /> }}>
+      <Tab.Screen name="Menu" options={{ tabBarIcon: ({ focused }) => <AnimatedTabIcon icon="☰" focused={focused} /> }}>
         {() => <MenuNavigator onSignOut={onSignOut} />}
       </Tab.Screen>
     </Tab.Navigator>
