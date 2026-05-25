@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton } from "../components/ui/Buttons";
 import { usePatient } from "../context/PatientContext";
@@ -23,11 +23,7 @@ export function MessagesScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader
-        eyebrow="Secure messaging"
-        title="Messages"
-        subtitle="MyChart-style messaging with your care team (demo)."
-      />
+      <ScreenIntro text="Secure messaging with your care team and facilities." />
       <Panel title="Care team">
         {CARE_TEAM.map((c) => (
           <View key={c.name} style={styles.team}>
