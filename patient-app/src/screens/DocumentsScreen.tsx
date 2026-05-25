@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { SecondaryButton } from "../components/ui/Buttons";
 import { Tag } from "../components/ui/Tag";
@@ -13,7 +13,7 @@ export function DocumentsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Records" title="Documents" subtitle="Discharge summaries, consult notes, and lab PDFs." />
+      <ScreenIntro text="Discharge summaries, consult notes, and lab PDFs." />
       <Panel title="Your documents" noPadding>
         {DOCUMENTS.map((d) => (
           <View key={d.name} style={styles.row}>
