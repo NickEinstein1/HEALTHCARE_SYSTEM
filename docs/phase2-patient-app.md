@@ -1,6 +1,6 @@
 # Phase 2 — patient mobile app
 
-**Status:** Patient 360 app in `patient-app/` (Expo SDK **54**) — MyChart-style navigation with full web portal section parity (demo + live FHIR where wired).
+**Status:** Patient 360 app in `patient-app/` (Expo SDK **54**) — full web portal section parity with fast tab/stack navigation (demo + live FHIR where wired).
 
 ## Sections (web `PatientDashboard` parity)
 
