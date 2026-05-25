@@ -5,7 +5,7 @@ import { AuthShell } from "../../components/auth/AuthShell";
 import { AuthPrimaryBtn, AuthGhostBtn } from "../../components/auth/AuthButtons";
 import { PATIENT_ROLE } from "../../lib/signInConfig";
 import { config } from "../../lib/config";
-import { signInDemo } from "../../lib/auth";
+import { signInPatient } from "../../lib/auth";
 import { setPatientId } from "../../lib/storage";
 import type { AuthStackParamList } from "../../navigation/AuthNavigator";
 import { auth } from "../../theme/authTheme";
@@ -25,7 +25,7 @@ export function AuthSuccessScreen({ navigation, route, onSignedIn }: Props) {
     try {
       const pid = config.defaultPatientId;
       await setPatientId(pid);
-      await signInDemo(pid);
+      await signInPatient(pid);
       onSignedIn();
     } finally {
       setLaunching(false);

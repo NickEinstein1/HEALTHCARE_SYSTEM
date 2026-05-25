@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton } from "../components/ui/Buttons";
@@ -34,19 +35,17 @@ export function RecordsScreen() {
   );
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text={`Longitudinal record · ${displayAflId(patientId)} · FHIR R5 · KDPA 2019`} />
       <PrimaryButton label="Export Records" onPress={() => toast("Exporting FHIR bundle (PDF/CSV)…")} style={{ marginBottom: 14 }} />
       <Section title="Diagnoses & conditions" items={HEALTH_RECORDS.diagnoses} />
       <Section title="Allergies & alerts" items={HEALTH_RECORDS.allergies} />
       <Section title="Immunisations" items={HEALTH_RECORDS.immunisations} />
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   item: { flexDirection: "row", gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.bdr },
   ico: { fontSize: 20 },
   name: { fontFamily: fonts.sansExtra, fontSize: 12.5, color: colors.t1 },

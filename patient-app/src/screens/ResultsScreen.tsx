@@ -1,11 +1,13 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
+import { InfoRow } from "../components/ui/InfoRow";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
 import { SecondaryButton } from "../components/ui/Buttons";
 import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
-import { DEMO_RESULTS } from "../lib/patientPortalData";
+import { REFERENCE_RESULTS } from "../lib/patientPortalData";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 
@@ -13,68 +15,54 @@ export function ResultsScreen() {
   const { observations, toast } = usePatient();
   const hasLive = observations.length > 0;
 
+  const renderResult = (
+    key: string,
+    name: string,
+    when: string,
+    value: string,
+    flag?: "high" | "normal",
+  ) => (
+    <InfoRow
+      key={key}
+      icon={flag === "high" ? "⚠️" : "🧪"}
+      title={name}
+      subtitle={when}
+      value={value}
+      highlight={flag === "high"}
+      right={<Tag label={flag === "high" ? "High" : "Normal"} tone={flag === "high" ? "red" : "green"} />}
+    />
+  );
+
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <ScreenIntro text="Labs, imaging, and FHIR observations." />
+    <AnimatedScrollScreen>
+      <ScreenIntro text="Labs, imaging, and FHIR observations." accent />
       <Notice
         icon="⚠️"
         title="1 result needs attention"
         body="LDL Cholesterol above normal range. Discuss at your next visit."
         tone="amber"
       />
-      <Panel title={`Observations · live`} subtitle={hasLive ? `${observations.length} from gateway` : "Demo rows when empty"}>
-        {(hasLive ? observations : []).slice(0, 12).map((o) => (
-          <View key={o.id} style={styles.row}>
-            <View style={[styles.dot, styles.dotNorm]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>{o.code ?? "Result"}</Text>
-              <Text style={styles.when}>{o.effective_time ?? "—"}</Text>
-            </View>
-            <Text style={styles.val}>{o.value_text ?? "—"}</Text>
-            <SecondaryButton label="View" onPress={() => toast(`${o.code}: ${o.value_text ?? "—"}`)} />
-          </View>
-        ))}
-        {!hasLive ? <Text style={styles.empty}>Showing reference demo results below.</Text> : null}
+      <Panel title="Observations · live" subtitle={hasLive ? `${observations.length} from gateway` : "Sample rows when empty"} noPadding>
+        {(hasLive ? observations : []).slice(0, 12).map((o) =>
+          renderResult(o.id, o.code ?? "Result", o.effective_time ?? "—", o.value_text ?? "—"),
+        )}
+        {!hasLive ? <Text style={styles.empty}>Showing reference results below.</Text> : null}
       </Panel>
-      <Panel title="Recent results">
-        {(hasLive ? [] : DEMO_RESULTS).map((r) => (
-          <View key={r.name} style={styles.row}>
-            <View style={[styles.dot, r.flag === "high" ? styles.dotHigh : styles.dotNorm]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>{r.name}</Text>
-              <Text style={styles.when}>{r.range}</Text>
-            </View>
-            <Text style={[styles.val, r.flag === "high" && { color: colors.r }]}>{r.value}</Text>
-            <Tag label={r.flag === "high" ? "High" : "Normal"} tone={r.flag === "high" ? "red" : "green"} />
-          </View>
-        ))}
+      <Panel title="Recent results" noPadding>
+        {(hasLive ? [] : REFERENCE_RESULTS).map((r) =>
+          renderResult(r.name, r.name, r.range, r.value, r.flag === "high" ? "high" : "normal"),
+        )}
         {hasLive
-          ? DEMO_RESULTS.filter((d) => d.flag === "high").map((r) => (
-              <View key={`demo-${r.name}`} style={styles.row}>
-                <View style={[styles.dot, styles.dotHigh]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.name}>{r.name}</Text>
-                  <Text style={styles.when}>{r.range}</Text>
-                </View>
-                <Text style={[styles.val, { color: colors.r }]}>{r.value}</Text>
-                <Tag label="High" tone="red" />
-              </View>
-            ))
+          ? REFERENCE_RESULTS.filter((d) => d.flag === "high").map((r) =>
+              renderResult(`ref-${r.name}`, r.name, r.range, r.value, "high"),
+            )
           : null}
       </Panel>
-    </ScrollView>
+      <SecondaryButton label="Download results PDF" onPress={() => toast("Preparing results export…")} />
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
-  row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.bdr },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  dotNorm: { backgroundColor: colors.g },
-  dotHigh: { backgroundColor: colors.r },
-  name: { fontFamily: fonts.sansExtra, fontSize: 12.5, color: colors.t1 },
-  when: { fontFamily: fonts.mono, fontSize: 10, color: colors.t3, marginTop: 2 },
-  val: { fontFamily: fonts.serif, fontSize: 16, color: colors.t1 },
-  empty: { fontFamily: fonts.sans, fontSize: 12, color: colors.t3, marginBottom: 8 },
+  empty: { fontFamily: fonts.sans, fontSize: 12, color: colors.t3, padding: 16 },
 });

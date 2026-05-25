@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton } from "../components/ui/Buttons";
@@ -22,7 +23,7 @@ export function MessagesScreen() {
   const name = summary?.patient.given_name ?? "Patient";
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Secure messaging with your care team and facilities." />
       <Panel title="Care team">
         {CARE_TEAM.map((c) => (
@@ -80,13 +81,11 @@ export function MessagesScreen() {
           </>
         )}
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   team: { flexDirection: "row", gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.bdr },
   teamName: { fontFamily: fonts.sansExtra, fontSize: 13, color: colors.t1 },
   teamRole: { fontFamily: fonts.sans, fontSize: 11, color: colors.t3 },

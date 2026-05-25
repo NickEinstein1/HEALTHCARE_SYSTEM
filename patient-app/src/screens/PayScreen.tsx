@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PayMethodRow } from "../components/PayMethodRow";
@@ -12,7 +13,7 @@ export function PayScreen() {
   const { toast } = usePatient();
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Bills, contributions, or M-TIBA wallet top-up." />
       <View style={styles.wallet}>
         <Text style={styles.walletLbl}>M-TIBA Health Wallet</Text>
@@ -47,13 +48,11 @@ export function PayScreen() {
           </View>
         ))}
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   wallet: {
     backgroundColor: "#e8490a",
     borderRadius: 14,

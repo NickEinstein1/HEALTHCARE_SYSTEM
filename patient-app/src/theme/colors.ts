@@ -26,6 +26,19 @@ export const colors = {
   t4: "#9bb0a5",
   heroAccent: "#7beba4",
   shadow: "rgba(10, 74, 38, 0.12)",
+  /** Brand gradient stops (logo, accents) */
+  cyan: "#00d4ff",
+  mint: "#00e5a0",
+  navy: "#05091a",
+  mesh1: "#e8f7ef",
+  mesh2: "#f0faf4",
+} as const;
+
+export const gradients = {
+  brand: ["#00d4ff", "#2b8fe8", "#00e5a0"] as const,
+  hero: ["#0a4a26", "#1a6635", "#0d3d22"] as const,
+  heroGlow: ["#1a8a4a", "#0a4a26"] as const,
+  cardShine: ["rgba(255,255,255,0.12)", "rgba(255,255,255,0)"] as const,
 } as const;
 
 export type TagTone = "green" | "blue" | "amber" | "red" | "grey";

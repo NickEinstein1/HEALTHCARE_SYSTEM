@@ -1,8 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { AnimatedScrollScreen } from "../../components/animated/AnimatedScrollScreen";
+import { StaggerSection } from "../../components/animated/StaggerSection";
+import { UniHealthLogo } from "../../components/brand/UniHealthLogo";
 import { PATIENT_STEPS } from "../../lib/signInConfig";
 import type { AuthStackParamList } from "../../navigation/AuthNavigator";
 import { auth } from "../../theme/authTheme";
@@ -19,7 +22,6 @@ const STATS = [
 export function LandingScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const [statsOn, setStatsOn] = useState(false);
-  const scrolled = useRef(false);
 
   useEffect(() => {
     const t = setTimeout(() => setStatsOn(true), 400);
@@ -30,10 +32,13 @@ export function LandingScreen({ navigation }: Props) {
     <View style={styles.root}>
       <LinearGradient colors={["#05091a", "#081428", "#0a1e3d"]} style={StyleSheet.absoluteFill} />
 
-      <View style={[styles.topbar, { paddingTop: insets.top + 8 }]}>
-        <View>
-          <Text style={styles.logoNm}>UniHealth</Text>
-          <Text style={styles.logoTg}>Patient 360</Text>
+      <StaggerSection style={[styles.topbar, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.brandRow}>
+          <UniHealthLogo size={36} idPrefix="land" />
+          <View>
+            <Text style={styles.logoNm}>UniHealth</Text>
+            <Text style={styles.logoTg}>Patient 360</Text>
+          </View>
         </View>
         <View style={styles.topActions}>
           <Pressable style={styles.btnGhost} onPress={() => navigation.navigate("SignIn")}>
@@ -43,19 +48,14 @@ export function LandingScreen({ navigation }: Props) {
             <Text style={styles.btnPrimaryTxt}>Create Account</Text>
           </Pressable>
         </View>
-      </View>
+      </StaggerSection>
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
-        onScroll={() => {
-          if (!scrolled.current) {
-            scrolled.current = true;
-            setStatsOn(true);
-          }
-        }}
-        scrollEventThrottle={200}
+      <AnimatedScrollScreen
+        backgroundColor="transparent"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32, paddingHorizontal: 0 }}
+        padBottom={insets.bottom + 32}
       >
-        <View style={styles.hero}>
+        <View style={[styles.hero, { paddingHorizontal: 20 }]}>
           <Text style={styles.eyebrow}>Phase 1 Pilot · Kenya National EHR · 2026</Text>
           <Text style={styles.hl}>
             Your health records.{"\n"}
@@ -105,7 +105,7 @@ export function LandingScreen({ navigation }: Props) {
           <Text style={styles.trustWho}>— James Otieno, Patient, Kisumu County Hospital</Text>
         </View>
 
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingHorizontal: 20 }]}>
           <Pressable style={styles.btnPrimaryLg} onPress={() => navigation.navigate("Register")}>
             <Text style={styles.btnPrimaryTxt}>Get started — Create Account</Text>
           </Pressable>
@@ -113,7 +113,7 @@ export function LandingScreen({ navigation }: Props) {
             <Text style={styles.footerLink}>Already have an account? Sign In</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </AnimatedScrollScreen>
     </View>
   );
 }
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: auth.border,
   },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   logoNm: { fontFamily: fonts.serif, fontSize: 18, color: auth.text },
   logoTg: { fontFamily: fonts.mono, fontSize: 9, color: auth.textMuted, letterSpacing: 1 },
   topActions: { flexDirection: "row", gap: 8, alignItems: "center" },

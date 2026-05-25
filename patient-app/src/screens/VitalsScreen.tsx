@@ -1,5 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
 import { usePatient } from "../context/PatientContext";
@@ -12,12 +13,8 @@ export function VitalsScreen() {
   const rows = buildVitalRows(observations);
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader
-        eyebrow="Monitoring"
-        title="Vitals & Trends"
-        subtitle="Blood pressure, heart rate, SpO₂, weight — web adds 3D body view."
-      />
+    <AnimatedScrollScreen>
+      <ScreenIntro text="Blood pressure, heart rate, SpO₂, weight — latest readings from your record." />
       <Notice
         icon="📈"
         title="Trends"
@@ -38,13 +35,11 @@ export function VitalsScreen() {
           ))}
         </View>
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   vital: {
     width: "47%",

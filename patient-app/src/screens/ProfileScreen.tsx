@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { SecondaryButton } from "../components/ui/Buttons";
@@ -14,7 +15,7 @@ export function ProfileScreen({ onSignOut }: Props) {
   const p = summary?.patient;
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Personal details from your FHIR Patient record and session." />
       <Panel title="Identity">
         <Text style={styles.row}>
@@ -45,13 +46,11 @@ export function ProfileScreen({ onSignOut }: Props) {
           style={{ marginTop: 12, alignSelf: "flex-start" }}
         />
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   row: { fontFamily: fonts.sans, fontSize: 13, color: colors.t2, marginBottom: 8 },
   k: { fontFamily: fonts.sansExtra, color: colors.t3 },
   mono: { fontFamily: fonts.mono },
