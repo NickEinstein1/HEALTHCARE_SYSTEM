@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScreen";
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
@@ -13,7 +14,7 @@ export function BillsScreen() {
   const { toast } = usePatient();
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <AnimatedScrollScreen>
       <ScreenIntro text="Charges, cover settlements, and downloadable invoices." />
       <Notice icon="✅" title="All clear" body="No outstanding bills. UniHealth cover settled recent charges." tone="green" />
       <Panel title="Billing history" subtitle="Covered and out-of-pocket" noPadding>
@@ -33,13 +34,11 @@ export function BillsScreen() {
           </View>
         ))}
       </Panel>
-    </ScrollView>
+    </AnimatedScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: 16, paddingBottom: 32 },
   row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", padding: 14, borderBottomWidth: 1, borderBottomColor: colors.bdr, gap: 6 },
   desc: { fontFamily: fonts.sansExtra, fontSize: 12.5, color: colors.t1 },
   date: { fontFamily: fonts.mono, fontSize: 10, color: colors.t3, marginTop: 2 },
