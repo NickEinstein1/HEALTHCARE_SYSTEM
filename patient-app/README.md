@@ -2,7 +2,7 @@
 
 Mobile patient portal for **UniHealth** — same API, design language, and navigation structure as the web patient dashboard (`frontend/app` → `PatientDashboard`).
 
-## Patient 360 sections (MyChart-style + web parity)
+## Patient 360 sections (web portal parity)
 
 | Area | Mobile tab | Screens |
 | --- | --- | --- |
@@ -108,6 +108,13 @@ Values flow: **`.env` → `app.config.ts` → `Constants.expoConfig.extra` → `
 3. Data loads from the same FHIR routes as the web portal.
 
 Enable OIDC with `EXPO_PUBLIC_OIDC_ENABLED=true` when Keycloak is configured.
+
+## Performance
+
+- Bottom tabs use `lazy: false` so **Home, Health, Wallet, Messages, and Menu stay mounted** — switching tabs is instant.
+- In-stack navigation uses a **short fade** (~120ms) instead of a full slide.
+- One shared **search / notifications** layer (no duplicate modals per tab).
+- Screen content uses a single app header; subtitles only via `ScreenIntro` (less layout work per navigation).
 
 ## Project layout
 
