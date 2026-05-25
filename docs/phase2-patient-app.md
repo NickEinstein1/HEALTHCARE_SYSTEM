@@ -1,6 +1,6 @@
 # Phase 2 — patient mobile app
 
-**Status:** Patient 360 app in `patient-app/` (Expo SDK **54**) — full web portal section parity with fast tab/stack navigation (demo + live FHIR where wired).
+**Status:** Patient 360 app in `patient-app/` (Expo SDK **54**) — full web portal section parity with fast tab/stack navigation (live FHIR where wired, static fallbacks when empty).
 
 ## Sections (web `PatientDashboard` parity)
 
@@ -20,7 +20,7 @@ Global search and notifications match web topbar behavior.
 - Appointments list / book / cancel / slots
 - Consent grant / revoke / search
 
-## Demo / static (same copy as web)
+## Static fallbacks (same copy as web when API empty)
 
 - UniHealth cover balance, claims, contributions, bills, M-PESA / M-TIBA flows
 - Visit history rows, health record problems/allergies, documents list
