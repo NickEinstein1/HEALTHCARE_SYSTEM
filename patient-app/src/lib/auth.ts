@@ -1,8 +1,8 @@
 import { config } from "./config";
 import { clearSession, setAccessToken, setPatientId, setSignedIn } from "./storage";
 
-/** Demo patient sign-in (matches web portal stub flow). */
-export async function signInDemo(patientId: string): Promise<void> {
+/** Patient sign-in after MFA (local session; matches web portal stub flow). */
+export async function signInPatient(patientId: string): Promise<void> {
   await setPatientId(patientId || config.defaultPatientId);
   await setSignedIn(true);
 }
