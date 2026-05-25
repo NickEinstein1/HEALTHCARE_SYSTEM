@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
 import { SecondaryButton } from "../components/ui/Buttons";
@@ -14,7 +14,7 @@ export function BillsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Finance" title="Bills & Invoices" subtitle="Charges, cover settlements, and downloadable invoices." />
+      <ScreenIntro text="Charges, cover settlements, and downloadable invoices." />
       <Notice icon="✅" title="All clear" body="No outstanding bills. UniHealth cover settled recent charges." tone="green" />
       <Panel title="Billing history" subtitle="Covered and out-of-pocket" noPadding>
         {BILLS.map((b) => (
