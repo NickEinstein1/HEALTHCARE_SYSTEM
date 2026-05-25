@@ -29,7 +29,7 @@ export function buildVitalRows(observations: Observation[]): VitalRow[] {
   });
 
   if (!rows.some((r) => r.value)) {
-    const demo: Record<string, string> = {
+    const fallbackValues: Record<string, string> = {
       bp: "120/80",
       hr: "72",
       temp: "36.8",
@@ -39,8 +39,8 @@ export function buildVitalRows(observations: Observation[]): VitalRow[] {
     };
     const now = new Date().toISOString().slice(0, 16).replace("T", " ");
     for (const r of rows) {
-      if (demo[r.key]) {
-        r.value = demo[r.key];
+      if (fallbackValues[r.key]) {
+        r.value = fallbackValues[r.key];
         r.measuredAt = now;
       }
     }
