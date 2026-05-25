@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
@@ -23,7 +23,7 @@ export function VisitsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Clinical History" title="Visit History" subtitle="All hospital and clinic visits on your UniHealth record." />
+      <ScreenIntro text="All hospital and clinic visits on your UniHealth record." />
       <Panel title="All visits" subtitle="FHIR encounters + pilot demo rows">
         {rows.map((v) => (
           <View key={v.ref} style={styles.row}>
