@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { authStackScreenOptions } from "./navigationConfig";
 import { LandingScreen } from "../screens/landing/LandingScreen";
 import { PatientSignInScreen } from "../screens/auth/PatientSignInScreen";
 import { RegisterScreen } from "../screens/auth/RegisterScreen";
@@ -19,14 +20,7 @@ type Props = { onSignedIn: () => void };
 
 export function AuthNavigator({ onSignedIn }: Props) {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        animation: "slide_from_right",
-        contentStyle: { backgroundColor: "#05091a" },
-      }}
-      initialRouteName="Landing"
-    >
+    <Stack.Navigator screenOptions={authStackScreenOptions} initialRouteName="Landing">
       <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="SignIn" component={PatientSignInScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
