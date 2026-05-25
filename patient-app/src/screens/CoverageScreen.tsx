@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { CoverCard } from "../components/CoverCard";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { ProgressBar } from "../components/ui/ProgressBar";
@@ -15,7 +15,7 @@ export function CoverageScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="UniHealth Cover" title="My Cover" subtitle={`Benefits & claims · ${MEMBER_ID}`} />
+      <ScreenIntro text={`Benefits & claims · ${MEMBER_ID}`} />
       <View style={styles.actions}>
         <SecondaryButton label="🔗 Link Account" onPress={() => toast("Opening insurer linking portal…")} />
         <PrimaryButton label="+ File a Claim" onPress={() => toast("Claim form started — coordinator reviews within 5 days.")} />
