@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PayMethodRow } from "../components/PayMethodRow";
 import { PrimaryButton } from "../components/ui/Buttons";
@@ -13,7 +13,7 @@ export function PayScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Payments" title="Make a Payment" subtitle="Bills, contributions, or M-TIBA wallet top-up." />
+      <ScreenIntro text="Bills, contributions, or M-TIBA wallet top-up." />
       <View style={styles.wallet}>
         <Text style={styles.walletLbl}>M-TIBA Health Wallet</Text>
         <Text style={styles.walletAmt}>Ksh {MTIBA_BALANCE.toLocaleString()}</Text>
