@@ -13,6 +13,11 @@ function PortalStackHeaderInner({ options }: NativeStackHeaderProps) {
 
 export const PortalStackHeader = memo(PortalStackHeaderInner);
 
+/** Native stack requires `header` to be a function, not a component reference. */
+export function renderPortalStackHeader(props: NativeStackHeaderProps) {
+  return <PortalStackHeader {...props} />;
+}
+
 export function portalHeader(meta: PortalHeaderMeta): NativeStackNavigationOptions {
   return { portalHeader: meta } as NativeStackNavigationOptions;
 }
