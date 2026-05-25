@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { enableFreeze } from "react-native-screens";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -19,6 +20,8 @@ import { isSignedIn } from "./src/lib/storage";
 import { signOut } from "./src/lib/auth";
 import { assertEnvLoaded } from "./src/lib/config";
 import { colors } from "./src/theme/colors";
+
+enableFreeze(true);
 
 function AppInner() {
   const [authed, setAuthed] = useState<boolean | null>(null);
