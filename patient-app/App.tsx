@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { enableFreeze } from "react-native-screens";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -14,6 +15,7 @@ import { DMSerifDisplay_400Regular } from "@expo-google-fonts/dm-serif-display";
 import { JetBrainsMono_500Medium } from "@expo-google-fonts/jetbrains-mono";
 import { PatientProvider, usePatient } from "./src/context/PatientContext";
 import { ToastBanner } from "./src/components/ToastBanner";
+import { BrandSplash } from "./src/components/BrandSplash";
 import { MainTabs } from "./src/navigation/MainTabs";
 import { AuthNavigator } from "./src/navigation/AuthNavigator";
 import { isSignedIn } from "./src/lib/storage";
@@ -22,6 +24,18 @@ import { assertEnvLoaded } from "./src/lib/config";
 import { colors } from "./src/theme/colors";
 
 enableFreeze(true);
+
+const navTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: colors.bg,
+    card: colors.card,
+    border: colors.bdr,
+    primary: colors.g,
+    text: colors.t1,
+  },
+};
 
 function AppInner() {
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -37,11 +51,7 @@ function AppInner() {
   }, []);
 
   if (authed === null) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.g} />
-      </View>
-    );
+    return <BrandSplash />;
   }
 
   return (
@@ -70,19 +80,21 @@ export default function App() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.g} />
-      </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BrandSplash message="Preparing fonts…" />
+      </GestureHandlerRootView>
     );
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <PatientProvider>
-          <AppInner />
-        </PatientProvider>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <NavigationContainer theme={navTheme}>
+          <PatientProvider>
+            <AppInner />
+          </PatientProvider>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
