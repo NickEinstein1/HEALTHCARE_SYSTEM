@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { Tag } from "../components/ui/Tag";
@@ -63,11 +63,7 @@ export function AppointmentsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader
-        eyebrow="Health"
-        title="Appointments"
-        subtitle="Book, view and cancel appointments — same API as the web portal."
-      />
+      <ScreenIntro text="Book, view, and cancel appointments — same API as the web portal." />
       <PrimaryButton label="+ Book appointment" onPress={() => setBookOpen(true)} style={{ marginBottom: 14 }} />
 
       <Panel title="Your appointments" noPadding>
