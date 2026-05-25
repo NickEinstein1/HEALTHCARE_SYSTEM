@@ -22,7 +22,7 @@ Global **search** and **notifications** (top bar) jump to any section — same i
 | Sign in | `/sign-in` (patient) | `PatientSignInScreen` → `MfaScreen` → `AuthSuccessScreen` |
 | Register | `/create-account` (patient) | `RegisterScreen` → `MfaScreen` → success |
 
-Sign-out returns to the **landing page**, not a bare sign-in form. Demo launch uses patient **P001** after OTP (same as staging stub).
+Sign-out returns to the **landing page**, not a bare sign-in form. After OTP verification, the app opens Patient 360 with patient **P001** (staging default).
 
 ## Design parity with web
 
@@ -37,6 +37,18 @@ Sign-out returns to the **landing page**, not a bare sign-in form. Demo launch u
 | Appointments + consent | `AppointmentsScreen`, `ConsentScreen` |
 
 The web **3D vitals figure** (`BodyVitalsFigure`) is not ported to native yet; vitals use the same FHIR observation cards as the web fallback grid.
+
+## Motion & UI system
+
+| Piece | Path | Role |
+| --- | --- | --- |
+| UniHealth logo (SVG) | `src/components/brand/UniHealthLogo.tsx` | Header, auth, splash, hero watermark |
+| Staggered scroll sections | `src/components/animated/AnimatedScrollScreen.tsx` | Fade-up on mount for hub + detail screens |
+| Stagger fade-up | `src/components/animated/StaggerSection.tsx` | RN `Animated` (Expo Go safe) |
+| Typography blocks | `src/components/ui/SectionLead.tsx`, `InfoRow.tsx` | Intro copy + structured clinical rows |
+| Elevation | `src/theme/shadows.ts` | Green-tinted card / tab bar shadows |
+
+Scroll stagger uses React Native `Animated` (no `react-native-reanimated`) so the app runs reliably in **Expo Go**. After dependency changes, restart Metro (`npx expo start -c`).
 
 ## Prerequisites
 
@@ -88,7 +100,7 @@ cp .env.example .env
 | Variable | Purpose |
 | -------- | ------- |
 | `EXPO_PUBLIC_API_BASE_URL` | Gateway URL (staging `:8100`) |
-| `EXPO_PUBLIC_DEFAULT_PATIENT_ID` | Demo patient (`P001`) |
+| `EXPO_PUBLIC_DEFAULT_PATIENT_ID` | Default patient (`P001`) |
 | `EXPO_PUBLIC_OIDC_ENABLED` | Optional OIDC (`true` / unset) |
 | `EXPO_PUBLIC_OIDC_ISSUER` | Keycloak realm URL |
 | `EXPO_PUBLIC_OIDC_CLIENT_ID` | OIDC client id |
@@ -101,11 +113,12 @@ Values flow: **`.env` → `app.config.ts` → `Constants.expoConfig.extra` → `
 | Android emulator | `http://10.0.2.2:8100` |
 | Physical phone on LAN | `http://<your-laptop-ip>:8100` |
 
-## Sign-in (demo)
+## Sign-in
 
-1. Enter patient ID **`P001`** (or tap **Use demo patient P001**).
-2. Any 4-digit PIN + mobile number (matches web stub patient sign-in).
-3. Data loads from the same FHIR routes as the web portal.
+1. Complete patient sign-in (ID, PIN, phone) or create an account.
+2. Enter OTP, then launch Patient 360 (default patient **`P001`** when using staging).
+3. Any 4-digit PIN + mobile number matches the web portal stub flow.
+4. Health data loads from the same FHIR routes as the web portal.
 
 Enable OIDC with `EXPO_PUBLIC_OIDC_ENABLED=true` when Keycloak is configured.
 
