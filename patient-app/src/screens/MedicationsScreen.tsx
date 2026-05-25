@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
@@ -16,7 +16,7 @@ export function MedicationsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Pharmacy" title="My Medications" subtitle="Prescriptions, refills, and pharmacy routing." />
+      <ScreenIntro text="Prescriptions, refills, and pharmacy routing." />
       <Notice
         icon="💊"
         title="Refill reminder"
