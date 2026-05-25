@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PayMethodRow } from "../components/PayMethodRow";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
@@ -15,7 +15,7 @@ export function ContributionsScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Cover" title="Contributions" subtitle="Monthly UniHealth health cover payment history." />
+      <ScreenIntro text="Monthly UniHealth health cover payment history." />
       <View style={styles.actions}>
         <SecondaryButton label="📥 Statement" onPress={() => toast("Downloading contribution statement…")} />
         <PrimaryButton label="+ Pay Ksh 500" onPress={() => toast("M-PESA STK push: Paybill 400100 · UniHealth Health")} />
