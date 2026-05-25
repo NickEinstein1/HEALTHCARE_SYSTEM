@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { Tag } from "../components/ui/Tag";
@@ -48,11 +48,7 @@ export function ConsentScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader
-        eyebrow="Privacy"
-        title="Privacy & Consent"
-        subtitle="KDPA 2019 — control which facilities can access your record."
-      />
+      <ScreenIntro text="KDPA 2019 — control which facilities can access your record." />
       <View style={styles.badge}>
         <Text style={styles.badgeText}>🔒 KDPA 2019 compliant</Text>
       </View>
