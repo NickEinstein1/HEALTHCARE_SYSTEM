@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { PageHeader } from "../components/PageHeader";
+import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { SecondaryButton } from "../components/ui/Buttons";
 import { usePatient } from "../context/PatientContext";
@@ -15,7 +15,7 @@ export function ProfileScreen({ onSignOut }: Props) {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-      <PageHeader eyebrow="Account" title="My Profile" subtitle="Personal details from FHIR Patient." />
+      <ScreenIntro text="Personal details from your FHIR Patient record and session." />
       <Panel title="Identity">
         <Text style={styles.row}>
           <Text style={styles.k}>Name </Text>
