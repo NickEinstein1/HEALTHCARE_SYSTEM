@@ -274,6 +274,60 @@ def bootstrap_ai_state() -> None:
     _merge_sqlite_census_history_if_enabled()
 
 
+# ----- Patient portal profile + credentials (Phase 2 mobile / web profile) -----
+# Default portal password for pilot P001: Patient360!
+from app.patient_security import hash_password as _hash_portal_password
+
+_pilot_default_password = _hash_portal_password("Patient360!")
+
+patient_portal_profiles: dict[str, dict] = {
+    "P001": {
+        "patient_id": "P001",
+        "given_name": "Patience",
+        "family_name": "Mutiso",
+        "email": "p.mutiso@example.com",
+        "phone": "0712345678",
+        "emergency_name": "James Otieno",
+        "emergency_phone": "0722111222",
+        "preferred_language": "en",
+        "notify_sms": True,
+        "notify_email": True,
+        "notify_push": True,
+        "notify_appointments": True,
+        "notify_results": True,
+        "password_hash": _pilot_default_password,
+        "password_change_count": 0,
+        "updated_at": time.time(),
+    },
+}
+
+
+def get_or_create_portal_profile(patient_id: str) -> dict:
+    pid = patient_id.strip()
+    if pid in patient_portal_profiles:
+        return patient_portal_profiles[pid]
+    row = {
+        "patient_id": pid,
+        "given_name": "",
+        "family_name": "",
+        "email": "",
+        "phone": "",
+        "emergency_name": "",
+        "emergency_phone": "",
+        "preferred_language": "en",
+        "notify_sms": True,
+        "notify_email": True,
+        "notify_push": True,
+        "notify_appointments": True,
+        "notify_results": True,
+        "password_hash": "",
+        "password_change_count": 0,
+        "updated_at": time.time(),
+    }
+    patient_portal_profiles[pid] = row
+    return row
+
+
 # ----- Appointments (cross-user: booked by patient, visible to doctor/nurse) -----
 appointments: list[dict] = [
     {

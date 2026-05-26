@@ -52,6 +52,37 @@ export type Observation = {
   effective_time?: string;
 };
 
+export type PatientProfile = {
+  patient_id: string;
+  given_name: string;
+  family_name: string;
+  email: string;
+  phone: string;
+  emergency_name: string;
+  emergency_phone: string;
+  preferred_language: string;
+  notify_sms: boolean;
+  notify_email: boolean;
+  notify_push: boolean;
+  notify_appointments: boolean;
+  notify_results: boolean;
+  nhi_number?: string | null;
+  gender?: string | null;
+  birth_date?: string | null;
+  password_changes_used: number;
+  password_changes_remaining: number;
+  password_changes_allowed: number;
+  has_password: boolean;
+  updated_at?: number;
+};
+
+export type ChangePasswordResult = {
+  ok: boolean;
+  message: string;
+  password_changes_used: number;
+  password_changes_remaining: number;
+};
+
 export type MedicationRequest = {
   id: string;
   medication?: string;
@@ -93,5 +124,20 @@ export const api = {
   },
   consentRevoke(payload: { patient_id: string; facility_id: string; scope: string }): Promise<unknown> {
     return postJson("/consent/revoke", payload);
+  },
+  patientProfile(patientId: string): Promise<PatientProfile> {
+    return getJson(`/patient/${encodeURIComponent(patientId)}/profile`);
+  },
+  patientProfileUpdate(patientId: string, patch: Partial<PatientProfile>): Promise<PatientProfile> {
+    return postJson(`/patient/${encodeURIComponent(patientId)}/profile`, patch, "PATCH");
+  },
+  changePassword(
+    patientId: string,
+    body: { current_password: string; new_password: string; confirm_password: string },
+  ): Promise<ChangePasswordResult> {
+    return postJson(`/patient/${encodeURIComponent(patientId)}/security/change-password`, body);
+  },
+  uiAction(payload: Record<string, unknown>): Promise<{ id?: string }> {
+    return postJson("/ui/actions", payload);
   },
 };

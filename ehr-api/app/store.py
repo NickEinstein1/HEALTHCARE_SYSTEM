@@ -93,6 +93,38 @@ async def set_summary_in_cache(patient_id: str, summary: PatientSummary) -> None
     await client.set(key, _summary_to_json(summary), ex=settings.cache_ttl_seconds)
 
 
+async def delete_summary_cache(patient_id: str) -> None:
+    """Invalidate cached patient summary after profile/demographics update."""
+    try:
+        client = _require_redis_client()
+        await client.delete(f"patient:{patient_id}:summary")
+    except Exception:
+        pass
+
+
+async def update_patient_demographics(
+    patient_id: str,
+    *,
+    given_name: str | None = None,
+    family_name: str | None = None,
+) -> None:
+    """Update FHIR patient name fields in PostgreSQL when portal profile is saved."""
+    pool = _require_pool()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            UPDATE patients
+            SET given_name = COALESCE(NULLIF($2, ''), given_name),
+                family_name = COALESCE(NULLIF($3, ''), family_name),
+                updated_at = NOW()
+            WHERE id = $1
+            """,
+            patient_id,
+            given_name or "",
+            family_name or "",
+        )
+
+
 async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optional[PatientSummary]:
     """Load patient + last N encounters from PostgreSQL."""
     pool = _require_pool()
