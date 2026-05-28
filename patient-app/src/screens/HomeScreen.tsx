@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import type { CompositeNavigationProp } from "@react-navigation/native";
@@ -12,9 +13,12 @@ import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
 import { useAppointments } from "../hooks/useAppointments";
 import { AI_INSIGHTS, REFERENCE_RESULTS, displayAflId, MEMBER_ID } from "../lib/patientPortalData";
+import { api, type PatientInsight } from "../lib/api";
+import { buildVitalRows } from "../lib/vitals";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 import type { HealthStackParamList, RootTabParamList } from "../navigation/types";
+import type { PatientInsightRoute } from "../lib/api";
 
 type Nav = CompositeNavigationProp<
   BottomTabNavigationProp<RootTabParamList, "Home">,
@@ -31,6 +35,70 @@ export function HomeScreen() {
 
   const medLabel = (m: (typeof meds)[0]) => m.medication_code ?? m.medication ?? "Medication";
   const medDose = (m: (typeof meds)[0]) => m.dosage_text ?? m.dosage ?? "—";
+
+  // Live, patient-safe AI insights (fallback to static copy when the API is unavailable).
+  const [aiInsights, setAiInsights] = useState<PatientInsight[]>(AI_INSIGHTS as unknown as PatientInsight[]);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [alerts, setAlerts] = useState<(PatientInsight & { id: string; ts?: string })[]>([]);
+  const [alertsBusy, setAlertsBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (!patientId) return;
+
+      const vitalRows = buildVitalRows(observations);
+      const bp = vitalRows.find((r) => r.key === "bp")?.value;
+      const hr = vitalRows.find((r) => r.key === "hr")?.value;
+      const spo2 = vitalRows.find((r) => r.key === "spo2")?.value;
+      const temp = vitalRows.find((r) => r.key === "temp")?.value;
+
+      const vitals = {
+        rr: 16,
+        sbp: parseSbp(bp, 120),
+        hr: parseNum(hr, 75),
+        spo2: parseNum(spo2, 98),
+        temp: parseFloatNum(temp, 37.0),
+        gcs: 15,
+      };
+
+      setAiBusy(true);
+      try {
+        const res = await api.patientInsights(patientId, vitals);
+        if (cancelled) return;
+        if (res?.insights?.length) setAiInsights(res.insights);
+      } catch {
+        // Keep static fallback copy (no toast spam on background refresh).
+      } finally {
+        if (!cancelled) setAiBusy(false);
+      }
+    }
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [observations, patientId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadAlerts() {
+      setAlertsBusy(true);
+      try {
+        const res = await api.patientAlerts(patientId, 6);
+        if (!cancelled) setAlerts(res.alerts ?? []);
+      } catch {
+        if (!cancelled) setAlerts([]);
+      } finally {
+        if (!cancelled) setAlertsBusy(false);
+      }
+    }
+    void loadAlerts();
+    return () => {
+      cancelled = true;
+    };
+  }, [patientId]);
 
   return (
     <AnimatedScrollScreen refreshing={loading} onRefresh={refresh}>
@@ -86,15 +154,12 @@ export function HomeScreen() {
       ) : null}
 
       <Panel title="AI Health Insights" subtitle="Personalised from your latest results & vitals">
-        {AI_INSIGHTS.map((row) => (
+        {aiBusy ? <ActivityIndicator color={colors.g} style={{ marginBottom: 12 }} /> : null}
+        {aiInsights.map((row) => (
           <Pressable
             key={row.title}
             style={styles.aiRow}
-            onPress={() => {
-              if (row.tone === "red") nav.navigate("Health", { screen: "Results" });
-              else if (row.title.includes("Medication")) nav.navigate("Health", { screen: "Medications" });
-              else nav.navigate("Wallet", { screen: "Coverage" });
-            }}
+            onPress={() => navigatePatientInsight(nav, row.route)}
           >
             <Text style={styles.aiIco}>{row.icon}</Text>
             <View style={{ flex: 1 }}>
@@ -105,6 +170,25 @@ export function HomeScreen() {
           </Pressable>
         ))}
         <Text style={styles.kdpa}>🔒 KDPA 2019 — insights use your records only.</Text>
+      </Panel>
+
+      <Panel title="Alerts" subtitle="Important updates on your record">
+        {alertsBusy ? <ActivityIndicator color={colors.g} style={{ marginBottom: 12 }} /> : null}
+        {alerts.length === 0 ? (
+          <Text style={styles.empty}>No active alerts.</Text>
+        ) : (
+          alerts.slice(0, 4).map((a) => (
+            <Pressable key={a.id} style={styles.aiRow} onPress={() => navigatePatientInsight(nav, a.route)}>
+              <Text style={styles.aiIco}>{a.icon}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.aiTi}>{a.title}</Text>
+                <Text style={styles.aiSu}>{a.body}</Text>
+              </View>
+              <Tag label={a.tag} tone={a.tone === "red" ? "red" : a.tone === "amber" ? "amber" : "blue"} />
+            </Pressable>
+          ))
+        )}
+        <Text style={styles.kdpa}>🔒 KDPA 2019 — you see alerts for your record only.</Text>
       </Panel>
 
       <Panel
@@ -193,6 +277,51 @@ export function HomeScreen() {
   );
 }
 
+function parseNum(v: string | null | undefined, fallback: number): number {
+  if (!v) return fallback;
+  const s = String(v);
+  const m = s.match(/-?\d+(\.\d+)?/);
+  if (!m) return fallback;
+  const n = Number(m[0]);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.round(n);
+}
+
+function parseFloatNum(v: string | null | undefined, fallback: number): number {
+  if (!v) return fallback;
+  const s = String(v);
+  const m = s.match(/-?\d+(\.\d+)?/);
+  if (!m) return fallback;
+  const n = Number(m[0]);
+  if (!Number.isFinite(n)) return fallback;
+  return n;
+}
+
+function navigatePatientInsight(nav: Nav, route?: PatientInsightRoute) {
+  switch (route) {
+    case "medications":
+      nav.navigate("Health", { screen: "Medications" });
+      break;
+    case "appointments":
+      nav.navigate("Health", { screen: "Appointments" });
+      break;
+    case "results":
+      nav.navigate("Health", { screen: "Results" });
+      break;
+    case "vitals":
+    default:
+      nav.navigate("Health", { screen: "Vitals" });
+  }
+}
+
+function parseSbp(v: string | null | undefined, fallback: number): number {
+  if (!v) return fallback;
+  const s = String(v);
+  // Common formats: "120/80", "120 - 80", "SBP 120"
+  const first = s.split("/")[0]?.trim();
+  return parseNum(first || s, fallback);
+}
+
 const styles = StyleSheet.create({
   idPills: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12, marginTop: -8 },
   pill: {
@@ -238,6 +367,7 @@ const styles = StyleSheet.create({
   },
   errText: { fontFamily: fonts.sansBold, fontSize: 12, color: colors.r },
   errHint: { fontFamily: fonts.sans, fontSize: 11, color: colors.t3, marginTop: 4 },
+  empty: { fontFamily: fonts.sans, fontSize: 12, color: colors.t3, paddingVertical: 6 },
   aiRow: { flexDirection: "row", gap: 8, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#eee" },
   aiIco: { fontSize: 16 },
   aiTi: { fontFamily: fonts.sansExtra, fontSize: 12, color: colors.t1 },

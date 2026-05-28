@@ -1,6 +1,7 @@
 """Data access: Redis (hot) and PostgreSQL (warm)."""
 
 import json
+import time
 from typing import Optional
 
 import asyncpg
@@ -36,6 +37,10 @@ async def close_postgres_pool() -> None:
     if _pg_pool is not None:
         await _pg_pool.close()
         _pg_pool = None
+
+
+def has_postgres_pool() -> bool:
+    return _pg_pool is not None
 
 
 def _require_pool() -> asyncpg.Pool:
@@ -225,6 +230,241 @@ async def get_observations_from_db(patient_id: str, limit: int) -> list[Observat
             )
             for r in rows
         ]
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 AI Assist pilot — durable anomalies (optional; requires Postgres pool)
+# ---------------------------------------------------------------------------
+
+async def insert_ai_anomalies(anomalies: list[dict]) -> int:
+    """
+    Best-effort insert of anomaly rows.
+    Returns number of rows inserted (0 if Postgres not initialized).
+    """
+    if not anomalies or _pg_pool is None:
+        return 0
+    pool = _require_pool()
+    inserted = 0
+    async with pool.acquire() as conn:
+        for a in anomalies:
+            try:
+                await conn.execute(
+                    """
+                    INSERT INTO ai_anomalies (
+                      id, patient_id, metric, value, severity, msg, type,
+                      model_version, generated_at, acknowledged,
+                      ack_by, ack_ts, ack_note, payload_json
+                    ) VALUES (
+                      $1,$2,$3,$4,$5,$6,$7,
+                      $8,$9,$10,
+                      $11,$12,$13,$14
+                    )
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    str(a.get("id") or ""),
+                    str(a.get("patient_id") or ""),
+                    str(a.get("metric") or ""),
+                    float(a.get("value")) if isinstance(a.get("value"), (int, float)) else None,
+                    str(a.get("severity") or ""),
+                    str(a.get("msg") or a.get("detail") or ""),
+                    str(a.get("type") or ""),
+                    str(a.get("model_version") or ""),
+                    a.get("generated_at"),
+                    bool(a.get("acknowledged") or False),
+                    a.get("ack_by"),
+                    a.get("ack_ts"),
+                    a.get("ack_note"),
+                    json.dumps(a),
+                )
+                inserted += 1
+            except Exception:
+                continue
+    return inserted
+
+
+async def list_ai_anomalies(
+    patient_id: str | None = None,
+    severity: str | None = None,
+    ack: bool | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    if _pg_pool is None:
+        return []
+    pool = _require_pool()
+    q = [
+        "SELECT payload_json FROM ai_anomalies WHERE 1=1",
+    ]
+    args: list = []
+    n = 0
+    if patient_id:
+        n += 1
+        q.append(f"AND patient_id = ${n}")
+        args.append(patient_id)
+    if severity:
+        n += 1
+        q.append(f"AND UPPER(severity) = UPPER(${n})")
+        args.append(severity)
+    if ack is not None:
+        n += 1
+        q.append(f"AND acknowledged = ${n}")
+        args.append(bool(ack))
+    n += 1
+    q.append("ORDER BY generated_at DESC NULLS LAST, created_at DESC")
+    q.append(f"LIMIT ${n}")
+    args.append(int(limit))
+    sql = "\n".join(q)
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(sql, *args)
+    out: list[dict] = []
+    for r in rows:
+        try:
+            out.append(json.loads(r["payload_json"]))
+        except Exception:
+            continue
+    return out
+
+
+async def acknowledge_ai_anomaly(anomaly_id: str, role: str, note: str = "") -> bool:
+    if _pg_pool is None:
+        return False
+    pool = _require_pool()
+    ack_ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    async with pool.acquire() as conn:
+        res = await conn.execute(
+            """
+            UPDATE ai_anomalies
+            SET acknowledged = TRUE,
+                ack_by = $2,
+                ack_ts = $3,
+                ack_note = $4,
+                payload_json = jsonb_set(
+                  jsonb_set(
+                    jsonb_set(
+                      jsonb_set(payload_json::jsonb, '{acknowledged}', 'true'::jsonb, true),
+                      '{ack_by}', to_jsonb($2::text), true
+                    ),
+                    '{ack_ts}', to_jsonb($3::text), true
+                  ),
+                  '{ack_note}', to_jsonb($4::text), true
+                )::text
+            WHERE id = $1
+            """,
+            anomaly_id,
+            role,
+            ack_ts,
+            note or "",
+        )
+    # asyncpg returns "UPDATE <n>"
+    try:
+        return int(str(res).split()[-1]) > 0
+    except Exception:
+        return False
+
+
+async def insert_ai_audit_entry(entry: dict) -> bool:
+    """
+    Best-effort insert of a single audit entry.
+    Returns True if inserted (False if Postgres not initialized or insert fails).
+    """
+    if not entry or _pg_pool is None:
+        return False
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO ai_audit_log (
+                  audit_id, event, role, patient_id, model_version,
+                  payload_json, ts, feedback_json
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+                ON CONFLICT (audit_id) DO NOTHING
+                """,
+                str(entry.get("audit_id") or ""),
+                str(entry.get("event") or ""),
+                str(entry.get("role") or ""),
+                entry.get("patient_id"),
+                entry.get("model_version"),
+                json.dumps(entry.get("payload") or {}),
+                entry.get("ts"),
+                json.dumps(entry.get("feedback")) if entry.get("feedback") else None,
+            )
+        return True
+    except Exception:
+        return False
+
+
+async def list_ai_audit_entries(event: str | None = None, limit: int = 100) -> list[dict]:
+    if _pg_pool is None:
+        return []
+    pool = _require_pool()
+    limit = max(1, min(int(limit), 500))
+    args: list = []
+    n = 0
+    where = "WHERE 1=1"
+    if event:
+        n += 1
+        where += f" AND event = ${n}"
+        args.append(event)
+    n += 1
+    args.append(limit)
+    sql = f"""
+      SELECT audit_id, event, role, patient_id, model_version, payload_json, ts, feedback_json
+      FROM ai_audit_log
+      {where}
+      ORDER BY ts DESC NULLS LAST, created_at DESC
+      LIMIT ${n}
+    """
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(sql, *args)
+    out: list[dict] = []
+    for r in rows:
+        try:
+            payload = json.loads(r["payload_json"]) if r["payload_json"] else {}
+        except Exception:
+            payload = {}
+        try:
+            feedback = json.loads(r["feedback_json"]) if r["feedback_json"] else None
+        except Exception:
+            feedback = None
+        out.append(
+            {
+                "audit_id": r["audit_id"],
+                "event": r["event"],
+                "role": r["role"],
+                "patient_id": r["patient_id"],
+                "model_version": r["model_version"],
+                "payload": payload,
+                "ts": r["ts"],
+                "feedback": feedback,
+            }
+        )
+    return out
+
+
+async def set_ai_audit_feedback(
+    audit_id: str,
+    feedback: dict,
+) -> bool:
+    if _pg_pool is None:
+        return False
+    pool = _require_pool()
+    try:
+        async with pool.acquire() as conn:
+            res = await conn.execute(
+                """
+                UPDATE ai_audit_log
+                SET feedback_json = $2
+                WHERE audit_id = $1
+                """,
+                audit_id,
+                json.dumps(feedback),
+            )
+        try:
+            return int(str(res).split()[-1]) > 0
+        except Exception:
+            return False
+    except Exception:
+        return False
 
 
 async def get_med_requests_from_cache(patient_id: str) -> Optional[list[MedicationRequest]]:

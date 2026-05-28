@@ -23,6 +23,14 @@ chk() {
 }
 
 chk "GET /ai/status" "$BASE/ai/status"
+chk "POST /ai/patient/insights" \
+  -H "Content-Type: application/json" \
+  -H "X-UniHealth-Role: patient" \
+  -d '{"patient_id":"P001","vitals":{"rr":16,"spo2":98,"sbp":120,"hr":75,"temp":37.0,"gcs":15}}' \
+  "$BASE/ai/patient/insights"
+chk "GET /ai/patient/alerts" \
+  -H "X-UniHealth-Role: patient" \
+  "$BASE/ai/patient/alerts?patient_id=P001&limit=5"
 chk "GET /ai/wards" -H "X-UniHealth-Role: doctor" "$BASE/ai/wards"
 
 wid="$(

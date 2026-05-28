@@ -83,6 +83,32 @@ export type ChangePasswordResult = {
   password_changes_remaining: number;
 };
 
+export type PatientInsightRoute = "vitals" | "results" | "medications" | "appointments";
+
+export type PatientInsight = {
+  icon: string;
+  title: string;
+  body: string;
+  tag: string;
+  tone: "red" | "amber" | "blue";
+  route?: PatientInsightRoute;
+};
+
+export type PatientInsightsResult = {
+  insights: PatientInsight[];
+  news2: {
+    score: number;
+    risk: string;
+    action: string;
+    components?: Record<string, number>;
+  };
+  audit_id?: string;
+};
+
+export type PatientAlertsResult = {
+  alerts: (PatientInsight & { id: string; ts?: string })[];
+};
+
 export type MedicationRequest = {
   id: string;
   medication?: string;
@@ -136,6 +162,15 @@ export const api = {
     body: { current_password: string; new_password: string; confirm_password: string },
   ): Promise<ChangePasswordResult> {
     return postJson(`/patient/${encodeURIComponent(patientId)}/security/change-password`, body);
+  },
+  patientInsights(
+    patientId: string,
+    vitals: { rr?: number; spo2?: number; sbp?: number; hr?: number; temp?: number; gcs?: number },
+  ): Promise<PatientInsightsResult> {
+    return postJson("/ai/patient/insights", { patient_id: patientId, vitals });
+  },
+  patientAlerts(patientId: string, limit = 10): Promise<PatientAlertsResult> {
+    return getJson(`/ai/patient/alerts?patient_id=${encodeURIComponent(patientId)}&limit=${limit}`);
   },
   uiAction(payload: Record<string, unknown>): Promise<{ id?: string }> {
     return postJson("/ui/actions", payload);

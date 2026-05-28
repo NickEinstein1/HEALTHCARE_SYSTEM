@@ -91,3 +91,47 @@ CREATE TABLE IF NOT EXISTS allergy_intolerances (
 
 CREATE INDEX IF NOT EXISTS idx_allergy_patient_date
     ON allergy_intolerances(patient_id, recorded_date DESC);
+
+-- Phase 3 AI Assist pilot — durable anomaly store (optional; used when Postgres enabled)
+CREATE TABLE IF NOT EXISTS ai_anomalies (
+    id              VARCHAR(128) PRIMARY KEY,
+    patient_id      VARCHAR(64) NOT NULL,
+    metric          VARCHAR(64),
+    value           DOUBLE PRECISION,
+    severity        VARCHAR(16),
+    msg             VARCHAR(512),
+    type            VARCHAR(64),
+    model_version   VARCHAR(32),
+    generated_at    TIMESTAMPTZ,
+    acknowledged    BOOLEAN NOT NULL DEFAULT FALSE,
+    ack_by          VARCHAR(32),
+    ack_ts          TIMESTAMPTZ,
+    ack_note        VARCHAR(512),
+    payload_json    TEXT NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_anomalies_patient_time
+    ON ai_anomalies(patient_id, generated_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_ai_anomalies_ack
+    ON ai_anomalies(acknowledged, generated_at DESC);
+
+-- Phase 3 AI Assist pilot — KDPA audit log durability (optional; admin-only read)
+CREATE TABLE IF NOT EXISTS ai_audit_log (
+    audit_id        VARCHAR(128) PRIMARY KEY,
+    event           VARCHAR(128) NOT NULL,
+    role            VARCHAR(32) NOT NULL,
+    patient_id      VARCHAR(64),
+    model_version   VARCHAR(32),
+    payload_json    TEXT NOT NULL,
+    ts              TIMESTAMPTZ,
+    feedback_json   TEXT,
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_audit_ts
+    ON ai_audit_log(ts DESC);
+
+CREATE INDEX IF NOT EXISTS idx_ai_audit_event_ts
+    ON ai_audit_log(event, ts DESC);

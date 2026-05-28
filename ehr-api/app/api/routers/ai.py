@@ -45,6 +45,21 @@ import app.state as st
 from app.config import settings
 from app.ai.baselines import resolve_baseline_from_vitals
 from app.ai.models import MODEL_VERSION, anomaly_check, compute_news2, diagnosis_hints
+from app.ai.patient_fhir import build_patient_alerts, build_patient_insights
+from app.store import (
+    acknowledge_ai_anomaly,
+    insert_ai_audit_entry,
+    get_med_requests_from_cache,
+    get_med_requests_from_db,
+    get_observations_from_cache,
+    get_observations_from_db,
+    insert_ai_anomalies,
+    list_ai_audit_entries,
+    list_ai_anomalies,
+    set_ai_audit_feedback,
+    set_med_requests_in_cache,
+    set_observations_in_cache,
+)
 from app.ai.integration_dedupe import remember_response, replay_if_recent
 from app.ai.hl7_adt_stub import (
     apply_adt_delta_to_snapshot,
@@ -107,6 +122,12 @@ def _audit(event: str, role: str, patient_id: str | None, payload: dict) -> str:
         "ts":           time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "feedback":     None,
     }
+    # Best-effort durability (does not fail requests if Postgres isn't enabled).
+    try:
+        import asyncio
+        asyncio.create_task(insert_ai_audit_entry(dict(entry)))
+    except Exception:
+        pass
     st.ai_audit_log.insert(0, entry)
     # trim to 500 entries in-memory
     if len(st.ai_audit_log) > 500:
@@ -180,6 +201,11 @@ async def run_anomaly_check(request: Request, payload: dict = Body(...)):
 
     # Persist new anomalies and broadcast via WebSocket
     new_count = 0
+    # Insert into Postgres if available (best-effort, does not replace in-memory simulator).
+    try:
+        await insert_ai_anomalies(anomalies)
+    except Exception:
+        pass
     for ano in anomalies:
         existing_ids = {a["id"] for a in st.ai_anomalies}
         if ano["id"] not in existing_ids:
@@ -213,6 +239,103 @@ async def compute_ews(request: Request, payload: dict = Body(...)):
     return result
 
 
+async def _load_patient_observations(patient_id: str, limit: int = 50):
+    cached = await get_observations_from_cache(patient_id)
+    if cached is not None:
+        return cached
+    try:
+        obs = await get_observations_from_db(patient_id, limit)
+        await set_observations_in_cache(patient_id, obs)
+        return obs
+    except Exception:
+        return []
+
+
+async def _load_patient_medications(patient_id: str, limit: int = 20):
+    cached = await get_med_requests_from_cache(patient_id)
+    if cached is not None:
+        return cached
+    try:
+        meds = await get_med_requests_from_db(patient_id, limit)
+        await set_med_requests_in_cache(patient_id, meds)
+        return meds
+    except Exception:
+        return []
+
+
+@router.post("/patient/insights", summary="Patient-safe insights from FHIR vitals/labs + NEWS2.")
+async def patient_insights(request: Request, payload: dict = Body(...)):
+    _check_rate_limit(_client_ip(request))
+    require_role(request, ["patient"])
+
+    patient_id = str(payload.get("patient_id") or "").strip()
+    if not patient_id:
+        raise HTTPException(status_code=400, detail="patient_id required")
+
+    vitals = payload.get("vitals") or {}
+    if not isinstance(vitals, dict):
+        raise HTTPException(status_code=400, detail="'vitals' must be an object")
+
+    observations = await _load_patient_observations(patient_id)
+    medications = await _load_patient_medications(patient_id)
+
+    try:
+        insights, news2 = build_patient_insights(
+            patient_id,
+            observations,
+            medications,
+            vitals_override=vitals,
+        )
+    except (TypeError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid clinical data: {e}")
+
+    audit_id = _audit(
+        "patient_insights",
+        "patient",
+        patient_id,
+        {
+            "news2_score": news2.get("score"),
+            "risk": news2.get("risk"),
+            "observation_count": len(observations),
+            "insight_count": len(insights),
+        },
+    )
+
+    return {"insights": insights, "news2": news2, "audit_id": audit_id}
+
+
+@router.get("/patient/alerts", summary="Patient-safe alerts (read-only) for this patient.")
+async def patient_alerts(
+    request: Request,
+    patient_id: str = Query(...),
+    limit: int = Query(default=10, ge=1, le=50),
+):
+    _check_rate_limit(_client_ip(request))
+    require_role(request, ["patient"])
+
+    pid = patient_id.strip()
+    if not pid:
+        raise HTTPException(status_code=400, detail="patient_id required")
+
+    observations = await _load_patient_observations(pid)
+    # Merge durable Postgres anomalies (if enabled) + in-memory simulator anomalies.
+    durable: list[dict] = []
+    try:
+        durable = await list_ai_anomalies(patient_id=pid, limit=limit)
+    except Exception:
+        durable = []
+    stored = [a for a in (durable + list(st.ai_anomalies)) if str(a.get("patient_id", "")).strip() == pid]
+    out = build_patient_alerts(pid, observations, stored, limit=limit)
+
+    _audit(
+        "patient_alerts",
+        "patient",
+        pid,
+        {"returned": len(out), "observation_count": len(observations)},
+    )
+    return {"alerts": out}
+
+
 @router.get("/anomalies", summary="List active anomaly alerts.")
 async def list_anomalies(
     request: Request,
@@ -222,25 +345,41 @@ async def list_anomalies(
     limit: int                = Query(default=50, ge=1, le=200),
 ):
     require_role(request, ["doctor", "nurse", "admin"])
-    rows = list(st.ai_anomalies)
-    if patient_id:
-        rows = [a for a in rows if a.get("patient_id") == patient_id]
-    if severity:
-        rows = [a for a in rows if a.get("severity", "").upper() == severity.upper()]
-    if ack is not None:
-        rows = [a for a in rows if bool(a.get("acknowledged")) == ack]
+    rows: list[dict] = []
+    # Prefer durable store when Postgres is enabled; fall back to in-memory.
+    try:
+        durable = await list_ai_anomalies(patient_id=patient_id, severity=severity, ack=ack, limit=limit)
+        rows.extend(durable)
+    except Exception:
+        pass
+    if not rows:
+        rows = list(st.ai_anomalies)
+        if patient_id:
+            rows = [a for a in rows if a.get("patient_id") == patient_id]
+        if severity:
+            rows = [a for a in rows if a.get("severity", "").upper() == severity.upper()]
+        if ack is not None:
+            rows = [a for a in rows if bool(a.get("acknowledged")) == ack]
     return rows[:limit]
 
 
 @router.post("/anomalies/{anomaly_id}/ack", summary="Acknowledge an anomaly alert.")
 async def acknowledge_anomaly(anomaly_id: str, request: Request, payload: dict = Body(default={})):
     role = require_role(request, ["doctor", "nurse", "admin"])
+    note = str(payload.get("note", "") or "")
+    # Attempt durable ack first.
+    try:
+        if await acknowledge_ai_anomaly(anomaly_id, role, note=note):
+            _audit("anomaly_ack", role, None, {"anomaly_id": anomaly_id, "store": "postgres"})
+            return {"status": "acknowledged", "anomaly_id": anomaly_id}
+    except Exception:
+        pass
     for a in st.ai_anomalies:
         if a.get("id") == anomaly_id:
             a["acknowledged"]   = True
             a["ack_by"]         = role
             a["ack_ts"]         = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-            a["ack_note"]       = payload.get("note", "")
+            a["ack_note"]       = note
             _audit("anomaly_ack", role, a.get("patient_id"), {"anomaly_id": anomaly_id})
             return {"status": "acknowledged", "anomaly_id": anomaly_id}
     raise HTTPException(status_code=404, detail="Anomaly not found")
@@ -536,6 +675,12 @@ async def get_audit_log(
     limit:   int           = Query(default=100, ge=1, le=500),
 ):
     require_role(request, ["admin"])
+    try:
+        rows = await list_ai_audit_entries(event=event, limit=limit)
+        if rows:
+            return rows
+    except Exception:
+        pass
     rows = list(st.ai_audit_log)
     if event:
         rows = [r for r in rows if r.get("event") == event]
@@ -557,14 +702,23 @@ async def submit_feedback(
             detail=f"action must be one of: {', '.join(sorted(allowed_actions))}",
         )
 
+    fb = {
+        "action": action,
+        "note": note,
+        "by": role,
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+    # Try durable store first; fall back to in-memory.
+    try:
+        if await set_ai_audit_feedback(audit_id, fb):
+            return {"status": "recorded", "audit_id": audit_id}
+    except Exception:
+        pass
+
     for entry in st.ai_audit_log:
         if entry.get("audit_id") == audit_id:
-            entry["feedback"] = {
-                "action": action,
-                "note":   note,
-                "by":     role,
-                "ts":     time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            }
+            entry["feedback"] = dict(fb)
             return {"status": "recorded", "audit_id": audit_id}
 
     raise HTTPException(status_code=404, detail="Audit entry not found")

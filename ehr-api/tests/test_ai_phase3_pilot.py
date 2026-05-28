@@ -85,6 +85,58 @@ def test_forecast_doctor_ok(ai_client: TestClient, first_ward_id: str) -> None:
     assert "predicted" in steps[0]
 
 
+def test_patient_insights_requires_role(ai_client: TestClient) -> None:
+    r = ai_client.post("/ai/patient/insights", json={"patient_id": "P001", "vitals": {}})
+    assert r.status_code == 401
+
+
+def test_patient_insights_returns_insight_row(ai_client: TestClient) -> None:
+    r = ai_client.post(
+        "/ai/patient/insights",
+        json={"patient_id": "P001", "vitals": {"rr": 16, "spo2": 98, "sbp": 120, "hr": 75, "temp": 37.0, "gcs": 15}},
+        headers={"X-UniHealth-Role": "patient"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert "insights" in data
+    assert isinstance(data["insights"], list)
+    assert len(data["insights"]) >= 1
+    row = data["insights"][0]
+    for key in ("icon", "title", "body", "tag", "tone", "route"):
+        assert key in row
+    assert "news2" in data
+
+
+def test_patient_alerts_requires_role(ai_client: TestClient) -> None:
+    r = ai_client.get("/ai/patient/alerts?patient_id=P001&limit=5")
+    assert r.status_code == 401
+
+
+def test_patient_alerts_returns_list(ai_client: TestClient) -> None:
+    r = ai_client.get(
+        "/ai/patient/alerts?patient_id=P001&limit=5",
+        headers={"X-UniHealth-Role": "patient"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert "alerts" in data
+    assert isinstance(data["alerts"], list)
+    # empty is allowed; just validate schema when present
+    if data["alerts"]:
+        row = data["alerts"][0]
+        for key in ("id", "icon", "title", "body", "tag", "tone", "route"):
+            assert key in row
+
+
+def test_patient_insights_missing_patient_id(ai_client: TestClient) -> None:
+    r = ai_client.post(
+        "/ai/patient/insights",
+        json={"vitals": {"rr": 16, "spo2": 98, "sbp": 120, "hr": 75, "temp": 37.0, "gcs": 15}},
+        headers={"X-UniHealth-Role": "patient"},
+    )
+    assert r.status_code == 400
+
+
 def test_history_doctor_contains_iso(ai_client: TestClient, first_ward_id: str) -> None:
     hr = ai_client.get(
         f"/ai/wards/{first_ward_id}/history?limit=24",
