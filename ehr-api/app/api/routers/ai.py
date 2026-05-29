@@ -26,7 +26,7 @@ Endpoints
 
 Security
   - All REST endpoints validate X-UniHealth-Role header (role-gating).
-  - WebSocket endpoint validates ?token= query parameter.
+  - WebSocket: ``?token=`` OIDC access token (or dev shared secret when ``EHR_WS_ALLOW_DEV_TOKENS``).
   - All AI recommendations are KDPA-logged to ai_audit_log.
   - Optional integration census: ``EHR_AI_CENSUS_INTEGRATION_SECRET`` + header ``X-AI-Census-Secret``.
   - Integration idempotency: JSON ``idempotency_key`` or HL7 ``MSH-10`` replay (~seven-day TTL). Optional ``EHR_INTEGRATION_IDEMPOTENCY_REDIS`` shares replays across workers via ``EHR_REDIS_URL``.
@@ -45,7 +45,14 @@ import app.state as st
 from app.config import settings
 from app.ai.baselines import resolve_baseline_from_vitals
 from app.ai.models import MODEL_VERSION, anomaly_check, compute_news2, diagnosis_hints
-from app.ai.patient_fhir import build_patient_alerts, build_patient_insights
+from app.ai.patient_fhir import (
+    build_patient_alerts,
+    build_patient_insights,
+    clinical_features_from_fhir,
+    merge_clinical_features,
+    observations_to_vitals_and_labs,
+)
+from app.analytics import emit_ai_event
 from app.store import (
     acknowledge_ai_anomaly,
     insert_ai_audit_entry,
@@ -69,8 +76,8 @@ from app.ai.hl7_adt_stub import (
     resolve_ward_id,
 )
 from app.ai.ward_history import append_ward_census_snapshot, recompute_all_forecasts
-from app.ai.ws_manager import VALID_ROLES, alert_manager
-from app.auth import require_role
+from app.ai.ws_manager import alert_manager
+from app.auth import WsAuthError, require_role, resolve_ws_role
 
 router = APIRouter(prefix="/ai")
 
@@ -153,24 +160,59 @@ async def ai_status():
     }
 
 
-@router.post("/diagnosis-hints", summary="Differential diagnosis from clinical features.")
+@router.post("/diagnosis-hints", summary="Differential diagnosis (FHIR + optional feature override).")
 async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
     role = require_role(request, ["doctor", "nurse", "admin"])
 
-    features   = payload.get("features", {})
-    medications = payload.get("medications", [])
-    patient_id  = payload.get("patient_id")
+    features_in = payload.get("features", {})
+    medications_in = payload.get("medications", [])
+    patient_id = str(payload.get("patient_id") or "").strip() or None
+    use_fhir = payload.get("use_fhir", True)
 
-    if not isinstance(features, dict):
+    if not isinstance(features_in, dict):
         raise HTTPException(status_code=400, detail="'features' must be an object")
+    if not isinstance(medications_in, list):
+        raise HTTPException(status_code=400, detail="'medications' must be an array")
+
+    features: dict[str, float] = {}
+    medications: list[str] = [str(m) for m in medications_in if m]
+
+    if patient_id and use_fhir:
+        observations = await _load_patient_observations(patient_id)
+        med_rows = await _load_patient_medications(patient_id)
+        fhir_features, fhir_meds = clinical_features_from_fhir(observations, med_rows)
+        features = merge_clinical_features(fhir_features, features_in)
+        if not medications and fhir_meds:
+            medications = fhir_meds
+        elif fhir_meds:
+            medications = list(dict.fromkeys([*medications, *fhir_meds]))
+    else:
+        features = merge_clinical_features({}, features_in)
 
     result = diagnosis_hints(features, medications)
+    result["features_used"] = features
+    result["fhir_enriched"] = bool(patient_id and use_fhir)
 
     audit_id = _audit(
-        "diagnosis_hints", role, patient_id,
-        {"features_keys": list(features.keys()), "n_differentials": len(result["differentials"])},
+        "diagnosis_hints",
+        role,
+        patient_id,
+        {
+            "features_keys": list(features.keys()),
+            "n_differentials": len(result["differentials"]),
+            "fhir_enriched": result["fhir_enriched"],
+        },
     )
+    try:
+        emit_ai_event(
+            "diagnosis_hints",
+            role=role,
+            patient_id=patient_id,
+            dimensions={"n_differentials": len(result["differentials"])},
+        )
+    except Exception:
+        pass
     result["audit_id"] = audit_id
     return result
 
@@ -180,8 +222,18 @@ async def run_anomaly_check(request: Request, payload: dict = Body(...)):
     _check_rate_limit(_client_ip(request))
     role       = require_role(request, ["doctor", "nurse", "lab", "admin"])
     patient_id = str(payload.get("patient_id", "unknown"))
-    vitals     = payload.get("vitals", {})
-    labs       = payload.get("labs")
+    vitals = payload.get("vitals", {}) if isinstance(payload.get("vitals"), dict) else {}
+    labs = payload.get("labs") if isinstance(payload.get("labs"), dict) else None
+    use_fhir = payload.get("use_fhir", True)
+
+    if use_fhir and patient_id and patient_id != "unknown":
+        observations = await _load_patient_observations(patient_id)
+        v_fhir, l_fhir = observations_to_vitals_and_labs(observations, apply_defaults=False)
+        vitals = {**v_fhir, **vitals}
+        if labs is None:
+            labs = l_fhir
+        else:
+            labs = {**l_fhir, **labs}
 
     # Series-derived baselines (always refreshed from vital history when enabled)
     use_series = payload.get("use_series_baseline", True)
@@ -216,6 +268,16 @@ async def run_anomaly_check(request: Request, payload: dict = Body(...)):
             asyncio.create_task(alert_manager.broadcast_alert(ano))
 
     _audit("anomaly_check", role, patient_id, {"n_anomalies": len(anomalies)})
+    try:
+        emit_ai_event(
+            "anomaly_check",
+            role=role,
+            patient_id=patient_id,
+            value=len(anomalies),
+            dimensions={"new_alerts": new_count},
+        )
+    except Exception:
+        pass
     return {"anomalies": anomalies, "new_alerts_fired": new_count}
 
 
@@ -725,11 +787,15 @@ async def submit_feedback(
 
 
 @router.get("/simulate/trigger-alert", summary="Dev: inject a simulated critical alert.")
-async def trigger_test_alert(request: Request):
+async def trigger_test_alert(
+    request: Request,
+    patient_id: str = Query(default="SIM-001"),
+):
     require_role(request, ["admin"])
+    pid = (patient_id or "SIM-001").strip()
     test_anomaly = {
         "id":           f"ANO-TEST-{int(time.time()*1000)}",
-        "patient_id":   "SIM-001",
+        "patient_id":   pid,
         "metric":       "spo2",
         "value":        84,
         "severity":     "CRITICAL",
@@ -739,9 +805,17 @@ async def trigger_test_alert(request: Request):
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "acknowledged": False,
     }
+    try:
+        await insert_ai_anomalies([test_anomaly])
+    except Exception:
+        pass
     st.ai_anomalies.insert(0, test_anomaly)
     import asyncio
     asyncio.create_task(alert_manager.broadcast_alert(test_anomaly))
+    try:
+        emit_ai_event("simulate_alert", role="admin", patient_id=pid)
+    except Exception:
+        pass
     return {"status": "alert_injected", "anomaly": test_anomaly}
 
 
@@ -758,14 +832,10 @@ async def ws_alerts(websocket: WebSocket, role: str, token: str = Query(...)):
       { "event": "anomaly_alert" | "ward_update", "ts": "...", "data": {...} }
     Clients can send { "event": "ping" } to keep alive.
     """
-    role = role.lower().strip()
-
-    # Auth + role validation
-    if not alert_manager.validate_token(token):
-        await websocket.close(code=4001, reason="Invalid token")
-        return
-    if role not in VALID_ROLES:
-        await websocket.close(code=4003, reason=f"Unknown role: {role}")
+    try:
+        role = resolve_ws_role(token, role)
+    except WsAuthError as exc:
+        await websocket.close(code=exc.code, reason=exc.reason[:120])
         return
 
     await alert_manager.connect(websocket, role)

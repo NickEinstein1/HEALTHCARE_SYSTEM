@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from app.ai.patient_fhir import (
     build_patient_alerts,
     build_patient_insights,
+    clinical_features_from_fhir,
     observations_to_vitals_and_labs,
 )
 from app.models import MedicationRequest, Observation
@@ -49,6 +50,31 @@ def test_build_insights_includes_lab_and_news2() -> None:
     titles = [i["title"] for i in insights]
     assert any("Potassium" in t for t in titles)
     assert any("Vitals" in t or "vitals" in t.lower() for t in titles)
+
+
+def test_clinical_features_no_vital_defaults() -> None:
+    obs = [_obs("Potassium", "6.2")]
+    features, meds = clinical_features_from_fhir(obs, [])
+    assert features.get("potassium") == 6.2
+    assert "temp" not in features
+    assert "spo2" not in features
+    assert meds == []
+
+
+def test_clinical_features_includes_crp_and_meds() -> None:
+    obs = [_obs("CRP", "85"), _obs("Heart rate", "110")]
+    meds = [
+        MedicationRequest(
+            id="M2",
+            patient_id="P001",
+            medication_code="Warfarin 5mg",
+            status="active",
+        )
+    ]
+    features, names = clinical_features_from_fhir(obs, meds)
+    assert features.get("crp") == 85.0
+    assert features.get("hr") == 110.0
+    assert "Warfarin" in names[0]
 
 
 def test_build_alerts_flags_critical_potassium() -> None:

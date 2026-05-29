@@ -50,3 +50,38 @@ def emit_aggregate_sync(
         return
     prod.produce(TOPIC_AGGREGATE, json.dumps(payload).encode("utf-8"))
     prod.flush()
+
+
+def _ai_patient_scope(patient_id: str | None) -> str:
+    if not patient_id:
+        return "none"
+    pid = str(patient_id).strip().upper()
+    if pid.startswith("SIM"):
+        return "sim"
+    if pid.startswith("P") and pid[1:].isdigit():
+        return "portal"
+    return "other"
+
+
+def emit_ai_event(
+    event: str,
+    *,
+    role: str,
+    patient_id: str | None = None,
+    value: float | int = 1,
+    dimensions: dict[str, Any] | None = None,
+) -> None:
+    """De-identified AI usage metric for ``ehr.analytics.aggregate`` (no raw patient_id)."""
+    dims: dict[str, Any] = {
+        "role": role,
+        "patient_scope": _ai_patient_scope(patient_id),
+    }
+    if dimensions:
+        dims.update(dimensions)
+    emit_aggregate_sync(
+        facility_id="FAC-A",
+        metric=f"ai.{event}",
+        period="instant",
+        value=value,
+        dimensions=dims,
+    )

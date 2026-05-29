@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../../lib/api";
+import { aiAlertsWebSocketUrl, api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 
@@ -62,9 +62,7 @@ export function DoctorDashboard() {
 
   // WebSocket: receive real-time anomaly alerts
   useEffect(() => {
-    const wsBase = (import.meta as any).env?.VITE_API_BASE_URL || "";
-    const wsUrl = (wsBase.replace(/^http/, "ws") || `ws://${window.location.host}`) +
-      "/ai/ws/alerts/doctor?token=dev-token-1";
+    const wsUrl = aiAlertsWebSocketUrl("doctor");
     try {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;

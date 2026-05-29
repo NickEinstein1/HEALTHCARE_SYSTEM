@@ -6,6 +6,7 @@ import type {
   PatientSummary,
 } from "./apiTypes";
 import { authHeaders } from "./authHeaders";
+import { getStoredAccessToken } from "./oidc";
 
 function apiBaseUrl() {
   // Staging: VITE_API_BASE_URL=http://localhost:8100 (see .env.staging.example)
@@ -561,4 +562,18 @@ export const api = {
     );
   },
 };
+
+export type AiWsAlertRole = "doctor" | "nurse" | "admin" | "lab" | "pharmacy";
+
+/** WebSocket URL for Phase 3 ``/ai/ws/alerts/{role}`` (Bearer token when signed in). */
+export function aiAlertsWebSocketUrl(role: AiWsAlertRole): string {
+  const httpBase = apiBaseUrl();
+  const wsBase = httpBase
+    ? httpBase.replace(/^http/, "ws")
+    : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+  const qs = new URLSearchParams();
+  const token = getStoredAccessToken();
+  qs.set("token", token || "dev-token-1");
+  return `${wsBase}/ai/ws/alerts/${role}?${qs.toString()}`;
+}
 

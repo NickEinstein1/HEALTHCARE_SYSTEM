@@ -6,6 +6,10 @@ on:
       - main
   pull_request:
 
+# GitHub Actions: Node 24 is the default for JavaScript actions (Node 20 deprecated).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
@@ -45,7 +49,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: frontend/app/package-lock.json
 

@@ -196,6 +196,8 @@ This repo includes two workflows:
 - `CI` (`.github/workflows/ci.yml`)
   - Triggers on push to `main` and pull requests.
   - Runs Python lint checks (`ruff`), root `pytest`, **all** `ehr-api/tests/` (Phase 3 + idempotency), and **frontend** `npm run lint` + `npm run build`.
+  - EHR API tests run **without Postgres/Redis**; use Node.js 24 for Actions compatibility.
+  - **Before you push:** `./scripts/ci_check.sh` (same steps as CI locally).
 
 - `k6 Scheduled Smoke` (`.github/workflows/k6-scheduled.yml`)
   - Runs nightly and can also be triggered manually.

@@ -35,12 +35,17 @@ class Settings(BaseSettings):
     oidc_role_claim: str = "unihealth_role"
     oidc_allow_header_fallback: bool = True
 
+    # Phase 3 WebSocket alerts — dev shared secrets (comma-separated); disabled in production profile.
+    ws_dev_tokens: str = "dev-token-1,dev-token-2"
+    ws_allow_dev_tokens: bool = True
+
     @model_validator(mode="after")
     def _apply_deployment_profile(self) -> "Settings":
         env = (self.deployment_env or "development").strip().lower()
         if env == "production":
             self.consent_mode = "strict"
             self.oidc_allow_header_fallback = False
+            self.ws_allow_dev_tokens = False
             if (self.oidc_issuer_url or "").strip():
                 self.oidc_enabled = True
         elif env == "staging":

@@ -80,7 +80,9 @@ def _json_to_summary(raw: str) -> PatientSummary:
 
 async def get_summary_from_cache(patient_id: str) -> Optional[PatientSummary]:
     """Return cached patient summary if present. Sub-ms typically."""
-    client = _require_redis_client()
+    if _redis_client is None:
+        return None
+    client = _redis_client
     key = f"patient:{patient_id}:summary"
     raw = await client.get(key)
     if raw is None:
@@ -93,7 +95,9 @@ async def get_summary_from_cache(patient_id: str) -> Optional[PatientSummary]:
 
 
 async def set_summary_in_cache(patient_id: str, summary: PatientSummary) -> None:
-    client = _require_redis_client()
+    if _redis_client is None:
+        return
+    client = _redis_client
     key = f"patient:{patient_id}:summary"
     await client.set(key, _summary_to_json(summary), ex=settings.cache_ttl_seconds)
 
@@ -132,7 +136,9 @@ async def update_patient_demographics(
 
 async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optional[PatientSummary]:
     """Load patient + last N encounters from PostgreSQL."""
-    pool = _require_pool()
+    if _pg_pool is None:
+        return None
+    pool = _pg_pool
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
@@ -182,7 +188,9 @@ async def get_summary_from_db(patient_id: str, encounters_limit: int) -> Optiona
 
 
 async def get_observations_from_cache(patient_id: str) -> Optional[list[Observation]]:
-    client = _require_redis_client()
+    if _redis_client is None:
+        return None
+    client = _redis_client
     key = f"patient:{patient_id}:observations"
     raw = await client.get(key)
     if raw is None:
@@ -196,7 +204,9 @@ async def get_observations_from_cache(patient_id: str) -> Optional[list[Observat
 
 
 async def set_observations_in_cache(patient_id: str, observations: list[Observation]) -> None:
-    client = _require_redis_client()
+    if _redis_client is None:
+        return
+    client = _redis_client
     key = f"patient:{patient_id}:observations"
     await client.set(
         key,
@@ -206,7 +216,9 @@ async def set_observations_in_cache(patient_id: str, observations: list[Observat
 
 
 async def get_observations_from_db(patient_id: str, limit: int) -> list[Observation]:
-    pool = _require_pool()
+    if _pg_pool is None:
+        return []
+    pool = _pg_pool
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             """
@@ -468,7 +480,9 @@ async def set_ai_audit_feedback(
 
 
 async def get_med_requests_from_cache(patient_id: str) -> Optional[list[MedicationRequest]]:
-    client = _require_redis_client()
+    if _redis_client is None:
+        return None
+    client = _redis_client
     key = f"patient:{patient_id}:med_requests"
     raw = await client.get(key)
     if raw is None:
@@ -482,7 +496,9 @@ async def get_med_requests_from_cache(patient_id: str) -> Optional[list[Medicati
 
 
 async def set_med_requests_in_cache(patient_id: str, meds: list[MedicationRequest]) -> None:
-    client = _require_redis_client()
+    if _redis_client is None:
+        return
+    client = _redis_client
     key = f"patient:{patient_id}:med_requests"
     await client.set(
         key,
@@ -492,7 +508,9 @@ async def set_med_requests_in_cache(patient_id: str, meds: list[MedicationReques
 
 
 async def get_med_requests_from_db(patient_id: str, limit: int) -> list[MedicationRequest]:
-    pool = _require_pool()
+    if _pg_pool is None:
+        return []
+    pool = _pg_pool
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             """

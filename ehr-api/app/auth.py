@@ -20,6 +20,8 @@ from app.config import settings
 _log = logging.getLogger(__name__)
 
 VALID_ROLES = frozenset({"doctor", "nurse", "admin", "patient", "lab", "pharmacy"})
+# Roles allowed on /ai/ws/alerts/{role} (patients use REST polling, not WS).
+WS_ALERT_ROLES = frozenset({"doctor", "nurse", "admin", "lab", "pharmacy"})
 _ROLE_ALIASES = {
     "clinical_officer": "nurse",
     "pharmacist": "pharmacy",
@@ -81,7 +83,7 @@ def _pick_role_from_claims(claims: dict[str, Any]) -> str | None:
     return None
 
 
-def _role_from_bearer(token: str) -> str:
+def _decode_bearer_claims(token: str) -> dict[str, Any]:
     try:
         signing_key = _get_jwk_client().get_signing_key_from_jwt(token)
         decode_opts: dict[str, Any] = {"verify_aud": False}
@@ -89,7 +91,7 @@ def _role_from_bearer(token: str) -> str:
         if audience:
             decode_opts["verify_aud"] = True
             decode_opts["audience"] = audience
-        claims = jwt.decode(
+        return jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256", "ES256"],
@@ -100,10 +102,68 @@ def _role_from_bearer(token: str) -> str:
         _log.warning("JWT validation failed: %s", exc)
         raise HTTPException(status_code=401, detail="Invalid or expired access token") from exc
 
+
+def role_from_access_token(token: str) -> str:
+    """Validate OIDC access token and return UniHealth role (for REST and WebSocket)."""
+    claims = _decode_bearer_claims(token.strip())
     role = _pick_role_from_claims(claims)
     if not role:
         raise HTTPException(status_code=403, detail="Token has no recognized UniHealth role")
     return role
+
+
+def _role_from_bearer(token: str) -> str:
+    return role_from_access_token(token)
+
+
+class WsAuthError(Exception):
+    """WebSocket auth failure — carries a close code for the WS handshake."""
+
+    def __init__(self, reason: str, code: int = 4001) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.code = code
+
+
+def _ws_dev_token_set() -> frozenset[str]:
+    raw = (settings.ws_dev_tokens or "").strip()
+    return frozenset(t.strip() for t in raw.split(",") if t.strip())
+
+
+def resolve_ws_role(token: str, requested_role: str) -> str:
+    """
+    Validate ?token= for /ai/ws/alerts/{role}.
+
+    - OIDC enabled: JWT required unless dev tokens explicitly allowed as fallback.
+    - JWT role must match the path role (prevents cross-role socket hijack).
+    - Dev tokens (pilot/local): shared secret + path role when ``ws_allow_dev_tokens``.
+    """
+    req = (requested_role or "").strip().lower()
+    req = _ROLE_ALIASES.get(req, req)
+    if req not in WS_ALERT_ROLES:
+        raise WsAuthError(f"Unknown role: {req}", 4003)
+
+    tok = (token or "").strip()
+    if not tok:
+        raise WsAuthError("Missing token", 4001)
+
+    if settings.oidc_enabled:
+        try:
+            role = role_from_access_token(tok)
+        except HTTPException as exc:
+            if settings.ws_allow_dev_tokens and tok in _ws_dev_token_set():
+                return req
+            detail = exc.detail if isinstance(exc.detail, str) else "Invalid token"
+            code = 4003 if exc.status_code == 403 else 4001
+            raise WsAuthError(detail, code) from exc
+        if role != req:
+            raise WsAuthError("Token role does not match connection role", 4003)
+        return role
+
+    if settings.ws_allow_dev_tokens and tok in _ws_dev_token_set():
+        return req
+
+    raise WsAuthError("Invalid token", 4001)
 
 
 def resolve_role(request: Request) -> str:

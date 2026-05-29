@@ -73,13 +73,19 @@ curl -s -X POST http://localhost:8000/consent/revoke \\
 
 ## Testing — Phase 3 AI Assist pilot
 
-Runs **without Redis/Postgres** for simulator tests (`/ai` router + census idempotency):
+Runs **without Redis/Postgres** for simulator tests (`/ai` router + census idempotency). FHIR cache/DB helpers return empty when pools are not started (CI-safe).
 
 ```bash
 cd ehr-api
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 PYTHONPATH=. pytest tests/ -q
+```
+
+Full repo gate (matches GitHub Actions):
+
+```bash
+./scripts/ci_check.sh
 ```
 
 ## Environment
@@ -93,6 +99,8 @@ PYTHONPATH=. pytest tests/ -q
 | EHR_AI_CENSUS_INTEGRATION_SECRET  | _(empty)_                               | When set: enables integration POST routes (`/ai/integration/...`, including HL7 ADT stub); send header `X-AI-Census-Secret`; empty = **404** on those paths                                                                     |
 | EHR_WARD_CENSUS_SQLITE_PATH       | _(empty)_                               | When set: each appended census snapshot is also written to this SQLite file (WAL mode); survives process restarts for pilot durability                                                                                          |
 | EHR_REPLAY_WARD_CENSUS_SQLITE     | false                                   | When `true` **and** `EHR_WARD_CENSUS_SQLITE_PATH` is set: on API startup, tail rows from SQLite are merged into in-memory census history before recomputing forecasts                                                           |
+| EHR_WS_DEV_TOKENS                 | dev-token-1,dev-token-2                 | Comma-separated shared secrets for `/ai/ws/alerts/{role}` when dev tokens are allowed (local pilot)                                                                                                                            |
+| EHR_WS_ALLOW_DEV_TOKENS           | true                                    | When `false` (production profile sets this automatically), WebSocket requires a valid OIDC JWT in `?token=`                                                                                                                     |
 
 Automation census **example** (after setting the secret in the gateway environment):
 
@@ -115,6 +123,12 @@ curl -s -X POST "http://localhost:8000/ai/integration/hl7/adt" \
 ```
 
 Use JSON field ``message`` (alias ``raw``) for ER7 text. Optional ``ward_id_override`` if PV1-3 does not include a simulated ward token. Optional ``idempotency_key``; otherwise the inferred **MSH-10** adjacent to ``ADT^…`` dedupes repeats. Non-delta ADT triggers return ``{"status":"ignored"}``.
+
+### Staff AI — FHIR enrichment
+
+``POST /ai/diagnosis-hints`` and ``POST /ai/anomaly-check`` accept ``patient_id`` and default ``use_fhir: true``. When set, observations and medication requests are loaded from the warm store (Redis → Postgres) and merged with any ``features`` / ``vitals`` / ``labs`` in the body (body wins on conflict). Response includes ``features_used`` and ``fhir_enriched`` on diagnosis hints.
+
+De-identified usage metrics are emitted to Kafka topic ``ehr.analytics.aggregate`` (metric names ``ai.diagnosis_hints``, ``ai.anomaly_check``, etc.) when ``EHR_KAFKA_BOOTSTRAP_SERVERS`` is reachable — no raw patient IDs in payloads.
 
 ## Kenya KMHFL directory (Admin facilities)
 

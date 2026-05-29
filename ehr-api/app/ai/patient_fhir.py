@@ -77,9 +77,39 @@ def _parse_number(text: str | None) -> float | None:
         return None
 
 
-def observations_to_vitals_and_labs(observations: list[Observation]) -> tuple[dict[str, float], dict[str, float]]:
+_EXTRA_LAB_KEYS: list[tuple[str, list[str]]] = [
+    ("crp", ["crp", "c-reactive"]),
+    ("bicarb", ["bicarb", "bicarbonate", "hco3"]),
+    ("troponin", ["troponin"]),
+    ("lactate", ["lactate", "lactic"]),
+    ("wbc", ["wbc", "white blood", "leukocyte"]),
+    ("hb", ["hemoglobin", "haemoglobin"]),
+    ("inr", ["inr", "prothrombin"]),
+    ("platelets", ["platelet"]),
+    ("sodium", ["sodium"]),
+    ("na", [" sodium", "na+", "na "]),
+    ("alt", ["alt", "alanine aminotransferase"]),
+    ("bilirubin", ["bilirubin"]),
+    ("glasgow", ["glasgow", "gcs"]),
+]
+
+
+def _assign_lab(labs: dict[str, float], key: str, val: float) -> None:
+    if key in ("k", "k+"):
+        labs["potassium"] = val
+        return
+    if key == "hemoglobin":
+        labs["hb"] = val
+    labs[key] = val
+
+
+def observations_to_vitals_and_labs(
+    observations: list[Observation],
+    *,
+    apply_defaults: bool = True,
+) -> tuple[dict[str, float], dict[str, float]]:
     """Map FHIR observations to vitals + lab numeric features for anomaly engine."""
-    vitals: dict[str, float] = {"gcs": 15.0}
+    vitals: dict[str, float] = {}
     labs: dict[str, float] = {}
 
     for o in observations:
@@ -88,6 +118,7 @@ def observations_to_vitals_and_labs(observations: list[Observation]) -> tuple[di
         if val is None:
             continue
 
+        matched = False
         for key, patterns in _VITAL_KEYS:
             if any(p in code for p in patterns):
                 if key == "sbp" and "/" in (o.value_text or ""):
@@ -98,25 +129,83 @@ def observations_to_vitals_and_labs(observations: list[Observation]) -> tuple[di
                             vitals["dbp"] = float(parts[1])
                 else:
                     vitals[key] = val
+                matched = True
                 break
-        else:
-            # Treat remaining numeric obs as potential labs
-            for name in (
-                "potassium", "k+", "glucose", "creatinine", "lactate", "troponin",
-                "sodium", "na", "wbc", "hb", "hemoglobin", "inr", "platelets",
-            ):
-                if name in code:
-                    labs[name.replace("+", "")] = val
-                    break
+        if matched:
+            continue
 
-    # Defaults when missing (stable pilot values)
-    vitals.setdefault("rr", 16.0)
-    vitals.setdefault("spo2", 98.0)
-    vitals.setdefault("sbp", 120.0)
-    vitals.setdefault("hr", 75.0)
-    vitals.setdefault("temp", 37.0)
+        for name in (
+            "potassium", "k+", "glucose", "creatinine", "lactate", "troponin",
+            "sodium", "wbc", "hb", "hemoglobin", "inr", "platelets",
+        ):
+            if name in code:
+                _assign_lab(labs, name, val)
+                matched = True
+                break
+        if matched:
+            continue
+
+        for key, patterns in _EXTRA_LAB_KEYS:
+            if any(p in code for p in patterns):
+                if key == "glasgow":
+                    vitals["gcs"] = val
+                else:
+                    _assign_lab(labs, key, val)
+                break
+
+    if apply_defaults:
+        vitals.setdefault("gcs", 15.0)
+        vitals.setdefault("rr", 16.0)
+        vitals.setdefault("spo2", 98.0)
+        vitals.setdefault("sbp", 120.0)
+        vitals.setdefault("hr", 75.0)
+        vitals.setdefault("temp", 37.0)
+    elif "gcs" not in vitals:
+        vitals.setdefault("gcs", 15.0)
 
     return vitals, labs
+
+
+def medication_names_from_requests(medications: list[MedicationRequest]) -> list[str]:
+    names: list[str] = []
+    for m in medications:
+        code = (m.medication_code or "").strip()
+        if code:
+            names.append(code)
+    return names
+
+
+def clinical_features_from_fhir(
+    observations: list[Observation],
+    medications: list[MedicationRequest],
+) -> tuple[dict[str, float], list[str]]:
+    """
+  Staff diagnosis-hints feature map from FHIR observations + meds.
+  Does not apply normal-range defaults (only parsed values).
+    """
+    vitals, labs = observations_to_vitals_and_labs(observations, apply_defaults=False)
+    features: dict[str, float] = {**vitals, **labs}
+    if "glasgow" in features and "gcs" not in features:
+        features["gcs"] = features.pop("glasgow")
+    return features, medication_names_from_requests(medications)
+
+
+def merge_clinical_features(
+    base: dict[str, float],
+    override: dict | None,
+) -> dict[str, float]:
+    """Payload features override FHIR-derived values."""
+    out = dict(base)
+    if not override:
+        return out
+    for k, v in override.items():
+        if v is None:
+            continue
+        try:
+            out[k] = float(v)
+        except (TypeError, ValueError):
+            continue
+    return out
 
 
 def _merge_vitals(base: dict[str, float], override: dict | None) -> dict[str, float]:

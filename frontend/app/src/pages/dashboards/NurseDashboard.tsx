@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../../lib/api";
+import { aiAlertsWebSocketUrl, api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 import { CrudRowActions } from "../../components/CrudRowActions";
@@ -124,9 +124,7 @@ export function NurseDashboard() {
 
   // WebSocket for live nurse alerts
   useEffect(() => {
-    const wsBase = (import.meta as any).env?.VITE_API_BASE_URL || "";
-    const wsUrl = (wsBase.replace(/^http/, "ws") || `ws://${window.location.host}`) +
-      "/ai/ws/alerts/nurse?token=dev-token-1";
+    const wsUrl = aiAlertsWebSocketUrl("nurse");
     try {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
