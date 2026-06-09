@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMR/EHR — UniHealth 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{--g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;--r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;--bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);--t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);--fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace;--tr:.2s cubic-bezier(.16,1,.3,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(46,204,113,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s cubic-bezier(.16,1,.3,1) both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.1));border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(46,204,113,.14)}50%{box-shadow:0 0 20px rgba(46,204,113,.3)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(46,204,113,.14);border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--neon);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);cursor:pointer;transition:all var(--tr);text-decoration:none;border-left:2px solid transparent}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(46,204,113,.4)}
+.sb-lnk.active{background:rgba(46,204,113,.08);color:var(--neon);border-left-color:var(--neon)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none}
+.sb-back:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s cubic-bezier(.16,1,.3,1) .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;border:1px solid}
+.tb-p{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.tb-p:hover{box-shadow:0 3px 14px rgba(46,204,113,.28);transform:translateY(-1px)}
+.tb-g{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.tb-g:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.tb-ic{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--gl);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--t3);position:relative}
+.tb-ic:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.nn{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--r);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg)}
+.clk{font-family:var(--fm);font-size:9px;color:var(--t4)}
+.content{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin;scrollbar-color:rgba(46,204,113,.12) transparent;animation:ct-in .6s cubic-bezier(.16,1,.3,1) .1s both}
+@keyframes ct-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.emr-layout{display:grid;grid-template-columns:280px 1fr;gap:14px;height:100%}
+.pat-list{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;display:flex;flex-direction:column;overflow:hidden}
+.pl-hd{padding:12px 14px;border-bottom:1px solid var(--bd)}
+.pl-title{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1.5px;font-family:var(--fm);margin-bottom:8px}
+.pl-srch{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px}
+.pl-srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--fn);font-size:11.5px;flex:1}
+.pl-srch input::placeholder{color:var(--t4)}
+.pl-srch i{color:var(--t4);width:12px;height:12px}
+.pl-body{flex:1;overflow-y:auto;scrollbar-width:thin}
+.pat-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.035);cursor:pointer;transition:all .18s}
+.pat-item:hover{background:var(--gl)}
+.pat-item.sel{background:rgba(46,204,113,.08);border-left:2px solid var(--neon)}
+.pat-av{width:32px;height:32px;border-radius:8px;background:rgba(46,204,113,.12);border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--neon);flex-shrink:0}
+.pat-nm{font-size:12px;font-weight:600;color:var(--t1)}
+.pat-id{font-family:var(--fm);font-size:8.5px;color:var(--t4)}
+.pat-tag{font-family:var(--fm);font-size:7.5px;padding:1px 5px;border-radius:4px;margin-top:2px;display:inline-block}
+.pt-g{background:rgba(46,204,113,.1);color:var(--neon);border:1px solid rgba(46,204,113,.2)}
+.pt-r{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.pt-a{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.emr-main{display:flex;flex-direction:column;gap:12px;overflow-y:auto;scrollbar-width:thin}
+.emr-header{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+.ph-name{font-size:20px;font-weight:700;color:var(--t1);margin-bottom:4px}
+.ph-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--t3)}
+.ph-meta span{display:flex;align-items:center;gap:4px}
+.ph-alerts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.al-chip{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:9.5px;font-weight:700;animation:al-p 2s ease infinite}
+@keyframes al-p{0%,100%{opacity:1}50%{opacity:.65}}
+.al-r{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444}
+.al-a{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#f59e0b}
+.ph-vitals{display:flex;gap:10px;flex-wrap:wrap}
+.vital{text-align:center;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:9px}
+.vital-v{font-family:var(--fm);font-size:16px;font-weight:700;color:var(--neon);line-height:1}
+.vital-l{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.vital.hb-vital .vital-v{animation:hb .85s ease-in-out infinite}
+@keyframes hb{0%,100%{transform:scale(1)}15%{transform:scale(1.1)}30%{transform:scale(.95)}}
+.tabs{display:flex;gap:2px;background:var(--gl);border-radius:8px;padding:3px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--t3);border:none;background:none;font-family:var(--fn)}
+.tab.act{background:rgba(46,204,113,.13);color:var(--neon);border:1px solid rgba(46,204,113,.22)}
+.tp{display:none}.tp.show{display:block;animation:tp-in .3s cubic-bezier(.16,1,.3,1)}
+@keyframes tp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:var(--bn);box-shadow:0 4px 22px rgba(0,0,0,.4)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(46,204,113,.25),transparent);opacity:0;transition:opacity .2s}
+.card:hover::before{opacity:1}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.card-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--t4);font-family:var(--fm);display:flex;align-items:center;gap:5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:7px 10px;font-family:var(--fm);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--gl)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:8px;font-weight:700}
+.tg{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+.tr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#ef4444}
+.ta{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#f59e0b}
+.tb_{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#60a5fa}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid}
+.bp{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.bp:hover{box-shadow:0 4px 16px rgba(46,204,113,.28);transform:translateY(-1px)}
+.bg_{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.bg_:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.br{background:rgba(239,68,68,.09);border-color:rgba(239,68,68,.22);color:#ef4444}
+.btn-sm{padding:4px 10px;font-size:10.5px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--t3)}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;color:var(--t1);font-family:var(--fn);font-size:12px;outline:none;transition:all .2s}
+.fi:focus{border-color:rgba(46,204,113,.45);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(46,204,113,.1)}
+.fi::placeholder{color:var(--t4)}
+textarea.fi{resize:vertical;min-height:80px}
+select.fi option{background:#060e08}
+.prog{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.prog-f{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.16,1,.3,1);background:var(--neon)}
+.ai-card{background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(59,130,246,.04));border:1px solid rgba(139,92,246,.18);border-radius:12px;padding:14px 16px}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ai-orb{width:28px;height:28px;border-radius:50%;background:rgba(139,92,246,.18);border:1px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;font-size:13px;animation:ai-p 3s ease infinite}
+@keyframes ai-p{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.3)}50%{box-shadow:0 0 0 8px rgba(139,92,246,0)}}
+.ai-ttl{font-size:11.5px;font-weight:700;color:#a78bfa}
+.risk-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin:8px 0 4px}
+.risk-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--g),var(--am));transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:500px;padding:20px;animation:su .3s cubic-bezier(.16,1,.3,1)}
+@keyframes su{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-ttl{font-size:15px;font-weight:700;color:var(--t1)}
+.mc{background:none;border:none;color:var(--t3);cursor:pointer;border-radius:6px;padding:4px;transition:color .2s;display:flex;align-items:center}
+.mc:hover{color:var(--t1);background:var(--gl)}
+.frm-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.notif-panel{position:fixed;top:60px;right:12px;width:290px;background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:13px;z-index:100;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7);animation:su .25s cubic-bezier(.16,1,.3,1)}
+.ni{display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;color:var(--t2);line-height:1.4}
+.ni:last-child{border-bottom:none}
+@media(max-width:1100px){.emr-layout{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<nav class="sb" aria-label="EMR Navigation">
+  <div class="sb-brand">
+    <div class="sb-logo" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sbu-av">DR</div>
+    <div><div class="sbu-nm">Dr. Wanjiku</div><div class="sbu-rl">Attending Physician</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sect">Clinical</div>
+    <a class="sb-lnk active" href="#"><i data-feather="file-text"></i> EMR / EHR</a>
+    <a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity & NICU</a>
+    <a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a>
+    <a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a>
+    <a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a>
+    <a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU & Emergency</a>
+    <a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a>
+    <a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a>
+    <a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a>
+    <div class="sb-sect">Operations</div>
+    <a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing</a>
+    <a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a>
+    <a class="sb-lnk" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a>
+    <a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance</a>
+    <a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a>
+    <a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a>
+    <div class="sb-sect">Management</div>
+    <a class="sb-lnk" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a>
+    <a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR & Payroll</a>
+    <a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a>
+    <a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a>
+    <a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient Portal</a>
+  </div>
+  <div class="sb-ft">
+    <a href="unihealth360-final.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a>
+    <div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div>
+  </div>
+</nav>
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-page"><span style="font-size:16px">🏥</span> Electronic Medical Records</div>
+    <div class="tb-badge b-g"><span class="pdot"></span>LIVE · FHIR R5</div>
+    <button class="tb-btn tb-p" onclick="document.getElementById('newPatModal').style.display='flex'" data-audit="NEW_PATIENT form opened"><i data-feather="user-plus" style="width:12px;height:12px"></i> New Patient</button>
+    <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0">
+      <i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">3</div>
+    </div>
+    <div class="clk" id="clock"></div>
+  </div>
+  <div class="content">
+    <div class="emr-layout">
+      <!-- PATIENT LIST -->
+      <div class="pat-list">
+        <div class="pl-hd">
+          <div class="pl-title">Patient List</div>
+          <div class="pl-srch">
+            <i data-feather="search"></i>
+            <input placeholder="Search name / ID…" oninput="filterPatients(this.value)" aria-label="Search patients">
+          </div>
+        </div>
+        <div class="pl-body" id="patList">
+          <div class="pat-item sel" onclick="selectPat(this,'Mary Wanjiku','F·32y','KE-00847','Hypertension')" tabindex="0">
+            <div class="pat-av">MW</div>
+            <div><div class="pat-nm">Mary Wanjiku</div><div class="pat-id">KE-00847 · F · 32y</div><span class="pat-tag pt-r">High Risk</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'James Omondi','M·45y','KE-00848','Diabetes T2')" tabindex="0">
+            <div class="pat-av">JO</div>
+            <div><div class="pat-nm">James Omondi</div><div class="pat-id">KE-00848 · M · 45y</div><span class="pat-tag pt-a">Follow-up</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'Grace Kamau','F·28y','KE-00849','ANC Visit')" tabindex="0">
+            <div class="pat-av">GK</div>
+            <div><div class="pat-nm">Grace Kamau</div><div class="pat-id">KE-00849 · F · 28y</div><span class="pat-tag pt-g">Stable</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'Peter Njoroge','M·62y','KE-00850','Cardiac')" tabindex="0">
+            <div class="pat-av">PN</div>
+            <div><div class="pat-nm">Peter Njoroge</div><div class="pat-id">KE-00850 · M · 62y</div><span class="pat-tag pt-r">Critical</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'Alice Muthoni','F·55y','KE-00851','Oncology')" tabindex="0">
+            <div class="pat-av">AM</div>
+            <div><div class="pat-nm">Alice Muthoni</div><div class="pat-id">KE-00851 · F · 55y</div><span class="pat-tag pt-a">In Treatment</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'Samuel Kariuki','M·8y','KE-00852','Paediatric')" tabindex="0">
+            <div class="pat-av">SK</div>
+            <div><div class="pat-nm">Samuel Kariuki</div><div class="pat-id">KE-00852 · M · 8y</div><span class="pat-tag pt-g">Stable</span></div>
+          </div>
+          <div class="pat-item" onclick="selectPat(this,'Fatuma Hassan','F·39y','KE-00853','Nephrology')" tabindex="0">
+            <div class="pat-av">FH</div>
+            <div><div class="pat-nm">Fatuma Hassan</div><div class="pat-id">KE-00853 · F · 39y</div><span class="pat-tag pt-a">Scheduled</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- EMR MAIN -->
+      <div class="emr-main" id="emrMain">
+        <!-- Patient Header -->
+        <div class="emr-header">
+          <div>
+            <div class="ph-name" id="patName">Mary Wanjiku</div>
+            <div class="ph-meta">
+              <span><i data-feather="calendar" style="width:11px;height:11px"></i> DOB: 12 Mar 1993</span>
+              <span><i data-feather="hash" style="width:11px;height:11px"></i> ID: KE-00847</span>
+              <span><i data-feather="map-pin" style="width:11px;height:11px"></i> Nairobi</span>
+              <span>Blood: <strong style="color:var(--r)">B+</strong></span>
+              <span>Weight: 68 kg</span>
+            </div>
+            <div class="ph-alerts" id="patAlerts">
+              <div class="al-chip al-r"><i data-feather="alert-triangle" style="width:10px;height:10px"></i> Penicillin Allergy</div>
+              <div class="al-chip al-a"><i data-feather="activity" style="width:10px;height:10px"></i> Hypertension Active</div>
+              <div class="al-chip al-r"><i data-feather="zap" style="width:10px;height:10px"></i> Diabetic</div>
+            </div>
+          </div>
+          <div class="ph-vitals">
+            <div class="vital hb-vital"><div class="vital-v">72</div><div class="vital-l">HR bpm</div></div>
+            <div class="vital"><div class="vital-v" style="color:#60a5fa">140/90</div><div class="vital-l">BP mmHg</div></div>
+            <div class="vital"><div class="vital-v" style="color:#f59e0b">36.8</div><div class="vital-l">Temp °C</div></div>
+            <div class="vital"><div class="vital-v" style="color:#14b8a6">98</div><div class="vital-l">SpO₂ %</div></div>
+            <div class="vital"><div class="vital-v">18</div><div class="vital-l">RR /min</div></div>
+          </div>
+        </div>
+        <!-- AI Risk Card -->
+        <div class="ai-card">
+          <div class="ai-header">
+            <div class="ai-orb">🤖</div>
+            <div>
+              <div class="ai-ttl">AI Clinical Summary & Risk Score</div>
+              <div style="font-size:10px;color:var(--t4)">UniHealth AI Engine v4.2 · Updated 2 min ago</div>
+            </div>
+            <div style="margin-left:auto;font-family:var(--fm);font-size:20px;font-weight:700;color:#f59e0b">72%</div>
+          </div>
+          <div style="font-size:11.5px;color:var(--t2);line-height:1.6">Patient Mary Wanjiku presents elevated cardiovascular risk. BP consistently elevated (avg 142/91 over 30 days). HbA1c trending up — recommend glycaemic review. Penicillin allergy flagged for all antibiotic orders.</div>
+          <div style="font-size:9px;color:var(--t4);margin-top:4px">Risk Level:</div>
+          <div class="risk-bar"><div class="risk-fill" style="width:72%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:8.5px;color:var(--t4)"><span>Low</span><span>Moderate</span><span>High</span></div>
+        </div>
+        <!-- Tabs -->
+        <div class="tabs" role="tablist">
+          <button class="tab act" data-tp="notes" onclick="showTab(this,'notes')" role="tab">SOAP Notes</button>
+          <button class="tab" data-tp="labs" onclick="showTab(this,'labs')" role="tab">Lab Results</button>
+          <button class="tab" data-tp="meds" onclick="showTab(this,'meds')" role="tab">Medications</button>
+          <button class="tab" data-tp="history" onclick="showTab(this,'history')" role="tab">History</button>
+          <button class="tab" data-tp="orders" onclick="showTab(this,'orders')" role="tab">Orders</button>
+          <button class="tab" data-tp="api" onclick="showTab(this,'api')" role="tab">API Ref</button>
+        </div>
+        <!-- SOAP Notes -->
+        <div class="tp show" id="tp-notes">
+          <div class="card">
+            <div class="card-hd">
+              <div class="card-ttl"><i data-feather="edit-3" style="width:11px;height:11px"></i> SOAP Clinical Note</div>
+              <button class="btn bp btn-sm" data-audit="SOAP note saved"><i data-feather="save" style="width:11px;height:11px"></i> Save Note</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="fg"><label class="fl" for="soap-s">Subjective (S)</label><textarea class="fi" id="soap-s" rows="3" placeholder="Patient complaints, history…">Patient reports persistent headache for 3 days, dizziness on standing. Denies chest pain.</textarea></div>
+              <div class="fg"><label class="fl" for="soap-o">Objective (O)</label><textarea class="fi" id="soap-o" rows="3" placeholder="Examination findings…">BP 140/90, HR 72 bpm, SpO2 98%. Alert, oriented x3. No focal neurological deficit.</textarea></div>
+              <div class="fg"><label class="fl" for="soap-a">Assessment (A)</label><textarea class="fi" id="soap-a" rows="3" placeholder="Diagnosis, assessment…">1. Hypertension Stage 2 — poorly controlled
+2. Diabetes Mellitus Type 2 — suboptimal control</textarea></div>
+              <div class="fg"><label class="fl" for="soap-p">Plan (P)</label><textarea class="fi" id="soap-p" rows="3" placeholder="Treatment plan…">1. Increase Amlodipine to 10mg OD
+2. Add Metformin 1g BD
+3. Refer to dietitian
+4. Repeat HbA1c in 3 months</textarea></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:11px">
+            <div class="card-hd"><div class="card-ttl">Visit Timeline</div></div>
+            <div style="display:flex;flex-direction:column;gap:0">
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t4);min-width:72px;flex-shrink:0">12 May 2026</div>
+                <div style="width:6px;height:6px;border-radius:50%;background:var(--neon);margin-top:4px;flex-shrink:0;box-shadow:0 0 8px rgba(46,204,113,.4)"></div>
+                <div style="font-size:11.5px;color:var(--t2)">Routine follow-up · BP elevated · Medication adjusted</div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t4);min-width:72px;flex-shrink:0">28 Apr 2026</div>
+                <div style="width:6px;height:6px;border-radius:50%;background:#60a5fa;margin-top:4px;flex-shrink:0"></div>
+                <div style="font-size:11.5px;color:var(--t2)">HbA1c result reviewed · Metformin initiated</div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:8px 0">
+                <div style="font-family:var(--fm);font-size:9px;color:var(--t4);min-width:72px;flex-shrink:0">10 Apr 2026</div>
+                <div style="width:6px;height:6px;border-radius:50%;background:#f59e0b;margin-top:4px;flex-shrink:0"></div>
+                <div style="font-size:11.5px;color:var(--t2)">Initial diagnosis Hypertension · Amlodipine 5mg started</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Lab Results -->
+        <div class="tp" id="tp-labs">
+          <div class="card">
+            <div class="card-hd">
+              <div class="card-ttl"><i data-feather="droplet" style="width:11px;height:11px"></i> Lab Results</div>
+              <button class="btn bp btn-sm" data-audit="Lab order created"><i data-feather="plus" style="width:11px;height:11px"></i> Order Test</button>
+            </div>
+            <table>
+              <thead><tr><th>Test</th><th>Result</th><th>Reference</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>HbA1c</td><td style="color:#f59e0b;font-weight:700">8.4%</td><td style="color:var(--t4)">&lt;7.0%</td><td>12 May 2026</td><td><span class="tag ta">High</span></td></tr>
+                <tr><td>FBS</td><td>7.8 mmol/L</td><td style="color:var(--t4)">3.9–5.5</td><td>12 May 2026</td><td><span class="tag ta">Elevated</span></td></tr>
+                <tr><td>CBC — Hgb</td><td>12.4 g/dL</td><td style="color:var(--t4)">12–16</td><td>10 May 2026</td><td><span class="tag tg">Normal</span></td></tr>
+                <tr><td>eGFR</td><td>74 mL/min</td><td style="color:var(--t4)">&gt;60</td><td>10 May 2026</td><td><span class="tag tg">Normal</span></td></tr>
+                <tr><td>LDL Cholesterol</td><td style="color:#ef4444;font-weight:700">4.8 mmol/L</td><td style="color:var(--t4)">&lt;3.0</td><td>05 May 2026</td><td><span class="tag tr">Critical</span></td></tr>
+                <tr><td>Urine ACR</td><td>35 mg/g</td><td style="color:var(--t4)">&lt;30</td><td>05 May 2026</td><td><span class="tag ta">Borderline</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Medications -->
+        <div class="tp" id="tp-meds">
+          <div class="card">
+            <div class="card-hd">
+              <div class="card-ttl"><i data-feather="package" style="width:11px;height:11px"></i> Current Medications</div>
+              <button class="btn bp btn-sm" onclick="document.getElementById('rxModal').style.display='flex'" data-audit="E-prescription opened"><i data-feather="plus" style="width:11px;height:11px"></i> e-Prescribe</button>
+            </div>
+            <table>
+              <thead><tr><th>Drug</th><th>Dose</th><th>Frequency</th><th>Route</th><th>Prescribed By</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Amlodipine</td><td>5 mg</td><td>OD</td><td>PO</td><td>Dr. Wanjiku</td><td><span class="tag tg">Active</span></td></tr>
+                <tr><td>Metformin</td><td>500 mg</td><td>BD</td><td>PO</td><td>Dr. Wanjiku</td><td><span class="tag tg">Active</span></td></tr>
+                <tr><td>Aspirin</td><td>75 mg</td><td>OD</td><td>PO</td><td>Dr. Omondi</td><td><span class="tag tg">Active</span></td></tr>
+                <tr><td>Atorvastatin</td><td>20 mg</td><td>ON</td><td>PO</td><td>Dr. Wanjiku</td><td><span class="tag tg">Active</span></td></tr>
+              </tbody>
+            </table>
+            <div style="margin-top:10px;padding:9px 11px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:8px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:rgba(239,68,68,.85)">
+              <i data-feather="alert-triangle" style="width:12px;height:12px;flex-shrink:0"></i>
+              <strong>Allergy Alert:</strong> Patient is allergic to Penicillin. All antibiotics must be reviewed before prescribing.
+            </div>
+          </div>
+        </div>
+        <!-- History -->
+        <div class="tp" id="tp-history">
+          <div class="card">
+            <div class="card-hd"><div class="card-ttl"><i data-feather="clock" style="width:11px;height:11px"></i> Medical History</div></div>
+            <div class="g2">
+              <div>
+                <div style="font-size:9.5px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Diagnoses</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--t2)">
+                  <div>✦ Hypertension Stage 2 (2023)</div>
+                  <div>✦ Type 2 Diabetes Mellitus (2024)</div>
+                  <div>✦ Dyslipidaemia (2024)</div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:9.5px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Allergies</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:11.5px">
+                  <div style="color:#ef4444">⚠ Penicillin — Anaphylaxis</div>
+                  <div style="color:#f59e0b">⚠ Sulfonamides — Rash</div>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:9.5px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Surgical History</div>
+                <div style="font-size:11.5px;color:var(--t2)">Appendectomy 2015 · Caesarean section 2020</div>
+              </div>
+              <div>
+                <div style="font-size:9.5px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px">Family History</div>
+                <div style="font-size:11.5px;color:var(--t2)">Father: DM T2, HTN · Mother: Hypertension</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Orders -->
+        <div class="tp" id="tp-orders">
+          <div class="card">
+            <div class="card-hd">
+              <div class="card-ttl"><i data-feather="clipboard" style="width:11px;height:11px"></i> Clinical Orders</div>
+              <button class="btn bp btn-sm" data-audit="Order created"><i data-feather="plus" style="width:11px;height:11px"></i> New Order</button>
+            </div>
+            <table>
+              <thead><tr><th>Order Type</th><th>Detail</th><th>Priority</th><th>Ordered By</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Laboratory</td><td>HbA1c, Lipid Profile, eGFR</td><td><span class="tag ta">Routine</span></td><td>Dr. Wanjiku</td><td><span class="tag tb_">Pending</span></td></tr>
+                <tr><td>Radiology</td><td>Chest X-Ray (PA view)</td><td><span class="tag ta">Routine</span></td><td>Dr. Wanjiku</td><td><span class="tag tg">Completed</span></td></tr>
+                <tr><td>Referral</td><td>Cardiology — HTN management</td><td><span class="tag tr">Urgent</span></td><td>Dr. Wanjiku</td><td><span class="tag tb_">Scheduled</span></td></tr>
+                <tr><td>Diet</td><td>Low-sodium, diabetic diet plan</td><td><span class="tag ta">Routine</span></td><td>Dietitian</td><td><span class="tag tg">Active</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- API Ref -->
+        <div class="tp" id="tp-api">
+          <div class="card">
+            <div class="card-hd"><div class="card-ttl"><i data-feather="code" style="width:11px;height:11px"></i> API Reference — EMR Module</div></div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(46,204,113,.1);color:var(--neon)">GET</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/api/emr/patients?query=</span>
+                <span style="font-size:9.5px;color:var(--t4)">Search patients by name/ID</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(46,204,113,.1);color:var(--neon)">GET</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/api/emr/patient/{id}</span>
+                <span style="font-size:9.5px;color:var(--t4)">Get patient details & full record</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,.1);color:#60a5fa">POST</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/api/emr/patient</span>
+                <span style="font-size:9.5px;color:var(--t4)">Create new patient record</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(245,158,11,.1);color:#f59e0b">PUT</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/api/emr/patient/{id}</span>
+                <span style="font-size:9.5px;color:var(--t4)">Update patient record</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(59,130,246,.1);color:#60a5fa">POST</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/api/emr/patient/{id}/note</span>
+                <span style="font-size:9.5px;color:var(--t4)">Add SOAP clinical note</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:11px">
+                <span style="font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;background:rgba(46,204,113,.1);color:var(--neon)">GET</span>
+                <span style="font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1">/fhir/Patient/{id}</span>
+                <span style="font-size:9.5px;color:var(--t4)">FHIR R5 patient resource</span>
+              </div>
+            </div>
+            <div style="margin-top:10px;padding:9px 11px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18);border-radius:8px;font-size:10.5px;color:rgba(167,139,250,.8)">
+              <strong>Security:</strong> JWT Bearer token required on all endpoints. RBAC enforced per role. CSRF tokens on all write operations. All PHI access logged per HIPAA.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<!-- NEW PATIENT MODAL -->
+<div class="modal-overlay" id="newPatModal" role="dialog" aria-modal="true" aria-label="Register new patient">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-ttl">Register New Patient</div>
+      <button class="mc" onclick="document.getElementById('newPatModal').style.display='none'" aria-label="Close"><i data-feather="x" style="width:14px;height:14px"></i></button>
+    </div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl" for="np-fn">First Name</label><input class="fi" id="np-fn" placeholder="First name" required aria-required="true"></div>
+      <div class="fg"><label class="fl" for="np-ln">Last Name</label><input class="fi" id="np-ln" placeholder="Last name" required aria-required="true"></div>
+      <div class="fg"><label class="fl" for="np-dob">Date of Birth</label><input class="fi" id="np-dob" type="date" required></div>
+      <div class="fg"><label class="fl" for="np-sex">Sex</label><select class="fi" id="np-sex"><option>Female</option><option>Male</option><option>Other</option></select></div>
+      <div class="fg"><label class="fl" for="np-id">National ID</label><input class="fi" id="np-id" placeholder="e.g. 12345678"></div>
+      <div class="fg"><label class="fl" for="np-ph">Phone</label><input class="fi" id="np-ph" type="tel" placeholder="07XX XXX XXX"></div>
+      <div class="fg"><label class="fl" for="np-bg">Blood Group</label><select class="fi" id="np-bg"><option>A+</option><option>A−</option><option>B+</option><option>B−</option><option>AB+</option><option>AB−</option><option>O+</option><option>O−</option></select></div>
+      <div class="fg"><label class="fl" for="np-ins">Insurance</label><select class="fi" id="np-ins"><option>CIC Insurance</option><option>Old Mutual</option><option>Self-Pay</option><option>KEMSA</option></select></div>
+    </div>
+    <div class="fg" style="margin-bottom:12px"><label class="fl" for="np-al">Known Allergies</label><input class="fi" id="np-al" placeholder="e.g. Penicillin, Sulfonamides"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" onclick="document.getElementById('newPatModal').style.display='none'">Cancel</button>
+      <button class="btn bp" onclick="registerPatient()" data-audit="NEW_PATIENT registered"><i data-feather="user-check" style="width:12px;height:12px"></i> Register Patient</button>
+    </div>
+  </div>
+</div>
+<!-- E-PRESCRIBE MODAL -->
+<div class="modal-overlay" id="rxModal" role="dialog" aria-modal="true" aria-label="E-Prescription">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-ttl">e-Prescription</div>
+      <button class="mc" onclick="document.getElementById('rxModal').style.display='none'" aria-label="Close"><i data-feather="x" style="width:14px;height:14px"></i></button>
+    </div>
+    <div class="frm-g" style="margin-bottom:10px">
+      <div class="fg"><label class="fl" for="rx-drug">Drug Name</label><input class="fi" id="rx-drug" placeholder="Search drug…" required></div>
+      <div class="fg"><label class="fl" for="rx-dose">Dose</label><input class="fi" id="rx-dose" placeholder="e.g. 500 mg"></div>
+      <div class="fg"><label class="fl" for="rx-freq">Frequency</label><select class="fi" id="rx-freq"><option>OD</option><option>BD</option><option>TDS</option><option>QDS</option><option>PRN</option></select></div>
+      <div class="fg"><label class="fl" for="rx-dur">Duration</label><input class="fi" id="rx-dur" placeholder="e.g. 7 days"></div>
+    </div>
+    <div class="fg" style="margin-bottom:12px"><label class="fl" for="rx-note">Clinical Note / Indication</label><textarea class="fi" id="rx-note" rows="2" placeholder="Indication for prescription…"></textarea></div>
+    <div style="padding:8px 10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:7px;font-size:10.5px;color:rgba(239,68,68,.85);margin-bottom:12px">
+      ⚠ Allergy Check: Patient allergic to <strong>Penicillin</strong>. AI drug interaction check active.
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" onclick="document.getElementById('rxModal').style.display='none'">Cancel</button>
+      <button class="btn bp" onclick="submitRx()" data-audit="E-PRESCRIPTION submitted"><i data-feather="send" style="width:12px;height:12px"></i> Issue Prescription</button>
+    </div>
+  </div>
+</div>
+<script>
+feather.replace({width:12,height:12,strokeWidth:2});
+// Clock
+setInterval(()=>{const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString('en-KE',{hour12:false})},1000);
+document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-KE',{hour12:false});
+// Tabs
+function showTab(btn,id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  btn.classList.add('act');
+  document.querySelectorAll('.tp').forEach(p=>{p.classList.remove('show');p.style.display='none'});
+  const tp=document.getElementById('tp-'+id);
+  if(tp){tp.style.display='block';tp.classList.add('show');}
+}
+document.querySelectorAll('.tp').forEach((p,i)=>{if(i>0)p.style.display='none';});
+// Select patient
+function selectPat(el,name,meta,id,cond){
+  document.querySelectorAll('.pat-item').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('patName').textContent=name;
+  // Simulated audit
+  auditEntry('EMR_VIEW patient='+id+' by=Dr.Wanjiku');
+}
+// Filter patients
+function filterPatients(q){
+  document.querySelectorAll('.pat-item').forEach(p=>{
+    p.style.display=p.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+// Register patient stub
+function registerPatient(){
+  const fn=document.getElementById('np-fn').value,ln=document.getElementById('np-ln').value;
+  if(!fn||!ln){alert('Please fill in required fields.');return;}
+  auditEntry('NEW_PATIENT name='+fn+' '+ln+' registered');
+  document.getElementById('newPatModal').style.display='none';
+  showToast('Patient registered successfully ✓');
+}
+// Rx stub
+function submitRx(){
+  const drug=document.getElementById('rx-drug').value;
+  if(!drug){alert('Please enter a drug name.');return;}
+  auditEntry('PRESCRIPTION issued drug='+drug);
+  document.getElementById('rxModal').style.display='none';
+  showToast('Prescription issued for '+drug+' ✓');
+}
+// Notifications
+document.getElementById('notifBtn').addEventListener('click',()=>{
+  const ex=document.getElementById('notifPanel');
+  if(ex){ex.remove();return;}
+  const p=document.createElement('div');p.id='notifPanel';p.className='notif-panel';
+  p.style.cssText='position:fixed;top:60px;right:12px;width:285px;background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:13px;z-index:100;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7);animation:su .25s cubic-bezier(.16,1,.3,1)';
+  p.innerHTML=`<div style="font-size:9.5px;font-weight:700;color:var(--t2);margin-bottom:8px;font-family:var(--fm);letter-spacing:1px;text-transform:uppercase">Notifications</div>
+  <div style="display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;color:var(--t2);line-height:1.4"><span>🔴</span><span>Critical: Mary Wanjiku LDL critically elevated — review urgently</span></div>
+  <div style="display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;color:var(--t2);line-height:1.4"><span>🟡</span><span>Lab result: Peter Njoroge ECG pending radiologist sign-off</span></div>
+  <div style="display:flex;align-items:flex-start;gap:7px;padding:7px 0;font-size:11px;color:var(--t2);line-height:1.4"><span>🟢</span><span>CIC Insurance claim #9981 for James Omondi approved</span></div>`;
+  document.body.appendChild(p);
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!p.contains(e.target)&&e.target!==document.getElementById('notifBtn')){p.remove();document.removeEventListener('click',h);}},true),10);
+});
+// Audit log
+const auditData=[];
+function auditEntry(msg){const t=new Date().toLocaleTimeString('en-KE',{hour12:false});auditData.unshift('['+t+'] '+msg);}
+// Toast
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;background:rgba(5,12,7,.99);border:1px solid rgba(46,204,113,.35);border-radius:10px;padding:10px 16px;font-size:12px;color:var(--t1);z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:su .3s ease';
+  t.innerHTML='<span style="color:var(--neon)">✓</span>'+msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),3200);
+}
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.style.display='none';}));
+// Audit on data-audit elements
+document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditEntry(el.dataset.audit)));
+</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventory & Procurement — UniHealth 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{--g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;--r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;--bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);--t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);--fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(46,204,113,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s ease both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.1));border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(46,204,113,.14)}50%{box-shadow:0 0 20px rgba(46,204,113,.3)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}
+.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(46,204,113,.14);border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--neon);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);text-decoration:none;border-left:2px solid transparent;transition:all .2s}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(46,204,113,.4)}
+.sb-lnk.active{background:rgba(46,204,113,.08);color:var(--neon);border-left-color:var(--neon)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none;transition:all .2s}
+.sb-back:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s ease .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.b-a{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
+.b-b{background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.b-pk{background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.2);color:#ec4899}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.4;transform:scale(1.3)}}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid;transition:all .2s}
+.tb-p{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.tb-p:hover{box-shadow:0 3px 14px rgba(46,204,113,.28);transform:translateY(-1px)}
+.tb-g{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.tb-g:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.tb-ic{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--gl);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);position:relative;transition:all .2s}
+.tb-ic:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.nn{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--r);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg)}
+.clk{font-family:var(--fm);font-size:9px;color:var(--t4)}
+.content{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin;animation:ct-in .6s ease .1s both}
+@keyframes ct-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:var(--bn);transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.45)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(46,204,113,.25),transparent);opacity:0;transition:opacity .2s}
+.card:hover::before{opacity:1}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.card-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--t4);font-family:var(--fm);display:flex;align-items:center;gap:5px}
+.stat{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;animation:su .5s ease both;transition:all .22s}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc,var(--neon));opacity:.5}
+.stat:hover{border-color:var(--bn);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.4)}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-v{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--mc,var(--neon));line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+.stat-s{font-family:var(--fm);font-size:8px;color:var(--t4);margin-top:3px}
+.tabs{display:flex;gap:2px;background:var(--gl);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--t3);border:none;background:none;font-family:var(--fn);transition:all .2s}
+.tab.act{background:rgba(46,204,113,.13);color:var(--neon);border:1px solid rgba(46,204,113,.22)}
+.tp{display:none}.tp.show{display:block;animation:tp-in .3s ease}
+@keyframes tp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:7px 10px;font-family:var(--fm);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--gl)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:8px;font-weight:700}
+.tg{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+.tr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#ef4444}
+.ta{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#f59e0b}
+.tb_{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#60a5fa}
+.tp_{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.22);color:#ec4899}
+.tpu{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#a78bfa}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid;transition:all .2s}
+.bp{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.bp:hover{box-shadow:0 4px 16px rgba(46,204,113,.28);transform:translateY(-1px)}
+.bg_{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.bg_:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.br{background:rgba(239,68,68,.09);border-color:rgba(239,68,68,.22);color:#ef4444}
+.btn-sm{padding:4px 10px;font-size:10.5px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--t3)}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;color:var(--t1);font-family:var(--fn);font-size:12px;outline:none;transition:all .2s}
+.fi:focus{border-color:rgba(46,204,113,.45);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(46,204,113,.1)}
+.fi::placeholder{color:var(--t4)}
+textarea.fi{resize:vertical;min-height:72px}
+select.fi option{background:#060e08}
+.prog{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.prog-f{height:100%;border-radius:2px;transition:width 1.2s ease}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:480px;padding:20px;animation:su .3s ease;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-ttl{font-size:15px;font-weight:700;color:var(--t1)}
+.mc{background:none;border:none;color:var(--t3);cursor:pointer;border-radius:6px;padding:4px;display:flex;align-items:center;transition:color .2s}
+.mc:hover{color:var(--t1);background:var(--gl)}
+.frm-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.bar-wrap{display:flex;gap:4px;align-items:flex-end;height:64px}
+.bar-c{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height 1.2s ease}
+.bar-lbl{font-size:7.5px;color:var(--t4);text-align:center;margin-top:3px}
+.srch{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px;flex:1;max-width:260px;transition:all .2s}
+.srch:focus-within{border-color:rgba(46,204,113,.35)}
+.srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--fn);font-size:12px;flex:1}
+.srch input::placeholder{color:var(--t4)}
+.srch i{color:var(--t4);width:12px;height:12px}
+.al{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:9px;font-size:11.5px;line-height:1.5;border:1px solid;margin-bottom:10px}
+.al-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.85);animation:al-f 2s ease infinite}
+@keyframes al-f{0%,100%{border-color:rgba(239,68,68,.2)}50%{border-color:rgba(239,68,68,.5);box-shadow:0 0 8px rgba(239,68,68,.12)}}
+.al-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:rgba(245,158,11,.85)}
+.al-g{background:rgba(46,204,113,.07);border-color:rgba(46,204,113,.2);color:rgba(46,204,113,.85)}
+.al-b{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);color:rgba(59,130,246,.85)}
+.api-box{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.14);border-radius:10px;padding:12px 14px}
+.api-ttl{font-family:var(--fm);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px}
+.api-r{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10.5px}
+.api-r:last-child{border-bottom:none}
+.m-g{font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;min-width:36px;text-align:center;background:rgba(46,204,113,.1);color:var(--neon)}
+.m-p{background:rgba(59,130,246,.1);color:#60a5fa}
+.m-u{background:rgba(245,158,11,.1);color:#f59e0b}
+.m-d{background:rgba(239,68,68,.1);color:#ef4444}
+.api-ep{font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1}
+.api-d{font-size:9.5px;color:var(--t4)}
+.role-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
+.role-table th{text-align:left;padding:6px 10px;font-family:var(--fm);font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+.role-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--t2);vertical-align:top}
+.role-table td:first-child{color:var(--neon);font-weight:600;white-space:nowrap}
+.pulse-ring{animation:pr 2s cubic-bezier(.4,0,.6,1) infinite}
+@keyframes pr{0%{box-shadow:0 0 0 0 rgba(46,204,113,.35)}100%{box-shadow:0 0 0 8px rgba(46,204,113,0)}}
+.hb{animation:hb .85s ease-in-out infinite}
+@keyframes hb{0%,100%{transform:scale(1)}15%{transform:scale(1.12)}30%{transform:scale(.95)}}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.18);border-radius:5px;font-size:9.5px;color:var(--neon);font-family:var(--fm)}
+.live{display:inline-flex;align-items:center;gap:4px;font-family:var(--fm);font-size:8px;color:var(--neon)}
+.live-d{width:5px;height:5px;border-radius:50%;background:var(--neon);animation:pd 2s infinite}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.sb{width:180px}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.app{flex-direction:column}.sb{display:none}.content{padding:12px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style></head><body>
+<div class="app">
+<nav class="sb" aria-label="Navigation">
+  <div class="sb-brand"><div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div></div>
+  <div class="sb-user"><div class="sbu-av">PO</div><div><div class="sbu-nm">Procurement Officer</div><div class="sbu-rl">Session Active</div></div></div>
+  <div class="sb-nav"><div class="sb-sect">Clinical</div><a class="sb-lnk" href="unihealth-emr.html"><i data-feather="file-text"></i> EMR / EHR</a><a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity & NICU</a><a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a><a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a><a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a><a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU & Emergency</a><a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a><a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a><a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a><div class="sb-sect">Operations</div><a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing & Finance</a><a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a><a class="sb-lnk active" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a><a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance & Fleet</a><a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a><a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a><div class="sb-sect">Management</div><a class="sb-lnk" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a><a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR & Payroll</a><a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a><a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a><a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient Portal</a></div>
+  <div class="sb-ft"><a href="unihealth360-final.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a><div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div></div>
+</nav>
+<div class="main">
+<div class="topbar">
+  <div class="tb-page"><span style="font-size:16px">📦</span> Inventory & Procurement</div>
+  <div class="tb-badge b-g"><span class="pdot"></span>LIVE · KEMSA Connected</div>
+  <button class="tb-btn tb-p" data-open="poModal" data-audit="PO form opened"><i data-feather="file-plus" style="width:11px;height:11px"></i> New PO</button>
+  <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0"><i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">3</div></div>
+  <div class="clk" id="clock"></div>
+</div>
+<div class="content">
+<div class="g4" style="margin-bottom:14px">
+  <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="4820">0</div><div class="stat-l">Stock Items</div><div class="stat-s">38 categories</div></div>
+  <div class="stat" style="--mc:#ef4444"><div class="stat-v" data-val="23">0</div><div class="stat-l">Low Stock Alerts</div><div class="stat-s">8 critical</div></div>
+  <div class="stat" style="--mc:#f59e0b"><div class="stat-v" data-val="14">0</div><div class="stat-l">Expiring Soon</div><div class="stat-s">Within 30 days</div></div>
+  <div class="stat" style="--mc:#60a5fa"><div class="stat-v" data-val="7">0</div><div class="stat-l">Open Purchase Orders</div><div class="stat-s">3 with KEMSA</div></div>
+</div>
+<div class="tabs">
+  <button class="tab act" onclick="showTab(this,'stock')">Stock Levels</button>
+  <button class="tab" onclick="showTab(this,'po')">Purchase Orders</button>
+  <button class="tab" onclick="showTab(this,'vendors')">Vendors</button>
+  <button class="tab" onclick="showTab(this,'kemsa')">KEMSA</button>
+  <button class="tab" onclick="showTab(this,'api')">API Ref</button>
+</div>
+
+<div class="tp show" id="tp-stock">
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl">📦 Inventory Stock Levels</div>
+      <div style="display:flex;gap:8px">
+        <div class="srch"><i data-feather="search"></i><input placeholder="Search items…" data-search="#stockTb2"></div>
+        <button class="btn bp btn-sm" data-open="adjModal" data-audit="Stock adjusted"><i data-feather="edit-2" style="width:11px;height:11px"></i> Adjust Stock</button>
+      </div>
+    </div>
+    <div class="tbl"><table><thead><tr><th>Item</th><th>Category</th><th>In Stock</th><th>Reorder Level</th><th>Unit</th><th>Last Updated</th><th>Status</th></tr></thead>
+    <tbody id="stockTb2">
+      <tr><td>Surgical Gloves (L)</td><td>PPE</td><td>4,200</td><td>1,000</td><td>Pair</td><td>11 May</td><td><span class="tag tg">Adequate</span></td></tr>
+      <tr><td>N95 Masks</td><td>PPE</td><td>380</td><td>500</td><td>Piece</td><td>11 May</td><td><span class="tag tr">Low Stock</span></td></tr>
+      <tr><td>IV Cannula 18G</td><td>Medical</td><td>1,240</td><td>500</td><td>Piece</td><td>10 May</td><td><span class="tag tg">Adequate</span></td></tr>
+      <tr><td>Normal Saline 500mL</td><td>Fluids</td><td>220</td><td>300</td><td>Bag</td><td>10 May</td><td><span class="tag tr">Low Stock</span></td></tr>
+      <tr><td>Suture — Vicryl 2-0</td><td>Surgical</td><td>84</td><td>50</td><td>Box</td><td>09 May</td><td><span class="tag tg">Adequate</span></td></tr>
+      <tr><td>Blood Collection Tubes (EDTA)</td><td>Lab</td><td>45</td><td>200</td><td>Box (100)</td><td>09 May</td><td><span class="tag tr">Critical</span></td></tr>
+      <tr><td>Oxygen Cylinders (F)</td><td>Gas</td><td>12</td><td>20</td><td>Cylinder</td><td>08 May</td><td><span class="tag ta">Low</span></td></tr>
+      <tr><td>Hospital Beds — Mattresses</td><td>Furniture</td><td>18</td><td>10</td><td>Piece</td><td>07 May</td><td><span class="tag tg">Adequate</span></td></tr>
+    </tbody></table></div>
+  </div>
+</div>
+
+<div class="tp" id="tp-po">
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl">📋 Purchase Orders</div>
+      <button class="btn bp btn-sm" data-open="poModal" data-audit="PO created"><i data-feather="file-plus" style="width:11px;height:11px"></i> New PO</button>
+    </div>
+    <div class="tbl"><table><thead><tr><th>PO #</th><th>Vendor</th><th>Items</th><th>Total (KES)</th><th>Created</th><th>Expected</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td style="font-family:var(--fm);color:var(--neon)">PO-2026-088</td><td>KEMSA</td><td>Drugs × 12 lines</td><td>485,000</td><td>10 May</td><td>15 May</td><td><span class="tag ta">In Transit</span></td></tr>
+      <tr><td style="font-family:var(--fm);color:var(--neon)">PO-2026-087</td><td>Medisel Kenya</td><td>PPE × 8 lines</td><td>124,000</td><td>08 May</td><td>13 May</td><td><span class="tag tb_">Processing</span></td></tr>
+      <tr><td style="font-family:var(--fm);color:var(--neon)">PO-2026-086</td><td>BOC Kenya (Oxygen)</td><td>O₂ Cylinders × 20</td><td>68,000</td><td>06 May</td><td>12 May</td><td><span class="tag tg">Delivered</span></td></tr>
+      <tr><td style="font-family:var(--fm);color:var(--neon)">PO-2026-085</td><td>Carepak Medical</td><td>IV Fluids × 500 bags</td><td>92,500</td><td>04 May</td><td>10 May</td><td><span class="tag tg">Delivered</span></td></tr>
+    </tbody></table></div>
+  </div>
+</div>
+
+<div class="tp" id="tp-vendors">
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl">🏢 Approved Vendors</div><button class="btn bp btn-sm" data-audit="Vendor added"><i data-feather="plus" style="width:11px;height:11px"></i> Add Vendor</button></div>
+    <div class="tbl"><table><thead><tr><th>Vendor</th><th>Category</th><th>Contact</th><th>Lead Time</th><th>Rating</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>KEMSA (Kenya Medical Supplies Auth.)</td><td>Drugs & Supplies</td><td>kemsa.go.ke</td><td>3–5 days</td><td>⭐⭐⭐⭐⭐</td><td><span class="tag tg">Preferred</span></td></tr>
+      <tr><td>Medisel Kenya Ltd</td><td>PPE & Disposables</td><td>medisel.co.ke</td><td>2–4 days</td><td>⭐⭐⭐⭐</td><td><span class="tag tg">Active</span></td></tr>
+      <tr><td>BOC Kenya Ltd</td><td>Medical Gases</td><td>boc.co.ke</td><td>1–2 days</td><td>⭐⭐⭐⭐⭐</td><td><span class="tag tg">Active</span></td></tr>
+      <tr><td>Carepak Medical Supplies</td><td>IV Fluids & Consumables</td><td>carepak.co.ke</td><td>3–6 days</td><td>⭐⭐⭐</td><td><span class="tag ta">Review</span></td></tr>
+    </tbody></table></div>
+  </div>
+</div>
+
+<div class="tp" id="tp-kemsa">
+  <div class="card">
+    <div class="card-hd"><div class="card-ttl" style="color:#f59e0b">🏛️ KEMSA Integration — Kenya Medical Supplies Authority</div><span class="tag ta">LIVE API</span></div>
+    <div class="al al-g"><i data-feather="check-circle" style="width:12px;height:12px;flex-shrink:0"></i>KEMSA API connected · Last sync: 12 May 2026 09:00 · Supply order #KEMSA-2847 in transit — ETA 4 hours</div>
+    <div class="frm-g" style="margin-top:10px">
+      <div class="fg"><label class="fl">Item Category</label><select class="fi"><option>Essential Medicines</option><option>Laboratory Reagents</option><option>Surgical Supplies</option><option>Vaccines</option><option>Family Planning</option></select></div>
+      <div class="fg"><label class="fl">Facility Code</label><input class="fi" value="KNH-NBI-001" readonly></div>
+      <div class="fg"><label class="fl">Item KEMSA Code</label><input class="fi" placeholder="e.g. KMS-7821"></div>
+      <div class="fg"><label class="fl">Quantity Requested</label><input class="fi" type="number" placeholder="500"></div>
+    </div>
+    <button class="btn bp" style="margin-top:10px;background:linear-gradient(135deg,rgba(180,112,0,.8),rgba(245,158,11,.8));border-color:rgba(245,158,11,.3)" data-audit="KEMSA order submitted" onclick="toast('KEMSA order submitted ✓ — Ref: KEMSA-2848')"><i data-feather="send" style="width:11px;height:11px"></i> Submit KEMSA Order</button>
+  </div>
+</div>
+
+<div class="tp" id="tp-api">
+  <div class="card"><div class="card-hd"><div class="card-ttl">🔌 API Reference — Inventory</div></div>
+    <div class="api-box"><div class="api-ttl">Inventory & Procurement Endpoints</div>
+      <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/inventory/items</span><span class="api-d">List all stocked items</span></div>
+      <div class="api-r"><span class="m-g m-p">POST</span><span class="api-ep">/api/inventory/adjust</span><span class="api-d">Adjust stock (add/remove)</span></div>
+      <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/inventory/alerts</span><span class="api-d">Low-stock and expiry alerts</span></div>
+      <div class="api-r"><span class="m-g m-p">POST</span><span class="api-ep">/api/procurement/order</span><span class="api-d">Place purchase order</span></div>
+      <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/procurement/orders</span><span class="api-d">View past/current orders</span></div>
+      <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/kemsa/catalogue</span><span class="api-d">KEMSA national catalogue</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="adjModal"><div class="modal">
+  <div class="modal-hd"><div class="modal-ttl">Adjust Stock</div><button class="mc" data-close="adjModal"><i data-feather="x" style="width:14px;height:14px"></i></button></div>
+  <div class="frm-g">
+    <div class="fg"><label class="fl">Item</label><input class="fi" placeholder="Search item…"></div>
+    <div class="fg"><label class="fl">Adjustment Type</label><select class="fi"><option>Addition (Receipt)</option><option>Deduction (Usage)</option><option>Correction</option><option>Disposal (Expired)</option></select></div>
+    <div class="fg"><label class="fl">Quantity</label><input class="fi" type="number" placeholder="0"></div>
+    <div class="fg"><label class="fl">Reason</label><input class="fi" placeholder="e.g. KEMSA delivery received"></div>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+    <button class="btn bg_" data-close="adjModal">Cancel</button>
+    <button class="btn bp" data-audit="Stock adjusted" onclick="toast('Stock adjusted ✓');closeModal('adjModal')"><i data-feather="check" style="width:11px;height:11px"></i> Save Adjustment</button>
+  </div>
+</div></div>
+<div class="modal-ov" id="poModal"><div class="modal">
+  <div class="modal-hd"><div class="modal-ttl">New Purchase Order</div><button class="mc" data-close="poModal"><i data-feather="x" style="width:14px;height:14px"></i></button></div>
+  <div class="frm-g">
+    <div class="fg"><label class="fl">Vendor</label><select class="fi"><option>KEMSA</option><option>Medisel Kenya</option><option>BOC Kenya</option><option>Carepak Medical</option></select></div>
+    <div class="fg"><label class="fl">Required By</label><input class="fi" type="date"></div>
+  </div>
+  <div class="fg" style="margin-bottom:10px"><label class="fl">Items &amp; Quantities</label><textarea class="fi" rows="4" placeholder="Item name, qty, unit price — one per line&#10;e.g. N95 Masks, 500, 85"></textarea></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+    <button class="btn bg_" data-close="poModal">Cancel</button>
+    <button class="btn bp" data-audit="PO submitted" onclick="toast('Purchase Order created ✓');closeModal('poModal')"><i data-feather="file-plus" style="width:11px;height:11px"></i> Create PO</button>
+  </div>
+</div></div>
+</div>
+</div>
+</div>
+<script>
+feather.replace({width:12,height:12,strokeWidth:2});
+// Clock
+(function(){function t(){const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString('en-KE',{hour12:false});}t();setInterval(t,1000);})();
+// Tabs
+function showTab(btn,id){
+  const w=btn.closest('.tabs');
+  w.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  btn.classList.add('act');
+  document.querySelectorAll('.tp').forEach(p=>{p.classList.remove('show');p.style.display='none';});
+  const el=document.getElementById('tp-'+id);if(el){el.style.display='block';setTimeout(()=>el.classList.add('show'),10);}
+}
+document.querySelectorAll('.tp').forEach((p,i)=>{if(i>0)p.style.display='none';});
+// Counter animation
+function animCnt(){document.querySelectorAll('.stat-v[data-val]').forEach(el=>{const tg=parseFloat(el.dataset.val),fr=String(el.dataset.val).includes('.');let s=performance.now();(function go(n){const p=Math.min((n-s)/1400,1),e=1-Math.pow(1-p,3),v=tg*e;el.textContent=fr?v.toFixed(1):Math.round(v).toLocaleString();if(p<1)requestAnimationFrame(go);})(s);});}
+setTimeout(animCnt,250);
+// Progress bars
+setTimeout(()=>document.querySelectorAll('.prog-f[data-w]').forEach(b=>{b.style.width='0';setTimeout(()=>b.style.width=b.dataset.w,150);}),350);
+// Bar chart
+setTimeout(()=>document.querySelectorAll('.bar-c[data-h]').forEach(b=>{b.style.height='4px';setTimeout(()=>b.style.height=b.dataset.h,200+Math.random()*300);}),500);
+// Notification panel
+const nb=document.getElementById('notifBtn');if(nb)nb.addEventListener('click',()=>{
+  const ex=document.getElementById('_np');if(ex){ex.remove();return;}
+  const p=document.createElement('div');p.id='_np';
+  p.style.cssText='position:fixed;top:60px;right:12px;width:285px;background:rgba(5,12,7,.99);border:1px solid rgba(255,255,255,.08);border-radius:13px;z-index:300;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7)';
+  p.innerHTML='<div style="font-size:9.5px;font-weight:700;color:rgba(240,253,244,.72);margin-bottom:8px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase">Notifications</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Critical: CIC claim #9981 needs approval</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 Old Mutual verification pending review</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0">🟢 Maternity AI flagged high-risk patient</div>';
+  document.body.appendChild(p);
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',h);}},true),10);
+});
+// Modals
+function openModal(id){const m=document.getElementById(id);if(m)m.style.display='flex';}
+function closeModal(id){const m=document.getElementById(id);if(m)m.style.display='none';}
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.open)));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.style.display='none';}));
+// Toast
+function toast(msg,type='g'){const t=document.createElement('div');const col=type==='r'?'#ef4444':type==='a'?'#f59e0b':'#2ecc71';t.style.cssText='position:fixed;bottom:20px;right:20px;background:rgba(5,12,7,.99);border:1px solid '+col.replace('#','rgba(').replace(')',', .35)').replace('rgba(','rgba(')+';border-radius:10px;padding:10px 16px;font-size:12px;color:#f0fdf4;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:su .3s ease';t.innerHTML='<span style="color:'+col+'">●</span> '+msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3200);}
+// Search
+document.querySelectorAll('[data-search]').forEach(inp=>inp.addEventListener('input',()=>{const q=inp.value.toLowerCase(),tb=document.querySelector(inp.dataset.search);if(!tb)return;tb.querySelectorAll('tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none';});}));
+// Audit log
+function auditLog(msg){const al=document.getElementById('auditLog');if(!al)return;const t=new Date().toLocaleTimeString('en-KE',{hour12:false});const r=document.createElement('div');r.style.cssText='font-size:9.5px;color:rgba(240,253,244,.2);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace';r.textContent='['+t+'] '+msg;al.prepend(r);if(al.children.length>12)al.lastChild.remove();}
+document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditLog(el.dataset.audit)));
+</script></body></html>
