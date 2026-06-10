@@ -22,6 +22,11 @@ build/
 .DS_Store
 Thumbs.db
 
+# ML exports and trained artifacts (Tier C)
+ml/data/features_*.jsonl
+ml/models/*.joblib
+ml/models/*.meta.json
+
 # Logs and local
 *.log
 *.sqlite3

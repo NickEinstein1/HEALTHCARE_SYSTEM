@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { aiAlertsWebSocketUrl, api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
+import { AiRiskScorePanel } from "../../components/ai/AiRiskScorePanel";
+import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { useAiRiskScore } from "../../hooks/useAiRiskScore";
 
 type DocPage =
   | "home"
@@ -43,6 +46,9 @@ export function DoctorDashboard() {
   const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 5000 });
   const obs = usePolling(() => api.observations(patientId, 10), { intervalMs: 5000 });
   const meds = usePolling(() => api.medicationRequests(patientId, 10), { intervalMs: 7000 });
+  const { riskScore, riskLoading, fetchRiskScore, vitalMap } = useAiRiskScore(patientId, obs.data, "doctor", {
+    onError: (msg) => toast(`Risk score unavailable: ${msg}`),
+  });
 
   const apiErr = summary.error ?? obs.error ?? meds.error;
 
@@ -141,29 +147,17 @@ export function DoctorDashboard() {
   const fetchAiHints = useCallback(async () => {
     setAiHintsLoading(true);
     try {
-      // Build features from current observations + summary
-      const latestVitals = obs.data ?? [];
-      const vitalMap: Record<string, number> = {};
-      for (const o of latestVitals) {
-        const code = (o.code ?? "").toLowerCase();
-          const val  = parseFloat((o as any).valueQuantity?.value ?? (o as any).value ?? "");
-        if (!isNaN(val)) {
-          if (code.includes("respiratory") || code.includes("8867-4")) vitalMap.rr   = val;
-          if (code.includes("oxygen")      || code.includes("59408-5")) vitalMap.spo2 = val;
-          if (code.includes("systolic")    || code.includes("8480-6"))  vitalMap.sbp  = val;
-          if (code.includes("heart")       || code.includes("8867"))    vitalMap.hr   = val;
-          if (code.includes("temp")        || code.includes("8310-5"))  vitalMap.temp = val;
-          if (code.includes("glucose")     || code.includes("2339-0"))  vitalMap.glucose = val;
-          if (code.includes("creatinine")  || code.includes("2160-0"))  vitalMap.creatinine = val;
-          if (code.includes("potassium")   || code.includes("6298-4"))  vitalMap.potassium = val;
-        }
-      }
       const activeMeds = (meds.data ?? []).map((m: any) =>
         m.medicationCodeableConcept?.text ?? m.medication ?? ""
       ).filter(Boolean);
 
       const result = await api.aiDiagnosisHints(
-        { features: vitalMap, medications: activeMeds, patient_id: patientId },
+        {
+          features: vitalMap,
+          medications: activeMeds,
+          patient_id: patientId,
+          use_fhir: true,
+        },
         "doctor",
       );
       setAiHints(result);
@@ -173,7 +167,7 @@ export function DoctorDashboard() {
     } finally {
       setAiHintsLoading(false);
     }
-  }, [obs.data, meds.data, patientId]);
+  }, [vitalMap, meds.data, patientId, toast]);
 
   const ackAlert = async (id: string) => {
     try {
@@ -182,6 +176,15 @@ export function DoctorDashboard() {
       toast("Alert acknowledged.");
     } catch { /* offline */ }
   };
+
+  const riskScorePanel = (
+    <AiRiskScorePanel
+      riskScore={riskScore}
+      riskLoading={riskLoading}
+      onRefresh={() => void fetchRiskScore()}
+      variant="doctor"
+    />
+  );
 
   // ── AI Hints Panel UI ─────────────────────────────────────────────
   const aiHintsPanel = aiHintsOpen && aiHints ? (
@@ -198,6 +201,17 @@ export function DoctorDashboard() {
             border: "1px solid rgba(0,212,255,0.2)", borderRadius: 5, padding: "2px 7px" }}>
             {aiHints.model_version}
           </span>
+          {aiHints.fhir_enriched ? (
+            <span style={{ marginLeft: 6, fontSize: 10, color: "#00e5a0", border: "1px solid rgba(0,229,160,0.35)",
+              borderRadius: 5, padding: "2px 6px" }}>
+              FHIR
+            </span>
+          ) : null}
+          {aiHints.features_used ? (
+            <span style={{ marginLeft: 6, fontSize: 10, color: "var(--t3)" }}>
+              {Object.keys(aiHints.features_used).length} features
+            </span>
+          ) : null}
         </div>
         <button onClick={() => setAiHintsOpen(false)}
           style={{ background: "none", border: "none", color: "var(--t3)", cursor: "pointer", fontSize: 16 }}>✕</button>
@@ -590,11 +604,15 @@ export function DoctorDashboard() {
               <div className="kpi-su">active</div>
             </div>
             <div className="kpi">
-              <div className="kpi-l">Status</div>
-              <div className="kpi-v" style={{ fontSize: 18 }}>
-                {apiErr ? "—" : "OK"}
+              <div className="kpi-l">AI risk</div>
+              <div className="kpi-v" style={{ fontSize: 14 }}>
+                {riskLoading ? "…" : riskScore ? (
+                  <span className={`risk-score ${riskBandClass(riskScore.risk_band)}`} style={{ fontSize: 11 }}>
+                    {(riskScore.risk_band ?? "—").toUpperCase()}
+                  </span>
+                ) : "—"}
               </div>
-              <div className="kpi-su">gateway</div>
+              <div className="kpi-su">rules pilot</div>
             </div>
           </div>
         </div>
@@ -1047,6 +1065,7 @@ export function DoctorDashboard() {
             </div>
           </div>
           {patientIdPanel}
+          {riskScorePanel}
           {alertsStrip}
           {liveChart}
         </div>
@@ -1073,6 +1092,7 @@ export function DoctorDashboard() {
             </div>
           </div>
           {patientIdPanel}
+          {riskScorePanel}
           {liveChart}
         </div>
 
@@ -1092,6 +1112,15 @@ export function DoctorDashboard() {
               </button>
               <button className="btn-s btn-sm" type="button" onClick={() => { setPage("referrals"); void uiAction("Opening referral form."); }}>
                 📋 Refer
+              </button>
+              <button
+                className="btn-s btn-sm"
+                type="button"
+                disabled={riskLoading}
+                onClick={() => void fetchRiskScore()}
+                style={{ background: "rgba(124,111,255,0.1)", border: "1px solid rgba(124,111,255,0.35)", color: "#7c6fff" }}
+              >
+                {riskLoading ? "Scoring…" : "📊 Risk score"}
               </button>
               <button
                 className="btn-s btn-sm"
@@ -1116,6 +1145,7 @@ export function DoctorDashboard() {
             </div>
           </div>
           {alertsStrip}
+          {riskScorePanel}
           {aiHintsPanel}
           {liveChart}
           <div className="gcol3" style={{ marginTop: 14 }}>

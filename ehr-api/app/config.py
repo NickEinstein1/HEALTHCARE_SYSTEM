@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     ws_dev_tokens: str = "dev-token-1,dev-token-2"
     ws_allow_dev_tokens: bool = True
 
+    # Tier C pilot: POST /ai/risk-score (rules-based deterioration band; optional ML assist).
+    ai_risk_score_enabled: bool = False
+    # rules | ml | blend — ml/blend require EHR_AI_ML_MODEL_PATH (joblib + .meta.json).
+    ai_risk_score_model: str = "rules"
+    ai_ml_model_path: str = ""
+
     @model_validator(mode="after")
     def _apply_deployment_profile(self) -> "Settings":
         env = (self.deployment_env or "development").strip().lower()

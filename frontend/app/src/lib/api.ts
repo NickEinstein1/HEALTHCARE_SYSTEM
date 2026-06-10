@@ -432,11 +432,42 @@ export const api = {
     return getJson("/ai/status");
   },
 
+  aiRiskScore(payload: {
+    patient_id: string;
+    features?: Record<string, number>;
+    use_fhir?: boolean;
+  }, role: string): Promise<{
+    patient_id: string;
+    risk_band: string;
+    rules_band?: string;
+    model_type?: string;
+    model_version?: string;
+    ml_probability?: number;
+    ml_error?: string;
+    news2?: Record<string, unknown>;
+    active_alerts?: number;
+    drivers?: string[];
+    fhir_enriched?: boolean;
+    disclaimer?: string;
+    audit_id?: string;
+  }> {
+    return postJson("/ai/risk-score", payload, { headers: authHeaders(role) });
+  },
+
   aiDiagnosisHints(payload: {
     features: Record<string, number>;
     medications?: string[];
     patient_id?: string;
-  }, role: string): Promise<any> {
+    use_fhir?: boolean;
+  }, role: string): Promise<{
+    differentials?: { diagnosis: string; icd10: string; confidence: number; rationale: string }[];
+    drug_interactions?: { drug_a: string; drug_b: string; severity: string; detail: string }[];
+    model_version?: string;
+    features_used?: Record<string, number>;
+    fhir_enriched?: boolean;
+    audit_id?: string;
+    disclaimer?: string;
+  }> {
     return postJson("/ai/diagnosis-hints", payload, {
       headers: authHeaders(role),
     });

@@ -147,6 +147,10 @@ services:
       EHR_OIDC_JWKS_URL: http://keycloak:8080/realms/unihealth/protocol/openid-connect/certs
       EHR_OIDC_AUDIENCE: account
       EHR_OIDC_ALLOW_HEADER_FALLBACK: "true"
+      EHR_AI_RISK_SCORE_ENABLED: "true"
+      EHR_AI_RISK_SCORE_MODEL: "rules"
+      # Optional ML assist: set to blend|ml and mount joblib to /app/ml-models/deterioration_v1.joblib
+      # EHR_AI_ML_MODEL_PATH: /app/ml-models/deterioration_v1.joblib
       KMHFL_BASE_URL: https://api.kmhfr.health.go.ke
       KMHFL_USE_DEMO_FALLBACK: "true"
     healthcheck:

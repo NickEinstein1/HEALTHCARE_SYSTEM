@@ -164,13 +164,18 @@ National platform scaffold (production profile, FHIR Consent, K8s deploy, analyt
 
 ## Phase 3 AI Assist pilot (integrated)
 
-Phase 3 lives on the **same gateway** (`ehr-api`). It exposes `/ai/*` (diagnosis hints, anomalies, NEWS2, **ward occupancy + bed forecasts**, WebSocket alerts) with an in-memory simulator that bootstraps on startup.
+Phase 3 lives on the **same gateway** (`ehr-api`). It exposes `/ai/*` (diagnosis hints, anomalies, NEWS2, **ward occupancy + bed forecasts**, WebSocket alerts) with an in-memory simulator that bootstraps on startup. **Patient** routes (`/ai/patient/*`) are FHIR-backed and exclude ward data.
 
 | What                                                                               | Where                                                                                                      |
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Scope & limitations** (clinicians + patients)                                    | [docs/ai-assist-scope.md](docs/ai-assist-scope.md)                                                         |
+| **Production runbook** (Postgres, OIDC, WS, Kafka)                                 | [docs/ai-production-runbook.md](docs/ai-production-runbook.md)                                             |
+| **ML roadmap** (Tier C — not the rules pilot)                                      | [ml/README.md](ml/README.md)                                                                               |
+| **Blueprint Phase 3 AI** (federated / NLP / imaging — strategic)                     | [docs/blueprint-phase3-ai.md](docs/blueprint-phase3-ai.md)                                                 |
 | Env vars (`EHR_AI_CENSUS_INTEGRATION_SECRET`, SQLite replay, Redis idempotency, …) | [docs/ehr-api.md — Environment](docs/ehr-api.md#environment)                                               |
+| Demo FHIR vitals/labs for `P001`                                                   | `python3 scripts/seed_p001_clinical_demo.py` (after `seed_data.py`)                                        |
 | Doctor / Nurse UI (ward forecast, census inputs)                                   | [docs/frontend.md](docs/frontend.md); run `cd frontend/app && npm run dev` → doctor or nurse dashboard   |
-| Contract tests                                                                     | `cd ehr-api && PYTHONPATH=. pytest tests/ -q`                                                              |
+| Contract tests                                                                     | `./scripts/ci_check.sh` or `cd ehr-api && PYTHONPATH=. pytest tests/ -q`                                   |
 
 Quick sanity (gateway must be listening; default port from your run):
 
@@ -185,6 +190,12 @@ Standalone smoke script:
 ```bash
 ./scripts/smoke_phase3_ai.sh            # assumes http://localhost:8000
 EHR_GATEWAY_URL=http://localhost:8100 ./scripts/smoke_phase3_ai.sh
+```
+
+After staging seed (`./scripts/seed_staging_db.sh`), full AI check:
+
+```bash
+./scripts/verify_ai_staging.sh
 ```
 
 For **multi-worker production**, set **`EHR_INTEGRATION_IDEMPOTENCY_REDIS=true`** against your shared Redis (`EHR_REDIS_URL`). See **[docs/ehr-api.md](docs/ehr-api.md)** for integration census and HL7 pilot routes.

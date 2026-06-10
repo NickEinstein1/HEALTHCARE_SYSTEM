@@ -1,0 +1,5 @@
+# Optional — install for POST /ai/risk-score ML mode (EHR_AI_RISK_SCORE_MODEL=ml|blend)
+-r requirements.txt
+numpy>=1.26,<3
+scikit-learn>=1.4,<2
+joblib>=1.3,<2

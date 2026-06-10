@@ -4,7 +4,10 @@ import { usePolling } from "../../hooks/usePolling";
 import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 import { CrudRowActions } from "../../components/CrudRowActions";
 import { FormModal } from "../../components/FormModal";
+import { AiRiskScorePanel } from "../../components/ai/AiRiskScorePanel";
+import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { useAiRiskScore } from "../../hooks/useAiRiskScore";
 
 function formatRowTime(ts?: number | string): string {
   if (!ts) return "—";
@@ -102,6 +105,9 @@ export function NurseDashboard() {
   const summary = usePolling(() => api.patientSummary(patientId, 5, "nurse"), { intervalMs: 8000 });
   const meds = usePolling(() => api.medicationRequests(patientId, 20, "nurse"), { intervalMs: 8000 });
   const supplyRequests = usePolling(() => api.nurseSupplies(50), { intervalMs: 5000 });
+  const { riskScore, riskLoading, fetchRiskScore } = useAiRiskScore(patientId, obs.data, "nurse", {
+    onError: (msg) => toast(`Risk score: ${msg}`),
+  });
   const [page, setPage] = useState<NursePage>("home");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -1537,6 +1543,12 @@ export function NurseDashboard() {
 
           {/* Phase 3: Live Alerts + Ward Capacity */}
           {aiAlertsRail}
+          <AiRiskScorePanel
+            riskScore={riskScore}
+            riskLoading={riskLoading}
+            onRefresh={() => void fetchRiskScore()}
+            variant="nurse"
+          />
           {wardCapacityStrip}
           {simPatientsTable}
 
@@ -2011,6 +2023,14 @@ export function NurseDashboard() {
               <button className="btn-s btn-sm" type="button" onClick={() => setPage("patients")}>
                 ← Patient list
               </button>
+              <button
+                className="btn-s btn-sm"
+                type="button"
+                disabled={riskLoading}
+                onClick={() => void fetchRiskScore()}
+              >
+                {riskLoading ? "Scoring…" : "📊 Risk"}
+              </button>
               <button className="btn-p btn-sm" type="button" onClick={() => setPage("vitals")}>
                 💗 Vitals
               </button>
@@ -2019,6 +2039,13 @@ export function NurseDashboard() {
               </button>
             </div>
           </div>
+
+          <AiRiskScorePanel
+            riskScore={riskScore}
+            riskLoading={riskLoading}
+            onRefresh={() => void fetchRiskScore()}
+            variant="nurse"
+          />
 
           {(summary.error || meds.error || obs.error) && (
             <div className="errbanner is-visible" role="alert" style={{ marginBottom: 14 }}>
@@ -2048,6 +2075,13 @@ export function NurseDashboard() {
                     <div className="mono" style={{ fontSize: 11.5, color: "var(--t2)", marginTop: 4, fontWeight: 700 }}>
                       Patient ID: {summary.data?.patient.id ?? patientId}
                     </div>
+                    {riskScore ? (
+                      <div style={{ marginTop: 8 }}>
+                        <span className={`risk-score ${riskBandClass(riskScore.risk_band)}`} style={{ fontSize: 11 }}>
+                          {(riskScore.risk_band ?? "LOW").toUpperCase()} RISK
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                   <div style={{ border: "1.5px solid var(--bdr)", borderRadius: 10, padding: 12, background: "#fff" }}>
                     <div style={{ fontSize: 11, color: "var(--t2)", fontWeight: 950, letterSpacing: 0.2 }}>DEMOGRAPHICS</div>

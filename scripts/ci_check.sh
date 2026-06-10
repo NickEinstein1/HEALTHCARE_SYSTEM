@@ -15,6 +15,9 @@ npx --yes markdownlint-cli2 "README.md" "docs/**/*.md"
 echo "==> Python deps (ehr-api)"
 python3 -m pip install -q -r ehr-api/requirements.txt -r edge-pipeline/requirements.txt -r scripts/requirements.txt
 
+echo "==> ML deps (Tier C smoke)"
+python3 -m pip install -q -r ml/requirements.txt 2>/dev/null || true
+
 echo "==> Root tests"
 pytest -q tests
 

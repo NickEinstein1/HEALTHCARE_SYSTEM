@@ -677,6 +677,52 @@ async def get_active_consent_by_resource_id(consent_resource_id: str) -> dict | 
         return dict(row) if row else None
 
 
+async def upsert_ml_facility_labels(rows: list[dict]) -> int:
+    """Insert or update facility-confirmed ML labels. Requires Postgres."""
+    pool = _require_pool()
+    n = 0
+    async with pool.acquire() as conn:
+        for raw in rows:
+            if not isinstance(raw, dict):
+                raise ValueError("each label row must be an object")
+            pid = str(raw.get("patient_id") or "").strip()
+            fid = str(raw.get("facility_id") or "").strip()
+            if not pid or not fid:
+                raise ValueError("patient_id and facility_id required on each row")
+            det = raw.get("outcome_deterioration_7d")
+            readm = raw.get("outcome_readmission_30d")
+            icu = raw.get("outcome_icu_transfer_30d")
+            if det is None and readm is None and icu is None:
+                raise ValueError("at least one outcome_* field required")
+            eff = raw.get("effective_day") or raw.get("export_day_bucket")
+            label_source = str(raw.get("label_source") or "facility_csv_v1")[:64]
+            await conn.execute(
+                """
+                INSERT INTO ml_patient_outcome_labels (
+                    patient_id, facility_id,
+                    outcome_readmission_30d, outcome_deterioration_7d, outcome_icu_transfer_30d,
+                    effective_day, label_source
+                )
+                VALUES ($1, $2, $3, $4, $5, COALESCE($6::date, CURRENT_DATE), $7)
+                ON CONFLICT (patient_id, facility_id, effective_day)
+                DO UPDATE SET
+                    outcome_readmission_30d = COALESCE(EXCLUDED.outcome_readmission_30d, ml_patient_outcome_labels.outcome_readmission_30d),
+                    outcome_deterioration_7d = COALESCE(EXCLUDED.outcome_deterioration_7d, ml_patient_outcome_labels.outcome_deterioration_7d),
+                    outcome_icu_transfer_30d = COALESCE(EXCLUDED.outcome_icu_transfer_30d, ml_patient_outcome_labels.outcome_icu_transfer_30d),
+                    label_source = EXCLUDED.label_source
+                """,
+                pid,
+                fid,
+                int(readm) if readm is not None else None,
+                int(det) if det is not None else None,
+                int(icu) if icu is not None else None,
+                str(eff) if eff else None,
+                label_source,
+            )
+            n += 1
+    return n
+
+
 async def list_active_consents_for_patient(patient_id: str) -> list[dict]:
     """Return active consent rows for FHIR Consent search."""
     pool = _require_pool()

@@ -12,6 +12,13 @@ services:
       EHR_CONSENT_MODE: strict
       EHR_OIDC_ENABLED: "true"
       EHR_OIDC_ALLOW_HEADER_FALLBACK: "false"
+      # Phase 3 AI Assist (rules pilot — not trained ML)
+      EHR_AI_RISK_SCORE_ENABLED: "true"
+      EHR_AI_RISK_SCORE_MODEL: "rules"
+      # EHR_AI_ML_MODEL_PATH: /app/ml-models/deterioration_v1.joblib
+      EHR_INTEGRATION_IDEMPOTENCY_REDIS: "true"
+      EHR_WS_ALLOW_DEV_TOKENS: "false"
+      # Set in infra/.env.production (never commit): EHR_AI_CENSUS_INTEGRATION_SECRET
     # Bind localhost only when nginx terminates TLS on the same host:
     # ports:
     #   - "127.0.0.1:8100:8000"

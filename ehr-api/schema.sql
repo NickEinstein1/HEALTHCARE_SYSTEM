@@ -135,3 +135,20 @@ CREATE INDEX IF NOT EXISTS idx_ai_audit_ts
 
 CREATE INDEX IF NOT EXISTS idx_ai_audit_event_ts
     ON ai_audit_log(event, ts DESC);
+
+-- Tier C: facility-confirmed outcome labels (overrides proxy labels in ML export when present)
+CREATE TABLE IF NOT EXISTS ml_patient_outcome_labels (
+    id                      BIGSERIAL PRIMARY KEY,
+    patient_id              VARCHAR(64) NOT NULL REFERENCES patients(id),
+    facility_id             VARCHAR(64) NOT NULL,
+    outcome_readmission_30d SMALLINT CHECK (outcome_readmission_30d IN (0, 1)),
+    outcome_deterioration_7d SMALLINT CHECK (outcome_deterioration_7d IN (0, 1)),
+    outcome_icu_transfer_30d SMALLINT,
+    effective_day           DATE NOT NULL DEFAULT CURRENT_DATE,
+    label_source            VARCHAR(64) NOT NULL DEFAULT 'facility_csv_v1',
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (patient_id, facility_id, effective_day)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ml_labels_patient_facility
+    ON ml_patient_outcome_labels(patient_id, facility_id, effective_day DESC);

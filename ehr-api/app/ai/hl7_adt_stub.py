@@ -1,25 +1,26 @@
 """
-Minimal HL7 v2 ADT extractor for UniHealth Phase 3 pilot census deltas.
+HL7 v2 ADT extractor for UniHealth Phase 3 pilot census deltas.
 
-Clinical warning: production ADT ingestion needs a full conformance profile,
-visit keys, duplicate suppression, and idempotency — this module is demo scope.
+Production: pair with a conformance profile, visit identifiers, and facility mapping.
+This module adds validation + structured parse metadata for operations.
 """
 
 from __future__ import annotations
 
 import re
-from typing import Iterable
+from typing import Any, Iterable
 
 import app.state as st
 
 from app.ai.ward_history import append_ward_census_snapshot
 
+MAX_HL7_MESSAGE_BYTES = 65536
+
 # Triggers mapped to roughly +1 / −1 inpatient bed count (pilot heuristic).
 _TRIGGERS_INCREASE = frozenset({"A01", "A02", "A04", "A05", "A14"})
 _TRIGGERS_DECREASE = frozenset({"A03", "A07", "A11", "A13"})
-# A06 transfer out-of-inpatient / A07 bed swap — pilot treats A06 as −1 inpatient if ever used
 
-_ADT_MSG_TYPE = re.compile(r"ADT\^([A-Za-z]\d{2})\b")
+_ADT_MSG_TYPE = re.compile(r"ADT\^([A-Za-z]\d{2})\b", re.IGNORECASE)
 
 
 def _lines(message: str) -> list[str]:
@@ -47,24 +48,62 @@ def extract_adt_trigger(message: str) -> str | None:
     return None
 
 
+def validate_hl7_message(message: str) -> None:
+    """Raise ValueError if message fails pilot production guardrails."""
+    if not message or not message.strip():
+        raise ValueError("HL7 message is empty")
+    if len(message.encode("utf-8", errors="replace")) > MAX_HL7_MESSAGE_BYTES:
+        raise ValueError(f"HL7 message exceeds {MAX_HL7_MESSAGE_BYTES} bytes")
+    lines = _lines(message)
+    if not lines:
+        raise ValueError("HL7 message has no segments")
+    if not any(ln.startswith("MSH|") for ln in lines):
+        raise ValueError("HL7 message missing MSH segment")
+    if not any(ln.startswith("MSH|") and "ADT^" in ln.upper() for ln in lines):
+        if not any(ln.startswith("EVN|") for ln in lines):
+            raise ValueError("Message does not appear to be ADT (no ADT^ in MSH or EVN)")
+
+
+def _msh_cells(message: str) -> list[str]:
+    for line in _lines(message):
+        if line.startswith("MSH|"):
+            return line.split("|")
+    return []
+
+
 def extract_msh10_message_control_id(message: str) -> str | None:
     """
-    Best-effort MSH-10 (message control ID) for idempotency.
-
-    Looks for ``ADT^x`` segment token then the adjacent pipe-separated field — common feeder layout.
+    MSH-10 message control ID — field immediately after ``ADT^x`` in MSH (feeder-safe).
     """
-    for line in _lines(message):
-        if not line.startswith("MSH|"):
-            continue
-        cells = line.split("|")
-        for idx, cell in enumerate(cells):
-            if cell and ("ADT^" in cell):
-                if idx + 1 < len(cells):
-                    nxt = cells[idx + 1].strip()
-                    if nxt:
-                        return nxt[:512]
-                break
+    cells = _msh_cells(message)
+    for idx, cell in enumerate(cells):
+        if cell and "ADT^" in cell.upper():
+            if idx + 1 < len(cells):
+                nxt = cells[idx + 1].strip()
+                if nxt:
+                    return nxt[:512]
+            break
     return None
+
+
+def extract_sending_facility(message: str) -> str | None:
+    """MSH-4 sending facility (best effort)."""
+    cells = _msh_cells(message)
+    if len(cells) > 4:
+        fac = cells[4].strip()
+        return fac[:256] if fac else None
+    return None
+
+
+def parse_hl7_adt_message(message: str) -> dict[str, Any]:
+    """Structured parse for audit logs and integration tests."""
+    return {
+        "trigger": extract_adt_trigger(message),
+        "msh10": extract_msh10_message_control_id(message),
+        "pv1_location": pv1_assigned_location_field(message),
+        "sending_facility": extract_sending_facility(message),
+        "segment_count": len(_lines(message)),
+    }
 
 
 def pv1_assigned_location_field(message: str) -> str | None:

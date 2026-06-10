@@ -130,6 +130,16 @@ Use JSON field ``message`` (alias ``raw``) for ER7 text. Optional ``ward_id_over
 
 De-identified usage metrics are emitted to Kafka topic ``ehr.analytics.aggregate`` (metric names ``ai.diagnosis_hints``, ``ai.anomaly_check``, etc.) when ``EHR_KAFKA_BOOTSTRAP_SERVERS`` is reachable — no raw patient IDs in payloads.
 
+### Tier C pilot — deterioration risk band
+
+``POST /ai/risk-score`` (staff roles) returns a **rules-based** ``risk_band`` (LOW/MEDIUM/HIGH), with optional ML assist when configured. Enable with ``EHR_AI_RISK_SCORE_ENABLED=true``. Model mode: ``EHR_AI_RISK_SCORE_MODEL=rules|ml|blend``; ML requires ``pip install -r ehr-api/requirements-ml.txt`` and ``EHR_AI_ML_MODEL_PATH`` to a joblib file. Facility labels: ``POST /ai/integration/facility-labels`` (same secret as census). See ``ml/README.md`` and ``docs/blueprint-phase3-ai.md``.
+
+Verify end-to-end after seed:
+
+```bash
+./scripts/verify_ai_staging.sh
+```
+
 ## Kenya KMHFL directory (Admin facilities)
 
 Proxy: `GET /integrations/kmhfl/facilities` — upstream **`https://api.kmhfr.health.go.ke`** (not the legacy `kmhfl.health.go.ke` UI host).

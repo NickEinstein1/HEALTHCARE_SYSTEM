@@ -1,0 +1,3 @@
+patient_id,facility_id,outcome_deterioration_7d,outcome_readmission_30d,outcome_icu_transfer_30d,effective_day
+P001,FAC-A,1,0,,2026-06-01
+P002,FAC-B,0,1,,2026-06-01

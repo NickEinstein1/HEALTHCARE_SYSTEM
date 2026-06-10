@@ -31,6 +31,12 @@ chk "POST /ai/patient/insights" \
 chk "GET /ai/patient/alerts" \
   -H "X-UniHealth-Role: patient" \
   "$BASE/ai/patient/alerts?patient_id=P001&limit=5"
+chk "POST /ai/diagnosis-hints (FHIR P001)" \
+  -H "Content-Type: application/json" \
+  -H "X-UniHealth-Role: doctor" \
+  -d '{"patient_id":"P001","features":{},"use_fhir":true}' \
+  "$BASE/ai/diagnosis-hints"
+chk "GET /ai/status (metrics)" "$BASE/ai/status"
 chk "GET /ai/wards" -H "X-UniHealth-Role: doctor" "$BASE/ai/wards"
 
 wid="$(

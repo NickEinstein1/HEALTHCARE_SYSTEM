@@ -45,6 +45,8 @@ import app.state as st
 from app.config import settings
 from app.ai.baselines import resolve_baseline_from_vitals
 from app.ai.models import MODEL_VERSION, anomaly_check, compute_news2, diagnosis_hints
+from app.ai.metrics import increment as ai_metric_increment, snapshot as ai_metrics_snapshot
+from app.ai.risk_score import compute_deterioration_risk
 from app.ai.patient_fhir import (
     build_patient_alerts,
     build_patient_insights,
@@ -52,15 +54,23 @@ from app.ai.patient_fhir import (
     merge_clinical_features,
     observations_to_vitals_and_labs,
 )
+from app.ai.store_helpers import (
+    filter_memory_anomalies,
+    memory_anomalies_for_merge,
+    merge_anomaly_lists,
+)
 from app.analytics import emit_ai_event
 from app.store import (
     acknowledge_ai_anomaly,
-    insert_ai_audit_entry,
     get_med_requests_from_cache,
     get_med_requests_from_db,
     get_observations_from_cache,
     get_observations_from_db,
+    get_summary_from_db,
+    has_postgres_pool,
+    upsert_ml_facility_labels,
     insert_ai_anomalies,
+    insert_ai_audit_entry,
     list_ai_audit_entries,
     list_ai_anomalies,
     set_ai_audit_feedback,
@@ -72,8 +82,10 @@ from app.ai.hl7_adt_stub import (
     apply_adt_delta_to_snapshot,
     extract_adt_trigger,
     extract_msh10_message_control_id,
+    parse_hl7_adt_message,
     pv1_assigned_location_field,
     resolve_ward_id,
+    validate_hl7_message,
 )
 from app.ai.ward_history import append_ward_census_snapshot, recompute_all_forecasts
 from app.ai.ws_manager import alert_manager
@@ -135,10 +147,15 @@ def _audit(event: str, role: str, patient_id: str | None, payload: dict) -> str:
         asyncio.create_task(insert_ai_audit_entry(dict(entry)))
     except Exception:
         pass
-    st.ai_audit_log.insert(0, entry)
-    # trim to 500 entries in-memory
-    if len(st.ai_audit_log) > 500:
-        st.ai_audit_log[:] = st.ai_audit_log[:500]
+    # In-memory ring buffer for dev/tests; Postgres is authoritative when pool is up.
+    if not has_postgres_pool():
+        st.ai_audit_log.insert(0, entry)
+        if len(st.ai_audit_log) > 500:
+            st.ai_audit_log[:] = st.ai_audit_log[:500]
+    else:
+        st.ai_audit_log.insert(0, entry)
+        if len(st.ai_audit_log) > 100:
+            st.ai_audit_log[:] = st.ai_audit_log[:100]
     return audit_id
 
 
@@ -156,6 +173,8 @@ async def ai_status():
         "active_anomalies": len([a for a in st.ai_anomalies if not a.get("acknowledged")]),
         "audit_log_count": len(st.ai_audit_log),
         "simulated_patients": len(st.sim_patients),
+        "postgres_enabled": has_postgres_pool(),
+        "metrics":         ai_metrics_snapshot(),
         "ts":              time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
 
@@ -193,6 +212,7 @@ async def get_diagnosis_hints(request: Request, payload: dict = Body(...)):
     result = diagnosis_hints(features, medications)
     result["features_used"] = features
     result["fhir_enriched"] = bool(patient_id and use_fhir)
+    ai_metric_increment("diagnosis_hints")
 
     audit_id = _audit(
         "diagnosis_hints",
@@ -267,6 +287,7 @@ async def run_anomaly_check(request: Request, payload: dict = Body(...)):
             import asyncio
             asyncio.create_task(alert_manager.broadcast_alert(ano))
 
+    ai_metric_increment("anomaly_check", len(anomalies))
     _audit("anomaly_check", role, patient_id, {"n_anomalies": len(anomalies)})
     try:
         emit_ai_event(
@@ -363,7 +384,77 @@ async def patient_insights(request: Request, payload: dict = Body(...)):
         },
     )
 
+    ai_metric_increment("patient_insights")
     return {"insights": insights, "news2": news2, "audit_id": audit_id}
+
+
+@router.post("/risk-score", summary="Pilot deterioration risk band (rules; Tier C entry).")
+async def post_risk_score(request: Request, payload: dict = Body(...)):
+    if not settings.ai_risk_score_enabled:
+        raise HTTPException(status_code=404, detail="Not Found")
+    _check_rate_limit(_client_ip(request))
+    role = require_role(request, ["doctor", "nurse", "admin"])
+
+    patient_id = str(payload.get("patient_id") or "").strip()
+    if not patient_id:
+        raise HTTPException(status_code=400, detail="patient_id required")
+
+    features_in = payload.get("features") or {}
+    use_fhir = payload.get("use_fhir", True)
+    if not isinstance(features_in, dict):
+        raise HTTPException(status_code=400, detail="'features' must be an object")
+
+    observations: list = []
+    medications: list = []
+    if use_fhir:
+        observations = await _load_patient_observations(patient_id)
+        medications = await _load_patient_medications(patient_id)
+
+    gender: str | None = None
+    birth_date = None
+    encounter_class = "unknown"
+    try:
+        summary = await get_summary_from_db(patient_id, encounters_limit=1)
+        if summary:
+            gender = summary.patient.gender
+            birth_date = summary.patient.birth_date
+            if summary.encounters:
+                encounter_class = summary.encounters[0].class_code or "unknown"
+    except Exception:
+        pass
+
+    try:
+        result = compute_deterioration_risk(
+            patient_id,
+            observations,
+            medications,
+            features_override=features_in if features_in else None,
+            patient_gender=gender,
+            patient_birth_date=birth_date,
+            encounter_class=encounter_class,
+        )
+    except (TypeError, ValueError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid clinical data: {e}")
+
+    result["fhir_enriched"] = bool(use_fhir and observations)
+    audit_id = _audit(
+        "risk_score",
+        role,
+        patient_id,
+        {"risk_band": result.get("risk_band"), "active_alerts": result.get("active_alerts")},
+    )
+    ai_metric_increment("risk_score")
+    try:
+        emit_ai_event(
+            "risk_score",
+            role=role,
+            patient_id=patient_id,
+            dimensions={"risk_band": result.get("risk_band")},
+        )
+    except Exception:
+        pass
+    result["audit_id"] = audit_id
+    return result
 
 
 @router.get("/patient/alerts", summary="Patient-safe alerts (read-only) for this patient.")
@@ -380,14 +471,16 @@ async def patient_alerts(
         raise HTTPException(status_code=400, detail="patient_id required")
 
     observations = await _load_patient_observations(pid)
-    # Merge durable Postgres anomalies (if enabled) + in-memory simulator anomalies.
     durable: list[dict] = []
-    try:
-        durable = await list_ai_anomalies(patient_id=pid, limit=limit)
-    except Exception:
-        durable = []
-    stored = [a for a in (durable + list(st.ai_anomalies)) if str(a.get("patient_id", "")).strip() == pid]
+    if has_postgres_pool():
+        try:
+            durable = await list_ai_anomalies(patient_id=pid, limit=limit)
+        except Exception:
+            durable = []
+    memory = memory_anomalies_for_merge(st.ai_anomalies, patient_id=pid)
+    stored = merge_anomaly_lists(durable, memory, limit=limit * 2)
     out = build_patient_alerts(pid, observations, stored, limit=limit)
+    ai_metric_increment("patient_alerts")
 
     _audit(
         "patient_alerts",
@@ -407,21 +500,21 @@ async def list_anomalies(
     limit: int                = Query(default=50, ge=1, le=200),
 ):
     require_role(request, ["doctor", "nurse", "admin"])
-    rows: list[dict] = []
-    # Prefer durable store when Postgres is enabled; fall back to in-memory.
-    try:
-        durable = await list_ai_anomalies(patient_id=patient_id, severity=severity, ack=ack, limit=limit)
-        rows.extend(durable)
-    except Exception:
-        pass
-    if not rows:
-        rows = list(st.ai_anomalies)
-        if patient_id:
-            rows = [a for a in rows if a.get("patient_id") == patient_id]
-        if severity:
-            rows = [a for a in rows if a.get("severity", "").upper() == severity.upper()]
-        if ack is not None:
-            rows = [a for a in rows if bool(a.get("acknowledged")) == ack]
+    ai_metric_increment("anomalies_list")
+    if has_postgres_pool():
+        try:
+            durable = await list_ai_anomalies(
+                patient_id=patient_id, severity=severity, ack=ack, limit=limit,
+            )
+        except Exception:
+            durable = []
+        memory = memory_anomalies_for_merge(st.ai_anomalies, patient_id=patient_id)
+        if severity or ack is not None:
+            memory = filter_memory_anomalies(memory, severity=severity, ack=ack)
+        return merge_anomaly_lists(durable, memory, limit=limit)
+    rows = filter_memory_anomalies(
+        st.ai_anomalies, patient_id=patient_id, severity=severity, ack=ack,
+    )
     return rows[:limit]
 
 
@@ -659,11 +752,18 @@ async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
     if not isinstance(msg, str) or not msg.strip():
         raise HTTPException(status_code=400, detail="JSON field 'message' or 'raw' (HL7 ER7 text) is required")
 
+    try:
+        validate_hl7_message(msg)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    parsed = parse_hl7_adt_message(msg)
+
     ik = str(payload.get("idempotency_key") or "").strip()
     if ik:
         dedupe_k = f"integration:hl7:key:{ik}"
     else:
-        m10 = extract_msh10_message_control_id(msg)
+        m10 = parsed.get("msh10") or extract_msh10_message_control_id(msg)
         dedupe_k = f"integration:hl7:msh10:{m10}" if m10 else ""
 
     if dedupe_k:
@@ -675,11 +775,11 @@ async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
     if override and override not in st.sim_ward_state:
         raise HTTPException(status_code=400, detail=f"Unknown ward_id_override: {override}")
 
-    trigger = extract_adt_trigger(msg)
+    trigger = parsed.get("trigger") or extract_adt_trigger(msg)
     if not trigger:
         raise HTTPException(status_code=400, detail="Could not parse ADT trigger (MSH message type / EVN)")
 
-    loc = pv1_assigned_location_field(msg)
+    loc = parsed.get("pv1_location") or pv1_assigned_location_field(msg)
     known = frozenset(st.sim_ward_state.keys())
     wid = override or resolve_ward_id(loc, known)
     if not wid:
@@ -694,7 +794,13 @@ async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
         raise HTTPException(status_code=404, detail=f"Ward {wid} not found")
 
     if result is None:
-        out = {"status": "ignored", "ward_id": wid, "trigger": trigger}
+        out = {
+            "status": "ignored",
+            "ward_id": wid,
+            "trigger": trigger,
+            "msh10": parsed.get("msh10"),
+            "sending_facility": parsed.get("sending_facility"),
+        }
         _audit("ward_census_hl7_integration", "integration", None, {**out, "reason": "non_delta_trigger"})
         if dedupe_k:
             remember_response(dedupe_k, dict(out))
@@ -711,15 +817,41 @@ async def post_integration_hl7_adt(request: Request, payload: dict = Body(...)):
             remember_response(dedupe_k, dict(result))
         return result
 
+    out = {**result, "msh10": parsed.get("msh10"), "sending_facility": parsed.get("sending_facility")}
     _audit(
         "ward_census_hl7_integration",
         "integration",
         None,
-        {"ward_id": wid, "trigger": trigger, "occupied": result.get("occupied")},
+        {"ward_id": wid, "trigger": trigger, "occupied": result.get("occupied"), "msh10": parsed.get("msh10")},
     )
     if dedupe_k:
-        remember_response(dedupe_k, dict(result))
-    return result
+        remember_response(dedupe_k, dict(out))
+    return out
+
+
+@router.post(
+    "/integration/facility-labels",
+    summary="Batch upsert facility-confirmed ML outcome labels (integration secret).",
+)
+async def post_integration_facility_labels(request: Request, payload: dict = Body(...)):
+    """
+    JSON body: ``labels`` array of objects with patient_id, facility_id, and outcome_* fields.
+    Used for Tier C training exports (overrides proxy labels when present).
+    """
+    _require_ai_integration_secret(request)
+    rows = payload.get("labels")
+    if not isinstance(rows, list) or not rows:
+        raise HTTPException(status_code=400, detail="'labels' must be a non-empty array")
+    if len(rows) > 5000:
+        raise HTTPException(status_code=400, detail="Maximum 5000 labels per request")
+    try:
+        n = await upsert_ml_facility_labels(rows)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    _audit("ml_facility_labels_ingest", "integration", None, {"rows": n})
+    return {"status": "ok", "upserted": n, "label_source": "facility_csv_v1"}
 
 
 @router.post("/wards/recompute-forecasts", summary="Rebuild every ward forecast from current census histories.")
@@ -737,12 +869,12 @@ async def get_audit_log(
     limit:   int           = Query(default=100, ge=1, le=500),
 ):
     require_role(request, ["admin"])
-    try:
-        rows = await list_ai_audit_entries(event=event, limit=limit)
-        if rows:
-            return rows
-    except Exception:
-        pass
+    ai_metric_increment("audit_list")
+    if has_postgres_pool():
+        try:
+            return await list_ai_audit_entries(event=event, limit=limit)
+        except Exception:
+            pass
     rows = list(st.ai_audit_log)
     if event:
         rows = [r for r in rows if r.get("event") == event]
