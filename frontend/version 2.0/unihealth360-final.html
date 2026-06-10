@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniHealth 360 — Enterprise Access Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   UNIHEALTH 360 — UNIFIED ENTERPRISE DARK DESIGN SYSTEM
+   Merged v4 · Fixed dropdown · Enlarged auth panel
+═══════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;--neon-dim:rgba(46,204,113,.22);
+  --neon-glow:0 0 18px rgba(46,204,113,.35),0 0 36px rgba(46,204,113,.12);
+  --r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pink:#ec4899;--teal:#14b8a6;
+  --bg:#030a05;--bg2:#060e08;--bg3:#09140b;
+  --glass:rgba(255,255,255,.04);--glass-md:rgba(255,255,255,.07);--glass-hi:rgba(255,255,255,.11);
+  --gbdr:rgba(255,255,255,.08);--gbdr-hi:rgba(255,255,255,.13);--gbdr-neon:rgba(46,204,113,.22);
+  --t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);
+  --card:rgba(6,14,9,.97);
+  --field:rgba(255,255,255,.05);--fbdr:rgba(255,255,255,.1);
+  --font:'Sora',sans-serif;--serif:'DM Serif Display',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --sh-card:0 4px 28px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.055);
+  --sh-g:0 0 28px rgba(46,204,113,.2),0 8px 32px rgba(0,0,0,.4);
+  --tr:.22s cubic-bezier(.16,1,.3,1);
+}
+html{height:100%;-webkit-font-smoothing:antialiased;font-family:var(--font);background:var(--bg);color:var(--t1)}
+body{display:flex;height:100vh;overflow:hidden;will-change:transform}
+
+/* ── Particles canvas ── */
+#pc{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45}
+
+/* ── Gradient sweep overlay ── */
+#bg-sweep{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:conic-gradient(from 0deg at 30% 50%,
+    transparent 0deg,
+    rgba(46,204,113,.025) 60deg,
+    transparent 120deg,
+    rgba(26,138,74,.015) 180deg,
+    transparent 240deg,
+    rgba(46,204,113,.02) 300deg,
+    transparent 360deg);
+  animation:sweep-rot 40s linear infinite;
+  will-change:transform;
+}
+@keyframes sweep-rot{to{transform:rotate(360deg)}}
+
+/* ── Scan line ── */
+#scan-line{
+  position:fixed;left:0;right:0;height:1px;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(46,204,113,.18),transparent);
+  animation:scan 10s linear infinite;
+  opacity:.6;
+}
+@keyframes scan{0%{top:-2px}100%{top:100vh}}
+
+/* ── Ambient orbs ── */
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;z-index:0;animation:orb 20s ease-in-out infinite}
+.o1{width:600px;height:600px;background:radial-gradient(circle,rgba(26,138,74,.14),transparent 70%);top:-150px;left:-100px;animation-delay:0s}
+.o2{width:450px;height:450px;background:radial-gradient(circle,rgba(46,204,113,.08),transparent 70%);bottom:-120px;right:40px;animation-delay:-9s}
+.o3{width:320px;height:320px;background:radial-gradient(circle,rgba(236,72,153,.05),transparent 70%);top:42%;left:36%;animation-delay:-5s}
+@keyframes orb{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(28px,-18px) scale(1.04)}66%{transform:translate(-14px,22px) scale(.96)}}
+
+/* ═══════════════════════════════════════════════════
+   LEFT PANEL — INTELLIGENCE DASHBOARD
+═══════════════════════════════════════════════════ */
+.lp{
+  flex:1;position:relative;z-index:1;display:flex;flex-direction:column;
+  overflow:hidden;height:100vh;
+  background:linear-gradient(158deg,rgba(3,10,5,.98) 0%,rgba(5,13,7,.97) 40%,rgba(9,20,12,.96) 100%);
+  border-right:1px solid var(--gbdr);
+  min-width:0;
+  animation:lp-enter .8s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes lp-enter{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.lp::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(46,204,113,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(46,204,113,.02) 1px,transparent 1px);
+  background-size:36px 36px}
+.lp::after{content:'';position:absolute;top:0;right:0;width:1px;height:100%;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(46,204,113,.2),rgba(46,204,113,.1),transparent)}
+.flag{position:absolute;top:0;left:0;right:0;height:3px;z-index:20;
+  background:linear-gradient(90deg,#bb0000 0%,#bb0000 33%,rgba(255,255,255,.15) 33%,rgba(255,255,255,.15) 36%,rgba(255,255,255,.4) 36%,rgba(255,255,255,.4) 37.5%,rgba(255,255,255,.15) 37.5%,rgba(255,255,255,.15) 40%,#1a8a4a 40%,#1a8a4a 100%)}
+.lp-in{position:relative;z-index:2;display:flex;flex-direction:column;height:100%;padding:22px 20px 16px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;gap:9px}
+.lp-in::-webkit-scrollbar{display:none}
+
+/* brand */
+.brand{display:flex;align-items:center;gap:11px;animation:fd .6s ease both}
+@keyframes fd{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.b-logo{width:42px;height:42px;border-radius:11px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.12));
+  border:1px solid var(--gbdr-neon);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 20px rgba(46,204,113,.22),inset 0 1px 0 rgba(255,255,255,.07);
+  animation:logo-p 4s ease infinite}
+@keyframes logo-p{0%,100%{box-shadow:0 0 20px rgba(46,204,113,.2),inset 0 1px 0 rgba(255,255,255,.07)}50%{box-shadow:0 0 32px rgba(46,204,113,.38),inset 0 1px 0 rgba(255,255,255,.07)}}
+.b-name{font-family:var(--serif);font-size:20px;color:var(--t1);line-height:1}
+.b-badge{display:inline-flex;align-items:center;gap:5px;margin-top:3px;background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.18);border-radius:4px;padding:2px 7px;font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;color:var(--neon);text-transform:uppercase}
+
+/* status bar */
+.sbar{display:flex;align-items:center;justify-content:space-between;background:var(--glass);border:1px solid var(--gbdr);border-radius:8px;padding:6px 11px;animation:fd .6s .08s ease both}
+.sbar-l{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:.4px}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--neon);flex-shrink:0;animation:pp 2s infinite}
+@keyframes pp{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.5)}50%{box-shadow:0 0 0 5px rgba(46,204,113,0)}}
+.pips{display:flex;gap:4px}
+.pip{width:5px;height:5px;border-radius:50%}
+.pip.g{background:var(--neon)}.pip.a{background:var(--am)}.pip.b{background:var(--b)}.pip.p{background:var(--pink)}
+
+/* hero */
+.hero{animation:fu .7s .12s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{font-family:var(--mono);font-size:8px;letter-spacing:3px;text-transform:uppercase;color:rgba(46,204,113,.48);margin-bottom:8px}
+.headline{font-family:var(--serif);font-size:26px;color:var(--t1);line-height:1.22;letter-spacing:-.3px;margin-bottom:8px}
+.headline em{font-style:italic;color:var(--neon);text-shadow:var(--neon-glow)}
+.hero-sub{font-size:10.5px;color:var(--t3);line-height:1.75;max-width:440px}
+.tagline{display:flex;align-items:center;gap:8px;margin-top:8px;font-family:var(--mono);font-size:8.5px;color:var(--t4);border-left:2px solid rgba(46,204,113,.22);padding-left:9px;letter-spacing:.3px}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;animation:fu .7s .18s ease both}
+.mc{background:var(--glass);border:1px solid var(--gbdr);border-radius:9px;padding:9px 7px;position:relative;overflow:hidden;transition:all var(--tr);cursor:default}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mcc,var(--neon));opacity:.45;transition:opacity var(--tr)}
+.mc:hover{background:var(--glass-md);border-color:var(--gbdr-neon);transform:translateY(-1px)}
+.mc:hover::before{opacity:.9}
+.mv{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--mcc,var(--neon));line-height:1;margin-bottom:3px}
+.ml{font-size:7.5px;color:var(--t3);font-weight:500;letter-spacing:.2px;line-height:1.3}
+.md{font-family:var(--mono);font-size:7px;color:rgba(46,204,113,.45);margin-top:2px}
+
+/* dashboard preview card */
+.dp{background:var(--glass);border:1px solid var(--gbdr);border-radius:11px;padding:11px 13px;animation:fu .7s .22s ease both;transition:border-color var(--tr)}
+.dp:hover{border-color:var(--gbdr-neon)}
+.dp-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.dp-ttl{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
+.dp-dots{display:flex;gap:4px}
+.dp-dot{width:7px;height:7px;border-radius:50%}
+.dp-dot.r{background:#ff5f57}.dp-dot.y{background:#febc2e}.dp-dot.g{background:#28c840}
+.dp-cnt{min-height:80px;transition:all .4s}
+.bw{margin-bottom:6px}
+.bl{display:flex;justify-content:space-between;font-size:8px;color:var(--t3);margin-bottom:3px}
+.bl span{font-family:var(--mono);color:var(--neon)}
+.bb{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gd),var(--neon));transition:width .9s cubic-bezier(.16,1,.3,1)}
+.dp-mods{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.dp-mod{display:flex;align-items:center;gap:3px;padding:2px 6px;background:rgba(26,138,74,.09);border:1px solid rgba(26,138,74,.16);border-radius:4px;font-size:7.5px;color:var(--t3);font-weight:600;transition:all .22s}
+.dp-mod.on{background:rgba(46,204,113,.13);border-color:rgba(46,204,113,.26);color:var(--neon)}
+.dp-dot2{width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* system status */
+.ss{animation:fu .7s .27s ease both}
+.shd{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.shd-l{flex:1;height:1px;background:var(--gbdr)}
+.shd-t{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);white-space:nowrap}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.si{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--glass);border:1px solid var(--gbdr);border-radius:7px;transition:all var(--tr);cursor:default}
+.si:hover{background:var(--glass-md);border-color:var(--gbdr-neon)}
+.si-ic{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.ic-g{background:rgba(46,204,113,.1);color:var(--neon)}.ic-b{background:rgba(59,130,246,.1);color:var(--b)}.ic-p{background:rgba(139,92,246,.1);color:var(--pu)}.ic-a{background:rgba(245,158,11,.1);color:var(--am)}.ic-t{background:rgba(20,184,166,.1);color:var(--teal)}.ic-pk{background:rgba(236,72,153,.1);color:var(--pink)}
+.si-tx{flex:1;min-width:0}
+.si-nm{font-size:8.5px;font-weight:700;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-st{font-family:var(--mono);font-size:7px;color:var(--neon)}
+.sipip{width:5px;height:5px;border-radius:50%;background:var(--neon);animation:pp 2s infinite;flex-shrink:0}
+.sipip.w{background:var(--am);animation:ppa 2s infinite}
+@keyframes ppa{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.5)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
+
+/* maternity widget */
+.mw{background:linear-gradient(135deg,rgba(236,72,153,.05),rgba(139,92,246,.05));border:1px solid rgba(236,72,153,.14);border-radius:10px;padding:10px 12px;animation:fu .7s .3s ease both}
+.mw-hd{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.mw-bdg{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--pink);background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.18);border-radius:4px;padding:2px 7px}
+.mw-g{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.mw-c{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:7px 5px;text-align:center}
+.mw-v{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--pink);line-height:1;margin-bottom:2px}
+.mw-l{font-size:7.5px;color:var(--t4);font-weight:500;line-height:1.3}
+.mw-alert{display:flex;align-items:center;gap:7px;margin-top:7px;padding:6px 9px;background:rgba(236,72,153,.07);border:1px solid rgba(236,72,153,.14);border-radius:6px;font-size:8px;color:rgba(236,72,153,.75)}
+.mw-adot{width:5px;height:5px;border-radius:50%;background:var(--pink);flex-shrink:0;animation:pp 1.5s infinite}
+
+/* module grid */
+.mods{animation:fu .7s .33s ease both}
+.mg{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.mod{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 3px;background:var(--glass);border:1px solid var(--gbdr);border-radius:8px;cursor:default;transition:all var(--tr)}
+.mod:hover{background:var(--glass-md);border-color:var(--gbdr-neon);transform:translateY(-1px)}
+.mod.mat:hover{border-color:rgba(236,72,153,.28)}
+.mod-ic{font-size:12px;color:var(--t4);display:flex;align-items:center;justify-content:center;transition:color var(--tr)}
+.mod:hover .mod-ic{color:var(--neon)}
+.mod.mat:hover .mod-ic{color:var(--pink)}
+.mod-nm{font-size:7px;color:var(--t4);font-weight:600;text-align:center;line-height:1.2;transition:color var(--tr)}
+.mod:hover .mod-nm{color:var(--t2)}
+.mod-dot{width:4px;height:4px;border-radius:50%;background:var(--neon);opacity:.3}
+.mod:hover .mod-dot{opacity:1}
+.mod.mat .mod-dot{background:var(--pink)}
+
+/* api flow */
+.af{background:var(--glass);border:1px solid var(--gbdr);border-radius:9px;padding:10px 12px;animation:fu .7s .36s ease both}
+.af-t{font-family:var(--mono);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);margin-bottom:8px}
+.fn-row{display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
+.fn-row::-webkit-scrollbar{display:none}
+.fn{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0}
+.fn-c{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.04);border:1px solid var(--gbdr);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t4);transition:all .4s}
+.fn-c.on{background:rgba(46,204,113,.14);border-color:rgba(46,204,113,.38);color:var(--neon);box-shadow:0 0 12px rgba(46,204,113,.22)}
+.fn-l{font-family:var(--mono);font-size:6.5px;color:var(--t4);text-align:center;line-height:1.3;max-width:38px}
+.fa{flex:1;min-width:8px;display:flex;align-items:center;padding-bottom:12px}
+.fa::after{content:'';display:block;width:100%;height:1px;background:linear-gradient(90deg,rgba(46,204,113,.12),rgba(46,204,113,.32),rgba(46,204,113,.12))}
+
+/* ai monitor */
+.aim{background:var(--glass);border:1px solid var(--gbdr);border-radius:9px;padding:10px 12px;animation:fu .7s .38s ease both}
+.ai-hd{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.ai-p{width:7px;height:7px;border-radius:50%;background:var(--neon);flex-shrink:0;animation:pp 2s infinite}
+.ai-ttl{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t3);font-weight:700}
+.ai-rows{display:flex;flex-direction:column;gap:4px}
+.ai-r{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ai-lbl{font-size:8.5px;color:var(--t3)}
+.ai-v{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px}
+.av-ok{background:rgba(46,204,113,.11);color:var(--neon);border:1px solid rgba(46,204,113,.17)}
+.av-wn{background:rgba(245,158,11,.11);color:var(--am);border:1px solid rgba(245,158,11,.17)}
+.av-lv{background:rgba(59,130,246,.11);color:var(--b);border:1px solid rgba(59,130,246,.17)}
+.ai-br{margin-top:7px;padding-top:7px;border-top:1px solid var(--gbdr)}
+.ai-bl{font-size:8px;color:var(--t4);margin-bottom:3px;display:flex;justify-content:space-between}
+.ai-bl span{font-family:var(--mono);color:var(--neon)}
+.ai-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.ai-bf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gd),var(--neon));transition:width .8s ease}
+
+/* audit */
+.aud{background:var(--glass);border:1px solid var(--gbdr);border-radius:8px;padding:7px 11px 7px 14px;position:relative;overflow:hidden;animation:fu .7s .4s ease both}
+.aud::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--neon),var(--g))}
+.aud-l{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--t4);text-transform:uppercase;margin-bottom:3px}
+.aud-e{font-family:var(--mono);font-size:7.5px;color:var(--t4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.65}
+
+/* left footer */
+.lp-ft{margin-top:auto;padding-top:9px;border-top:1px solid var(--gbdr);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:7px;color:var(--t4);flex-shrink:0;animation:fu .7s .42s ease both}
+.certs{display:flex;gap:4px}
+.cert{padding:2px 5px;background:var(--glass);border:1px solid var(--gbdr);border-radius:4px;font-size:6.5px;color:var(--t4)}
+
+/* ═══════════════════════════════════════════════════
+   RIGHT PANEL — AUTH (50% width, enlarged)
+═══════════════════════════════════════════════════ */
+.rp{
+  /* ENLARGED: 52% width — enlarges auth panel */
+  width:52%;
+  flex-shrink:0;
+  height:100vh;
+  position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  padding:32px 36px;
+  background:linear-gradient(158deg,rgba(3,10,5,.99) 0%,rgba(4,12,6,.99) 100%);
+  /* FIXED: overflow-y:auto allows scroll; overflow-x must NOT be visible (CSS conflict) */
+  overflow-y:auto;
+  overflow-x:hidden;
+  animation:rp-enter .9s cubic-bezier(.16,1,.3,1) .1s both;
+}
+@keyframes rp-enter{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.card{
+  width:100%;max-width:620px;
+  background:var(--card);
+  border:1px solid var(--gbdr-hi);
+  border-radius:24px;
+  /* FIXED: overflow:visible allows fixed-position dropdown to escape; clip only via JS */
+  overflow:visible;
+  position:relative;
+  box-shadow:
+    0 8px 60px rgba(0,0,0,.75),
+    0 1px 0 rgba(255,255,255,.06),
+    0 0 0 1px rgba(46,204,113,.06),
+    0 0 80px rgba(46,204,113,.04);
+  /* Smooth entrance + continuous float */
+  animation:card-enter .7s cubic-bezier(.16,1,.3,1) .15s both, card-float 7s ease-in-out 1s infinite;
+  will-change:transform,box-shadow;
+}
+@keyframes card-enter{
+  from{opacity:0;transform:translateY(28px) scale(.97)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes card-float{
+  0%,100%{transform:translateY(0);box-shadow:0 8px 60px rgba(0,0,0,.75),0 1px 0 rgba(255,255,255,.06),0 0 0 1px rgba(46,204,113,.06),0 0 80px rgba(46,204,113,.04)}
+  50%{transform:translateY(-5px);box-shadow:0 16px 80px rgba(0,0,0,.7),0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(46,204,113,.1),0 0 120px rgba(46,204,113,.08)}
+}
+.c-stripe{position:absolute;top:0;left:0;right:0;height:3px;border-radius:24px 24px 0 0;background:linear-gradient(90deg,#bb0000,#1a8a4a,#2ecc71,#1a8a4a,#bb0000);background-size:300%;animation:stripe-a 8s linear infinite}
+@keyframes stripe-a{0%{background-position:0%}100%{background-position:300%}}
+.c-sec{display:flex;align-items:center;justify-content:space-between;padding:14px 26px 0;margin-bottom:0}
+.c-sec-l{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8px;color:var(--t3)}
+.c-sec-dot{width:6px;height:6px;border-radius:50%;background:var(--neon);animation:pp 2s infinite}
+.c-sec-r{font-family:var(--mono);font-size:8px;color:var(--t4)}
+/* ENLARGED: more internal breathing room */
+.cbody{padding:24px 30px 22px}
+
+/* stepper */
+.stepper{display:flex;align-items:center;gap:0;margin-bottom:20px}
+.sdot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:1.5px solid var(--gbdr);color:var(--t4);transition:all .3s;flex-shrink:0}
+.sdot.act{background:rgba(46,204,113,.14);border-color:rgba(46,204,113,.5);color:var(--neon);box-shadow:0 0 12px rgba(46,204,113,.2)}
+.sdot.done{background:rgba(46,204,113,.14);border-color:rgba(46,204,113,.5);color:var(--neon)}
+.sline{flex:1;height:2px;background:var(--gbdr);transition:background .4s;margin:0 6px}
+.sline.done{background:linear-gradient(90deg,rgba(46,204,113,.4),rgba(46,204,113,.2))}
+
+/* step header */
+.shdr{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px}
+.s-ico{width:48px;height:48px;border-radius:14px;background:rgba(46,204,113,.08);border:1px solid var(--gbdr-neon);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--neon);margin-bottom:10px;box-shadow:0 0 18px rgba(46,204,113,.12)}
+.s-ttl{font-family:var(--serif);font-size:22px;color:var(--t1);margin-bottom:5px}
+.s-sub{font-size:12px;color:var(--t3);line-height:1.55;max-width:400px}
+
+/* ─────────────────────────────────────────────────
+   DROPDOWN — FIXED POSITION (never clips)
+───────────────────────────────────────────────── */
+.rdrop{position:relative;margin-bottom:14px}
+
+.rd-btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:14px 16px;
+  background:var(--field);
+  border:1.5px solid var(--fbdr);
+  border-radius:12px;
+  cursor:pointer;color:var(--t1);
+  font-family:var(--font);font-size:13.5px;
+  transition:all var(--tr);
+  position:relative;z-index:10;
+}
+.rd-btn:hover,.rd-btn.open{
+  border-color:rgba(46,204,113,.45);
+  background:rgba(255,255,255,.07);
+  box-shadow:0 0 0 3px rgba(46,204,113,.1);
+}
+.rd-btn.open{border-radius:12px 12px 0 0; border-bottom-color:rgba(46,204,113,.15);}
+.rd-si{width:32px;height:32px;border-radius:9px;background:rgba(46,204,113,.09);border:1px solid var(--gbdr-neon);display:flex;align-items:center;justify-content:center;color:var(--neon);flex-shrink:0;transition:all .2s}
+.rd-btn.open .rd-si{background:rgba(46,204,113,.14)}
+.rd-st{flex:1;text-align:left;font-size:13.5px}
+.rd-st.ph{color:var(--t4)}
+.rd-st.sel{color:var(--t1);font-weight:600}
+[data-feather="chevron-down"]{color:var(--t3);transition:transform var(--tr);flex-shrink:0}
+.rd-btn.open [data-feather="chevron-down"]{transform:rotate(180deg)}
+
+/* DROPDOWN PANEL — fixed position at body level, z-index above everything */
+/* FIXED: No animation on base class — only added via .opening class to prevent re-trigger */
+.rd-panel{
+  position:fixed;
+  z-index:99999;
+  background:rgba(4,12,6,.99);
+  border:1.5px solid rgba(46,204,113,.35);
+  border-radius:0 0 16px 16px;
+  backdrop-filter:blur(28px) saturate(180%);
+  box-shadow:0 24px 70px rgba(0,0,0,.85),0 0 0 1px rgba(46,204,113,.08),0 0 40px rgba(46,204,113,.06);
+  overflow:hidden;
+  transform-origin:top center;
+  transition:opacity .2s ease, transform .22s cubic-bezier(.16,1,.3,1);
+}
+.rd-panel.hidden{
+  display:none;
+  opacity:0;
+  transform:scaleY(.9) translateY(-8px);
+}
+.rd-panel.opening{
+  animation:dd-open .24s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes dd-open{from{opacity:0;transform:scaleY(.9) translateY(-8px)}to{opacity:1;transform:scaleY(1) translateY(0)}}
+
+.rd-srch-wrap{padding:10px 12px 8px;border-bottom:1px solid var(--gbdr);position:relative}
+.rd-srch-ic{position:absolute;left:22px;top:50%;transform:translateY(-50%);color:var(--t4)}
+.rd-srch{width:100%;padding:8px 10px 8px 32px;background:rgba(255,255,255,.05);border:1px solid var(--gbdr);border-radius:8px;color:var(--t1);font-family:var(--font);font-size:12.5px;outline:none;transition:border-color .2s}
+.rd-srch:focus{border-color:var(--gbdr-neon)}
+.rd-srch::placeholder{color:var(--t4)}
+
+.rd-list{overflow-y:auto;max-height:300px;padding:6px;scrollbar-width:thin;scrollbar-color:rgba(46,204,113,.2) transparent}
+.rd-list::-webkit-scrollbar{width:4px}
+.rd-list::-webkit-scrollbar-thumb{background:rgba(46,204,113,.2);border-radius:2px}
+
+.rd-grp{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 10px 4px;pointer-events:none}
+
+.rd-it{
+  display:flex;align-items:center;gap:10px;
+  width:100%;padding:10px 12px;
+  background:transparent;border:none;
+  border-radius:9px;cursor:pointer;
+  color:var(--t1);text-align:left;
+  transition:background var(--tr),border-color var(--tr);
+  position:relative;
+}
+.rd-it:hover,.rd-it.foc{background:var(--glass-md)}
+.rd-it.sel{background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.18)}
+.rd-it.sel::before{content:'';position:absolute;left:0;top:15%;bottom:15%;width:2px;border-radius:2px;background:var(--neon)}
+.rd-it.hide{display:none}
+.rd-ic{width:32px;height:32px;border-radius:9px;background:rgba(46,204,113,.08);border:1px solid var(--gbdr-neon);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--neon);font-size:14px}
+.rd-info{flex:1;min-width:0}
+.rd-nm{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:2px}
+.rd-ds{font-size:10.5px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-chk{color:var(--neon);opacity:0;transition:opacity .2s;flex-shrink:0}
+.rd-it.sel .rd-chk{opacity:1}
+.rd-none{font-size:12px;color:var(--t4);text-align:center;padding:16px 12px;font-family:var(--mono)}
+
+/* note boxes */
+.nbox{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:9px;font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:14px;border:1px solid}
+.nbox.grn{background:rgba(46,204,113,.06);border-color:rgba(46,204,113,.18)}
+.nbox.blu{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.18)}
+.nbox.amb{background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.18)}
+.ni{font-size:14px;color:var(--neon);flex-shrink:0;margin-top:1px}
+.nbox.blu .ni{color:var(--b)}
+.nbox.amb .ni{color:var(--am)}
+
+/* fields */
+.fields{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.3px}
+.lbl-row{display:flex;align-items:center;justify-content:space-between}
+.fgt{background:none;border:none;font-family:var(--font);font-size:11px;color:var(--neon);cursor:pointer;padding:2px 4px;border-radius:4px;opacity:.8}
+.fgt:hover{opacity:1;text-decoration:underline}
+.fhint{font-size:10.5px;color:var(--t4);margin-top:2px}
+.fw{position:relative}
+.fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t4);pointer-events:none;display:flex;align-items:center}
+.fw input,.fw select{
+  width:100%;padding:11px 14px 11px 38px;
+  background:var(--field);border:1.5px solid var(--fbdr);
+  border-radius:10px;color:var(--t1);font-family:var(--font);font-size:13px;outline:none;
+  transition:all .2s;
+}
+.fw input:focus,.fw select:focus{border-color:rgba(46,204,113,.45);background:rgba(255,255,255,.07);box-shadow:0 0 0 3px rgba(46,204,113,.1)}
+.fw input[aria-invalid="true"]{border-color:rgba(239,68,68,.5);box-shadow:0 0 0 3px rgba(239,68,68,.08)}
+.fw input::placeholder{color:var(--t4)}
+.eyebn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;padding:4px;display:flex;align-items:center;transition:color .2s}
+.eyebn:hover{color:var(--neon)}
+
+/* password strength */
+.pw-strength{margin-top:6px;padding:8px 10px;background:var(--glass);border-radius:8px;border:1px solid var(--gbdr)}
+.pw-bars{display:flex;gap:4px;margin-bottom:5px}
+.pw-bar{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;transition:all .3s}
+.pw-bar.weak{background:#ef4444}.pw-bar.fair{background:#f97316}.pw-bar.good{background:#eab308}.pw-bar.strong{background:var(--neon)}
+.pw-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);margin-bottom:4px}
+.pw-reqs{display:flex;flex-wrap:wrap;gap:5px}
+.req{font-family:var(--mono);font-size:9px;color:var(--t4);padding:2px 6px;background:rgba(255,255,255,.04);border-radius:4px;border:1px solid rgba(255,255,255,.06)}
+.req.met{color:var(--neon);background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.18)}
+
+/* PIN grid */
+.pin-grid{display:flex;gap:8px}
+.pin-box{width:48px;height:52px;text-align:center;font-size:20px;font-weight:700;background:var(--field);border:1.5px solid var(--fbdr);border-radius:10px;color:var(--t1);font-family:var(--mono);outline:none;transition:all .2s}
+.pin-box.f{border-color:rgba(46,204,113,.45);background:rgba(46,204,113,.06)}
+.pin-box:focus{border-color:rgba(46,204,113,.55);box-shadow:0 0 0 3px rgba(46,204,113,.12)}
+
+/* main button */
+.btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:14px 20px;
+  background:linear-gradient(135deg,rgba(26,138,74,.9),rgba(46,204,113,.85));
+  border:1px solid rgba(46,204,113,.3);border-radius:12px;
+  color:#fff;font-family:var(--font);font-size:14px;font-weight:700;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:all var(--tr);box-shadow:0 4px 18px rgba(46,204,113,.25);
+}
+.btn:hover:not(:disabled){background:linear-gradient(135deg,rgba(26,138,74,1),rgba(46,204,113,1));box-shadow:0 6px 28px rgba(46,204,113,.38);transform:translateY(-1px)}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.bspin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.25);animation:rip .5s ease out;pointer-events:none}
+@keyframes rip{from{width:0;height:0;opacity:1}to{opacity:0}}
+
+/* alt buttons */
+.orline{display:flex;align-items:center;gap:9px;margin:12px 0;font-size:11px;color:var(--t4)}
+.orline::before,.orline::after{content:'';flex:1;height:1px;background:var(--gbdr)}
+.alt-row{display:flex;gap:7px}
+.altbn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;background:var(--glass);border:1px solid var(--gbdr);border-radius:9px;color:var(--t3);font-family:var(--font);font-size:11.5px;cursor:pointer;transition:all var(--tr)}
+.altbn:hover{background:var(--glass-md);border-color:var(--gbdr-neon);color:var(--neon)}
+
+/* back button */
+.bkbn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--t3);font-family:var(--font);font-size:12px;cursor:pointer;margin-bottom:14px;padding:4px 6px;border-radius:6px;transition:color .2s}
+.bkbn:hover{color:var(--neon)}
+
+/* error banner */
+.errbanner{display:none;align-items:center;gap:9px;padding:10px 13px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.22);border-radius:9px;margin-bottom:12px;font-size:12px;color:rgba(239,68,68,.85);animation:shk .38s ease}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* lockout */
+.lockout{display:none;flex-direction:column;align-items:center;text-align:center;gap:5px;padding:14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:11px;margin-bottom:12px}
+.lockout-ico{font-size:22px;color:var(--r)}
+.lockout-ti{font-size:13px;font-weight:700;color:rgba(239,68,68,.85)}
+.lockout-su{font-size:11px;color:var(--t4);max-width:300px;line-height:1.5}
+.lockout-cd{font-family:var(--mono);font-size:22px;color:var(--r);font-weight:700;margin-top:5px}
+
+/* captcha */
+.captcha-wrap{padding:12px;background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.18);border-radius:10px;margin-bottom:12px}
+.captcha-lbl{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--am);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:7px}
+.captcha-q{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--t1);margin-bottom:7px;text-align:center;letter-spacing:2px}
+.captcha-row{display:flex;gap:7px}
+.captcha-row input{flex:1;padding:9px 12px;background:var(--field);border:1px solid var(--fbdr);border-radius:9px;color:var(--t1);font-family:var(--mono);font-size:14px;outline:none;text-align:center;transition:border-color .2s}
+.captcha-row input:focus{border-color:rgba(245,158,11,.45)}
+.captcha-refresh{width:36px;height:36px;background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);border-radius:8px;color:var(--am);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;padding:0}
+.captcha-refresh:hover{background:rgba(245,158,11,.15)}
+
+/* attempts */
+.att-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t4);margin-bottom:10px;padding:8px 10px;background:rgba(239,68,68,.05);border-radius:8px;border:1px solid rgba(239,68,68,.1)}
+.att-dot{width:7px;height:7px;border-radius:50%;background:var(--gbdr);border:1px solid rgba(46,204,113,.18);transition:all .3s;flex-shrink:0}
+.att-dot.used{background:#ef4444;border-color:#dc2626;box-shadow:0 0 6px rgba(239,68,68,.35)}
+
+/* OTP */
+.otp-grid{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.obox{width:48px;height:58px;text-align:center;font-family:var(--mono);font-size:22px;font-weight:700;background:var(--field);border:1.5px solid var(--fbdr);border-radius:11px;color:var(--t1);outline:none;transition:all .2s;caret-color:var(--neon)}
+.obox.f{border-color:rgba(46,204,113,.45);background:rgba(46,204,113,.06)}
+.obox:focus{border-color:rgba(46,204,113,.6);box-shadow:0 0 0 3px rgba(46,204,113,.12)}
+
+/* MFA tabs */
+.vtabs{display:flex;gap:5px;margin-bottom:14px;background:var(--glass);border-radius:10px;padding:4px}
+.vtab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border:none;border-radius:8px;background:transparent;color:var(--t3);font-family:var(--font);font-size:11.5px;cursor:pointer;transition:all var(--tr);font-weight:500}
+.vtab:hover{color:var(--t2)}
+.vtab.act{background:rgba(46,204,113,.14);color:var(--neon);border:1px solid rgba(46,204,113,.22)}
+
+/* risk panel */
+.risk-panel{padding:10px 12px;border-radius:9px;margin-bottom:12px;border:1px solid}
+.risk-panel.low{background:rgba(46,204,113,.05);border-color:rgba(46,204,113,.18)}
+.risk-panel.med{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.18)}
+.risk-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.risk-lbl{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:1.5px}
+.risk-lbl.low{color:var(--neon)}.risk-lbl.med{color:var(--am)}
+.risk-score{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px}
+.risk-score.low{background:rgba(46,204,113,.12);color:var(--neon);border:1px solid rgba(46,204,113,.22)}
+.risk-score.med{background:rgba(245,158,11,.12);color:var(--am);border:1px solid rgba(245,158,11,.22)}
+.risk-signals{display:flex;flex-wrap:wrap;gap:5px}
+.risk-sig{font-size:10px;color:var(--t3)}
+
+/* session info */
+.sess{background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.14);border-radius:8px;padding:8px 12px;margin-bottom:12px;display:flex;align-items:center;gap:9px}
+.sess .si-ico{font-size:16px;color:var(--neon)}
+.sess .si-tx{font-size:11px;color:var(--t3);line-height:1.5}
+.sess .si-tx strong{color:var(--neon)}
+.form-locked{pointer-events:none;opacity:.28;filter:blur(1px);transition:all .3s}
+
+/* success */
+.sxwrap{text-align:center;padding:8px 0}
+.sxring{width:76px;height:76px;border-radius:50%;background:rgba(46,204,113,.07);border:2px solid rgba(46,204,113,.28);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--neon);box-shadow:var(--neon-glow);animation:pop .5s cubic-bezier(.16,1,.3,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.sxtitle{font-family:var(--serif);font-size:26px;color:var(--t1);margin-bottom:5px}
+.sxsub{font-size:13px;color:var(--t3);line-height:1.6;margin-bottom:15px}
+.sxcard{display:flex;align-items:center;gap:11px;padding:12px 14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.16);border-radius:11px;margin-bottom:13px;text-align:left}
+.sxi{font-size:22px;color:var(--neon)}
+.sxrole{font-size:13px;font-weight:700;color:var(--neon);margin-bottom:2px}
+.sxs{font-size:10px;color:var(--t4);line-height:1.4}
+.map{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:13px;padding:10px 12px;background:var(--glass);border:1px solid var(--gbdr);border-radius:10px}
+.map-lbl{font-size:8px;font-weight:700;color:var(--t4);width:100%;margin-bottom:5px;letter-spacing:.3px;text-transform:uppercase;font-family:var(--mono)}
+.map-chip{display:flex;align-items:center;gap:3px;padding:3px 8px;background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.18);border-radius:4px;font-size:9px;font-weight:600;color:var(--neon)}
+
+/* biometric */
+.bio{text-align:center}
+.bio-ring{width:82px;height:82px;border-radius:50%;background:rgba(46,204,113,.07);border:2px solid rgba(46,204,113,.18);margin:0 auto 13px;display:flex;align-items:center;justify-content:center;color:var(--neon);font-size:38px;animation:bio-p 2.5s infinite}
+@keyframes bio-p{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.22)}50%{box-shadow:0 0 0 12px rgba(46,204,113,0),0 0 18px rgba(46,204,113,.18)}}
+.bio-title{font-family:var(--serif);font-size:19px;color:var(--t1);margin-bottom:5px}
+.bio-desc{font-size:12px;color:var(--t3);line-height:1.65;margin-bottom:11px}
+.bio-3pts{display:flex;justify-content:center;gap:18px;margin-bottom:11px}
+.bio-pt{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2);font-weight:600}
+.dot2{width:5px;height:5px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon)}
+
+/* resend */
+.resend-row{font-size:11.5px;color:var(--t4);text-align:center;margin-top:10px}
+.resend-row button{background:none;border:none;font-family:var(--font);font-size:11.5px;font-weight:600;color:var(--neon);cursor:pointer;padding:2px 4px;border-radius:4px}
+.resend-row button:hover:not(:disabled){text-decoration:underline}
+.resend-row button:disabled{color:var(--t4);cursor:not-allowed}
+
+/* card footer */
+.cfoot{padding:12px 30px 18px;border-top:1px solid var(--gbdr);display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+
+/* util */
+.hidden{display:none!important}
+.fade{animation:sd .3s ease}
+@keyframes sd{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════
+   PREMIUM MOTION ANIMATIONS — NEW
+═══════════════════════════════════════ */
+
+/* Left panel widget cards — staggered float */
+.dp,.ss,.mw,.mods,.af,.aim,.aud{animation-timing-function:cubic-bezier(.16,1,.3,1)}
+
+/* Dashboard preview card subtle glow pulse */
+.dp{animation:fu .7s .22s cubic-bezier(.16,1,.3,1) both,dp-glow 6s ease-in-out 1.5s infinite}
+@keyframes dp-glow{
+  0%,100%{box-shadow:none}
+  50%{box-shadow:0 0 24px rgba(46,204,113,.1),0 0 8px rgba(46,204,113,.06)}
+}
+
+/* Metric cards micro-float on hover (already transform:-1px, enhanced) */
+.mc:hover{
+  background:var(--glass-md);border-color:var(--gbdr-neon);
+  transform:translateY(-2px) scale(1.01);
+  box-shadow:0 4px 20px rgba(46,204,113,.14),0 0 12px rgba(46,204,113,.08);
+}
+
+/* System status items — lift on hover */
+.si:hover{
+  background:var(--glass-md);border-color:var(--gbdr-neon);
+  transform:translateY(-1px) translateX(2px);
+  box-shadow:0 4px 16px rgba(46,204,113,.1);
+}
+
+/* Module icons — spin glow on hover */
+.mod:hover{
+  background:var(--glass-md);border-color:var(--gbdr-neon);
+  transform:translateY(-2px) scale(1.04);
+  box-shadow:0 4px 14px rgba(46,204,113,.12);
+}
+
+/* Button — shimmer sweep */
+.btn::after{
+  content:'';
+  position:absolute;
+  top:0;left:-120%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  transform:skewX(-18deg);
+  animation:btn-shim 4s ease-in-out 2s infinite;
+}
+@keyframes btn-shim{0%,100%{left:-120%}50%{left:140%}}
+
+/* Input focus — neon inner glow */
+.fw input:focus,.fw select:focus{
+  border-color:rgba(46,204,113,.55);
+  background:rgba(255,255,255,.075);
+  box-shadow:0 0 0 3px rgba(46,204,113,.12),0 0 18px rgba(46,204,113,.1);
+}
+
+/* Step icon breathing animation */
+.s-ico{
+  width:50px;height:50px;border-radius:14px;
+  background:rgba(46,204,113,.08);border:1px solid var(--gbdr-neon);
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--neon);
+  margin-bottom:10px;
+  animation:s-ico-breathe 4s ease-in-out infinite;
+}
+@keyframes s-ico-breathe{
+  0%,100%{box-shadow:0 0 18px rgba(46,204,113,.12);transform:scale(1)}
+  50%{box-shadow:0 0 32px rgba(46,204,113,.24),0 0 60px rgba(46,204,113,.08);transform:scale(1.02)}
+}
+
+/* OTP boxes — pop animation when filled */
+.obox.f{
+  border-color:rgba(46,204,113,.55);background:rgba(46,204,113,.07);
+  animation:otp-pop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes otp-pop{from{transform:scale(.85)}to{transform:scale(1)}}
+
+/* PIN boxes — same pop */
+.pin-box.f{
+  border-color:rgba(46,204,113,.55);background:rgba(46,204,113,.07);
+  animation:otp-pop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* Back button hover */
+.bkbn:hover{color:var(--neon);background:rgba(46,204,113,.06);transform:translateX(-2px)}
+.bkbn{transition:color .2s,background .2s,transform .22s cubic-bezier(.16,1,.3,1)}
+
+/* Alt buttons hover */
+.altbn:hover{
+  background:var(--glass-md);border-color:var(--gbdr-neon);color:var(--neon);
+  transform:translateY(-1px);
+  box-shadow:0 4px 14px rgba(46,204,113,.12);
+}
+.altbn{transition:all .22s cubic-bezier(.16,1,.3,1)}
+
+/* Dropdown item hover — slide in */
+.rd-it{transition:background .18s,transform .18s cubic-bezier(.16,1,.3,1)}
+.rd-it:hover,.rd-it.foc{background:var(--glass-md);transform:translateX(3px)}
+
+/* Bio ring extra pulse rings */
+.bio-ring::before,.bio-ring::after{
+  content:'';position:absolute;border-radius:50%;
+  border:1px solid rgba(46,204,113,.15);
+  animation:bio-ring-expand 3s ease-out infinite;
+}
+.bio-ring{position:relative}
+.bio-ring::after{animation-delay:1.5s}
+@keyframes bio-ring-expand{
+  0%{width:82px;height:82px;opacity:.6;top:0;left:0}
+  100%{width:130px;height:130px;opacity:0;top:-24px;left:-24px}
+}
+
+/* Ripple — fix animation (was missing fill) */
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.22);pointer-events:none;transform:translate(-50%,-50%);animation:rip-go .55s ease forwards}
+@keyframes rip-go{from{width:0;height:0;opacity:.8}to{width:300px;height:300px;opacity:0}}
+
+/* reduced motion — disable all custom animations */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  #pc,#bg-sweep,#scan-line,.orb{display:none}
+}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1280px){.rp{width:54%}.mg{grid-template-columns:repeat(5,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.sg{grid-template-columns:1fr}}
+@media(max-width:1080px){.rp{width:58%}}
+@media(max-width:900px){.rp{width:64%}}
+@media(max-width:820px){
+  .lp{display:none}
+  body{overflow:auto;height:auto}
+  .rp{width:100%;height:auto;min-height:100vh;padding:24px 16px;align-items:flex-start;padding-top:32px}
+  .card{max-width:100%}
+}
+@media(max-width:560px){
+  .rp{padding:16px 10px}
+  .card{border-radius:18px}
+  .cbody{padding:18px 16px 16px}
+  .otp-grid{gap:5px}
+  .obox{width:40px;height:48px;font-size:20px}
+  .cfoot{padding:10px 16px 14px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="pc"></canvas>
+<div id="bg-sweep" aria-hidden="true"></div>
+<div id="scan-line" aria-hidden="true"></div>
+<div class="orb o1" aria-hidden="true"></div>
+<div class="orb o2" aria-hidden="true"></div>
+<div class="orb o3" aria-hidden="true"></div>
+
+<!-- ═══════ LEFT INTELLIGENCE PANEL ═══════ -->
+<div class="lp" role="complementary" aria-label="UniHealth 360 intelligence panel">
+  <div class="flag" aria-hidden="true"></div>
+  <div class="lp-in">
+
+    <div class="brand">
+      <div class="b-logo" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L22 7.5V16.5L12 22L2 16.5V7.5L12 2Z" stroke="rgba(46,204,113,.45)" stroke-width="1.5" fill="rgba(26,138,74,.08)"/>
+          <path d="M12 6V18M6 12H18" stroke="#2ecc71" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="b-name">UniHealth 360</div>
+        <div class="b-badge"><span>●</span> National Healthcare OS</div>
+      </div>
+    </div>
+
+    <div class="sbar">
+      <div class="sbar-l"><div class="pdot" aria-hidden="true"></div><span>ALL SYSTEMS LIVE · CIC · OLD MUTUAL · MATERNITY · NICU</span></div>
+      <div class="pips" aria-hidden="true"><div class="pip g"></div><div class="pip g"></div><div class="pip g"></div><div class="pip a"></div><div class="pip p"></div></div>
+    </div>
+
+    <div class="hero">
+      <p class="eyebrow">National Healthcare Infrastructure · 2026</p>
+      <h1 class="headline">Next-Generation<br><em>Healthcare Operating</em><br>System</h1>
+      <p class="hero-sub">AI-powered dark-mode enterprise access — EMR, Maternity &amp; NICU, CIC Insurance, Old Mutual, Labs, Pharmacy, Telemedicine, and national health integrations from one authenticated session.</p>
+      <div class="tagline">One Patient · One Record · One Unified System</div>
+    </div>
+
+    <div class="metrics" role="region" aria-label="Live system metrics">
+      <div class="mc" style="--mcc:#2ecc71"><div class="mv" id="m-beds">1,284</div><div class="ml">Occupied Beds</div><div class="md">▲ 96% national</div></div>
+      <div class="mc" style="--mcc:#22d3ee"><div class="mv" id="m-pts">347</div><div class="ml">Active Patients</div><div class="md">14 facilities</div></div>
+      <div class="mc" style="--mcc:#ec4899"><div class="mv" id="m-mat">47</div><div class="ml">Maternity</div><div class="md">● 3 in labor</div></div>
+      <div class="mc" style="--mcc:#f97316"><div class="mv" id="m-nicu">8</div><div class="ml">NICU Infants</div><div class="md">● AI monitored</div></div>
+    </div>
+
+    <div class="dp">
+      <div class="dp-hd">
+        <div class="dp-ttl"><svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="rgba(46,204,113,.55)"/></svg><span id="dp-lbl">Select a role to preview dashboard</span></div>
+        <div class="dp-dots" aria-hidden="true"><div class="dp-dot r"></div><div class="dp-dot y"></div><div class="dp-dot g"></div></div>
+      </div>
+      <div class="dp-cnt" id="dp-cnt">
+        <div class="bw"><div class="bl">Bed Occupancy <span>96%</span></div><div class="bb"><div class="bf" style="width:96%"></div></div></div>
+        <div class="bw"><div class="bl">Lab Throughput <span>78%</span></div><div class="bb"><div class="bf" style="width:78%"></div></div></div>
+        <div class="bw"><div class="bl">Maternity Ward <span>80%</span></div><div class="bb"><div class="bf" style="width:80%;background:linear-gradient(90deg,#7c3aed,#ec4899)"></div></div></div>
+        <div class="dp-mods">
+          <div class="dp-mod on">EMR</div><div class="dp-mod on">Lab</div>
+          <div class="dp-mod on" style="border-color:rgba(236,72,153,.28);color:#ec4899">Maternity</div>
+          <div class="dp-mod on">Pharmacy</div><div class="dp-mod">CIC</div>
+          <div class="dp-mod">Old Mutual</div><div class="dp-mod">NICU</div><div class="dp-mod">AI Engine</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss">
+      <div class="shd"><div class="shd-l"></div><div class="shd-t">System Status · Live</div><div class="shd-l"></div></div>
+      <div class="sg">
+        <div class="si"><div class="si-ic ic-g"><i data-feather="cpu"></i></div><div class="si-tx"><div class="si-nm">AI Engine</div><div class="si-st">Active · 98.4%</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-b"><i data-feather="globe"></i></div><div class="si-tx"><div class="si-nm">Hospital Network</div><div class="si-st">14/14 Online</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-p"><i data-feather="shield"></i></div><div class="si-tx"><div class="si-nm">CIC Insurance</div><div class="si-st">Connected · Live</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-a"><i data-feather="briefcase"></i></div><div class="si-tx"><div class="si-nm">Old Mutual</div><div class="si-st">Verification Live</div></div><div class="sipip w"></div></div>
+        <div class="si"><div class="si-ic ic-t"><i data-feather="video"></i></div><div class="si-tx"><div class="si-nm">Telemedicine</div><div class="si-st">7 live sessions</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-pk"><i data-feather="heart"></i></div><div class="si-tx"><div class="si-nm">Maternity Monitor</div><div class="si-st">Live · 47 patients</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-g"><i data-feather="activity"></i></div><div class="si-tx"><div class="si-nm">NICU System</div><div class="si-st">Operational</div></div><div class="sipip"></div></div>
+        <div class="si"><div class="si-ic ic-b"><i data-feather="lock"></i></div><div class="si-tx"><div class="si-nm">Auth Cluster</div><div class="si-st">3/3 Servers Up</div></div><div class="sipip"></div></div>
+      </div>
+    </div>
+
+    <div class="mw" role="region" aria-label="Maternity live stats">
+      <div class="mw-hd"><div class="mw-bdg"><svg width="7" height="7" viewBox="0 0 7 7"><circle cx="3.5" cy="3.5" r="3.5" fill="#ec4899"/></svg> Maternity &amp; Women's Health · Live</div></div>
+      <div class="mw-g">
+        <div class="mw-c"><div class="mw-v" id="mw-anc">24</div><div class="mw-l">ANC Today</div></div>
+        <div class="mw-c"><div class="mw-v" id="mw-lab">3</div><div class="mw-l">In Labor</div></div>
+        <div class="mw-c"><div class="mw-v" id="mw-nic">8</div><div class="mw-l">NICU</div></div>
+        <div class="mw-c"><div class="mw-v" id="mw-pn">19</div><div class="mw-l">Postnatal</div></div>
+        <div class="mw-c"><div class="mw-v" id="mw-br">5</div><div class="mw-l">Births Today</div></div>
+        <div class="mw-c"><div class="mw-v" id="mw-hr">7</div><div class="mw-l">High-Risk AI</div></div>
+      </div>
+      <div class="mw-alert"><div class="mw-adot" aria-hidden="true"></div><span>AI: 2 high-risk pregnancies flagged for immediate clinical review</span></div>
+    </div>
+
+    <div class="mods">
+      <div class="shd"><div class="shd-l"></div><div class="shd-t">Integrated Modules · UniHealth 360</div><div class="shd-l"></div></div>
+      <div class="mg">
+        <div class="mod"><div class="mod-ic"><i data-feather="file-text"></i></div><div class="mod-nm">EMR</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="dollar-sign"></i></div><div class="mod-nm">Billing</div><div class="mod-dot"></div></div>
+        <div class="mod mat"><div class="mod-ic"><i data-feather="heart"></i></div><div class="mod-nm">Maternity</div><div class="mod-dot"></div></div>
+        <div class="mod mat"><div class="mod-ic"><i data-feather="activity"></i></div><div class="mod-nm">NICU</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="shield"></i></div><div class="mod-nm">CIC</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="briefcase"></i></div><div class="mod-nm">Old Mutual</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="droplet"></i></div><div class="mod-nm">Lab</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="package"></i></div><div class="mod-nm">Pharmacy</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="aperture"></i></div><div class="mod-nm">Radiology</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="video"></i></div><div class="mod-nm">Teleconsult</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="zap"></i></div><div class="mod-nm">ICU</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="alert-circle"></i></div><div class="mod-nm">Emergency</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="scissors"></i></div><div class="mod-nm">Surgery</div><div class="mod-dot"></div></div>
+        <div class="mod mat"><div class="mod-ic"><i data-feather="radio"></i></div><div class="mod-nm">Fetal Mon.</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="truck"></i></div><div class="mod-nm">KEMSA</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="crosshair"></i></div><div class="mod-nm">Oncology</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="cpu"></i></div><div class="mod-nm">AI Engine</div><div class="mod-dot"></div></div>
+        <div class="mod"><div class="mod-ic"><i data-feather="wifi"></i></div><div class="mod-nm">IoT Mon.</div><div class="mod-dot"></div></div>
+      </div>
+    </div>
+
+    <div class="af">
+      <div class="af-t">Module Pull API · Authentication Flow</div>
+      <div class="fn-row">
+        <div class="fn"><div class="fn-c on" id="fn-login"><i data-feather="log-in"></i></div><div class="fn-l">Login</div></div>
+        <div class="fa"></div>
+        <div class="fn"><div class="fn-c" id="fn-auth"><i data-feather="lock"></i></div><div class="fn-l">Auth</div></div>
+        <div class="fa"></div>
+        <div class="fn"><div class="fn-c" id="fn-role"><i data-feather="user-check"></i></div><div class="fn-l">Role</div></div>
+        <div class="fa"></div>
+        <div class="fn"><div class="fn-c" id="fn-api"><i data-feather="server"></i></div><div class="fn-l">Module API</div></div>
+        <div class="fa"></div>
+        <div class="fn"><div class="fn-c" id="fn-dash"><i data-feather="layout"></i></div><div class="fn-l">Dashboard</div></div>
+      </div>
+    </div>
+
+    <div class="aim" role="status" aria-live="polite">
+      <div class="ai-hd"><div class="ai-p" aria-hidden="true"></div><div class="ai-ttl">AI Security Monitor — Live</div></div>
+      <div class="ai-rows">
+        <div class="ai-r"><div class="ai-lbl">Threat Detection (NIDS)</div><div class="ai-v av-ok">ACTIVE</div></div>
+        <div class="ai-r"><div class="ai-lbl">Anomaly Detection (ML)</div><div class="ai-v av-ok">NOMINAL</div></div>
+        <div class="ai-r"><div class="ai-lbl">Intrusion Attempts (1hr)</div><div class="ai-v av-wn" id="aiAt">0</div></div>
+        <div class="ai-r"><div class="ai-lbl">Auth Servers</div><div class="ai-v av-lv">3/3 UP</div></div>
+        <div class="ai-r"><div class="ai-lbl">CIC Insurance API</div><div class="ai-v av-ok">LIVE</div></div>
+        <div class="ai-r"><div class="ai-lbl">Old Mutual Verify</div><div class="ai-v av-ok">ACTIVE</div></div>
+        <div class="ai-r"><div class="ai-lbl">Maternity AI Monitor</div><div class="ai-v av-ok">RUNNING</div></div>
+      </div>
+      <div class="ai-br">
+        <div class="ai-bl">System Security Score <span id="secScore">98.4%</span></div>
+        <div class="ai-bar"><div class="ai-bf" id="secBar" style="width:98.4%"></div></div>
+      </div>
+    </div>
+
+    <div class="aud" role="log" aria-live="polite">
+      <div class="aud-l">Append-Only Audit Log · Tamper-Evident</div>
+      <div class="aud-e" id="at1">→ AUTH SYSTEM_READY unihealth_360_v4.0_dark</div>
+      <div class="aud-e" id="at2">→ MATERNITY MONITOR_ACTIVE nicu=online anc=ready fetal=live</div>
+      <div class="aud-e" id="at3">→ CIC OLD_MUTUAL_CONNECTED insurance_verify=live</div>
+    </div>
+
+    <div class="lp-ft">
+      <div class="certs"><span class="cert">ISO 27001</span><span class="cert">FHIR R5</span><span class="cert">CIC</span><span class="cert">Old Mutual</span><span class="cert">KEMSA</span></div>
+      <span>© UniHealth 360 · 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ RIGHT AUTH PANEL ═══════ -->
+<main class="rp">
+  <div class="card" role="region" aria-label="UniHealth 360 Authentication">
+    <div class="c-stripe" aria-hidden="true"></div>
+    <div class="c-sec">
+      <div class="c-sec-l"><div class="c-sec-dot" aria-hidden="true"></div>Secure Connection · TLS 1.3 · Encrypted</div>
+      <div class="c-sec-r">JWT · OAuth2 · RBAC</div>
+    </div>
+    <div class="cbody">
+
+      <!-- STEP 1 -->
+      <section id="s1" class="fade" aria-label="Step 1: Select your role">
+        <div class="stepper" role="list" aria-label="Step 1 of 3">
+          <div class="sdot act" role="listitem" aria-label="Step 1, current">1</div>
+          <div class="sline" aria-hidden="true"></div>
+          <div class="sdot" role="listitem" aria-label="Step 2">2</div>
+          <div class="sline" aria-hidden="true"></div>
+          <div class="sdot" role="listitem" aria-label="Step 3">3</div>
+        </div>
+        <div class="shdr">
+          <div class="s-ico" aria-hidden="true"><i data-feather="users"></i></div>
+          <div class="s-ttl">Select your role</div>
+          <div class="s-sub">Your role determines system modules, permissions, and AI-driven dashboard assembly</div>
+        </div>
+
+        <!-- PREMIUM DROPDOWN — fixed position approach -->
+        <div class="rdrop" role="group" aria-label="Role selection" id="rdrop-wrap">
+          <button class="rd-btn" id="rdBtn" type="button"
+            aria-haspopup="listbox" aria-expanded="false" aria-label="Select access role">
+            <div class="rd-si" id="rd-si" aria-hidden="true"><i data-feather="users"></i></div>
+            <span class="rd-st ph" id="rd-st">Choose your access role…</span>
+            <i data-feather="chevron-down" id="rd-ch" aria-hidden="true"></i>
+          </button>
+          <!-- Panel rendered in <body> via JS for proper fixed positioning -->
+        </div>
+
+        <div id="roleNote" class="nbox grn hidden" role="status" aria-live="polite">
+          <span class="ni" id="roleNoteIco" aria-hidden="true"><i data-feather="info"></i></span>
+          <span id="roleNoteTxt"></span>
+        </div>
+        <button class="btn" id="s1btn" type="button" disabled aria-disabled="true">
+          Continue to Authentication <i data-feather="arrow-right" aria-hidden="true"></i>
+        </button>
+      </section>
+
+      <!-- STEP 2 -->
+      <section id="s2" class="hidden fade" aria-label="Step 2: Enter credentials">
+        <div class="stepper" role="list" aria-label="Step 2 of 3">
+          <div class="sdot done" role="listitem"><i data-feather="check" aria-hidden="true"></i></div>
+          <div class="sline done" aria-hidden="true"></div>
+          <div class="sdot act" role="listitem" aria-label="Step 2, current">2</div>
+          <div class="sline" aria-hidden="true"></div>
+          <div class="sdot" role="listitem">3</div>
+        </div>
+        <button class="bkbn" id="s2Back" type="button" aria-label="Back to role selection"><i data-feather="arrow-left" aria-hidden="true"></i> Back</button>
+        <div class="shdr">
+          <div class="s-ico" id="s2ico" aria-hidden="true"><i data-feather="stethoscope"></i></div>
+          <div class="s-ttl" id="s2title">Sign in</div>
+          <div class="s-sub" id="s2sub">Enter your credentials below</div>
+        </div>
+
+        <!-- Staff form -->
+        <div id="staffForm">
+          <div class="lockout" id="lockoutBanner" role="alert" aria-live="assertive">
+            <div class="lockout-ico" aria-hidden="true"><i data-feather="lock"></i></div>
+            <div class="lockout-ti">Account Temporarily Locked</div>
+            <div class="lockout-su">Too many failed attempts. AI anomaly detection notified. Logged in audit trail.</div>
+            <div class="lockout-cd" id="lockoutTimer">00:30</div>
+          </div>
+          <div id="captchaWrap" class="captcha-wrap hidden" role="group" aria-label="Security CAPTCHA">
+            <div class="captcha-lbl"><i data-feather="cpu" aria-hidden="true"></i> Security Check</div>
+            <div class="captcha-q" id="captchaQ" aria-live="polite">12 + 7 = ?</div>
+            <div class="captcha-row">
+              <input type="text" id="captchaIn" inputmode="numeric" placeholder="Answer" maxlength="4" autocomplete="off" aria-label="CAPTCHA answer">
+              <button class="captcha-refresh" id="captchaRefreshBtn" type="button" aria-label="New CAPTCHA"><i data-feather="refresh-cw"></i></button>
+            </div>
+          </div>
+          <div id="staffFormInner">
+            <div class="nbox grn" id="staffNote" role="note"><span class="ni" aria-hidden="true"><i data-feather="lock"></i></span><span id="staffNoteTxt">Registration + institutional email + password → OTP</span></div>
+            <div id="staffErr" class="errbanner" role="alert" aria-live="assertive"><span aria-hidden="true"><i data-feather="alert-triangle"></i></span><span id="staffErrTxt">Please check your credentials and try again.</span></div>
+            <div class="fields">
+              <div class="field">
+                <label id="regLbl" for="regIn">Medical Registration No.</label>
+                <div class="fw"><span class="fi" aria-hidden="true"><i data-feather="user"></i></span><input type="text" id="regIn" placeholder="e.g. A4821" autocomplete="username" aria-required="true" aria-describedby="regHint"></div>
+                <span class="fhint" id="regHint">As printed on your professional licence</span>
+              </div>
+              <div class="field">
+                <label for="emailIn">Institutional Email</label>
+                <div class="fw"><span class="fi" aria-hidden="true"><i data-feather="mail"></i></span><input type="email" id="emailIn" placeholder="you@hospital.health" autocomplete="email" aria-required="true"></div>
+              </div>
+              <div class="field">
+                <div class="lbl-row"><label for="pwIn">Password</label><button class="fgt" id="forgotPwBtn" type="button">Forgot password?</button></div>
+                <div class="fw">
+                  <span class="fi" aria-hidden="true"><i data-feather="key"></i></span>
+                  <input type="password" id="pwIn" placeholder="········" autocomplete="current-password" aria-required="true" aria-describedby="pwStrengthWrap">
+                  <button class="eyebn" id="togglePwBtn" type="button" aria-label="Show password" aria-pressed="false"><i data-feather="eye" id="eyeico" aria-hidden="true"></i></button>
+                </div>
+                <div class="pw-strength" id="pwStrengthWrap" style="display:none" aria-live="polite">
+                  <div class="pw-bars"><div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div><div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div></div>
+                  <div class="pw-lbl" id="pwStrengthLbl">Enter a password</div>
+                  <div class="pw-reqs"><div class="req" id="req-len">At least 8 chars</div><div class="req" id="req-upper">Uppercase</div><div class="req" id="req-num">Number</div><div class="req" id="req-sym">Special char</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="att-row" id="attemptsRow" style="display:none" role="status" aria-live="polite">
+              <span>Attempts:</span>
+              <div class="att-dot" id="ad1" aria-hidden="true"></div><div class="att-dot" id="ad2" aria-hidden="true"></div><div class="att-dot" id="ad3" aria-hidden="true"></div>
+              <span id="attemptsLeft" style="color:var(--r);font-weight:700"></span>
+            </div>
+            <button class="btn" id="staffBtn" type="button" style="margin-top:10px">
+              <div class="bspin" id="staffSp" aria-hidden="true"></div>
+              <span id="staffBtnTxt">Sign In Securely</span>
+              <i data-feather="arrow-right" id="staffArr" aria-hidden="true"></i>
+            </button>
+            <div class="orline"><span>or sign in with</span></div>
+            <div class="alt-row">
+              <button class="altbn" data-alt="smartcard" type="button"><i data-feather="credit-card" aria-hidden="true"></i> Smart Card</button>
+              <button class="altbn" data-alt="p360" type="button"><i data-feather="smartphone" aria-hidden="true"></i> Practice 360</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Patient form -->
+        <div id="patForm" class="hidden">
+          <div class="nbox blu" role="note"><span class="ni" aria-hidden="true"><i data-feather="shield"></i></span><span><strong>ModelCover Portal:</strong> Select your ID type, enter your ID number and 4-digit PIN, then verify via SMS OTP or biometric.</span></div>
+          <div id="patErr" class="errbanner" role="alert" aria-live="assertive"><span aria-hidden="true"><i data-feather="alert-triangle"></i></span><span id="patErrTxt">ID number or PIN is incorrect.</span></div>
+          <div class="fields">
+            <div class="field"><label for="idTypeIn">ID Type</label><div class="fw"><span class="fi" aria-hidden="true"><i data-feather="credit-card"></i></span><select id="idTypeIn" aria-required="true"><option value="national">National ID</option><option value="passport">Passport</option><option value="alien">Foreign Resident ID</option><option value="refugee">Refugee ID</option><option value="mandate">Mandate Number</option><option value="temp">Temporary ID</option></select></div></div>
+            <div class="field"><label id="patIdLbl" for="patIdIn">National ID Number</label><div class="fw"><span class="fi" aria-hidden="true"><i data-feather="hash"></i></span><input type="text" id="patIdIn" placeholder="e.g. 12345678" inputmode="numeric" maxlength="12" autocomplete="username" aria-required="true" aria-describedby="patIdHint"></div><span class="fhint" id="patIdHint">7 or 8-digit number as on your ID card</span></div>
+            <div class="field">
+              <div class="lbl-row"><label>4-Digit ModelCover PIN</label><button class="fgt" id="forgotPinBtn" type="button">Forgot PIN?</button></div>
+              <div class="pin-grid" role="group" aria-label="4-digit PIN"><input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p1" autocomplete="one-time-code" aria-label="PIN digit 1"><input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p2" aria-label="PIN digit 2"><input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p3" aria-label="PIN digit 3"><input class="pin-box" type="password" maxlength="1" inputmode="numeric" id="p4" aria-label="PIN digit 4"></div>
+            </div>
+            <div class="field"><label for="patPhIn">Registered Phone</label><div class="fw"><span class="fi" aria-hidden="true"><i data-feather="phone"></i></span><input type="tel" id="patPhIn" placeholder="e.g. 0712 345 678" autocomplete="tel" aria-required="true"></div></div>
+          </div>
+          <button class="btn" id="patBtn" type="button"><div class="bspin" id="patSp" aria-hidden="true"></div><span id="patBtnTxt">Verify with ModelCover</span><i data-feather="arrow-right" id="patArr" aria-hidden="true"></i></button>
+          <div class="orline"><span>or verify with</span></div>
+          <div class="alt-row">
+            <button class="altbn" data-alt="bio" type="button"><i data-feather="fingerprint" aria-hidden="true"></i> Biometric</button>
+            <button class="altbn" data-alt="p360" type="button"><i data-feather="smartphone" aria-hidden="true"></i> Practice 360</button>
+            <button class="altbn" data-alt="ussd" type="button"><i data-feather="phone-call" aria-hidden="true"></i> *147# USSD</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 3 -->
+      <section id="s3" class="hidden fade" aria-label="Step 3: MFA">
+        <div class="stepper" role="list" aria-label="Step 3 of 3">
+          <div class="sdot done" role="listitem"><i data-feather="check" aria-hidden="true"></i></div>
+          <div class="sline done" aria-hidden="true"></div>
+          <div class="sdot done" role="listitem"><i data-feather="check" aria-hidden="true"></i></div>
+          <div class="sline done" aria-hidden="true"></div>
+          <div class="sdot act" role="listitem" aria-label="Step 3, current">3</div>
+        </div>
+        <button class="bkbn" id="s3Back" type="button" aria-label="Back to credentials"><i data-feather="arrow-left" aria-hidden="true"></i> Back</button>
+        <div class="vtabs" role="tablist" aria-label="MFA method">
+          <button class="vtab act" id="vt-otp" role="tab" aria-selected="true" type="button"><i data-feather="message-square" aria-hidden="true"></i> SMS OTP</button>
+          <button class="vtab" id="vt-bio" role="tab" aria-selected="false" type="button"><i data-feather="fingerprint" aria-hidden="true"></i> Biometric</button>
+          <button class="vtab" id="vt-p360" role="tab" aria-selected="false" type="button"><i data-feather="smartphone" aria-hidden="true"></i> Practice 360</button>
+        </div>
+        <div id="pan-otp" role="tabpanel" aria-labelledby="vt-otp">
+          <div class="risk-panel low" id="riskPanel">
+            <div class="risk-hd"><div class="risk-lbl low"><i data-feather="cpu" aria-hidden="true"></i> AI Risk Assessment</div><div class="risk-score low" id="riskScore">LOW RISK</div></div>
+            <div class="risk-signals" id="riskSignals" aria-live="polite"><div class="risk-sig" style="color:var(--neon)">Known device detected</div><div class="risk-sig" style="color:var(--neon)">Normal login hours</div><div class="risk-sig" style="color:var(--neon)">Location: Capital Region</div></div>
+          </div>
+          <div class="shdr" style="margin-bottom:7px">
+            <div class="s-ico" aria-hidden="true"><i data-feather="message-square"></i></div>
+            <div class="s-ttl">Enter OTP</div>
+            <div class="s-sub" id="otpNote" aria-live="polite">A 6-digit code was sent via SMS</div>
+          </div>
+          <div class="otp-grid" role="group" aria-label="6-digit OTP">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o1" aria-label="OTP digit 1">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o2" aria-label="OTP digit 2">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o3" aria-label="OTP digit 3">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o4" aria-label="OTP digit 4">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o5" aria-label="OTP digit 5">
+            <input class="obox" maxlength="1" type="text" inputmode="numeric" id="o6" aria-label="OTP digit 6">
+          </div>
+          <button class="btn" id="otpBtn" type="button" disabled aria-disabled="true"><div class="bspin" id="otpSp" aria-hidden="true"></div><span id="otpBtnTxt">Verify Code</span></button>
+          <div class="resend-row">Didn't receive it? <button id="resendBtn" type="button" disabled>Resend in <span id="timer">30</span>s</button></div>
+        </div>
+        <div id="pan-bio" class="hidden" role="tabpanel" aria-labelledby="vt-bio">
+          <div class="bio">
+            <div class="bio-ring" aria-hidden="true"><i data-feather="fingerprint"></i></div>
+            <div class="bio-title">Fingerprint / Biometric</div>
+            <div class="bio-desc">Place your registered finger on the UniHealth biometric reader. Required at 3 touchpoints.</div>
+            <div class="bio-3pts"><div class="bio-pt"><div class="dot2"></div>Admission</div><div class="bio-pt"><div class="dot2"></div>Procedure Auth.</div><div class="bio-pt"><div class="dot2"></div>Discharge</div></div>
+            <div class="nbox grn" style="text-align:left;margin-bottom:12px"><span class="ni" aria-hidden="true"><i data-feather="check-circle"></i></span><span>Biometric is <strong>mandatory</strong> at Level 4–6 hospitals (2025).</span></div>
+            <button class="btn" id="bioBtn" type="button"><div class="bspin" id="bioSp" aria-hidden="true"></div><span id="bioBtnTxt">Scan Fingerprint</span></button>
+          </div>
+        </div>
+        <div id="pan-p360" class="hidden" role="tabpanel" aria-labelledby="vt-p360">
+          <div class="bio">
+            <div class="bio-ring" aria-hidden="true"><i data-feather="smartphone"></i></div>
+            <div class="bio-title">Practice 360 App</div>
+            <div class="bio-desc">Open <strong>Practice 360</strong> on your registered device and tap <em>Approve</em> on the push notification.</div>
+            <div class="nbox amb" style="text-align:left;margin-bottom:10px"><span class="ni" aria-hidden="true"><i data-feather="map-pin"></i></span><span><strong>Geo-fenced:</strong> Practice 360 verifies you are physically at the registered facility.</span></div>
+            <div class="nbox blu" style="text-align:left;margin-bottom:12px"><span class="ni" aria-hidden="true"><i data-feather="download"></i></span><span>Don't have the app? <a href="#" style="color:#93c5fd;font-weight:700">Download Practice 360</a></span></div>
+            <button class="btn" id="p360Btn" type="button"><div class="bspin" id="p360Sp" aria-hidden="true"></div><span id="p360BtnTxt">Awaiting App Approval…</span></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 4 -->
+      <section id="s4" class="hidden fade" aria-label="Access granted" aria-live="polite">
+        <div class="sxwrap">
+          <div class="sxring" aria-hidden="true"><i data-feather="check-circle"></i></div>
+          <div class="sxtitle">Access Granted</div>
+          <div class="sxsub" id="sxMsg">Welcome back!<br>Redirecting to your dashboard…</div>
+          <div class="sxcard"><span class="sxi" id="sxIco" aria-hidden="true"><i data-feather="stethoscope"></i></span><div><div class="sxrole" id="sxRole">Doctor — Central Referral Hospital</div><div class="sxs">CIC/Old Mutual verified · Data Protection Act · Session secured</div></div></div>
+          <div class="map" id="mapEl"><div class="map-lbl">Loading modules for your session</div></div>
+          <div class="sess"><span class="si-ico" aria-hidden="true"><i data-feather="clock"></i></span><div class="si-tx"><strong>Session expires in 30 minutes</strong> of inactivity.<br>TLS 1.3 · JWT issued · Audit log active.</div></div>
+          <button class="btn" id="launchBtn" type="button">Launch UniHealth 360 <i data-feather="arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+
+    </div><!-- /cbody -->
+    <div class="cfoot">
+      <div style="font-family:var(--mono);font-size:7.5px;color:var(--t4)">UniHealth 360 v4.0 · Dark Mode · FHIR R5 · Kafka · Redis</div>
+      <div style="font-family:var(--mono);font-size:7px;color:var(--t4)">CIC · Old Mutual · KEMSA · ISO 27001</div>
+    </div>
+  </div>
+</main>
+
+<!-- DROPDOWN PANEL — rendered at body level for fixed positioning, never clips -->
+<div class="rd-panel hidden" id="rd-panel" role="listbox" aria-label="Available roles">
+  <div class="rd-srch-wrap">
+    <div class="rd-srch-ic" aria-hidden="true"><i data-feather="search"></i></div>
+    <input class="rd-srch" id="rd-search" type="text" placeholder="Search roles…" autocomplete="off" aria-label="Search roles">
+  </div>
+  <div class="rd-list" id="rd-list">
+    <div class="rd-grp">Clinical Staff</div>
+    <button class="rd-it" data-role="doctor" data-icon="stethoscope" data-name="Doctor" data-desc="Physician · Specialist · Full clinical access" type="button" role="option">
+      <div class="rd-ic"><i data-feather="stethoscope"></i></div>
+      <div class="rd-info"><div class="rd-nm">Doctor</div><div class="rd-ds">Physician · Specialist</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="nurse" data-icon="heart" data-name="Nurse / CO" type="button" role="option">
+      <div class="rd-ic"><i data-feather="heart"></i></div>
+      <div class="rd-info"><div class="rd-nm">Nurse / CO</div><div class="rd-ds">Nurse · Clinical Officer · Ward access</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="surgeon" data-icon="scissors" data-name="Surgeon" type="button" role="option">
+      <div class="rd-ic"><i data-feather="scissors"></i></div>
+      <div class="rd-info"><div class="rd-nm">Surgeon</div><div class="rd-ds">Theatre · Surgical suite</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="radiologist" data-icon="aperture" data-name="Radiologist" type="button" role="option">
+      <div class="rd-ic"><i data-feather="aperture"></i></div>
+      <div class="rd-info"><div class="rd-nm">Radiologist</div><div class="rd-ds">Imaging · PACS · DICOM</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+
+    <div class="rd-grp">Maternity &amp; Women's Health</div>
+    <button class="rd-it" data-role="maternity_staff" data-icon="heart" data-name="Maternity Staff" type="button" role="option">
+      <div class="rd-ic" style="background:rgba(236,72,153,.09);border-color:rgba(236,72,153,.18);color:#ec4899"><i data-feather="heart"></i></div>
+      <div class="rd-info"><div class="rd-nm" style="color:#ec4899">Maternity Staff</div><div class="rd-ds">ANC · Labor · Postnatal · Fetal Monitor</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="nicu_specialist" data-icon="activity" data-name="NICU Specialist" type="button" role="option">
+      <div class="rd-ic" style="background:rgba(236,72,153,.09);border-color:rgba(236,72,153,.18);color:#ec4899"><i data-feather="activity"></i></div>
+      <div class="rd-info"><div class="rd-nm" style="color:#ec4899">NICU Specialist</div><div class="rd-ds">Neonatal ICU · Infant monitoring</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+
+    <div class="rd-grp">Allied Health &amp; Support</div>
+    <button class="rd-it" data-role="pharmacy" data-icon="package" data-name="Pharmacist" type="button" role="option">
+      <div class="rd-ic"><i data-feather="package"></i></div>
+      <div class="rd-info"><div class="rd-nm">Pharmacist</div><div class="rd-ds">Dispensing · KEMSA · Stock</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="lab" data-icon="droplet" data-name="Lab Technician" type="button" role="option">
+      <div class="rd-ic"><i data-feather="droplet"></i></div>
+      <div class="rd-info"><div class="rd-nm">Lab Technician</div><div class="rd-ds">Samples · Results · LIMS</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="icu_staff" data-icon="zap" data-name="ICU Staff" type="button" role="option">
+      <div class="rd-ic"><i data-feather="zap"></i></div>
+      <div class="rd-info"><div class="rd-nm">ICU Staff</div><div class="rd-ds">Intensive care · Critical monitoring</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="teleconsult" data-icon="video" data-name="Telemedicine Staff" type="button" role="option">
+      <div class="rd-ic"><i data-feather="video"></i></div>
+      <div class="rd-info"><div class="rd-nm">Telemedicine Staff</div><div class="rd-ds">Virtual consultations · Remote monitoring</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+
+    <div class="rd-grp">Insurance &amp; Administration</div>
+    <button class="rd-it" data-role="insurance" data-icon="briefcase" data-name="Insurance Officer" type="button" role="option">
+      <div class="rd-ic"><i data-feather="briefcase"></i></div>
+      <div class="rd-info"><div class="rd-nm">Insurance Officer</div><div class="rd-ds">CIC Insurance · Old Mutual · Claims</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="admin" data-icon="shield" data-name="Administrator" type="button" role="option">
+      <div class="rd-ic"><i data-feather="shield"></i></div>
+      <div class="rd-info"><div class="rd-nm">Administrator</div><div class="rd-ds">Hospital management · HR · Finance</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="patient" data-icon="user" data-name="Patient" type="button" role="option">
+      <div class="rd-ic"><i data-feather="user"></i></div>
+      <div class="rd-info"><div class="rd-nm">Patient</div><div class="rd-ds">Health records · Appointments · Insurance</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="it_admin" data-icon="server" data-name="IT Administrator" type="button" role="option">
+      <div class="rd-ic"><i data-feather="server"></i></div>
+      <div class="rd-info"><div class="rd-nm">IT Administrator</div><div class="rd-ds">Systems · DevOps · API Gateway</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <button class="rd-it" data-role="super_admin" data-icon="star" data-name="Super Admin" type="button" role="option">
+      <div class="rd-ic" style="background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.18);color:#f59e0b"><i data-feather="star"></i></div>
+      <div class="rd-info"><div class="rd-nm" style="color:#f59e0b">Super Admin</div><div class="rd-ds">Full access · National oversight</div></div>
+      <div class="rd-chk"><i data-feather="check"></i></div>
+    </button>
+    <div class="rd-none hidden" id="rd-none">No roles match your search</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════ PARTICLES ═══════════ */
+(function(){
+  const c=document.getElementById('pc'),ctx=c.getContext('2d');
+  let W,H,pts=[];const N=70,D=120,SPD=.18;
+  function rs(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  window.addEventListener('resize',rs,{passive:true});rs();
+  // Mix of neon green + pink maternity particles
+  const colors=['rgba(46,204,113,','rgba(46,204,113,','rgba(46,204,113,','rgba(236,72,153,','rgba(20,184,166,'];
+  for(let i=0;i<N;i++)pts.push({
+    x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-.5)*SPD,vy:(Math.random()-.5)*SPD,
+    r:Math.random()*1.6+.4,a:Math.random()*.3+.08,
+    c:colors[Math.floor(Math.random()*colors.length)]
+  });
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.c+p.a+')';ctx.fill();
+    });
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<D){
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle='rgba(46,204,113,'+((.09*(1-d/D)).toFixed(3))+')';
+          ctx.lineWidth=.5;ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches)draw();
+  else{c.style.display='none';const s=document.getElementById('scan-line');if(s)s.style.display='none';const b=document.getElementById('bg-sweep');if(b)b.style.display='none';}
+})();
+
+/* ═══════════ RIPPLE ═══════════ */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.btn');if(!b||b.disabled)return;
+  const r=b.getBoundingClientRect();
+  const rp=document.createElement('span');
+  const sz=Math.max(r.width,r.height)*2.2;
+  rp.className='ripple';
+  rp.style.width=sz+'px';
+  rp.style.height=sz+'px';
+  rp.style.left=(e.clientX-r.left)+'px';
+  rp.style.top=(e.clientY-r.top)+'px';
+  b.appendChild(rp);
+  setTimeout(()=>rp.remove(),600);
+},true);
+
+/* ═══════════ STATE ═══════════ */
+const S={step:1,role:null,pwVis:false,timerRef:null,lockRef:null,mfaCt:'',mfaVia:'',fails:0,capAns:0,capA:0,capB:0,MAX:3,LOCK:30,ddOpen:false,focIdx:-1};
+
+/* ═══════════ ROLE CONFIGS ═══════════ */
+const RC={
+  doctor:{ico:'stethoscope',title:'Sign in as Doctor',sub:'Medical registration + institutional email + password',note:'Enter your <strong>Medical Registration Number</strong>, institutional email and password — then confirm via OTP.',nc:'grn',ni:'home',rl:'Medical Registration No.',rh:'e.g. A4821 — as on your medical licence',rp:'e.g. A4821',rx:/^[A-Za-z0-9\/\-]{3,12}$/,re:'Enter your registration number as on your licence.',sn:'Registration + institutional email + password → OTP',sr:'Doctor — Central Referral Hospital',sm:'Identity verified.\nRedirecting to clinical dashboard…',mods:['EMR','Prescriptions','Lab Orders','Maternity','Telemedicine','CIC Billing'],bars:[{l:'Active Patients',v:'24',p:80},{l:'Maternity Referrals',v:'6',p:40},{l:'Appointments Today',v:'18',p:75}]},
+  nurse:{ico:'heart',title:'Sign in as Nurse / CO',sub:'Nursing registration + institutional email + password',note:'Enter your <strong>Nursing Registration Number</strong>, institutional email and password.',nc:'grn',ni:'home',rl:'Nursing Registration No.',rh:'e.g. RN/12345',rp:'e.g. RN/12345',rx:/^[A-Za-z0-9\/\-]{5,15}$/,re:'Enter your nursing registration number.',sn:'Registration + email + password → OTP',sr:'Nurse — Coastal Regional Hospital',sm:'Identity verified.\nRedirecting to nursing portal…',mods:['Patient Care','Vitals','Maternity','NICU','Ward Mgmt','Medication'],bars:[{l:'Ward Occupancy',v:'92%',p:92},{l:'Maternity Patients',v:'19',p:65},{l:'Medication Rounds',v:'On schedule',p:100}]},
+  maternity_staff:{ico:'heart',title:'Maternity & Women\'s Health Portal',sub:'Maternity staff ID + institutional email + password',note:'Enter your <strong>Maternity Staff ID</strong>, institutional email and password. Covers ANC, Labor & Delivery, Postnatal, and NICU.',nc:'grn',ni:'heart',rl:'Maternity Staff ID',rh:'e.g. MAT-00441',rp:'e.g. MAT-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Maternity Staff ID.',sn:'Maternity Staff ID + email + password → OTP',sr:'Maternity Staff — Labor & Delivery Unit',sm:'Identity verified.\nRedirecting to Maternity portal…',mods:['ANC','Labor & Delivery','Postnatal','NICU','Fetal Monitor','Birth Registry','Maternal AI','Vaccinations'],bars:[{l:'Active Pregnancies',v:'47',p:78},{l:'Labor Ward',v:'8/10 beds',p:80},{l:'ANC Today',v:'24 appts',p:65}]},
+  nicu_specialist:{ico:'activity',title:'NICU Specialist Portal',sub:'NICU specialist ID + institutional email + password',note:'Enter your <strong>NICU Specialist ID</strong>, institutional email and password.',nc:'grn',ni:'activity',rl:'NICU Specialist ID',rh:'e.g. NICU-00441',rp:'e.g. NICU-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your NICU Specialist ID.',sn:'NICU ID + email + password → OTP',sr:'NICU Specialist — Neonatal Unit',sm:'Identity verified.\nRedirecting to NICU monitoring…',mods:['NICU Monitoring','Ventilator Mgmt','Infant Vitals','Maternity Link','Medication','AI Alerts'],bars:[{l:'NICU Infants',v:'8',p:60},{l:'Critical Cases',v:'2',p:20},{l:'Ventilated',v:'3',p:30}]},
+  surgeon:{ico:'scissors',title:'Surgery Portal',sub:'Surgeon registration + institutional email + password',note:'Enter your <strong>Surgeon Registration Number</strong>, institutional email and password.',nc:'grn',ni:'scissors',rl:'Surgeon Registration No.',rh:'e.g. SRG/12345',rp:'e.g. SRG/12345',rx:/^[A-Za-z0-9\/\-]{4,20}$/,re:'Enter your Surgeon Registration Number.',sn:'Surgeon registration + email + password → OTP',sr:'Surgeon — Theatre Suite',sm:'Identity verified.\nRedirecting to surgical portal…',mods:['Theatre Booking','Surgical Notes','Pre-Op','Post-Op','Anaesthesia','Implants'],bars:[{l:'Today\'s Theatres',v:'6',p:75},{l:'Pre-Op Patients',v:'8',p:55},{l:'Recovery Bay',v:'4',p:40}]},
+  radiologist:{ico:'aperture',title:'Radiology Portal',sub:'Radiologist ID + institutional email + password',note:'Enter your <strong>Radiologist ID</strong>, institutional email and password.',nc:'grn',ni:'aperture',rl:'Radiologist ID',rh:'e.g. RAD/12345',rp:'e.g. RAD/12345',rx:/^[A-Za-z0-9\/\-]{4,20}$/,re:'Enter your Radiologist ID.',sn:'Radiologist ID + email + password → OTP',sr:'Radiologist — Imaging Department',sm:'Identity verified.\nRedirecting to radiology PACS…',mods:['PACS','DICOM Viewer','Worklist','Ultrasound','CT/MRI Queue','Obstetric US'],bars:[{l:'Imaging Queue',v:'28',p:65},{l:'Reports Pending',v:'11',p:45},{l:'Obstetric Scans',v:'9',p:35}]},
+  pharmacy:{ico:'package',title:'Pharmacy Portal',sub:'Dispensing ID + facility code + password',note:'Enter your <strong>Pharmacy Dispensing ID</strong>, facility code and password.',nc:'grn',ni:'package',rl:'Dispensing ID',rh:'e.g. PHARM-00441',rp:'e.g. PHARM-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Pharmacy Dispensing ID.',sn:'Dispensing ID + facility code + password → OTP',sr:'Pharmacist — Central Referral Hospital',sm:'Identity verified.\nRedirecting to pharmacy portal…',mods:['Dispensing','Drug Stock','KEMSA Orders','Prescriptions','Maternity Meds','Reports'],bars:[{l:'Dispense Queue',v:'47',p:70},{l:'Stock Level',v:'82%',p:82},{l:'KEMSA Orders',v:'3 pending',p:30}]},
+  lab:{ico:'droplet',title:'Laboratory Portal',sub:'Technician ID + facility code + password',note:'Enter your <strong>Lab Technician ID</strong>, facility code and password.',nc:'grn',ni:'droplet',rl:'Technician ID',rh:'e.g. LAB-8821',rp:'e.g. LAB-8821',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Lab Technician ID.',sn:'Technician ID + facility code + password → OTP',sr:'Lab Technician — Central Referral Hospital',sm:'Identity verified.\nRedirecting to lab portal…',mods:['Sample Queue','Results Entry','LIMS','QC','Maternal Bloods','Neonatal Screen'],bars:[{l:'Pending Samples',v:'34',p:65},{l:'Maternal Samples',v:'12',p:45},{l:'Neonatal Screens',v:'5',p:25}]},
+  icu_staff:{ico:'zap',title:'ICU Portal',sub:'ICU Staff ID + institutional email + password',note:'Enter your <strong>ICU Staff ID</strong>, institutional email and password.',nc:'grn',ni:'zap',rl:'ICU Staff ID',rh:'e.g. ICU-00441',rp:'e.g. ICU-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your ICU Staff ID.',sn:'ICU Staff ID + email + password → OTP',sr:'ICU Staff — Intensive Care Unit',sm:'Identity verified.\nRedirecting to ICU dashboard…',mods:['Bed Monitoring','Ventilators','Drug Infusion','Vitals','ICU Orders','Critical Alerts'],bars:[{l:'ICU Occupancy',v:'18/20',p:90},{l:'Ventilated',v:'8',p:40},{l:'Critical Alerts',v:'2',p:20}]},
+  teleconsult:{ico:'video',title:'Telemedicine Portal',sub:'Staff ID + institutional email + password',note:'Enter your <strong>Teleconsult Staff ID</strong>, institutional email and password.',nc:'grn',ni:'video',rl:'Teleconsult Staff ID',rh:'e.g. TC-00441',rp:'e.g. TC-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Teleconsult Staff ID.',sn:'Staff ID + email + password → OTP',sr:'Telemedicine Staff — Virtual Clinic',sm:'Identity verified.\nRedirecting to teleconsult dashboard…',mods:['Video Consult','eRx','Queue Mgmt','Patient Chat','Remote Monitor','Maternity Consult'],bars:[{l:'Active Sessions',v:'7',p:50},{l:'Queue Today',v:'43',p:65},{l:'Maternity Calls',v:'11',p:35}]},
+  insurance:{ico:'briefcase',title:'Insurance Officer Portal',sub:'Officer ID + institutional email + password',note:'Enter your <strong>Insurance Officer ID</strong>. Covers CIC Insurance and Old Mutual — claims intelligence, pre-auth, and AI fraud monitoring.',nc:'grn',ni:'shield',rl:'Insurance Officer ID',rh:'e.g. CIC-00441 or OMUT-12345',rp:'e.g. CIC-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Insurance Officer ID.',sn:'Officer ID + email + password → OTP',sr:'Insurance Officer — CIC / Old Mutual',sm:'Identity verified.\nRedirecting to insurance portal…',mods:['CIC Claims','Old Mutual Verify','Pre-Auth','AI Fraud Monitor','Coverage Analytics','Policy Status'],bars:[{l:'CIC Pending Claims',v:'89',p:60},{l:'Old Mutual Pre-Auth',v:'24',p:40},{l:'Claims Approved',v:'156',p:90}]},
+  admin:{ico:'shield',title:'Administrator Portal',sub:'Employee ID + institutional email + password',note:'Enter your <strong>HRIS Employee ID</strong>, institutional email and password.',nc:'grn',ni:'lock',rl:'HRIS Employee ID',rh:'e.g. ADMIN-XX-00441',rp:'e.g. ADMIN-XX-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your HRIS Employee ID.',sn:'Employee ID + email + password → OTP',sr:'Administrator — Central Health Authority',sm:'HRIS identity verified.\nRedirecting to admin dashboard…',mods:['HR/Payroll','Finance','Procurement','Maternity Reports','CIC Billing','Audit'],bars:[{l:'Staff On Duty',v:'284',p:88},{l:'Budget Utilisation',v:'73%',p:73},{l:'Open Procurement',v:'12',p:48}]},
+  patient:{ico:'user',title:'Access Your Health Records',sub:'ModelCover Portal: ID type → ID number + 4-digit PIN → OTP',note:'<strong>ModelCover Portal login.</strong> Select your ID type, enter your ID number and <strong>4-digit PIN</strong>, then verify via SMS OTP or biometric.',nc:'blu',ni:'shield',sr:'Patient — ModelCover Self-Service',sm:'ModelCover identity verified.\nRedirecting to your health records…',mods:['My Records','Appointments','Lab Results','Maternity Records','CIC Insurance','Teleconsult'],bars:[{l:'Last Visit',v:'7 days ago',p:0},{l:'Pending Appts',v:'2',p:40},{l:'Maternity Record',v:'Active',p:80}]},
+  it_admin:{ico:'server',title:'IT Administrator Portal',sub:'IT Admin ID + institutional email + password',note:'Enter your <strong>IT Admin Employee ID</strong>. MFA mandatory for all IT administration access.',nc:'grn',ni:'server',rl:'IT Admin Employee ID',rh:'e.g. IT-ADMIN-00441',rp:'e.g. IT-ADMIN-00441',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your IT Admin Employee ID.',sn:'IT Admin ID + email + password → OTP',sr:'IT Administrator — System Operations',sm:'Identity verified.\nRedirecting to system admin panel…',mods:['System Monitor','User Mgmt','API Gateway','Audit Logs','CIC/OM Integrations','DevOps'],bars:[{l:'System Uptime',v:'99.97%',p:100},{l:'Active Sessions',v:'1,284',p:75},{l:'Security Score',v:'98.4%',p:98}]},
+  super_admin:{ico:'star',title:'Super Administrator — Full Access',sub:'Super Admin ID + institutional email + password (enhanced MFA)',note:'<strong>Elevated clearance required.</strong> Super Admin ID, institutional email and password. Enhanced MFA mandatory.',nc:'grn',ni:'star',rl:'Super Admin ID',rh:'e.g. SA-CHA-00001',rp:'e.g. SA-CHA-00001',rx:/^[A-Za-z0-9\-]{4,20}$/,re:'Enter your Super Admin ID.',sn:'Super Admin ID + email + password → Enhanced MFA',sr:'Super Administrator — Central Health Authority',sm:'Elevated access granted.\nRedirecting to master control panel…',mods:['Full System','All Hospitals','Maternity Network','CIC/OM Control','National Reports','AI Config'],bars:[{l:'Network Hospitals',v:'14',p:100},{l:'National Uptime',v:'99.97%',p:100},{l:'Active Staff',v:'4,821',p:88}]}
+};
+
+const IDT={
+  national:{l:'National ID Number',p:'e.g. 12345678',h:'7 or 8-digit number as on your National ID card',rx:/^\d{7,8}$/,e:'Enter your 7 or 8-digit National ID number.'},
+  passport:{l:'Passport Number',p:'e.g. A1234567',h:'As printed on the data page of your passport',rx:/^[A-Z0-9]{6,12}$/i,e:'Enter a valid passport number.'},
+  alien:{l:'Foreign Resident ID',p:'e.g. 2012345678',h:'Your foreign resident ID number',rx:/^[A-Z0-9\-]{5,15}$/i,e:'Enter your foreign resident ID number.'},
+  refugee:{l:'Refugee ID Number',p:'e.g. REF/2023/0001',h:'UNHCR-issued Refugee ID number',rx:/^[A-Z0-9\/\-]{5,20}$/i,e:'Enter your Refugee ID number.'},
+  mandate:{l:'Mandate Number',p:'e.g. MND-2024-00123',h:'ModelCover Mandate Number',rx:/^[A-Z0-9\-]{5,20}$/i,e:'Enter your Mandate Number.'},
+  temp:{l:'Temporary ID Number',p:'e.g. TMP-2024-00001',h:'Temporary ID number',rx:/^[A-Z0-9\-]{5,20}$/i,e:'Enter your Temporary ID number.'}
+};
+
+/* ═══════════ VALIDATION ═══════════ */
+const V={
+  email:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+  phone:v=>/^(\+2547|\+2541|07|01)\d{8,9}$/.test(v.replace(/[\s\-]/g,'')),
+  reg:(v,rx)=>rx.test(v.replace(/\s/g,'')),
+  pw:{minLen:p=>p.length>=8,hasUp:p=>/[A-Z]/.test(p),hasNum:p=>/[0-9]/.test(p),hasSym:p=>/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(p),hasLng:p=>p.length>=12,score(p){return[this.minLen,this.hasUp,this.hasNum,this.hasSym,this.hasLng].filter(f=>f(p)).length}}
+};
+
+/* ═══════════ AUDIT ═══════════ */
+const aq=[];
+function audit(msg){const ts=new Date().toISOString().slice(11,19)+'Z';aq.unshift('→ '+ts+' '+msg);['at1','at2','at3'].forEach((id,i)=>{const el=document.getElementById(id);if(el&&aq[i])el.textContent=aq[i];});}
+
+/* ═══════════ FLOW NODES ═══════════ */
+function flowNode(idx){['fn-login','fn-auth','fn-role','fn-api','fn-dash'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.classList.toggle('on',i<=idx);});}
+
+/* ═══════════ DASHBOARD PREVIEW ═══════════ */
+function updateDP(rk){
+  const lbl=document.getElementById('dp-lbl'),cnt=document.getElementById('dp-cnt');
+  if(!rk||!RC[rk]){if(lbl)lbl.textContent='Select a role to preview dashboard';return;}
+  const c=RC[rk];if(lbl)lbl.textContent=c.sr+' — Preview';
+  const isMat=rk==='maternity_staff'||rk==='nicu_specialist';
+  const bc=isMat?'linear-gradient(90deg,#7c3aed,#ec4899)':'linear-gradient(90deg,var(--gd),var(--neon))';
+  const mc=isMat?'border-color:rgba(236,72,153,.26);color:#ec4899':'';
+  const md=isMat?'background:#ec4899':'';
+  let h=c.bars.map(b=>`<div class="bw"><div class="bl">${b.l} <span>${b.v}</span></div><div class="bb"><div class="bf" style="width:${b.p}%;background:${bc}"></div></div></div>`).join('');
+  h+='<div class="dp-mods">'+c.mods.map(m=>`<div class="dp-mod on" style="${mc}"><div class="dp-dot2" style="${md}"></div>${m}</div>`).join('')+'</div>';
+  cnt.innerHTML=h;
+}
+
+/* ═══════════ DROPDOWN — FIXED POSITION ENGINE ═══════════ */
+function positionDD(){
+  const btn=document.getElementById('rdBtn');
+  const panel=document.getElementById('rd-panel');
+  const r=btn.getBoundingClientRect();
+  // Position panel exactly below the button
+  panel.style.top=(r.bottom+1)+'px';
+  panel.style.left=r.left+'px';
+  panel.style.width=r.width+'px';
+  // Dynamic max height — never clip below viewport
+  const available=window.innerHeight-r.bottom-16;
+  panel.querySelector('.rd-list').style.maxHeight=Math.min(310,available-60)+'px';
+}
+
+function openDD(){
+  if(S.ddOpen)return;
+  S.ddOpen=true;
+  const panel=document.getElementById('rd-panel');
+  positionDD();
+  // Remove hidden, add opening class for animation
+  panel.classList.remove('hidden');
+  panel.classList.remove('opening');
+  void panel.offsetWidth; // force reflow to restart animation
+  panel.classList.add('opening');
+  document.getElementById('rdBtn').classList.add('open');
+  document.getElementById('rdBtn').setAttribute('aria-expanded','true');
+  document.getElementById('rd-search').value='';
+  filterDD('');
+  requestAnimationFrame(()=>document.getElementById('rd-search').focus());
+  S.focIdx=-1;
+}
+function closeDD(){
+  if(!S.ddOpen)return;
+  S.ddOpen=false;
+  const panel=document.getElementById('rd-panel');
+  panel.classList.add('hidden');
+  panel.classList.remove('opening');
+  document.getElementById('rdBtn').classList.remove('open');
+  document.getElementById('rdBtn').setAttribute('aria-expanded','false');
+}
+
+function filterDD(q){
+  const items=document.querySelectorAll('.rd-it');const none=document.getElementById('rd-none');let vis=0;
+  items.forEach(it=>{const match=!q||it.dataset.name.toLowerCase().includes(q.toLowerCase())||it.dataset.desc?.toLowerCase().includes(q.toLowerCase());it.classList.toggle('hide',!match);if(match)vis++;});
+  if(none)none.classList.toggle('hidden',vis>0);
+  S.focIdx=-1;
+}
+
+function selRole(rk,name,icon){
+  S.role=rk;
+  const c=RC[rk];if(!c)return;
+  document.getElementById('rd-st').textContent=name;document.getElementById('rd-st').className='rd-st sel';
+  document.querySelectorAll('.rd-it').forEach(it=>{const isSel=it.dataset.role===rk;it.classList.toggle('sel',isSel);});
+  document.getElementById('s1btn').disabled=false;document.getElementById('s1btn').removeAttribute('aria-disabled');
+  const rn=document.getElementById('roleNote');rn.className='nbox '+c.nc;rn.classList.remove('hidden');
+  document.getElementById('roleNoteIco').innerHTML='<i data-feather="'+(c.ni||'info')+'"></i>';
+  document.getElementById('roleNoteTxt').innerHTML=c.note;
+  feather.replace({width:16,height:16,strokeWidth:2});
+  closeDD();audit('AUTH ROLE_SELECTED role='+rk);updateDP(rk);
+}
+
+function ddKeyNav(e){
+  if(!S.ddOpen)return;
+  const items=[...document.querySelectorAll('.rd-it:not(.hide)')];if(!items.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();S.focIdx=Math.min(S.focIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('foc',i===S.focIdx));items[S.focIdx].scrollIntoView({block:'nearest'});}
+  else if(e.key==='ArrowUp'){e.preventDefault();S.focIdx=Math.max(S.focIdx-1,0);items.forEach((el,i)=>el.classList.toggle('foc',i===S.focIdx));items[S.focIdx].scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'&&S.focIdx>=0){e.preventDefault();const it=items[S.focIdx];selRole(it.dataset.role,it.dataset.name,it.dataset.icon);}
+  else if(e.key==='Escape'){closeDD();document.getElementById('rdBtn').focus();}
+}
+
+/* ═══════════ UI HELPERS ═══════════ */
+function showSec(h,s){document.getElementById(h).classList.add('hidden');const el=document.getElementById(s);el.classList.remove('hidden');el.classList.add('fade');feather.replace({width:16,height:16,strokeWidth:2});}
+function showErr(id,msg){const b=document.getElementById(id);const sp=b.querySelectorAll('span');if(sp.length)sp[sp.length-1].textContent=msg;b.style.display='flex';b.style.animation='none';void b.offsetWidth;b.style.animation='shk .38s ease';}
+function hideErr(id){document.getElementById(id).style.display='none';}
+function setInv(id,inv){const el=document.getElementById(id);if(el)el.setAttribute('aria-invalid',inv?'true':'false');}
+function spin(bid,spid,tid,aid,txt){const b=document.getElementById(bid);if(b)b.disabled=true;const sp=document.getElementById(spid);if(sp)sp.style.display='block';const t=document.getElementById(tid);if(t)t.textContent=txt;if(aid){const a=document.getElementById(aid);if(a)a.style.display='none';}}
+function stopSpin(bid,spid,tid,aid,txt){const b=document.getElementById(bid);if(b)b.disabled=false;const sp=document.getElementById(spid);if(sp)sp.style.display='none';const t=document.getElementById(tid);if(t)t.textContent=txt;if(aid){const a=document.getElementById(aid);if(a)a.style.display='';}}
+
+/* ═══════════ PW STRENGTH ═══════════ */
+function pwStr(pw){
+  const w=document.getElementById('pwStrengthWrap');if(!pw){w.style.display='none';return;}w.style.display='block';
+  const v=V.pw,chk={len:v.minLen(pw),upper:v.hasUp(pw),num:v.hasNum(pw),sym:v.hasSym(pw)},sc=v.score(pw);
+  const cls=sc<=1?'weak':sc<=2?'fair':sc<=3?'good':'strong';
+  const labs=['','Too Weak','Fair','Good','Strong','Very Strong'];
+  const cols={1:'#ef4444',2:'#f97316',3:'#eab308'};
+  ['pb1','pb2','pb3','pb4'].forEach((id,i)=>{const b=document.getElementById(id);b.className='pw-bar '+(i<Math.min(sc,4)?cls:'');});
+  const lbl=document.getElementById('pwStrengthLbl');lbl.textContent=labs[Math.min(sc,5)]||'';lbl.style.color=cols[Math.min(sc,3)]||'var(--neon)';
+  Object.entries(chk).forEach(([k,m])=>{const el=document.getElementById('req-'+k);if(el)el.className='req'+(m?' met':'');});
+}
+
+/* ═══════════ CAPTCHA ═══════════ */
+function refCap(){S.capA=Math.floor(Math.random()*15)+1;S.capB=Math.floor(Math.random()*15)+1;S.capAns=S.capA+S.capB;const q=document.getElementById('captchaQ');if(q)q.textContent=S.capA+' + '+S.capB+' = ?';const i=document.getElementById('captchaIn');if(i)i.value='';}
+
+/* ═══════════ ATTEMPTS ═══════════ */
+function updAttempts(){const r=document.getElementById('attemptsRow');if(!r)return;r.style.display=S.fails>0?'flex':'none';for(let i=1;i<=3;i++){const d=document.getElementById('ad'+i);if(d)d.className='att-dot'+(i<=S.fails?' used':'');}const rem=S.MAX-S.fails;const el=document.getElementById('attemptsLeft');if(el){el.textContent=rem>0?rem+' attempt'+(rem===1?'':'s')+' remaining':'';el.style.color=rem<=1?'var(--r)':'var(--am)';}}
+
+function lockout(){
+  document.getElementById('lockoutBanner').style.display='flex';document.getElementById('staffFormInner').classList.add('form-locked');document.getElementById('captchaWrap').classList.add('hidden');
+  let secs=S.LOCK;
+  function tick(){const m=Math.floor(secs/60),s=secs%60;const el=document.getElementById('lockoutTimer');if(el)el.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;if(secs<=0){clearInterval(S.lockRef);S.lockRef=null;document.getElementById('lockoutBanner').style.display='none';document.getElementById('staffFormInner').classList.remove('form-locked');S.fails=0;updAttempts();document.getElementById('attemptsRow').style.display='none';const a=document.getElementById('aiAt');if(a)a.textContent=parseInt(a.textContent||'0')+1;}secs--;}
+  tick();S.lockRef=setInterval(tick,1000);audit('SECURITY LOCKOUT_TRIGGERED role='+S.role+' attempts=3');
+}
+
+/* ═══════════ RISK ASSESSMENT ═══════════ */
+function risk(){
+  const h=new Date().getHours(),u=h<6||h>22;
+  const panel=document.getElementById('riskPanel'),sc=document.getElementById('riskScore'),sig=document.getElementById('riskSignals');if(!panel)return;
+  const mid=u||S.fails>0;panel.className='risk-panel '+(mid?'med':'low');sc.className='risk-score '+(mid?'med':'low');sc.textContent=mid?'MEDIUM RISK':'LOW RISK';
+  let s='';if(u)s+='<div class="risk-sig" style="color:var(--am)">Unusual login time</div>';if(S.fails>0)s+='<div class="risk-sig" style="color:var(--am)">'+S.fails+' failed attempt(s)</div>';s+='<div class="risk-sig" style="color:var(--neon)">Location consistent</div>';
+  if(!mid)s='<div class="risk-sig" style="color:var(--neon)">Known device detected</div><div class="risk-sig" style="color:var(--neon)">Normal login hours</div><div class="risk-sig" style="color:var(--neon)">Location: Capital Region</div>';
+  sig.innerHTML=s;
+}
+
+/* ═══════════ NAVIGATION ═══════════ */
+function goStep2(){
+  if(!S.role)return;
+  const c=RC[S.role];
+  document.getElementById('s2ico').innerHTML='<i data-feather="'+c.ico+'"></i>';
+  document.getElementById('s2title').textContent=c.title;
+  document.getElementById('s2sub').textContent=c.sub;
+  if(S.role==='patient'){document.getElementById('staffForm').classList.add('hidden');document.getElementById('patForm').classList.remove('hidden');updateIdLabel();}
+  else{document.getElementById('patForm').classList.add('hidden');document.getElementById('staffForm').classList.remove('hidden');document.getElementById('staffNoteTxt').textContent=c.sn;document.getElementById('regLbl').textContent=c.rl;document.getElementById('regIn').placeholder=c.rp;document.getElementById('regHint').textContent=c.rh;}
+  clearForms();feather.replace({width:16,height:16,strokeWidth:2});showSec('s1','s2');flowNode(1);audit('AUTH STEP2_ENTER role='+S.role);
+}
+function goStep1(){clearForms();showSec('s2','s1');flowNode(0);}
+function goStep3(){
+  const note=S.mfaVia==='sms'?'A 6-digit OTP was sent via SMS to '+S.mfaCt.replace(/\s/g,'').slice(0,4)+'•••'+S.mfaCt.slice(-2):'A 6-digit OTP was sent to '+S.mfaCt.replace(/(.{2}).+(@.+)/,'$1•••$2');
+  document.getElementById('otpNote').textContent=note;
+  ['o1','o2','o3','o4','o5','o6'].forEach(id=>{const el=document.getElementById(id);el.value='';el.classList.remove('f');});
+  const ob=document.getElementById('otpBtn');ob.disabled=true;ob.setAttribute('aria-disabled','true');
+  switchTab('otp');showSec('s2','s3');startTimer();risk();flowNode(2);audit('AUTH MFA_INITIATED role='+S.role+' method='+S.mfaVia);
+  setTimeout(()=>document.getElementById('o1').focus(),80);feather.replace({width:16,height:16,strokeWidth:2});
+}
+function goS3Back(){clearInterval(S.timerRef);showSec('s3','s2');flowNode(1);}
+function clearForms(){['regIn','emailIn','pwIn','patIdIn','patPhIn'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.removeAttribute('aria-invalid');}});['p1','p2','p3','p4'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.classList.remove('f');}});hideErr('staffErr');hideErr('patErr');const w=document.getElementById('pwStrengthWrap');if(w)w.style.display='none';document.getElementById('captchaWrap').classList.add('hidden');document.getElementById('attemptsRow').style.display='none';}
+function updateIdLabel(){const t=document.getElementById('idTypeIn').value,c=IDT[t];document.getElementById('patIdLbl').textContent=c.l;document.getElementById('patIdIn').placeholder=c.p;document.getElementById('patIdHint').textContent=c.h;document.getElementById('patIdIn').value='';}
+
+/* ═══════════ SUBMIT ═══════════ */
+function submitStaff(){
+  if(S.lockRef)return;
+  const c=RC[S.role],reg=document.getElementById('regIn').value.trim(),email=document.getElementById('emailIn').value.trim(),pw=document.getElementById('pwIn').value;
+  hideErr('staffErr');
+  if(S.fails>=2){document.getElementById('captchaWrap').classList.remove('hidden');const ans=parseInt(document.getElementById('captchaIn').value,10);if(isNaN(ans)||ans!==S.capAns){showErr('staffErr','Security check failed. Solve the CAPTCHA correctly.');refCap();return;}}
+  if(!reg){showErr('staffErr','Please enter your '+c.rl+'.');setInv('regIn',true);return;}
+  if(!V.reg(reg,c.rx)){showErr('staffErr',c.re);setInv('regIn',true);return;}setInv('regIn',false);
+  if(!email||!V.email(email)){showErr('staffErr','Enter a valid institutional email address.');setInv('emailIn',true);return;}setInv('emailIn',false);
+  if(!pw||pw.length<8){showErr('staffErr','Password must be at least 8 characters.');setInv('pwIn',true);S.fails++;updAttempts();audit('AUTH FAILED role='+S.role+' reason=pw_short');if(S.fails>=S.MAX)lockout();return;}
+  if(!V.pw.hasUp(pw)||!V.pw.hasNum(pw)){showErr('staffErr','Password must contain at least one uppercase letter and one number.');setInv('pwIn',true);S.fails++;updAttempts();audit('AUTH FAILED role='+S.role+' reason=pw_policy');if(S.fails>=S.MAX)lockout();return;}
+  setInv('pwIn',false);spin('staffBtn','staffSp','staffBtnTxt','staffArr','Authenticating…');audit('AUTH LOGIN_ATTEMPT role='+S.role+' email='+email.replace(/(.{2}).+(@.+)/,'$1***$2'));
+  setTimeout(()=>{stopSpin('staffBtn','staffSp','staffBtnTxt','staffArr','Sign In Securely');S.mfaCt=email;S.mfaVia='email';goStep3();},1700);
+}
+
+function submitPat(){
+  const it=document.getElementById('idTypeIn').value,ic=IDT[it],iv=document.getElementById('patIdIn').value.replace(/\s/g,'');
+  const pin=['p1','p2','p3','p4'].map(id=>document.getElementById(id).value).join('');
+  const ph=document.getElementById('patPhIn').value.replace(/[\s\-]/g,'');
+  hideErr('patErr');
+  if(!iv||!ic.rx.test(iv)){showErr('patErr',ic.e);setInv('patIdIn',true);return;}setInv('patIdIn',false);
+  if(pin.length<4){showErr('patErr','Enter your complete 4-digit ModelCover PIN.');return;}
+  if(!ph||!V.phone(ph)){showErr('patErr','Enter your registered phone number (e.g. 0712 345 678).');setInv('patPhIn',true);return;}setInv('patPhIn',false);
+  spin('patBtn','patSp','patBtnTxt','patArr','Verifying with ModelCover…');audit('AUTH PATIENT_LOGIN id_type='+it);
+  setTimeout(()=>{stopSpin('patBtn','patSp','patBtnTxt','patArr','Verify with ModelCover');S.mfaCt=ph;S.mfaVia='sms';goStep3();},2000);
+}
+
+function altMethod(m,btn){const o=btn.innerHTML;btn.innerHTML='⏳ Connecting…';btn.disabled=true;setTimeout(()=>{btn.innerHTML=o;btn.disabled=false;if(m==='ussd'){alert('Dial *147# on your registered phone to verify via USSD.');return;}S.mfaCt=S.role==='patient'?(document.getElementById('patPhIn').value||'07XX'):(document.getElementById('emailIn').value||'staff@hospital.health');S.mfaVia=S.role==='patient'?'sms':'email';goStep3();setTimeout(()=>switchTab(m==='p360'?'p360':'bio'),120);},1100);}
+
+/* ═══════════ MFA ═══════════ */
+function switchTab(tab){['otp','bio','p360'].forEach(t=>{const b=document.getElementById('vt-'+t),p=document.getElementById('pan-'+t),a=t===tab;b.classList.toggle('act',a);b.setAttribute('aria-selected',a?'true':'false');p.classList.toggle('hidden',!a);});if(tab==='otp')setTimeout(()=>document.getElementById('o1').focus(),50);feather.replace({width:16,height:16,strokeWidth:2});}
+
+const OTPS=['o1','o2','o3','o4','o5','o6'],PINS=['p1','p2','p3','p4'];
+function otpInput(el){el.classList.toggle('f',!!el.value);const i=OTPS.indexOf(el.id);if(el.value&&i<OTPS.length-1)document.getElementById(OTPS[i+1]).focus();const af=OTPS.every(id=>document.getElementById(id).value);const ob=document.getElementById('otpBtn');ob.disabled=!af;ob.setAttribute('aria-disabled',af?'false':'true');}
+function pinInput(el){el.classList.toggle('f',!!el.value);const i=PINS.indexOf(el.id);if(el.value&&i<PINS.length-1)document.getElementById(PINS[i+1]).focus();}
+function bksp(e,ids){if(e.key!=='Backspace')return;const el=e.target;if(!el.value){const i=ids.indexOf(el.id);if(i>0)document.getElementById(ids[i-1]).focus();}}
+function submitOTP(){spin('otpBtn','otpSp','otpBtnTxt',null,'Verifying…');audit('AUTH OTP_VERIFY role='+S.role);setTimeout(()=>{stopSpin('otpBtn','otpSp','otpBtnTxt',null,'Verify Code');success();},1600);}
+function submitBio(){document.getElementById('bioSp').style.display='block';document.getElementById('bioBtnTxt').textContent='Scanning…';audit('AUTH BIOMETRIC_SCAN role='+S.role);setTimeout(()=>{document.getElementById('bioSp').style.display='none';document.getElementById('bioBtnTxt').textContent='Scan Fingerprint';success();},2300);}
+function submitP360(){document.getElementById('p360Sp').style.display='block';document.getElementById('p360BtnTxt').textContent='Waiting…';audit('AUTH P360_PUSH_SENT role='+S.role);setTimeout(()=>{document.getElementById('p360Sp').style.display='none';document.getElementById('p360BtnTxt').textContent='Awaiting App Approval…';success();},3000);}
+function startTimer(){if(S.timerRef)clearInterval(S.timerRef);let secs=30;const btn=document.getElementById('resendBtn');btn.disabled=true;btn.setAttribute('aria-disabled','true');btn.innerHTML='Resend in <span id="timer">30</span>s';S.timerRef=setInterval(()=>{secs--;const el=document.getElementById('timer');if(el)el.textContent=secs;if(secs<=0){clearInterval(S.timerRef);btn.disabled=false;btn.removeAttribute('aria-disabled');btn.textContent='Resend code';}},1000);}
+function resend(){const btn=document.getElementById('resendBtn');btn.textContent='Sending…';btn.disabled=true;audit('AUTH OTP_RESEND role='+S.role);setTimeout(startTimer,800);}
+
+/* ═══════════ SUCCESS ═══════════ */
+function success(){
+  const c=RC[S.role];
+  document.getElementById('sxIco').innerHTML='<i data-feather="'+c.ico+'"></i>';
+  document.getElementById('sxRole').textContent=c.sr;
+  document.getElementById('sxMsg').innerHTML=c.sm.replace('\n','<br>');
+  const mapEl=document.getElementById('mapEl');
+  mapEl.innerHTML='<div class="map-lbl">Modules loading for your session</div>'+c.mods.map(m=>`<div class="map-chip"><i data-feather="check-circle" style="width:9px;height:9px"></i> ${m}</div>`).join('');
+  audit('AUTH LOGIN_SUCCESS role='+S.role+' mfa=verified');flowNode(4);showSec('s3','s4');feather.replace({width:16,height:16,strokeWidth:2});
+}
+
+function launch(){
+  const btn=document.getElementById('launchBtn');btn.textContent='✓ Loading UniHealth 360…';btn.disabled=true;
+  const d={doctor:'unihealth-doctor.html',nurse:'unihealth-nurse.html',maternity_staff:'unihealth-maternity.html',nicu_specialist:'unihealth-nicu.html',surgeon:'unihealth-surgery.html',radiologist:'unihealth-radiology.html',pharmacy:'unihealth-pharmacy.html',lab:'unihealth-lab.html',icu_staff:'unihealth-icu.html',teleconsult:'unihealth-teleconsult.html',insurance:'unihealth-insurance.html',admin:'unihealth-admin.html',patient:'unihealth-patient.html',it_admin:'unihealth-it.html',super_admin:'unihealth-superadmin.html'};
+  audit('AUTH DASHBOARD_LAUNCH role='+S.role);setTimeout(()=>{window.location.href=d[S.role]||'unihealth-admin.html';},900);
+}
+
+/* ═══════════ LIVE UPDATES ═══════════ */
+function updSec(){const s=(97.1+Math.random()*1.7).toFixed(1);const el=document.getElementById('secScore'),bar=document.getElementById('secBar');if(el)el.textContent=s+'%';if(bar)bar.style.width=s+'%';}
+function updMetrics(){
+  ['m-beds','m-pts','m-mat','m-nicu','mw-anc','mw-lab','mw-nic','mw-pn','mw-br','mw-hr'].forEach((id,i)=>{
+    const vals=[[1265,1295],[340,360],[44,52],[6,11],[22,28],[2,5],[6,11],[17,22],[4,8],[5,9]];
+    const el=document.getElementById(id);if(el)el.textContent=vals[i]?Math.floor(vals[i][0]+Math.random()*(vals[i][1]-vals[i][0])):el.textContent;
+  });
+}
+const HBT=['AUTH SESSION_HEARTBEAT uid=system','MATERNITY ANC_CHECKIN pid=mat_4821','CIC INSURANCE_CLAIM_RECEIVED id=CIC-9981','OLD_MUTUAL POLICY_VERIFY status=200','AI ANOMALY_SCAN result=nominal','NICU INFANT_VITALS status=stable','MATERNITY FETAL_MONITOR pid=mat_4812','CIC AI_FRAUD_SCAN result=clear'];
+
+/* ═══════════ INIT ═══════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  feather.replace({width:16,height:16,strokeWidth:2});
+  refCap();
+  audit('AUTH SYSTEM_READY unihealth_360_v4.0_dark_merged');
+  audit('MATERNITY MONITOR_ACTIVE nicu=online anc=ready fetal=live');
+  audit('CIC OLD_MUTUAL_CONNECTED insurance_verify=live');
+  setInterval(updSec,7000);setInterval(updMetrics,5000);
+  setInterval(()=>audit(HBT[Math.floor(Math.random()*HBT.length)]),3500);
+
+  /* Dropdown — fixed position */
+  document.getElementById('rdBtn').addEventListener('click',e=>{e.stopPropagation();S.ddOpen?closeDD():openDD();});
+  document.getElementById('rd-search').addEventListener('input',e=>filterDD(e.target.value));
+  document.getElementById('rd-search').addEventListener('keydown',ddKeyNav);
+  document.getElementById('rd-list').addEventListener('keydown',ddKeyNav);
+  document.querySelectorAll('.rd-it[data-role]').forEach(it=>{
+    it.addEventListener('click',()=>selRole(it.dataset.role,it.dataset.name,it.dataset.icon));
+    it.addEventListener('mouseenter',()=>{const items=[...document.querySelectorAll('.rd-it:not(.hide)')];S.focIdx=items.indexOf(it);items.forEach((el,i)=>el.classList.toggle('foc',i===S.focIdx));});
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('#rdBtn')&&!e.target.closest('#rd-panel')&&S.ddOpen)closeDD();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.ddOpen){closeDD();document.getElementById('rdBtn').focus();}});
+  /* Reposition on scroll/resize — deduplicated named handlers */
+  const onResize=()=>{if(S.ddOpen)positionDD();};
+  const onRpScroll=()=>{if(S.ddOpen)positionDD();};
+  window.addEventListener('resize',onResize,{passive:true});
+  const rpEl=document.querySelector('.rp');
+  if(rpEl)rpEl.addEventListener('scroll',onRpScroll,{passive:true});
+
+  /* Step 1 */
+  document.getElementById('s1btn').addEventListener('click',goStep2);
+
+  /* Step 2 */
+  document.getElementById('s2Back').addEventListener('click',goStep1);
+  document.getElementById('staffBtn').addEventListener('click',submitStaff);
+  document.getElementById('forgotPwBtn').addEventListener('click',()=>alert('Contact your facility administrator to reset your password.'));
+  document.getElementById('pwIn').addEventListener('input',e=>pwStr(e.target.value));
+  document.getElementById('togglePwBtn').addEventListener('click',()=>{S.pwVis=!S.pwVis;const inp=document.getElementById('pwIn'),ico=document.getElementById('eyeico'),btn=document.getElementById('togglePwBtn');inp.type=S.pwVis?'text':'password';ico.setAttribute('data-feather',S.pwVis?'eye-off':'eye');btn.setAttribute('aria-label',S.pwVis?'Hide password':'Show password');btn.setAttribute('aria-pressed',S.pwVis?'true':'false');feather.replace({width:16,height:16,strokeWidth:2});});
+  document.getElementById('captchaRefreshBtn').addEventListener('click',refCap);
+  document.querySelectorAll('#staffForm .altbn[data-alt]').forEach(btn=>btn.addEventListener('click',()=>altMethod(btn.dataset.alt,btn)));
+  document.getElementById('patBtn').addEventListener('click',submitPat);
+  document.getElementById('forgotPinBtn').addEventListener('click',()=>alert('Contact ModelCover support to reset your PIN.'));
+  document.getElementById('idTypeIn').addEventListener('change',updateIdLabel);
+  PINS.forEach(id=>{const el=document.getElementById(id);el.addEventListener('input',()=>pinInput(el));el.addEventListener('keydown',e=>bksp(e,PINS));});
+  document.querySelectorAll('#patForm .altbn[data-alt]').forEach(btn=>btn.addEventListener('click',()=>altMethod(btn.dataset.alt,btn)));
+
+  /* Step 3 */
+  document.getElementById('s3Back').addEventListener('click',goS3Back);
+  ['otp','bio','p360'].forEach(tab=>document.getElementById('vt-'+tab).addEventListener('click',()=>switchTab(tab)));
+  OTPS.forEach(id=>{const el=document.getElementById(id);el.addEventListener('input',()=>otpInput(el));el.addEventListener('keydown',e=>bksp(e,OTPS));});
+  document.getElementById('otpBtn').addEventListener('click',submitOTP);
+  document.getElementById('resendBtn').addEventListener('click',resend);
+  document.getElementById('bioBtn').addEventListener('click',submitBio);
+  document.getElementById('p360Btn').addEventListener('click',submitP360);
+
+  /* Step 4 */
+  document.getElementById('launchBtn').addEventListener('click',launch);
+
+  /* Enter shortcuts */
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter'||e.target.closest('#rd-panel')||e.target.closest('#rdBtn'))return;
+    const s1=document.getElementById('s1'),s2=document.getElementById('s2'),s3=document.getElementById('s3');
+    if(!s1.classList.contains('hidden')&&S.role){goStep2();return;}
+    if(!s2.classList.contains('hidden')){S.role==='patient'?submitPat():submitStaff();return;}
+    if(!s3.classList.contains('hidden')&&OTPS.every(id=>document.getElementById(id).value))submitOTP();
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UniHealth 360 — Build Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--neon:#2ecc71;--g:#1a8a4a;--bg:#030a05;--gl:rgba(255,255,255,.05);--bd:rgba(255,255,255,.09);--bn:rgba(46,204,113,.22);--t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);--fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(26,138,74,.18),transparent),var(--bg)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--bn);border-radius:2px}
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(46,204,113,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(46,204,113,.025) 1px,transparent 1px);background-size:44px 44px}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:48px 24px 80px}
+/* header */
+.hdr{text-align:center;margin-bottom:52px;animation:fade-up .8s ease both}
+@keyframes fade-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.logo-ring{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.1));border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:logo-g 4s ease infinite;box-shadow:0 0 40px rgba(46,204,113,.12)}
+@keyframes logo-g{0%,100%{box-shadow:0 0 24px rgba(46,204,113,.12)}50%{box-shadow:0 0 48px rgba(46,204,113,.28)}}
+.logo-ring svg{filter:drop-shadow(0 0 6px rgba(46,204,113,.5))}
+h1{font-size:2.6rem;font-weight:800;letter-spacing:-.04em;color:var(--t1);margin-bottom:.4rem}
+h1 em{font-style:normal;color:var(--neon)}
+.sub{font-size:1rem;color:var(--t3);font-weight:300;margin-bottom:1.4rem}
+.stripe{display:inline-block;height:2px;width:60px;background:linear-gradient(90deg,transparent,var(--neon),transparent);border-radius:2px;margin-bottom:1.4rem}
+.meta-chips{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-family:var(--fm);font-size:.65rem;font-weight:600;border:1px solid}
+.ch-g{background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.22);color:var(--neon)}
+.ch-b{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.22);color:#60a5fa}
+.ch-pk{background:rgba(236,72,153,.08);border-color:rgba(236,72,153,.22);color:#ec4899}
+.ch-a{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.22);color:#f59e0b}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.35;transform:scale(1.3)}}
+/* CTA */
+.cta-box{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:52px;animation:fade-up .8s .1s ease both;flex-wrap:wrap}
+.btn-main{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:linear-gradient(135deg,rgba(26,138,74,.9),rgba(46,204,113,.85));border:1px solid rgba(46,204,113,.35);border-radius:12px;color:#fff;font-family:var(--fn);font-size:1rem;font-weight:700;text-decoration:none;transition:all .25s;cursor:pointer}
+.btn-main:hover{box-shadow:0 8px 32px rgba(46,204,113,.32);transform:translateY(-2px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;background:var(--gl);border:1px solid var(--bd);border-radius:12px;color:var(--t2);font-family:var(--fn);font-size:1rem;font-weight:600;text-decoration:none;transition:all .25s}
+.btn-ghost:hover{background:rgba(255,255,255,.08);border-color:var(--bn);color:var(--t1)}
+/* section */
+.sec-label{font-family:var(--fm);font-size:.65rem;letter-spacing:3px;text-transform:uppercase;color:var(--t4);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.sec-label::before{content:'';flex:1;height:1px;background:var(--bd)}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--bd)}
+/* card grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:52px}
+.card{background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;text-decoration:none;display:block;position:relative;overflow:hidden;transition:all .25s;animation:card-in .5s ease both}
+@keyframes card-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{border-color:var(--bn);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-accent,var(--neon));opacity:.55;transition:opacity .25s}
+.card:hover::before{opacity:1}
+.card-icon{font-size:1.6rem;margin-bottom:10px;display:block}
+.card-name{font-size:.95rem;font-weight:700;color:var(--t1);margin-bottom:4px}
+.card-desc{font-size:.75rem;color:var(--t3);line-height:1.5;margin-bottom:10px}
+.card-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:.58rem;font-weight:700;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+/* auth section */
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:52px}
+.auth-card{background:rgba(5,12,7,.96);border:1px solid var(--bd);border-radius:16px;padding:24px;text-decoration:none;display:flex;align-items:flex-start;gap:16px;transition:all .25s;position:relative;overflow:hidden}
+.auth-card:hover{border-color:var(--bn);transform:translateY(-2px);box-shadow:0 8px 40px rgba(0,0,0,.55)}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--neon),rgba(46,204,113,.4));opacity:0;transition:opacity .25s}
+.auth-card:hover::before{opacity:1}
+.auth-icon{width:48px;height:48px;border-radius:13px;background:rgba(46,204,113,.1);border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.auth-title{font-size:1rem;font-weight:700;color:var(--t1);margin-bottom:4px}
+.auth-desc{font-size:.78rem;color:var(--t3);line-height:1.5}
+.auth-url{font-family:var(--fm);font-size:.65rem;color:var(--neon);margin-top:8px;opacity:.7}
+/* stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:52px;animation:fade-up .8s .2s ease both}
+.stat-c{background:rgba(5,12,7,.95);padding:18px 14px;text-align:center}
+.stat-c:hover{background:rgba(255,255,255,.03)}
+.stat-v{font-family:var(--fm);font-size:1.6rem;font-weight:700;color:var(--neon);line-height:1;margin-bottom:4px}
+.stat-l{font-size:.7rem;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+/* footer */
+.foot{text-align:center;padding-top:32px;border-top:1px solid var(--bd);font-family:var(--fm);font-size:.65rem;color:var(--t4);line-height:2;animation:fade-up .8s .3s ease both}
+.foot a{color:var(--neon);text-decoration:none;opacity:.8}
+.foot a:hover{opacity:1}
+/* responsive */
+@media(max-width:700px){h1{font-size:1.8rem}.auth-grid{grid-template-columns:1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.cta-box{flex-direction:column}}
+@media(max-width:480px){.grid{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="logo-ring">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+        <path d="M17 4v8M17 22v8M4 17h8M22 17h8" stroke="#2ecc71" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="10" y="10" width="14" height="14" rx="3.5" fill="rgba(46,204,113,.12)" stroke="#2ecc71" stroke-width="1.5"/>
+        <circle cx="17" cy="17" r="3.5" fill="#2ecc71"/>
+      </svg>
+    </div>
+    <h1>UniHealth <em>360</em></h1>
+    <p class="sub">National AI-Powered Healthcare Operating System<br>Enterprise Portal · Full Module Build · v4.0</p>
+    <div class="stripe"></div>
+    <div class="meta-chips">
+      <div class="chip ch-g"><span class="pdot"></span>ALL SYSTEMS LIVE</div>
+      <div class="chip ch-g">20 Modules Built</div>
+      <div class="chip ch-b">FHIR R5 · JWT · RBAC</div>
+      <div class="chip ch-pk">Maternity AI Active</div>
+      <div class="chip ch-a">CIC · Old Mutual · KEMSA</div>
+      <div class="chip ch-g">HIPAA · ISO 27001</div>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-c"><div class="stat-v">20</div><div class="stat-l">Modules Built</div></div>
+    <div class="stat-c"><div class="stat-v">47</div><div class="stat-l">AI Models Active</div></div>
+    <div class="stat-c"><div class="stat-v">14</div><div class="stat-l">Hospital Network</div></div>
+    <div class="stat-c"><div class="stat-v">99.98%</div><div class="stat-l">System Uptime</div></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <a href="unihealth360-final.html" class="btn-main">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="3" stroke="white" stroke-width="1.4"/><path d="M5 8h6M8 5v6" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Launch Authentication Portal
+    </a>
+    <a href="unihealth-emr.html" class="btn-ghost">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h10v10H3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Open EMR Dashboard
+    </a>
+  </div>
+
+  <!-- AUTH PORTALS -->
+  <div class="sec-label">Authentication Portals</div>
+  <div class="auth-grid" style="margin-bottom:40px">
+    <a href="unihealth360-final.html" class="auth-card">
+      <div class="auth-icon">🔐</div>
+      <div>
+        <div class="auth-title">UniHealth 360 — Main Auth Portal</div>
+        <div class="auth-desc">Full enterprise login with role selector, 3-step MFA, JWT/OAuth2, CIC/Old Mutual insurance verification, biometric placeholder, and RBAC routing to all 20 modules.</div>
+        <div class="auth-url">unihealth360-final.html</div>
+      </div>
+    </a>
+    <a href="unihealth360-auth-portal-v2.html" class="auth-card">
+      <div class="auth-icon">🌐</div>
+      <div>
+        <div class="auth-title">Auth Portal v2 — Split Dashboard</div>
+        <div class="auth-desc">Split-screen intelligence panel with live maternity metrics, AI engine status, neural particle background, animated left panel, and right-side auth card with fixed dropdown.</div>
+        <div class="auth-url">unihealth360-auth-portal-v2.html</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- CLINICAL MODULES -->
+  <div class="sec-label">Clinical Modules</div>
+  <div class="grid">
+    <a href="unihealth-emr.html" class="card" style="--card-accent:var(--neon)" style="animation-delay:.05s">
+      <span class="card-icon">🏥</span>
+      <div class="card-name">EMR / EHR</div>
+      <div class="card-desc">Patient records, SOAP notes, AI risk scoring, e-prescriptions, visit timeline, lab & radiology integration.</div>
+      <span class="card-tag">Doctor · Nurse · Admin</span>
+    </a>
+    <a href="unihealth-maternity.html" class="card" style="--card-accent:#ec4899;animation-delay:.08s">
+      <span class="card-icon">🤰</span>
+      <div class="card-name">Maternity & NICU</div>
+      <div class="card-desc">ANC tracking, labor board, NICU monitoring, fetal HR, AI pre-eclampsia risk, birth records, postnatal care.</div>
+      <span class="card-tag" style="background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.22);color:#ec4899">Maternity · NICU</span>
+    </a>
+    <a href="unihealth-lab.html" class="card" style="--card-accent:#60a5fa;animation-delay:.11s">
+      <span class="card-icon">🔬</span>
+      <div class="card-name">Laboratory (LIS)</div>
+      <div class="card-desc">Test queue, sample tracking, result entry, critical value alerts, test catalog, KEMSA reagent orders.</div>
+      <span class="card-tag">Lab Tech · Pathologist</span>
+    </a>
+    <a href="unihealth-radiology.html" class="card" style="--card-accent:#8b5cf6;animation-delay:.14s">
+      <span class="card-icon">🩻</span>
+      <div class="card-name">Radiology</div>
+      <div class="card-desc">Imaging worklist, DICOM viewer placeholder, PACS integration, AI analysis, report editor, obstetric US.</div>
+      <span class="card-tag">Radiologist · Technician</span>
+    </a>
+    <a href="unihealth-pharmacy.html" class="card" style="--card-accent:var(--neon);animation-delay:.17s">
+      <span class="card-icon">💊</span>
+      <div class="card-name">Pharmacy</div>
+      <div class="card-desc">Prescription queue, drug dispensing, stock levels, expiry alerts, KEMSA orders, allergy AI checker.</div>
+      <span class="card-tag">Pharmacist · KEMSA</span>
+    </a>
+    <a href="unihealth-icu.html" class="card" style="--card-accent:#ef4444;animation-delay:.20s">
+      <span class="card-icon">🚨</span>
+      <div class="card-name">ICU & Emergency</div>
+      <div class="card-desc">Real-time patient monitoring, ER triage board, Code Blue alerts, ambulance dispatch, ventilator tracking.</div>
+      <span class="card-tag" style="background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.22);color:#ef4444">ER · ICU Staff</span>
+    </a>
+    <a href="unihealth-surgery.html" class="card" style="--card-accent:#f59e0b;animation-delay:.23s">
+      <span class="card-icon">🔪</span>
+      <div class="card-name">Surgery / Theatre</div>
+      <div class="card-desc">OR schedule, live theatre status, surgery timers, WHO safety checklist, anaesthesia records, kit management.</div>
+      <span class="card-tag">Surgeon · Anaesthetist</span>
+    </a>
+    <a href="unihealth-rehab.html" class="card" style="--card-accent:var(--neon);animation-delay:.26s">
+      <span class="card-icon">🏃</span>
+      <div class="card-name">Rehabilitation</div>
+      <div class="card-desc">Physio sessions, exercise plans, outcome tracking (FIM/Barthel), cardiac & neuro rehab, progress charts.</div>
+      <span class="card-tag">Physiotherapist · OT</span>
+    </a>
+    <a href="unihealth-nutrition.html" class="card" style="--card-accent:#f59e0b;animation-delay:.29s">
+      <span class="card-icon">🥗</span>
+      <div class="card-name">Nutrition & Dietetics</div>
+      <div class="card-desc">Diet plans, nutritional assessments, allergy tracking, hospital menu planner, malnutrition risk alerts.</div>
+      <span class="card-tag">Dietitian · Nurse</span>
+    </a>
+    <a href="unihealth-teleconsult.html" class="card" style="--card-accent:var(--neon);animation-delay:.32s">
+      <span class="card-icon">📡</span>
+      <div class="card-name">Telemedicine</div>
+      <div class="card-desc">Video console, patient queue, 4-node network (Nairobi/Kisumu/Mombasa/Eldoret), e-prescriptions, ANC remote.</div>
+      <span class="card-tag">Teleconsult · Multi-node</span>
+    </a>
+  </div>
+
+  <!-- OPERATIONS MODULES -->
+  <div class="sec-label">Operations Modules</div>
+  <div class="grid">
+    <a href="unihealth-billing.html" class="card" style="--card-accent:var(--neon);animation-delay:.35s">
+      <span class="card-icon">💰</span>
+      <div class="card-name">Billing & Finance</div>
+      <div class="card-desc">Invoice management, M-Pesa payments, CIC/Old Mutual claims, fraud AI, revenue charts, refunds.</div>
+      <span class="card-tag">Finance · Insurance</span>
+    </a>
+    <a href="unihealth-insurance.html" class="card" style="--card-accent:#60a5fa;animation-delay:.38s">
+      <span class="card-icon">🛡️</span>
+      <div class="card-name">Insurance — CIC & Old Mutual</div>
+      <div class="card-desc">Live eligibility verification, claims queue, pre-authorization, AI fraud detection, coverage analytics.</div>
+      <span class="card-tag" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.22);color:#60a5fa">CIC · Old Mutual</span>
+    </a>
+    <a href="unihealth-inventory.html" class="card" style="--card-accent:#f59e0b;animation-delay:.41s">
+      <span class="card-icon">📦</span>
+      <div class="card-name">Inventory & Procurement</div>
+      <div class="card-desc">Stock tracking, low-stock alerts, KEMSA orders, purchase orders, vendor management, expiry monitoring.</div>
+      <span class="card-tag">Procurement · KEMSA</span>
+    </a>
+    <a href="unihealth-fleet.html" class="card" style="--card-accent:#ef4444;animation-delay:.44s">
+      <span class="card-icon">🚑</span>
+      <div class="card-name">Ambulance & Fleet</div>
+      <div class="card-desc">Dispatch console, GPS live map, 5-unit fleet status, maintenance schedule, fuel logs, paramedic assignment.</div>
+      <span class="card-tag">EMS · Dispatch</span>
+    </a>
+    <a href="unihealth-mortuary.html" class="card" style="--card-accent:#8b5cf6;animation-delay:.47s">
+      <span class="card-icon">🌙</span>
+      <div class="card-name">Mortuary</div>
+      <div class="card-desc">Deceased register, cold storage monitoring (-4°C IoT), body release authorization, NOK workflows, autopsy logs.</div>
+      <span class="card-tag">Mortuary Officer</span>
+    </a>
+  </div>
+
+  <!-- MANAGEMENT MODULES -->
+  <div class="sec-label">Management & Intelligence</div>
+  <div class="grid">
+    <a href="unihealth-admin.html" class="card" style="--card-accent:var(--neon);animation-delay:.50s">
+      <span class="card-icon">🏥</span>
+      <div class="card-name">Administration</div>
+      <div class="card-desc">Hospital KPIs, user management, audit logs (tamper-evident), compliance dashboard, shift scheduling, department performance.</div>
+      <span class="card-tag">Administrator · Director</span>
+    </a>
+    <a href="unihealth-hr.html" class="card" style="--card-accent:#60a5fa;animation-delay:.53s">
+      <span class="card-icon">👥</span>
+      <div class="card-name">HR & Payroll</div>
+      <div class="card-desc">Employee directory, payroll processing (M-Pesa Bulk Pay), leave management, shift schedule, NSSF/PAYE deductions.</div>
+      <span class="card-tag">HR Manager · Payroll</span>
+    </a>
+    <a href="unihealth-analytics.html" class="card" style="--card-accent:#8b5cf6;animation-delay:.56s">
+      <span class="card-icon">🤖</span>
+      <div class="card-name">AI Analytics</div>
+      <div class="card-desc">Hospital intelligence, 47 AI models, predictions (surge/supply/maternal), alert dashboard, report generator, 14-facility network.</div>
+      <span class="card-tag" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.22);color:#a78bfa">AI Engine · Analytics</span>
+    </a>
+    <a href="unihealth-patient.html" class="card" style="--card-accent:#ec4899;animation-delay:.59s">
+      <span class="card-icon">👤</span>
+      <div class="card-name">Patient Portal</div>
+      <div class="card-desc">Health summary, appointments, lab results, M-Pesa bill payment, prescription refills, CIC insurance status, teleconsult access.</div>
+      <span class="card-tag" style="background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.22);color:#ec4899">Patient Self-Service</span>
+    </a>
+    <a href="unihealth-research.html" class="card" style="--card-accent:#8b5cf6;animation-delay:.62s">
+      <span class="card-icon">🔬</span>
+      <div class="card-name">Research & Reporting</div>
+      <div class="card-desc">Custom report builder, IRB study registry, de-identified exports, 5 report templates, publication repository, FHIR queries.</div>
+      <span class="card-tag">Researcher · Analyst</span>
+    </a>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="sec-label">Technology Stack & Integrations</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:52px">
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--neon);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Security</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">JWT · OAuth2 · MFA<br>RBAC / ABAC · CSRF<br>TLS 1.3 · AES-256<br>Audit Logs · HIPAA</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Integrations</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">CIC Insurance API<br>Old Mutual API<br>KEMSA Supply Chain<br>M-Pesa C2B/B2C</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Standards</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">HL7 FHIR R5<br>DICOM / PACS<br>ISO 27001<br>WCAG 2.1 AA</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:#ec4899;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">AI Engine</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">Sepsis Early Warning<br>Maternal Risk (91%)<br>Fraud Detection (96%)<br>Supply Forecast (89%)</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Architecture</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">Microservices<br>API Gateway · Redis<br>Kafka · PostgreSQL<br>FHIR Data Lake</div>
+    </div>
+    <div style="padding:12px 14px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:11px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--neon);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Frontend</div>
+      <div style="font-size:.78rem;color:var(--t3);line-height:1.7">HTML5 · CSS3<br>Feather Icons<br>Canvas Particles<br>GPU Animations</div>
+    </div>
+  </div>
+
+  <!-- QUICK ROLE ACCESS -->
+  <div class="sec-label">Quick Access by Role</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:52px">
+    <a href="unihealth-emr.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(46,204,113,.35)';this.style.color='#f0fdf4'" onmouseout="this.style.borderColor='';this.style.color=''"">
+      <span>👨‍⚕️</span> Doctor Portal
+    </a>
+    <a href="unihealth-maternity.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(236,72,153,.35)';this.style.color='#ec4899'" onmouseout="this.style.borderColor='';this.style.color=''">
+      <span>👩‍⚕️</span> Nurse / Midwife
+    </a>
+    <a href="unihealth-maternity.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(236,72,153,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🤰</span> Maternity Staff
+    </a>
+    <a href="unihealth-maternity.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(236,72,153,.35)'" onmouseout="this.style.borderColor=''">
+      <span>👶</span> NICU Specialist
+    </a>
+    <a href="unihealth-pharmacy.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(46,204,113,.35)'" onmouseout="this.style.borderColor=''">
+      <span>💊</span> Pharmacist
+    </a>
+    <a href="unihealth-lab.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(46,204,113,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🔬</span> Lab Technician
+    </a>
+    <a href="unihealth-radiology.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(139,92,246,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🩻</span> Radiologist
+    </a>
+    <a href="unihealth-surgery.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(245,158,11,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🔪</span> Surgeon
+    </a>
+    <a href="unihealth-insurance.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(59,130,246,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🛡️</span> Insurance Officer
+    </a>
+    <a href="unihealth-teleconsult.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(46,204,113,.35)'" onmouseout="this.style.borderColor=''">
+      <span>📡</span> Telemedicine
+    </a>
+    <a href="unihealth-icu.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(239,68,68,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🚨</span> ICU / ER Staff
+    </a>
+    <a href="unihealth-admin.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(46,204,113,.35)'" onmouseout="this.style.borderColor=''">
+      <span>⭐</span> Super Admin
+    </a>
+    <a href="unihealth-hr.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(59,130,246,.35)'" onmouseout="this.style.borderColor=''">
+      <span>👥</span> HR Manager
+    </a>
+    <a href="unihealth-patient.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(236,72,153,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🧑</span> Patient Portal
+    </a>
+    <a href="unihealth-analytics.html" style="padding:10px 12px;background:rgba(5,12,7,.95);border:1px solid var(--bd);border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .2s;font-size:.82rem;color:var(--t2)" onmouseover="this.style.borderColor='rgba(139,92,246,.35)'" onmouseout="this.style.borderColor=''">
+      <span>🤖</span> Data Analyst
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div style="margin-bottom:12px">
+      <strong style="color:var(--t2)">UniHealth 360</strong> — National AI-Powered Healthcare Operating System<br>
+      Built for Kenya's Ministry of Health · Enterprise Hospital Networks · National Healthcare Infrastructure
+    </div>
+    <div>
+      <a href="unihealth360-final.html">Authentication Portal</a> ·
+      <a href="unihealth-emr.html">EMR</a> ·
+      <a href="unihealth-maternity.html">Maternity</a> ·
+      <a href="unihealth-analytics.html">AI Analytics</a> ·
+      <a href="unihealth-patient.html">Patient Portal</a>
+    </div>
+    <div style="margin-top:12px;color:var(--t4)">
+      v4.0 · FHIR R5 · JWT · HIPAA · ISO 27001 · CIC · Old Mutual · KEMSA · M-Pesa · 20 Modules · 47 AI Models
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

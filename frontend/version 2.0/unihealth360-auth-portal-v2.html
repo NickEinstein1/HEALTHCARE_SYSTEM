@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UniHealth 360 — Enterprise Authentication Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+    ============================================================ */
+    :root {
+      --brand-primary:   #006B5E;
+      --brand-secondary: #00A896;
+      --brand-accent:    #02C39A;
+      --brand-dark:      #004A40;
+      --brand-deep:      #00312B;
+
+      --bg-void:    #030A09;
+      --bg-base:    #050F0D;
+      --bg-raised:  #071614;
+      --bg-surface: #091C19;
+      --bg-float:   #0C211E;
+
+      --glass-10:  rgba(2,195,154,0.04);
+      --glass-20:  rgba(2,195,154,0.08);
+      --glass-30:  rgba(2,195,154,0.12);
+      --glass-card: rgba(6,24,20,0.85);
+
+      --neon:        #02C39A;
+      --neon-dim:    rgba(2,195,154,0.35);
+      --neon-glow:   rgba(2,195,154,0.18);
+      --neon-soft:   rgba(2,195,154,0.07);
+
+      --mat-accent:  #E879A0;
+      --mat-glow:    rgba(232,121,160,0.2);
+      --mat-dim:     rgba(232,121,160,0.12);
+
+      --ins-blue:   #3B82F6;
+      --ins-gold:   #F59E0B;
+
+      --text-1: #ECF5F3;
+      --text-2: #8ABFB8;
+      --text-3: #4A7A74;
+      --text-4: #2A4844;
+
+      --border-1: rgba(2,195,154,0.12);
+      --border-2: rgba(2,195,154,0.28);
+      --border-3: rgba(2,195,154,0.55);
+
+      --shadow-card: 0 4px 40px rgba(0,0,0,0.6), 0 1px 0 rgba(2,195,154,0.08) inset;
+      --shadow-glow: 0 0 60px rgba(2,195,154,0.12);
+      --shadow-lg:   0 24px 80px rgba(0,0,0,0.7);
+
+      --font-d: 'Syne', sans-serif;
+      --font-b: 'DM Sans', sans-serif;
+      --font-m: 'JetBrains Mono', monospace;
+
+      --ease-out:    cubic-bezier(0.16,1,0.3,1);
+      --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+      --ease-smooth: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; height: 100%; }
+    body {
+      font-family: var(--font-b);
+      background: var(--bg-void);
+      color: var(--text-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; }
+    button { cursor: pointer; font-family: var(--font-b); }
+    :focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; border-radius: 4px; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-1); border-radius: 100px; }
+
+    /* ============================================================
+       CANVAS BACKGROUND LAYER
+    ============================================================ */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(2,195,154,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(2,195,154,0.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+      pointer-events: none;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(0,107,94,0.22) 0%, transparent 70%);
+      top: -250px; left: -150px;
+      animation: orb-a 16s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(2,195,154,0.12) 0%, transparent 70%);
+      bottom: -200px; right: -150px;
+      animation: orb-a 20s ease-in-out infinite reverse;
+    }
+    .orb-3 {
+      width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(232,121,160,0.06) 0%, transparent 70%);
+      top: 30%; left: 35%;
+      animation: orb-a 12s ease-in-out infinite 4s;
+    }
+    @keyframes orb-a {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33%      { transform: translate(40px,-50px) scale(1.06); }
+      66%      { transform: translate(-25px,25px) scale(0.94); }
+    }
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .portal {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 500px;
+    }
+
+    /* ============================================================
+       LEFT PANEL
+    ============================================================ */
+    .left-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 1.75rem 2rem;
+      overflow: hidden;
+      border-right: 1px solid var(--border-1);
+    }
+
+    /* ── Topbar ─────────────────────────── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-accent) 100%);
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      box-shadow: 0 0 24px var(--neon-glow);
+      flex-shrink: 0;
+    }
+    .brand-icon::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%);
+    }
+    .brand-icon svg { position: relative; z-index: 1; }
+    .brand-info { display: flex; flex-direction: column; }
+    .brand-name {
+      font-family: var(--font-d);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-1);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .brand-tag {
+      font-size: 0.6rem;
+      font-weight: 500;
+      color: var(--text-3);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .status-cluster { display: flex; align-items: center; gap: 8px; }
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 11px;
+      background: rgba(2,195,154,0.08);
+      border: 1px solid var(--border-1);
+      border-radius: 100px;
+      font-family: var(--font-m);
+      font-size: 0.62rem;
+      color: var(--neon);
+    }
+    .pulse-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon);
+      animation: pdot 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pdot {
+      0%,100% { opacity:1; transform:scale(1); box-shadow: 0 0 0 0 rgba(2,195,154,0.4); }
+      50%      { opacity:0.6; transform:scale(1.3); box-shadow: 0 0 0 4px rgba(2,195,154,0); }
+    }
+    .mat-badge {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 11px;
+      background: rgba(232,121,160,0.08);
+      border: 1px solid rgba(232,121,160,0.25);
+      border-radius: 100px;
+      font-family: var(--font-m);
+      font-size: 0.62rem;
+      color: var(--mat-accent);
+    }
+    .mat-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--mat-accent);
+      animation: pdot 2.5s ease-in-out infinite 0.5s;
+      flex-shrink: 0;
+    }
+
+    /* ── Hero ────────────────────────────── */
+    .hero { margin-bottom: 1.5rem; }
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--font-m);
+      font-size: 0.65rem;
+      color: var(--neon);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.9rem;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 22px; height: 1px;
+      background: linear-gradient(90deg, var(--neon), transparent);
+    }
+    .hero-h1 {
+      font-family: var(--font-d);
+      font-size: clamp(1.8rem, 3vw, 2.7rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .h1-accent { color: var(--neon); }
+    .h1-mat    { color: var(--mat-accent); }
+    .hero-sub {
+      font-size: 0.85rem;
+      color: var(--text-2);
+      line-height: 1.65;
+      max-width: 500px;
+      font-weight: 300;
+    }
+    .hero-slogan {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 1rem;
+      padding: 7px 14px;
+      background: var(--glass-10);
+      border: 1px solid var(--border-1);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      color: var(--text-2);
+    }
+    .hero-slogan span { color: var(--neon); font-weight: 600; }
+
+    /* ── Metrics ─────────────────────────── */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border-1);
+      border: 1px solid var(--border-1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .metric {
+      background: var(--bg-surface);
+      padding: 12px 10px;
+      display: flex; flex-direction: column; gap: 3px;
+      transition: background 0.2s;
+      cursor: default;
+    }
+    .metric:hover { background: var(--glass-20); }
+    .m-val {
+      font-family: var(--font-d);
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--neon);
+    }
+    .m-val.mat-color { color: var(--mat-accent); }
+    .m-lbl {
+      font-size: 0.58rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+    }
+
+    /* ── Dashboard Grid ─────────────────── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--glass-card);
+      border: 1px solid var(--border-1);
+      border-radius: 14px;
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px) saturate(160%);
+      transition: transform 0.35s var(--ease-out), border-color 0.3s, box-shadow 0.3s;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 10%, var(--neon), transparent 90%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .card:hover { transform: translateY(-3px) scale(1.005); border-color: var(--border-2); box-shadow: var(--shadow-card); }
+    .card:hover::before { opacity: 0.7; }
+
+    .card.mat-card { border-color: rgba(232,121,160,0.18); }
+    .card.mat-card::before { background: linear-gradient(90deg, transparent 10%, var(--mat-accent), transparent 90%); }
+    .card.mat-card:hover { border-color: rgba(232,121,160,0.4); box-shadow: 0 4px 40px rgba(232,121,160,0.12); }
+
+    .card.span2 { grid-column: span 2; }
+    .card.span3 { grid-column: span 3; }
+
+    /* Inner shimmer */
+    .card-shimmer {
+      position: absolute;
+      top: -100%; left: -100%;
+      width: 300%; height: 300%;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(2,195,154,0.03) 60deg, transparent 120deg);
+      animation: shimmer-spin 12s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes shimmer-spin { to { transform: rotate(360deg); } }
+
+    .c-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .c-title {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-3);
+    }
+    .c-badge {
+      font-family: var(--font-m);
+      font-size: 0.58rem;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+    .b-live  { background:rgba(2,195,154,0.12); color:var(--neon); border:1px solid rgba(2,195,154,0.28); }
+    .b-ai    { background:rgba(0,168,150,0.12); color:#00A896;      border:1px solid rgba(0,168,150,0.28); }
+    .b-mat   { background:rgba(232,121,160,0.12); color:var(--mat-accent); border:1px solid rgba(232,121,160,0.3); }
+    .b-ins   { background:rgba(59,130,246,0.12); color:#60A5FA; border:1px solid rgba(59,130,246,0.28); }
+    .b-warn  { background:rgba(251,146,60,0.1); color:#FB923C; border:1px solid rgba(251,146,60,0.25); }
+
+    /* ── Bed bars ─────────────────────────── */
+    .bed-wrap { display:flex; align-items:center; gap:14px; }
+    .bed-stat-block { flex-shrink:0; }
+    .bed-big {
+      font-family: var(--font-d);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--neon);
+      line-height: 1;
+    }
+    .bed-sm { font-size:0.65rem; color:var(--text-3); margin-top:2px; }
+    .bar-chart { display:flex; gap:3px; align-items:flex-end; height:56px; flex:1; }
+    .bar {
+      flex:1;
+      border-radius: 3px 3px 0 0;
+      min-height: 6px;
+      position: relative;
+      transition: height 1.2s var(--ease-spring);
+    }
+    .bar-g { background: linear-gradient(180deg, var(--neon) 0%, var(--brand-primary) 100%); }
+    .bar-d { background: linear-gradient(180deg, var(--brand-secondary) 0%, var(--brand-dark) 100%); opacity:0.6; }
+    .bar-r { background: linear-gradient(180deg, #FB923C 0%, #B45309 100%); }
+    .bar-m { background: linear-gradient(180deg, var(--mat-accent) 0%, #9D174D 100%); }
+    .bar-lbl { font-size:0.5rem; color:var(--text-4); text-align:center; margin-top:3px; }
+
+    /* ── Ring ─────────────────────────────── */
+    .ring-section { display:flex; align-items:center; gap:14px; }
+    .ring-wrap { position:relative; width:68px; height:68px; flex-shrink:0; }
+    .ring-svg { width:100%; height:100%; transform:rotate(-90deg); }
+    .r-bg   { fill:none; stroke:rgba(2,195,154,0.15); stroke-width:6; }
+    .r-fill { fill:none; stroke:var(--neon); stroke-width:6; stroke-linecap:round; stroke-dasharray:188; transition:stroke-dashoffset 1.8s var(--ease-out); }
+    .r-fill-mat { stroke: var(--mat-accent); }
+    .ring-mid { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .ring-num { font-family:var(--font-d); font-size:0.95rem; font-weight:700; color:var(--text-1); }
+    .ring-sub { font-size:0.5rem; color:var(--text-3); text-align:center; line-height:1.3; }
+
+    .flow-list { flex:1; display:flex; flex-direction:column; gap:7px; }
+    .fl-item { display:flex; align-items:center; gap:7px; }
+    .fl-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .fl-name { font-size:0.68rem; color:var(--text-2); flex:1; }
+    .fl-val { font-family:var(--font-m); font-size:0.65rem; color:var(--text-1); font-weight:500; }
+
+    /* ── AI bars ──────────────────────────── */
+    .ai-rows { display:flex; flex-direction:column; gap:7px; }
+    .ai-row { display:flex; align-items:center; gap:8px; }
+    .ai-lbl { font-size:0.65rem; color:var(--text-2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ai-track { flex:2; height:3px; background:rgba(2,195,154,0.12); border-radius:2px; overflow:hidden; }
+    .ai-fill  { height:100%; border-radius:2px; background:linear-gradient(90deg, var(--brand-primary), var(--neon)); animation:ai-p 3s ease-in-out infinite; }
+    .ai-fill-mat { background: linear-gradient(90deg, #9D174D, var(--mat-accent)); }
+    @keyframes ai-p { 0%,100%{opacity:1} 50%{opacity:0.55} }
+    .ai-pct { font-family:var(--font-m); font-size:0.6rem; color:var(--neon); min-width:30px; text-align:right; }
+    .ai-pct-mat { color: var(--mat-accent); }
+
+    /* ── Maternity card ──────────────────── */
+    .mat-stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .mat-stat {
+      padding: 8px 10px;
+      background: rgba(232,121,160,0.06);
+      border: 1px solid rgba(232,121,160,0.15);
+      border-radius: 9px;
+    }
+    .ms-val { font-family:var(--font-d); font-size:1.2rem; font-weight:700; color:var(--mat-accent); line-height:1; }
+    .ms-lbl { font-size:0.58rem; color:var(--text-3); margin-top:2px; }
+    .ms-indicator { display:flex; align-items:center; gap:5px; font-size:0.6rem; color:var(--text-3); margin-top:4px; }
+    .ms-dot { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
+
+    /* ── Insurance card ───────────────────── */
+    .ins-grid { display:flex; flex-direction:column; gap:7px; }
+    .ins-row { display:flex; align-items:center; justify-content:space-between; }
+    .ins-name { display:flex; align-items:center; gap:7px; font-size:0.7rem; color:var(--text-2); }
+    .ins-logo {
+      width:22px; height:22px; border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.6rem; font-weight:700; flex-shrink:0;
+    }
+    .cic-logo  { background:rgba(59,130,246,0.2); color:#60A5FA; border:1px solid rgba(59,130,246,0.3); }
+    .om-logo   { background:rgba(245,158,11,0.15); color:#FCD34D; border:1px solid rgba(245,158,11,0.3); }
+    .ins-val   { font-family:var(--font-m); font-size:0.68rem; color:var(--neon); }
+
+    /* ── Flow diagram ─────────────────────── */
+    .flow-diag {
+      display:flex; align-items:center; gap:6px;
+      background: rgba(0,0,0,0.3);
+      border-radius:10px; padding:12px;
+      border:1px solid var(--border-1);
+      overflow-x: auto;
+    }
+    .fn { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+    .fn-box {
+      padding:5px 9px; border-radius:7px;
+      font-size:0.58rem; font-weight:600;
+      font-family:var(--font-m); border:1px solid;
+      white-space:nowrap;
+    }
+    .fn-a { background:rgba(0,107,94,0.25); border-color:rgba(0,107,94,0.5); color:var(--neon); }
+    .fn-b { background:rgba(0,168,150,0.15); border-color:rgba(0,168,150,0.4); color:#00A896; }
+    .fn-c { background:rgba(2,195,154,0.1); border-color:rgba(2,195,154,0.3); color:var(--neon); }
+    .fn-d { background:rgba(232,121,160,0.1); border-color:rgba(232,121,160,0.3); color:var(--mat-accent); }
+    .fn-e { background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.3); color:#60A5FA; }
+    .fn-sub { font-size:0.5rem; color:var(--text-3); text-align:center; line-height:1.2; }
+    .flow-arr {
+      font-size:0.6rem; color:var(--neon); opacity:0.6;
+      animation:fa 2s ease-in-out infinite;
+    }
+    @keyframes fa { 0%,100%{opacity:0.3; transform:translateX(0)} 50%{opacity:1; transform:translateX(2px)} }
+
+    /* ── Status strip ─────────────────────── */
+    .status-strip {
+      display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;
+    }
+    .sys-pill {
+      display:flex; align-items:center; gap:5px;
+      padding:5px 10px;
+      border-radius:100px;
+      font-size:0.6rem; font-weight:500;
+      font-family:var(--font-m);
+      border:1px solid;
+      white-space:nowrap;
+    }
+    .sp-green { background:rgba(2,195,154,0.07); border-color:rgba(2,195,154,0.2); color:var(--neon); }
+    .sp-pink  { background:rgba(232,121,160,0.07); border-color:rgba(232,121,160,0.2); color:var(--mat-accent); }
+    .sp-blue  { background:rgba(59,130,246,0.07); border-color:rgba(59,130,246,0.2); color:#60A5FA; }
+    .sp-gold  { background:rgba(245,158,11,0.07); border-color:rgba(245,158,11,0.2); color:#FCD34D; }
+    .sp-dot   { width:4px; height:4px; border-radius:50%; background:currentColor; animation:pdot 2s infinite; }
+
+    /* ── Ticker ───────────────────────────── */
+    .ticker-outer {
+      overflow:hidden;
+      background:rgba(0,0,0,0.4);
+      border:1px solid var(--border-1);
+      border-radius:8px;
+      margin-top:10px;
+    }
+    .ticker-scroll {
+      display:flex; gap:48px; padding:7px 16px;
+      white-space:nowrap;
+      animation:tick 32s linear infinite;
+      font-family:var(--font-m); font-size:0.62rem; color:var(--text-2);
+    }
+    .t-item { display:flex; align-items:center; gap:7px; }
+    .t-dot  { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
+    @keyframes tick { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ============================================================
+       RIGHT PANEL
+    ============================================================ */
+    .right-panel {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2rem 1.75rem;
+      background: rgba(3,10,9,0.96);
+      backdrop-filter: blur(32px) saturate(180%);
+      border-left: 1px solid var(--border-1);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    /* Animated corner marks */
+    .corner {
+      position:absolute;
+      width:52px; height:52px;
+      border-color: var(--border-2);
+      border-style:solid;
+      pointer-events:none;
+      transition: border-color 0.3s;
+    }
+    .c-tl { top:18px; left:18px; border-width:2px 0 0 2px; border-radius:6px 0 0 0; }
+    .c-br { bottom:18px; right:18px; border-width:0 2px 2px 0; border-radius:0 0 6px 0; }
+    .right-panel:hover .corner { border-color: var(--border-3); }
+
+    /* Security badge */
+    .sec-badge {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:5px 12px;
+      background:rgba(2,195,154,0.06);
+      border:1px solid rgba(2,195,154,0.18);
+      border-radius:100px;
+      font-family:var(--font-m); font-size:0.6rem;
+      color:var(--neon);
+      margin-bottom:1.1rem;
+      position:relative;
+    }
+    .sec-pulse {
+      position:absolute;
+      inset:-1px; border-radius:100px;
+      border:1px solid var(--neon);
+      opacity:0;
+      animation:sec-ring 3s ease-out infinite;
+    }
+    @keyframes sec-ring {
+      0%  { opacity:0.6; transform:scale(1); }
+      100%{ opacity:0; transform:scale(1.08); }
+    }
+
+    .auth-title {
+      font-family:var(--font-d);
+      font-size:1.7rem; font-weight:800;
+      letter-spacing:-0.03em;
+      color:var(--text-1); line-height:1.1;
+      margin-bottom:0.35rem;
+    }
+    .auth-sub { font-size:0.8rem; color:var(--text-2); font-weight:300; margin-bottom:1.6rem; }
+
+    /* ── ROLE DROPDOWN ────────────────────── */
+    .role-wrap { position:relative; margin-bottom:1.25rem; }
+    .role-label { display:block; font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); margin-bottom:0.55rem; }
+
+    .role-trigger {
+      width:100%; padding:11px 14px;
+      background:rgba(0,0,0,0.45);
+      border:1px solid var(--border-1);
+      border-radius:11px;
+      color:var(--text-1); font-size:0.85rem;
+      font-family:var(--font-b);
+      display:flex; align-items:center; gap:10px;
+      position:relative;
+      transition:all 0.2s var(--ease-out);
+      cursor:pointer;
+    }
+    .role-trigger:hover, .role-trigger.open {
+      border-color:var(--border-2);
+      background:rgba(0,0,0,0.6);
+      box-shadow: 0 0 0 3px rgba(2,195,154,0.08);
+    }
+    .rt-icon { font-size:1rem; flex-shrink:0; }
+    .rt-text { flex:1; text-align:left; }
+    .rt-name { font-size:0.85rem; color:var(--text-1); font-weight:500; }
+    .rt-desc { font-size:0.62rem; color:var(--text-3); margin-top:1px; }
+    .rt-arrow {
+      width:18px; height:18px; flex-shrink:0;
+      color:var(--text-3);
+      transition:transform 0.25s var(--ease-out);
+    }
+    .role-trigger.open .rt-arrow { transform:rotate(180deg); }
+
+    .role-dropdown {
+      position:absolute; top:calc(100% + 6px); left:0; right:0;
+      background:rgba(6,20,17,0.97);
+      border:1px solid var(--border-2);
+      border-radius:13px;
+      z-index:100;
+      overflow:hidden;
+      backdrop-filter:blur(24px);
+      box-shadow:var(--shadow-lg);
+      max-height:0;
+      opacity:0;
+      transform:translateY(-8px);
+      transition:max-height 0.35s var(--ease-out), opacity 0.25s, transform 0.3s var(--ease-out);
+      pointer-events:none;
+    }
+    .role-dropdown.open {
+      max-height:360px;
+      opacity:1; transform:translateY(0);
+      pointer-events:all;
+    }
+
+    .role-search-wrap {
+      padding:10px 12px 8px;
+      border-bottom:1px solid var(--border-1);
+      position:relative;
+    }
+    .role-search-icon { position:absolute; left:22px; top:50%; transform:translateY(-50%); color:var(--text-3); font-size:0.75rem; }
+    .role-search {
+      width:100%; padding:7px 10px 7px 30px;
+      background:rgba(0,0,0,0.4);
+      border:1px solid var(--border-1);
+      border-radius:8px;
+      color:var(--text-1); font-size:0.8rem;
+      font-family:var(--font-m);
+      outline:none;
+      transition:border-color 0.2s;
+    }
+    .role-search:focus { border-color:var(--border-2); }
+    .role-search::placeholder { color:var(--text-4); }
+
+    .role-list { overflow-y:auto; max-height:280px; padding:6px; }
+    .role-opt {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 10px; border-radius:9px;
+      cursor:pointer;
+      transition:background 0.15s;
+      position:relative;
+    }
+    .role-opt:hover, .role-opt.focused { background:var(--glass-20); }
+    .role-opt.selected { background:rgba(2,195,154,0.1); }
+    .role-opt.selected::before {
+      content:'';
+      position:absolute; left:0; top:20%; bottom:20%;
+      width:2px; border-radius:2px;
+      background:var(--neon);
+    }
+    .ro-icon { font-size:1rem; flex-shrink:0; width:28px; text-align:center; }
+    .ro-info { flex:1; }
+    .ro-name { font-size:0.8rem; color:var(--text-1); font-weight:500; }
+    .ro-desc { font-size:0.62rem; color:var(--text-3); margin-top:1px; line-height:1.3; }
+    .ro-tag {
+      font-family:var(--font-m); font-size:0.56rem; padding:2px 7px;
+      border-radius:100px; border:1px solid; flex-shrink:0;
+    }
+    .tag-g { color:var(--neon); border-color:rgba(2,195,154,0.3); background:rgba(2,195,154,0.08); }
+    .tag-m { color:var(--mat-accent); border-color:rgba(232,121,160,0.3); background:rgba(232,121,160,0.08); }
+    .tag-b { color:#60A5FA; border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08); }
+    .tag-r { color:#FB923C; border-color:rgba(251,146,60,0.3); background:rgba(251,146,60,0.08); }
+    .role-opt.hidden { display:none; }
+
+    /* Role preview */
+    .role-preview {
+      padding:9px 12px;
+      background:rgba(0,0,0,0.3);
+      border:1px solid var(--border-1);
+      border-radius:10px;
+      margin-top:8px;
+      display:flex; align-items:flex-start; gap:8px;
+      min-height:52px;
+      transition:all 0.3s var(--ease-out);
+    }
+    .rp-icon { font-size:0.9rem; margin-top:1px; flex-shrink:0; }
+    .rp-mods { font-size:0.7rem; color:var(--text-1); font-weight:500; line-height:1.4; }
+    .rp-stats { font-size:0.62rem; color:var(--text-3); margin-top:3px; }
+
+    /* ── Form inputs ──────────────────────── */
+    .form-group { display:flex; flex-direction:column; gap:10px; margin-bottom:0.8rem; }
+    .field-lbl { display:block; font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-3); margin-bottom:0.45rem; }
+    .input-wrap { position:relative; }
+    .input-icon {
+      position:absolute; left:13px; top:50%; transform:translateY(-50%);
+      color:var(--text-3); font-size:0.82rem; pointer-events:none;
+      transition:color 0.2s; z-index:1;
+    }
+    .inp {
+      width:100%; padding:12px 13px 12px 40px;
+      background:rgba(0,0,0,0.5);
+      border:1px solid var(--border-1);
+      border-radius:10px;
+      color:var(--text-1); font-size:0.87rem;
+      font-family:var(--font-b);
+      outline:none;
+      transition:all 0.2s var(--ease-out);
+      box-shadow: inset 0 1px 0 rgba(0,0,0,0.5);
+    }
+    .inp::placeholder { color:var(--text-4); }
+    .inp:focus {
+      border-color:var(--border-2);
+      background:rgba(0,0,0,0.65);
+      box-shadow:0 0 0 3px rgba(2,195,154,0.1), inset 0 1px 0 rgba(0,0,0,0.5);
+    }
+    .inp:focus ~ .input-icon, .input-wrap:focus-within .input-icon { color:var(--neon); }
+    .pwd-btn {
+      position:absolute; right:12px; top:50%; transform:translateY(-50%);
+      background:none; border:none; color:var(--text-3);
+      padding:4px; transition:color 0.2s; font-size:0.8rem;
+    }
+    .pwd-btn:hover { color:var(--neon); }
+
+    .err-msg {
+      font-size:0.68rem; color:#FB923C;
+      display:none; align-items:center; gap:5px;
+      margin-top:5px;
+    }
+    .err-msg.show { display:flex; }
+    .input-wrap.err .inp { border-color:rgba(251,146,60,0.5); }
+
+    /* ── Options row ──────────────────────── */
+    .opts-row {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:10px;
+    }
+    .chk-wrap { display:flex; align-items:center; gap:7px; cursor:pointer; }
+    .chk {
+      width:15px; height:15px; border-radius:4px;
+      border:1px solid var(--border-1); background:transparent;
+      appearance:none; -webkit-appearance:none; cursor:pointer;
+      transition:all 0.2s; position:relative;
+    }
+    .chk:checked { background:var(--neon); border-color:var(--neon); }
+    .chk:checked::after {
+      content:'✓';
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.58rem; color:#030A09; font-weight:900;
+    }
+    .chk-lbl { font-size:0.76rem; color:var(--text-2); }
+    .link-btn {
+      background:none; border:none;
+      font-size:0.76rem; color:var(--neon);
+      font-family:var(--font-b); cursor:pointer;
+      opacity:0.85; transition:opacity 0.2s;
+    }
+    .link-btn:hover { opacity:1; }
+
+    /* ── MFA row ──────────────────────────── */
+    .mfa-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:9px 13px;
+      background:rgba(2,195,154,0.05);
+      border:1px solid var(--border-1);
+      border-radius:10px; margin-top:10px;
+    }
+    .mfa-l { display:flex; align-items:center; gap:7px; font-size:0.76rem; color:var(--text-2); }
+    .mfa-ic { color:var(--neon); }
+    .toggle {
+      width:36px; height:20px;
+      background:var(--brand-dark);
+      border-radius:100px; position:relative; cursor:pointer;
+      border:none; transition:background 0.25s;
+    }
+    .toggle.on { background:var(--neon); }
+    .toggle-thumb {
+      position:absolute; width:14px; height:14px;
+      background:white; border-radius:50%;
+      top:3px; left:3px;
+      transition:transform 0.25s var(--ease-spring);
+      box-shadow:0 1px 4px rgba(0,0,0,0.4);
+    }
+    .toggle.on .toggle-thumb { transform:translateX(16px); }
+
+    /* ── Bio row ──────────────────────────── */
+    .bio-row { display:flex; gap:7px; margin-top:10px; }
+    .bio-btn {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+      padding:8px 10px;
+      background:transparent;
+      border:1px dashed var(--border-1);
+      border-radius:10px;
+      font-size:0.7rem; color:var(--text-3);
+      font-family:var(--font-b);
+      transition:all 0.2s;
+      position:relative; overflow:hidden;
+    }
+    .bio-btn::before {
+      content:'';
+      position:absolute; inset:0;
+      background:var(--glass-20);
+      opacity:0; transition:opacity 0.2s;
+    }
+    .bio-btn:hover { border-color:var(--border-2); color:var(--neon); }
+    .bio-btn:hover::before { opacity:1; }
+
+    /* ── Biometric scan animation ─────────── */
+    .bio-scan-wrap {
+      position:relative; overflow:hidden;
+    }
+    .bio-scan-line {
+      position:absolute; left:0; right:0;
+      height:2px;
+      background:linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity:0;
+      pointer-events:none;
+    }
+    .bio-btn:active .bio-scan-line {
+      animation:scan-anim 0.8s var(--ease-out) forwards;
+    }
+    @keyframes scan-anim {
+      0%   { top:0; opacity:0.8; }
+      100% { top:100%; opacity:0; }
+    }
+
+    /* ── Sign-in button ───────────────────── */
+    .signin-btn {
+      width:100%;
+      padding:14px;
+      background:linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-primary) 50%, var(--brand-accent) 100%);
+      border:none; border-radius:12px;
+      color:#fff; font-family:var(--font-d);
+      font-size:0.93rem; font-weight:700; letter-spacing:0.02em;
+      cursor:pointer; position:relative; overflow:hidden;
+      transition:all 0.3s var(--ease-out);
+      margin-top:1.25rem;
+      display:flex; align-items:center; justify-content:center; gap:9px;
+    }
+    .signin-btn::before {
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 55%);
+    }
+    .signin-btn::after {
+      content:'';
+      position:absolute;
+      top:0; left:-100%; width:60%; height:100%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+      transform:skewX(-20deg);
+      animation:btn-sweep 3s ease-in-out infinite 2s;
+    }
+    @keyframes btn-sweep { 0%{left:-100%} 100%{left:160%} }
+    .signin-btn:hover {
+      transform:translateY(-2px);
+      box-shadow:0 10px 36px rgba(2,195,154,0.35), 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .signin-btn:active { transform:translateY(0); }
+    .signin-btn.loading { pointer-events:none; opacity:0.8; }
+    .spin {
+      width:17px; height:17px;
+      border:2px solid rgba(255,255,255,0.3);
+      border-top-color:white;
+      border-radius:50%;
+      animation:sp 0.7s linear infinite;
+      display:none; flex-shrink:0;
+    }
+    .signin-btn.loading .spin { display:block; }
+    @keyframes sp { to{transform:rotate(360deg)} }
+
+    /* ── AI Shield Animation ──────────────── */
+    .shield-wrap {
+      display:flex; align-items:center; justify-content:center;
+      padding:6px 0 4px;
+    }
+    .shield-anim {
+      position:relative; width:36px; height:36px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .shield-ring {
+      position:absolute; inset:0;
+      border-radius:50%;
+      border:1px solid var(--neon-dim);
+      animation:shield-pulse 2.5s ease-out infinite;
+    }
+    .shield-ring:nth-child(2) { animation-delay:0.8s; }
+    .shield-ring:nth-child(3) { animation-delay:1.6s; }
+    @keyframes shield-pulse {
+      0%   { transform:scale(0.7); opacity:0.8; }
+      100% { transform:scale(1.6); opacity:0; }
+    }
+    .shield-icon { position:relative; z-index:1; font-size:1.1rem; }
+
+    /* ── SSO divider ──────────────────────── */
+    .sso-div {
+      display:flex; align-items:center; gap:10px;
+      margin:1rem 0 0.8rem;
+    }
+    .sso-line { flex:1; height:1px; background:var(--border-1); }
+    .sso-txt { font-size:0.66rem; color:var(--text-4); white-space:nowrap; font-family:var(--font-m); }
+    .sso-btns { display:flex; gap:7px; }
+    .sso-btn {
+      flex:1; padding:9px 10px;
+      background:var(--glass-10);
+      border:1px solid var(--border-1);
+      border-radius:10px;
+      color:var(--text-2); font-size:0.72rem;
+      display:flex; align-items:center; justify-content:center; gap:6px;
+      transition:all 0.2s; font-family:var(--font-b);
+    }
+    .sso-btn:hover { border-color:var(--border-2); color:var(--text-1); background:var(--glass-20); }
+
+    /* ── Footer ───────────────────────────── */
+    .auth-footer {
+      margin-top:1.25rem;
+      padding-top:1rem;
+      border-top:1px solid var(--border-1);
+    }
+    .integ-row {
+      display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:8px;
+    }
+    .integ-tag {
+      display:flex; align-items:center; gap:4px;
+      padding:3px 8px;
+      background:rgba(0,0,0,0.35);
+      border:1px solid var(--border-1);
+      border-radius:5px;
+      font-size:0.58rem; color:var(--text-3);
+      font-family:var(--font-m);
+    }
+    .it-dot { width:3px; height:3px; border-radius:50%; background:var(--neon); flex-shrink:0; }
+    .it-dot-m { background:var(--mat-accent); }
+    .it-dot-b { background:#60A5FA; }
+    .it-dot-g { background:#FCD34D; }
+
+    .session-row {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      font-family:var(--font-m); font-size:0.6rem; color:var(--text-3);
+      margin-bottom:7px;
+    }
+    .uptime-segs { display:flex; gap:2px; }
+    .us { width:4px; height:9px; border-radius:1px; background:var(--neon); opacity:0.65; }
+    .us.off { opacity:0.2; }
+    .footer-legal {
+      font-size:0.62rem; color:var(--text-4); text-align:center; line-height:1.5;
+    }
+    .footer-legal a { color:var(--neon); opacity:0.8; }
+    .footer-legal a:hover { opacity:1; }
+
+    /* ============================================================
+       TOAST NOTIFICATION
+    ============================================================ */
+    .toast {
+      position:fixed; top:18px; right:18px;
+      padding:12px 18px;
+      background:rgba(4,12,10,0.97);
+      border:1px solid var(--border-2);
+      border-radius:12px;
+      backdrop-filter:blur(24px);
+      font-size:0.8rem; color:var(--text-1);
+      z-index:9999;
+      display:flex; align-items:center; gap:9px;
+      transform:translateX(130%);
+      transition:transform 0.4s var(--ease-spring);
+      box-shadow:var(--shadow-glow), var(--shadow-lg);
+      max-width:310px;
+    }
+    .toast.show { transform:translateX(0); }
+    .toast-ic { color:var(--neon); font-size:0.95rem; flex-shrink:0; }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width:1100px) {
+      .portal { grid-template-columns:1fr 440px; }
+      .dash-grid { grid-template-columns:repeat(2,1fr); }
+      .card.span3 { grid-column:span 2; }
+    }
+    @media (max-width:880px) {
+      .portal { grid-template-columns:1fr; }
+      .left-panel { border-right:none; border-bottom:1px solid var(--border-1); padding:1.5rem; }
+      .right-panel { border-left:none; }
+      .metrics-row { grid-template-columns:repeat(3,1fr); }
+    }
+    @media (max-width:600px) {
+      .dash-grid { display:none; }
+      .metrics-row { grid-template-columns:repeat(2,1fr); }
+      .ticker-outer { display:none; }
+      .hero-h1 { font-size:1.6rem; }
+      .status-cluster .mat-badge { display:none; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      *, *::before, *::after {
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+      }
+    }
+
+    /* ============================================================
+       PARTICLE CANVAS (overlaid above bg)
+    ============================================================ */
+    #particles { position:fixed; inset:0; z-index:0; pointer-events:none; }
+  </style>
+</head>
+<body>
+
+<!-- ── Background layers ───────────────────────────────── -->
+<canvas id="particles" aria-hidden="true"></canvas>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="orb orb-1" aria-hidden="true"></div>
+<div class="orb orb-2" aria-hidden="true"></div>
+<div class="orb orb-3" aria-hidden="true"></div>
+
+<!-- ── Toast ───────────────────────────────────────────── -->
+<div class="toast" id="toast" role="alert" aria-live="polite">
+  <span class="toast-ic" id="toast-ic">🔔</span>
+  <span id="toast-msg"></span>
+</div>
+
+<!-- ── PORTAL ───────────────────────────────────────────── -->
+<main class="portal" role="main">
+
+  <!-- ══════════════════════════════════════════════════════
+       LEFT — INTELLIGENCE PANEL
+  ══════════════════════════════════════════════════════ -->
+  <section class="left-panel" aria-label="UniHealth 360 System Intelligence">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M11 3v4M11 15v4M3 11h4M15 11h4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+            <rect x="7" y="7" width="8" height="8" rx="2" fill="rgba(255,255,255,0.2)" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="11" cy="11" r="2" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <div class="brand-name">UniHealth 360</div>
+          <div class="brand-tag">National Healthcare OS</div>
+        </div>
+      </div>
+      <div class="status-cluster">
+        <div class="status-badge"><div class="pulse-dot"></div>ALL SYSTEMS LIVE</div>
+        <div class="mat-badge"><div class="mat-dot"></div>MATERNITY LIVE</div>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-eyebrow">AI-Powered National Healthcare Infrastructure</div>
+      <h1 class="hero-h1">
+        Next-Gen<br/>
+        <span class="h1-accent">Healthcare</span> OS<br/>
+        <span style="font-size:0.7em; font-weight:700;">+ <span class="h1-mat">Maternity</span> Intelligence</span>
+      </h1>
+      <p class="hero-sub">Centralized AI-powered platform unifying EMR, maternity care, NICU, pharmacy, lab, telemedicine, and insurance into one secure ecosystem.</p>
+      <div class="hero-slogan">
+        <span>One Patient</span> · <span>One Record</span> · <span>One Unified System</span>
+      </div>
+    </div>
+
+    <!-- System status strip -->
+    <div class="status-strip" aria-label="System component status">
+      <div class="sys-pill sp-green"><div class="sp-dot"></div>AI Engine Active</div>
+      <div class="sys-pill sp-green"><div class="sp-dot"></div>Hospital Network Online</div>
+      <div class="sys-pill sp-blue"><div class="sp-dot"></div>CIC Insurance Connected</div>
+      <div class="sys-pill sp-gold"><div class="sp-dot"></div>Old Mutual Verified</div>
+      <div class="sys-pill sp-green"><div class="sp-dot"></div>Telemedicine Active</div>
+      <div class="sys-pill sp-pink"><div class="sp-dot"></div>Maternity Monitoring Live</div>
+      <div class="sys-pill sp-pink"><div class="sp-dot"></div>NICU System Operational</div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="metrics-row" aria-label="Live system metrics">
+      <div class="metric">
+        <div class="m-val" id="m-h">0</div>
+        <div class="m-lbl">Hospitals Online</div>
+      </div>
+      <div class="metric">
+        <div class="m-val" id="m-p">0</div>
+        <div class="m-lbl">Active Patients</div>
+      </div>
+      <div class="metric">
+        <div class="m-val mat-color" id="m-mat">0</div>
+        <div class="m-lbl">Maternity Active</div>
+      </div>
+      <div class="metric">
+        <div class="m-val">99.98%</div>
+        <div class="m-lbl">Uptime</div>
+      </div>
+      <div class="metric">
+        <div class="m-val" id="m-ai">47</div>
+        <div class="m-lbl">AI Models Live</div>
+      </div>
+    </div>
+
+    <!-- Dashboard grid -->
+    <div class="dash-grid" aria-label="System dashboard preview">
+
+      <!-- Bed occupancy -->
+      <div class="card" role="img" aria-label="Bed occupancy">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">Bed Occupancy</span>
+          <span class="c-badge b-live">LIVE</span>
+        </div>
+        <div class="bed-wrap">
+          <div class="bed-stat-block">
+            <div class="bed-big">78%</div>
+            <div class="bed-sm">847 / 1,086 beds</div>
+          </div>
+          <div>
+            <div class="bar-chart" aria-hidden="true">
+              <div><div class="bar bar-r" style="height:95%"></div><div class="bar-lbl">ER</div></div>
+              <div><div class="bar bar-g" style="height:88%"></div><div class="bar-lbl">ICU</div></div>
+              <div><div class="bar bar-m" style="height:82%"></div><div class="bar-lbl">Mat</div></div>
+              <div><div class="bar bar-g" style="height:60%"></div><div class="bar-lbl">Surg</div></div>
+              <div><div class="bar bar-d" style="height:45%"></div><div class="bar-lbl">OPD</div></div>
+              <div><div class="bar bar-g" style="height:65%"></div><div class="bar-lbl">Onc</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient flow -->
+      <div class="card" role="img" aria-label="Patient flow">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">Patient Flow</span>
+          <span class="c-badge b-live">LIVE</span>
+        </div>
+        <div class="ring-section">
+          <div class="ring-wrap" aria-hidden="true">
+            <svg class="ring-svg" viewBox="0 0 68 68">
+              <circle class="r-bg" cx="34" cy="34" r="28"/>
+              <circle class="r-fill" cx="34" cy="34" r="28" style="stroke-dashoffset:44"/>
+            </svg>
+            <div class="ring-mid">
+              <div class="ring-num">76%</div>
+              <div class="ring-sub">Flow</div>
+            </div>
+          </div>
+          <div class="flow-list" aria-label="Department counts">
+            <div class="fl-item"><div class="fl-dot" style="background:#02C39A"></div><span class="fl-name">Emergency</span><span class="fl-val">142</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#E879A0"></div><span class="fl-name">Maternity</span><span class="fl-val">67</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#00A896"></div><span class="fl-name">Outpatient</span><span class="fl-val">389</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#FB923C"></div><span class="fl-name">Critical</span><span class="fl-val">24</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maternity card -->
+      <div class="card mat-card" role="img" aria-label="Maternity and women's health">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">🤰 Maternity & Women's Health</span>
+          <span class="c-badge b-mat">LIVE</span>
+        </div>
+        <div class="mat-stats">
+          <div class="mat-stat">
+            <div class="ms-val" id="mat-active">0</div>
+            <div class="ms-lbl">Active Patients</div>
+            <div class="ms-indicator"><div class="ms-dot" style="background:#E879A0"></div>ANC + Labor + Postnatal</div>
+          </div>
+          <div class="mat-stat">
+            <div class="ms-val">12</div>
+            <div class="ms-lbl">Labor Ward</div>
+            <div class="ms-indicator"><div class="ms-dot" style="background:#FB923C"></div>3 in active labor</div>
+          </div>
+          <div class="mat-stat">
+            <div class="ms-val">8</div>
+            <div class="ms-lbl">NICU Active</div>
+            <div class="ms-indicator"><div class="ms-dot" style="background:#E879A0"></div>2 critical monitoring</div>
+          </div>
+          <div class="mat-stat">
+            <div class="ms-val">94</div>
+            <div class="ms-lbl">ANC Appts Today</div>
+            <div class="ms-indicator"><div class="ms-dot" style="background:#02C39A"></div>18 pending</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Engine -->
+      <div class="card" role="img" aria-label="AI engine status">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">AI Engine</span>
+          <span class="c-badge b-ai">ACTIVE</span>
+        </div>
+        <div class="ai-rows">
+          <div class="ai-row"><span class="ai-lbl">Diagnostic Assistant</span><div class="ai-track"><div class="ai-fill" style="width:94%"></div></div><span class="ai-pct">94%</span></div>
+          <div class="ai-row"><span class="ai-lbl">Maternal Risk Detection</span><div class="ai-track"><div class="ai-fill ai-fill-mat" style="width:91%"></div></div><span class="ai-pct ai-pct-mat">91%</span></div>
+          <div class="ai-row"><span class="ai-lbl">Drug Interaction</span><div class="ai-track"><div class="ai-fill" style="width:98%; animation-delay:0.3s"></div></div><span class="ai-pct">98%</span></div>
+          <div class="ai-row"><span class="ai-lbl">NICU Risk Analysis</span><div class="ai-track"><div class="ai-fill ai-fill-mat" style="width:87%; animation-delay:0.6s"></div></div><span class="ai-pct ai-pct-mat">87%</span></div>
+          <div class="ai-row"><span class="ai-lbl">Predictive Analytics</span><div class="ai-track"><div class="ai-fill" style="width:89%; animation-delay:0.9s"></div></div><span class="ai-pct">89%</span></div>
+        </div>
+      </div>
+
+      <!-- Maternity ring widget -->
+      <div class="card mat-card" role="img" aria-label="Maternity occupancy">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">Labor Ward</span>
+          <span class="c-badge b-mat">MONITORING</span>
+        </div>
+        <div class="ring-section">
+          <div class="ring-wrap" aria-hidden="true">
+            <svg class="ring-svg" viewBox="0 0 68 68">
+              <circle class="r-bg" cx="34" cy="34" r="28"/>
+              <circle class="r-fill r-fill-mat" cx="34" cy="34" r="28" style="stroke-dashoffset:56"/>
+            </svg>
+            <div class="ring-mid">
+              <div class="ring-num" style="color:var(--mat-accent)">70%</div>
+              <div class="ring-sub">Ward<br/>Occupied</div>
+            </div>
+          </div>
+          <div class="flow-list">
+            <div class="fl-item"><div class="fl-dot" style="background:#E879A0"></div><span class="fl-name">Active Labor</span><span class="fl-val">3</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#F472B6"></div><span class="fl-name">Postnatal</span><span class="fl-val">14</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#02C39A"></div><span class="fl-name">ANC Admitted</span><span class="fl-val">7</span></div>
+            <div class="fl-item"><div class="fl-dot" style="background:#FB923C"></div><span class="fl-name">Ob Emergency</span><span class="fl-val">2</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insurance card -->
+      <div class="card" role="img" aria-label="Insurance integrations">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">Insurance Verification</span>
+          <span class="c-badge b-ins">LIVE</span>
+        </div>
+        <div class="ins-grid">
+          <div class="ins-row">
+            <div class="ins-name">
+              <div class="ins-logo cic-logo">CIC</div>
+              CIC Insurance Group
+            </div>
+            <span class="ins-val">KES 4.2M</span>
+          </div>
+          <div style="height:1px; background:var(--border-1); margin:2px 0;"></div>
+          <div class="ins-row">
+            <div class="ins-name">
+              <div class="ins-logo om-logo">OM</div>
+              Old Mutual Kenya
+            </div>
+            <span class="ins-val">KES 2.8M</span>
+          </div>
+          <div style="height:1px; background:var(--border-1); margin:2px 0;"></div>
+          <div class="ins-row">
+            <div class="ins-name" style="font-size:0.65rem; color:var(--text-3);">📋 Claims Processed Today</div>
+            <span style="font-family:var(--font-m); font-size:0.68rem; color:var(--neon);">247</span>
+          </div>
+          <div class="ins-row">
+            <div class="ins-name" style="font-size:0.65rem; color:var(--text-3);">🛡️ AI Fraud Alerts</div>
+            <span style="font-family:var(--font-m); font-size:0.68rem; color:#FB923C;">3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module flow — full width -->
+      <div class="card span3" aria-label="Authentication and module loading flow">
+        <div class="card-shimmer"></div>
+        <div class="c-head">
+          <span class="c-title">Module Pull Architecture — JWT + RBAC + Maternity Module</span>
+          <span class="c-badge b-ai">MICROSERVICES</span>
+        </div>
+        <div class="flow-diag" aria-label="System flow diagram">
+          <div class="fn"><div class="fn-box fn-a">🔐 Login</div><div class="fn-sub">Credential<br/>Validation</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-a">🛡️ JWT Auth</div><div class="fn-sub">OAuth2 + MFA<br/>+ Token</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-b">👤 RBAC</div><div class="fn-sub">Role + Tenant<br/>Detection</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-c">⚡ Module API</div><div class="fn-sub">EMR · Lab<br/>Pharmacy</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-d">🤰 Maternity API</div><div class="fn-sub">ANC · NICU<br/>Fetal Monitor</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-e">💳 Insurance API</div><div class="fn-sub">CIC · Old Mutual<br/>Claims · Verify</div></div>
+          <span class="flow-arr">→</span>
+          <div class="fn"><div class="fn-box fn-b">📊 Dashboard</div><div class="fn-sub">Dynamic<br/>Assembly</div></div>
+        </div>
+      </div>
+
+    </div><!-- /dash-grid -->
+
+    <!-- Ticker -->
+    <div class="ticker-outer" aria-label="Live hospital activity" aria-live="polite">
+      <div class="ticker-scroll">
+        <div class="t-item"><div class="t-dot" style="background:#E879A0"></div>ANC Patient KE-F2847 — High-risk pregnancy flagged by AI</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>CIC Insurance claim #CI-9932 verified — KES 38,500</div>
+        <div class="t-item"><div class="t-dot" style="background:#FB923C"></div>NICU Alert: Neonate Bay-3 oxygen drop — Nurse notified</div>
+        <div class="t-item"><div class="t-dot" style="background:#FCD34D"></div>Old Mutual policy OM-KE-4421 coverage confirmed</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>KEMSA supply order #2847 dispatched — ETA 4hrs</div>
+        <div class="t-item"><div class="t-dot" style="background:#E879A0"></div>Labor Ward: Delivery imminent — Bay 2, Dr. Wanjiku paged</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>AI maternal risk model updated — v4.2.1 deployed</div>
+        <div class="t-item"><div class="t-dot" style="background:#60A5FA"></div>Telemedicine session active — Kisumu Satellite Node</div>
+        <!-- Duplicate for seamless scroll -->
+        <div class="t-item"><div class="t-dot" style="background:#E879A0"></div>ANC Patient KE-F2847 — High-risk pregnancy flagged by AI</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>CIC Insurance claim #CI-9932 verified — KES 38,500</div>
+        <div class="t-item"><div class="t-dot" style="background:#FB923C"></div>NICU Alert: Neonate Bay-3 oxygen drop — Nurse notified</div>
+        <div class="t-item"><div class="t-dot" style="background:#FCD34D"></div>Old Mutual policy OM-KE-4421 coverage confirmed</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>KEMSA supply order #2847 dispatched — ETA 4hrs</div>
+        <div class="t-item"><div class="t-dot" style="background:#E879A0"></div>Labor Ward: Delivery imminent — Bay 2, Dr. Wanjiku paged</div>
+        <div class="t-item"><div class="t-dot" style="background:#02C39A"></div>AI maternal risk model updated — v4.2.1 deployed</div>
+        <div class="t-item"><div class="t-dot" style="background:#60A5FA"></div>Telemedicine session active — Kisumu Satellite Node</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       RIGHT — AUTH PANEL
+  ══════════════════════════════════════════════════════ -->
+  <section class="right-panel" aria-label="Authentication">
+    <div class="corner c-tl" aria-hidden="true"></div>
+    <div class="corner c-br" aria-hidden="true"></div>
+
+    <!-- Security badge + AI shield -->
+    <div class="shield-wrap" aria-hidden="true">
+      <div class="shield-anim">
+        <div class="shield-ring"></div>
+        <div class="shield-ring"></div>
+        <div class="shield-ring"></div>
+        <span class="shield-icon">🔐</span>
+      </div>
+    </div>
+
+    <div class="sec-badge" aria-label="Secure encrypted connection">
+      <div class="sec-pulse" aria-hidden="true"></div>
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+        <rect x="1" y="3.5" width="7" height="5" rx="1.2" stroke="#02C39A" stroke-width="1.1"/>
+        <path d="M2.5 3.5V2.8a2 2 0 0 1 4 0v.7" stroke="#02C39A" stroke-width="1.1"/>
+      </svg>
+      TLS 1.3 · AES-256 · HIPAA · GDPR COMPLIANT
+    </div>
+
+    <h2 class="auth-title">Welcome Back</h2>
+    <p class="auth-sub">Sign in to UniHealth 360 Access Portal</p>
+
+    <!-- ── Role dropdown ────────────────────────────────── -->
+    <div class="role-wrap" id="role-wrap">
+      <label class="role-label" id="role-lbl">Select Your Role</label>
+
+      <button class="role-trigger" id="role-trigger"
+        aria-haspopup="listbox" aria-expanded="false" aria-labelledby="role-lbl">
+        <span class="rt-icon" id="rt-icon" aria-hidden="true">👨‍⚕️</span>
+        <span class="rt-text">
+          <div class="rt-name" id="rt-name">Doctor</div>
+          <div class="rt-desc" id="rt-desc">EMR · Prescriptions · AI Diagnostics · Telemedicine</div>
+        </span>
+        <svg class="rt-arrow" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <div class="role-dropdown" id="role-dropdown" role="listbox" aria-label="Select role">
+        <div class="role-search-wrap">
+          <span class="role-search-icon" aria-hidden="true">🔍</span>
+          <input class="role-search" id="role-search" type="text"
+            placeholder="Search roles..." autocomplete="off"
+            aria-label="Search roles" role="combobox"/>
+        </div>
+        <div class="role-list" id="role-list">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="role-preview" id="role-preview" aria-live="polite">
+        <span class="rp-icon" id="rp-icon" aria-hidden="true">⚡</span>
+        <div>
+          <div class="rp-mods" id="rp-mods">EMR · Prescriptions · Telemedicine · Diagnostics · AI Assist</div>
+          <div class="rp-stats" id="rp-stats">12 patients today · 3 pending reviews · 2 critical alerts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Login form ────────────────────────────────────── -->
+    <form id="login-form" novalidate aria-label="Login form">
+      <div class="form-group">
+
+        <div>
+          <label class="field-lbl" for="username">Staff ID / Email</label>
+          <div class="input-wrap" id="u-wrap">
+            <svg class="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="13" height="13" rx="3" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M1 5h13" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="7.5" cy="9" r="1.8" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            <input type="text" id="username" name="username" class="inp"
+              placeholder="staff.id@hospital.ke"
+              autocomplete="username" aria-required="true"
+              aria-describedby="u-err" spellcheck="false"/>
+          </div>
+          <div class="err-msg" id="u-err" role="alert">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="#FB923C" stroke-width="1.1"/><path d="M5.5 3.2v2.8M5.5 7.5h.01" stroke="#FB923C" stroke-width="1.1" stroke-linecap="round"/></svg>
+            Please enter your Staff ID or email
+          </div>
+        </div>
+
+        <div>
+          <label class="field-lbl" for="password">Password</label>
+          <div class="input-wrap" id="p-wrap">
+            <svg class="input-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <rect x="2" y="6.5" width="11" height="7.5" rx="2" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M4.5 6.5V4.5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.2"/>
+              <circle cx="7.5" cy="10.5" r="1.1" fill="currentColor"/>
+            </svg>
+            <input type="password" id="password" name="password" class="inp"
+              placeholder="Enter your password"
+              autocomplete="current-password" aria-required="true"
+              aria-describedby="p-err"/>
+            <button type="button" class="pwd-btn" id="pwd-btn"
+              aria-label="Toggle password visibility" aria-pressed="false">
+              <svg id="eye" width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path d="M1 7.5S3.5 2.5 7.5 2.5s6.5 5 6.5 5-2.5 5-6.5 5S1 7.5 1 7.5Z" stroke="currentColor" stroke-width="1.2"/>
+                <circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </button>
+          </div>
+          <div class="err-msg" id="p-err" role="alert">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="5.5" cy="5.5" r="4.5" stroke="#FB923C" stroke-width="1.1"/><path d="M5.5 3.2v2.8M5.5 7.5h.01" stroke="#FB923C" stroke-width="1.1" stroke-linecap="round"/></svg>
+            Please enter your password
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Options -->
+      <div class="opts-row">
+        <label class="chk-wrap">
+          <input type="checkbox" class="chk" id="remember" name="remember" aria-label="Remember session for 8 hours"/>
+          <span class="chk-lbl">Remember session (8hrs)</span>
+        </label>
+        <button type="button" class="link-btn" id="forgot-btn">Forgot password?</button>
+      </div>
+
+      <!-- MFA -->
+      <div class="mfa-row">
+        <div class="mfa-l">
+          <span class="mfa-ic" aria-hidden="true">🔑</span>
+          Multi-Factor Authentication
+        </div>
+        <button type="button" class="toggle on" id="mfa-toggle"
+          role="switch" aria-checked="true" aria-label="Toggle MFA">
+          <div class="toggle-thumb"></div>
+        </button>
+      </div>
+
+      <!-- Biometric -->
+      <div class="bio-row">
+        <button type="button" class="bio-btn bio-scan-wrap" aria-label="Fingerprint sign-in (placeholder)">
+          <div class="bio-scan-line"></div>☝️ Fingerprint
+        </button>
+        <button type="button" class="bio-btn" aria-label="Face ID sign-in (placeholder)">
+          👁️ Face ID
+        </button>
+        <button type="button" class="bio-btn" aria-label="Smart card sign-in">
+          💳 Smart Card
+        </button>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="signin-btn" id="signin-btn" aria-label="Sign in to UniHealth 360">
+        <div class="spin" aria-hidden="true"></div>
+        <span id="btn-txt">Sign In to UniHealth 360</span>
+        <svg id="btn-arr" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <path d="M2.5 7.5h10M9 3.5l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </form>
+
+    <!-- SSO -->
+    <div class="sso-div"><div class="sso-line"></div><span class="sso-txt">OR CONTINUE WITH SSO</span><div class="sso-line"></div></div>
+    <div class="sso-btns">
+      <button class="sso-btn" type="button" aria-label="Microsoft Azure AD SSO">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <rect x="0.5" y="0.5" width="5.5" height="5.5" rx="1" fill="#00A896" opacity="0.8"/>
+          <rect x="7" y="0.5" width="5.5" height="5.5" rx="1" fill="#02C39A" opacity="0.6"/>
+          <rect x="0.5" y="7" width="5.5" height="5.5" rx="1" fill="#006B5E" opacity="0.7"/>
+          <rect x="7" y="7" width="5.5" height="5.5" rx="1" fill="#004A40" opacity="0.9"/>
+        </svg>
+        Microsoft Azure AD
+      </button>
+      <button class="sso-btn" type="button" aria-label="Google Workspace SSO">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M6.5 6.5h3.8A3.8 3.8 0 1 1 5.3 3.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        Google Workspace
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <div class="session-row" aria-label="System status">
+        <span>Uptime:</span>
+        <div class="uptime-segs" aria-hidden="true">
+          <div class="us"></div><div class="us"></div><div class="us"></div>
+          <div class="us"></div><div class="us"></div><div class="us"></div>
+          <div class="us"></div><div class="us off"></div>
+        </div>
+        <span style="color:var(--neon)">99.98%</span>
+        <span>·</span>
+        <span id="clock" aria-live="polite">--:--:--</span>
+      </div>
+
+      <div class="integ-row" aria-label="Active integrations">
+        <div class="integ-tag"><div class="it-dot it-dot-b"></div>CIC Insurance</div>
+        <div class="integ-tag"><div class="it-dot it-dot-g"></div>Old Mutual</div>
+        <div class="integ-tag"><div class="it-dot"></div>KEMSA</div>
+        <div class="integ-tag"><div class="it-dot it-dot-m"></div>Maternity AI</div>
+        <div class="integ-tag"><div class="it-dot it-dot-m"></div>NICU Monitor</div>
+        <div class="integ-tag"><div class="it-dot"></div>Nat. Registry</div>
+        <div class="integ-tag"><div class="it-dot"></div>IoT Network</div>
+      </div>
+
+      <p class="footer-legal">
+        © 2025 UniHealth 360 · Ministry of Health Kenya · All sessions are logged and audited.<br/>
+        <a href="#">Terms of Service</a> · <a href="#">Privacy Policy</a> · <a href="#">HIPAA Compliance</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   PARTICLE SYSTEM — neural network background
+───────────────────────────────────────────────────────────── */
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], lines = [], raf;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = rand(0, W); this.y = rand(0, H);
+      this.vx = rand(-0.18, 0.18); this.vy = rand(-0.18, 0.18);
+      this.r = rand(0.8, 2);
+      this.alpha = rand(0.15, 0.55);
+      this.color = Math.random() < 0.25 ? '#E879A0' : '#02C39A';
+    }
+    update() {
+      this.x += this.vx; this.y += this.vy;
+      if (this.x < 0 || this.x > W || this.y < 0 || this.y > H) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = this.alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // Init 80 particles
+  for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    // Connection lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 130) {
+          const alpha = (1 - d / 130) * 0.12;
+          const isMat = particles[i].color === '#E879A0' && particles[j].color === '#E879A0';
+          ctx.strokeStyle = isMat ? '#E879A0' : '#02C39A';
+          ctx.globalAlpha = alpha;
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+    particles.forEach(p => { p.update(); p.draw(); });
+    raf = requestAnimationFrame(loop);
+  }
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    loop();
+  }
+})();
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────────────────────── */
+function toast(msg, icon='🔔', duration=3500) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-ic').textContent = icon;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CLOCK
+───────────────────────────────────────────────────────────── */
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-KE', {hour12:false});
+}
+setInterval(tick, 1000); tick();
+
+/* ─────────────────────────────────────────────────────────────
+   COUNT-UP ANIMATION
+───────────────────────────────────────────────────────────── */
+function countUp(id, target, dur=2200) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = performance.now();
+  function step(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * e).toLocaleString();
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+window.addEventListener('DOMContentLoaded', () => {
+  countUp('m-h', 48, 1800);
+  countUp('m-p', 12847, 2200);
+  countUp('m-mat', 142, 2000);
+  countUp('mat-active', 142, 2000);
+});
+
+/* ─────────────────────────────────────────────────────────────
+   ROLE DATA
+───────────────────────────────────────────────────────────── */
+const ROLES = [
+  {
+    id:'doctor', icon:'👨‍⚕️', name:'Doctor',
+    desc:'EMR · Prescriptions · AI Diagnostics · Telemedicine',
+    mods:'EMR · Prescriptions · Maternity Consult · AI Diagnostics · Telemedicine',
+    stats:'12 patients today · 3 pending reviews · 2 critical alerts',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'nurse', icon:'👩‍⚕️', name:'Nurse',
+    desc:'Patient Care · Vitals · Medication Admin · Ward Mgmt',
+    mods:'Patient Care · Vitals · Maternity Ward · Medication Admin · NICU Support',
+    stats:'18 patients · 6 pending vitals · 1 critical · Maternity ward access',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'admin', icon:'🏥', name:'Administrator',
+    desc:'Hospital Mgmt · HR · Finance · All Modules',
+    mods:'Full System Access · HR · Finance · Reports · All Modules incl. Maternity',
+    stats:'Full system access · 5 pending approvals · Insurance dashboard',
+    tag:'Admin', tagClass:'tag-r'
+  },
+  {
+    id:'pharmacist', icon:'💊', name:'Pharmacist',
+    desc:'Pharmacy · Drug Inventory · KEMSA · Billing',
+    mods:'Pharmacy · Drug Inventory · KEMSA · Maternity Meds · Prescriptions',
+    stats:'89 prescriptions queued · 3 drug alerts · 12 maternity orders',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'lab', icon:'🔬', name:'Lab Technician',
+    desc:'Lab Orders · Results · Equipment · Radiology',
+    mods:'Lab Orders · Results · Radiology · Maternal Blood Panel · NICU Labs',
+    stats:'234 tests pending · 12 critical · 18 maternal panels',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'radiologist', icon:'🩻', name:'Radiologist',
+    desc:'Radiology · PACS · Image Review · Reports',
+    mods:'Radiology · PACS · Ultrasound · Maternal Imaging · Reports',
+    stats:'67 scans queued · 4 urgent reads · 8 obstetric ultrasounds',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'surgeon', icon:'🔪', name:'Surgeon',
+    desc:'Theatre · Surgery Schedule · Pre/Post-op · ICU',
+    mods:'Theatre · Surgery Schedule · C-Section Suite · Pre/Post-op · ICU',
+    stats:'3 scheduled · 1 emergency C-section · Theatre 2 available',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'insurance', icon:'🛡️', name:'Insurance Officer',
+    desc:'CIC Insurance · Old Mutual · Claims · Verification',
+    mods:'CIC Insurance · Old Mutual · Claims AI · Fraud Monitor · Billing',
+    stats:'47 claims today · KES 7M processed · 3 fraud alerts',
+    tag:'Insurance', tagClass:'tag-b'
+  },
+  {
+    id:'telemedicine', icon:'📡', name:'Telemedicine Staff',
+    desc:'Virtual Consults · Patient Queue · Prescriptions · EMR',
+    mods:'Virtual Consults · ANC Remote · Patient Queue · Prescriptions · EMR',
+    stats:'8 virtual sessions today · 3 ANC remote consultations',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'maternity', icon:'🤰', name:'Maternity Staff',
+    desc:'ANC · Labor & Delivery · Postnatal · Fetal Monitor',
+    mods:'ANC · Labor & Delivery · Postnatal · NICU · Fetal Monitor · Ultrasound',
+    stats:'26 ANC patients · 3 in labor · 8 NICU babies · 14 postnatal',
+    tag:'Maternity', tagClass:'tag-m'
+  },
+  {
+    id:'nicu', icon:'👶', name:'NICU Specialist',
+    desc:'NICU · Neonatal Care · Incubator Monitoring · Alerts',
+    mods:'NICU Dashboard · Neonatal Vitals · Incubator IoT · Maternal Link · AI Alerts',
+    stats:'8 neonates monitored · 2 critical · AI risk model active',
+    tag:'Maternity', tagClass:'tag-m'
+  },
+  {
+    id:'icu', icon:'🫀', name:'ICU Staff',
+    desc:'ICU · Critical Care · Ventilator · Monitoring',
+    mods:'ICU Dashboard · Critical Care · Ventilator Mgmt · Drug Drips · Alerts',
+    stats:'24 ICU beds · 18 occupied · 3 on ventilator · 2 post-surgical',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'patient', icon:'🧑‍🦽', name:'Patient',
+    desc:'My Records · Appointments · Bills · Prescriptions',
+    mods:'My Health Records · Appointments · Bills · Prescriptions · Telemedicine',
+    stats:'Next appointment: 14 May · 2 lab results ready · Insurance verified',
+    tag:'Patient', tagClass:'tag-b'
+  },
+  {
+    id:'it_admin', icon:'💻', name:'IT Administrator',
+    desc:'System Admin · Users · Audit Logs · Security',
+    mods:'System Admin · User Management · Audit Logs · Security · API Config',
+    stats:'All modules · Full access · Audit trail enabled',
+    tag:'Admin', tagClass:'tag-r'
+  },
+  {
+    id:'super_admin', icon:'⚡', name:'Super Admin',
+    desc:'ALL MODULES · Multi-Hospital · National Data · AI Config',
+    mods:'⚡ ALL MODULES · Multi-Hospital · National Health Data · AI Engine Config',
+    stats:'National admin access · All hospitals · All data · CIC + Old Mutual admin',
+    tag:'Super', tagClass:'tag-r'
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   ROLE DROPDOWN
+───────────────────────────────────────────────────────────── */
+let selectedRole = ROLES[0];
+let dropOpen = false;
+let focusedIdx = -1;
+
+const trigger  = document.getElementById('role-trigger');
+const dropdown = document.getElementById('role-dropdown');
+const roleList = document.getElementById('role-list');
+const search   = document.getElementById('role-search');
+
+function buildList(filter='') {
+  roleList.innerHTML = '';
+  const filtered = ROLES.filter(r =>
+    r.name.toLowerCase().includes(filter.toLowerCase()) ||
+    r.desc.toLowerCase().includes(filter.toLowerCase())
+  );
+  filtered.forEach((role, idx) => {
+    const div = document.createElement('div');
+    div.className = 'role-opt' + (role.id === selectedRole.id ? ' selected' : '');
+    div.setAttribute('role','option');
+    div.setAttribute('aria-selected', role.id === selectedRole.id ? 'true' : 'false');
+    div.dataset.id = role.id;
+    div.innerHTML = `
+      <div class="ro-icon">${role.icon}</div>
+      <div class="ro-info">
+        <div class="ro-name">${role.name}</div>
+        <div class="ro-desc">${role.desc}</div>
+      </div>
+      <div class="ro-tag ${role.tagClass}">${role.tag}</div>
+    `;
+    div.addEventListener('click', () => selectRole(role));
+    div.addEventListener('mouseenter', () => {
+      document.querySelectorAll('.role-opt.focused').forEach(el => el.classList.remove('focused'));
+      div.classList.add('focused');
+      focusedIdx = idx;
+    });
+    roleList.appendChild(div);
+  });
+  return filtered;
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('rt-icon').textContent = role.icon;
+  document.getElementById('rt-name').textContent = role.name;
+  document.getElementById('rt-desc').textContent = role.desc;
+  document.getElementById('rp-icon').textContent = role.icon;
+  document.getElementById('rp-mods').textContent = role.mods;
+  document.getElementById('rp-stats').textContent = role.stats;
+  closeDropdown();
+  buildList();
+  toast(`Role set to ${role.name}`, role.icon, 2500);
+}
+
+function openDropdown() {
+  dropOpen = true;
+  dropdown.classList.add('open');
+  trigger.classList.add('open');
+  trigger.setAttribute('aria-expanded','true');
+  search.focus();
+  focusedIdx = -1;
+}
+function closeDropdown() {
+  dropOpen = false;
+  dropdown.classList.remove('open');
+  trigger.classList.remove('open');
+  trigger.setAttribute('aria-expanded','false');
+  search.value = '';
+  buildList();
+}
+
+trigger.addEventListener('click', e => {
+  e.stopPropagation();
+  dropOpen ? closeDropdown() : openDropdown();
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('role-wrap').contains(e.target)) closeDropdown();
+});
+search.addEventListener('input', () => buildList(search.value));
+
+// Keyboard nav
+trigger.addEventListener('keydown', e => {
+  if (e.key==='Enter'||e.key===' ') { e.preventDefault(); openDropdown(); }
+});
+dropdown.addEventListener('keydown', e => {
+  const opts = [...roleList.querySelectorAll('.role-opt')];
+  if (e.key==='ArrowDown') {
+    e.preventDefault();
+    focusedIdx = Math.min(focusedIdx+1, opts.length-1);
+    opts.forEach((o,i) => o.classList.toggle('focused', i===focusedIdx));
+    opts[focusedIdx]?.scrollIntoView({block:'nearest'});
+  } else if (e.key==='ArrowUp') {
+    e.preventDefault();
+    focusedIdx = Math.max(focusedIdx-1, 0);
+    opts.forEach((o,i) => o.classList.toggle('focused', i===focusedIdx));
+    opts[focusedIdx]?.scrollIntoView({block:'nearest'});
+  } else if (e.key==='Enter') {
+    const role = ROLES.find(r => r.id === opts[focusedIdx]?.dataset.id);
+    if (role) selectRole(role);
+  } else if (e.key==='Escape') {
+    closeDropdown(); trigger.focus();
+  }
+});
+
+// Init list
+buildList();
+
+/* ─────────────────────────────────────────────────────────────
+   PASSWORD TOGGLE
+───────────────────────────────────────────────────────────── */
+const pwdField = document.getElementById('password');
+const eyeBtn   = document.getElementById('pwd-btn');
+const eyeEl    = document.getElementById('eye');
+
+const eyeOpen   = `<path d="M1 7.5S3.5 2.5 7.5 2.5s6.5 5 6.5 5-2.5 5-6.5 5S1 7.5 1 7.5Z" stroke="currentColor" stroke-width="1.2"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.2"/>`;
+const eyeClosed = `<path d="M1 1l13 13M5.5 5.8a2.8 2.8 0 0 0 3.7 3.7M3.2 3.6C1.9 4.6 1.2 5.8 1 7.5c1 1.5 3.2 5 6.5 5 1.5 0 2.8-.5 3.8-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>`;
+
+eyeBtn.addEventListener('click', () => {
+  const shown = pwdField.type === 'text';
+  pwdField.type = shown ? 'password' : 'text';
+  eyeEl.innerHTML = shown ? eyeOpen : eyeClosed;
+  eyeBtn.setAttribute('aria-pressed', (!shown).toString());
+});
+
+/* ─────────────────────────────────────────────────────────────
+   MFA TOGGLE
+───────────────────────────────────────────────────────────── */
+let mfaOn = true;
+const mfaBtn = document.getElementById('mfa-toggle');
+mfaBtn.addEventListener('click', () => {
+  mfaOn = !mfaOn;
+  mfaBtn.classList.toggle('on', mfaOn);
+  mfaBtn.setAttribute('aria-checked', mfaOn.toString());
+  toast(
+    mfaOn ? 'MFA enabled — Session is more secure' : '⚠️ MFA disabled — Enable for maximum security',
+    mfaOn ? '🔑' : '⚠️'
+  );
+});
+
+/* ─────────────────────────────────────────────────────────────
+   BIOMETRIC BUTTONS
+───────────────────────────────────────────────────────────── */
+document.querySelectorAll('.bio-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    toast('Biometric auth available in the UniHealth 360 native app', '📱');
+  });
+});
+
+/* ─────────────────────────────────────────────────────────────
+   FORGOT PASSWORD
+───────────────────────────────────────────────────────────── */
+document.getElementById('forgot-btn').addEventListener('click', () => {
+  toast('Password reset link will be sent to your registered email', '📧', 4000);
+});
+
+/* ─────────────────────────────────────────────────────────────
+   SSO
+───────────────────────────────────────────────────────────── */
+document.querySelectorAll('.sso-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = btn.textContent.trim();
+    toast(`Redirecting to ${p}...`, '🔗');
+    // hook: window.location.href = `/auth/sso/${p.toLowerCase().replace(/\s+/g,'-')}`;
+  });
+});
+
+/* ─────────────────────────────────────────────────────────────
+   FORM VALIDATION + SUBMISSION
+───────────────────────────────────────────────────────────── */
+function fieldOk(inputId, wrapId, errId) {
+  const v = document.getElementById(inputId).value.trim();
+  const wrap = document.getElementById(wrapId);
+  const err  = document.getElementById(errId);
+  if (!v) {
+    wrap.classList.add('err');
+    err.classList.add('show');
+    document.getElementById(inputId).setAttribute('aria-invalid','true');
+    return false;
+  }
+  wrap.classList.remove('err');
+  err.classList.remove('show');
+  document.getElementById(inputId).removeAttribute('aria-invalid');
+  return true;
+}
+
+['username','password'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    document.getElementById(id==='username'?'u-wrap':'p-wrap').classList.remove('err');
+    document.getElementById(id==='username'?'u-err':'p-err').classList.remove('show');
+    document.getElementById(id).removeAttribute('aria-invalid');
+  });
+});
+
+document.getElementById('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const okU = fieldOk('username','u-wrap','u-err');
+  const okP = fieldOk('password','p-wrap','p-err');
+  if (!okU || !okP) return;
+
+  const btn = document.getElementById('signin-btn');
+  const txt = document.getElementById('btn-txt');
+  const arr = document.getElementById('btn-arr');
+
+  btn.classList.add('loading');
+  txt.textContent = 'Authenticating…';
+  arr.style.display = 'none';
+
+  const payload = {
+    username: document.getElementById('username').value.trim(),
+    password: document.getElementById('password').value,
+    role: selectedRole.id,
+    mfa: mfaOn,
+    remember: document.getElementById('remember').checked,
+    /* JWT + RBAC + module registry hook */
+    modules: getModulesForRole(selectedRole.id),
+  };
+
+  try {
+    /* ── Real API hook ──
+    const res = await fetch('/api/v1/auth/login', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content||'',
+        'X-Client-Role': payload.role,
+        'X-App-Version': '2.0',
+      },
+      credentials:'include',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Auth failed');
+    const data = await res.json();
+    sessionStorage.setItem('uh360_token', data.token);
+    sessionStorage.setItem('uh360_role', data.role);
+    sessionStorage.setItem('uh360_modules', JSON.stringify(data.modules));
+    window.location.href = data.redirect_url || '/dashboard';
+    */
+
+    // ── Demo simulation ──
+    await new Promise(r => setTimeout(r, 2200));
+
+    txt.textContent = '✓ Access Granted';
+    btn.style.background = 'linear-gradient(135deg,#004A40,#006B5E,#02C39A)';
+    toast(`Welcome back! Loading ${selectedRole.name} dashboard…`, '✅', 3500);
+
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.style.background = '';
+      txt.textContent = 'Sign In to UniHealth 360';
+      arr.style.display = '';
+      // window.location.href = `/dashboard/${selectedRole.id}`;
+    }, 3200);
+
+  } catch(err) {
+    btn.classList.remove('loading');
+    txt.textContent = 'Sign In to UniHealth 360';
+    arr.style.display = '';
+    toast('Authentication failed. Check your credentials.', '❌', 4000);
+    document.getElementById('u-wrap').classList.add('err');
+    document.getElementById('p-wrap').classList.add('err');
+  }
+});
+
+/* ── Module Registry (RBAC → Module Pull API) ── */
+function getModulesForRole(roleId) {
+  const registry = {
+    doctor:      ['emr','maternity','lab','pharmacy','telemedicine','ai_diagnostics'],
+    nurse:       ['ward','maternity','nicu','medication_admin','vitals'],
+    admin:       ['*'],
+    pharmacist:  ['pharmacy','drug_inventory','kemsa','maternity_meds','prescriptions','billing'],
+    lab:         ['lab_orders','results','radiology','maternal_panels','nicu_labs'],
+    radiologist: ['radiology','pacs','ultrasound','maternal_imaging','reports'],
+    surgeon:     ['theatre','surgery_schedule','csection_suite','pre_post_op','icu'],
+    insurance:   ['cic_insurance','old_mutual','claims_ai','fraud_monitor','billing'],
+    telemedicine:['virtual_consults','anc_remote','patient_queue','prescriptions','emr'],
+    maternity:   ['maternity','nicu','anc','delivery','postnatal','fetal_monitoring','ultrasound'],
+    nicu:        ['nicu_dashboard','neonatal_vitals','incubator_iot','maternal_link','ai_alerts'],
+    icu:         ['icu_dashboard','critical_care','ventilator_mgmt','drug_drips','alerts'],
+    patient:     ['my_records','appointments','bills','prescriptions','telemedicine'],
+    it_admin:    ['system_admin','user_mgmt','audit_logs','security','api_config'],
+    super_admin: ['*'],
+  };
+  return registry[roleId] || ['emr'];
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INPUT FOCUS GLOW
+───────────────────────────────────────────────────────────── */
+document.querySelectorAll('.inp').forEach(inp => {
+  inp.addEventListener('focus', () => inp.closest('.input-wrap').style.filter='drop-shadow(0 0 8px rgba(2,195,154,0.2))');
+  inp.addEventListener('blur',  () => inp.closest('.input-wrap').style.filter='');
+});
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE ENTRY ANIMATIONS (staggered reveal)
+───────────────────────────────────────────────────────────── */
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const els = [
+    ['.topbar',0.08], ['.hero',0.18], ['.status-strip',0.28],
+    ['.metrics-row',0.36], ['.dash-grid',0.46], ['.ticker-outer',0.58],
+    ['.sec-badge',0.1], ['.auth-title',0.2], ['.auth-sub',0.26],
+    ['.role-wrap',0.34], ['#login-form',0.44], ['.sso-div',0.54],
+    ['.auth-footer',0.62],
+  ];
+  els.forEach(([sel, delay]) => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    el.style.cssText += `opacity:0; transform:translateY(18px); transition:opacity 0.6s ease ${delay}s, transform 0.6s ease ${delay}s;`;
+    requestAnimationFrame(() => {
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    });
+  });
+}
+</script>
+</body>
+</html>

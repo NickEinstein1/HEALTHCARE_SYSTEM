@@ -1,0 +1,94 @@
+/* Tabs Component Styles */
+:root {
+  --neon: #2ecc71;
+  --bn: rgba(46, 204, 113, 0.22);
+  --gl: rgba(255, 255, 255, 0.04);
+  --t1: #f0fdf4;
+  --t2: rgba(240, 253, 244, 0.72);
+  --t3: rgba(240, 253, 244, 0.42);
+  --t4: rgba(240, 253, 244, 0.2);
+  --fn: 'Sora', sans-serif;
+  --tr: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tabs-container {
+  width: 100%;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--gl);
+  border-radius: 8px;
+  padding: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.tab {
+  padding: 6px 13px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--tr);
+  color: var(--t3);
+  border: none;
+  background: none;
+  font-family: var(--fn);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tab:hover {
+  color: var(--t1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab.act {
+  background: rgba(46, 204, 113, 0.13);
+  color: var(--neon);
+  border: 1px solid var(--bn);
+}
+
+.tab-icon {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.tabs-content {
+  width: 100%;
+}
+
+.tp {
+  display: none;
+}
+
+.tp.show {
+  display: block;
+  animation: tp-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes tp-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+}
