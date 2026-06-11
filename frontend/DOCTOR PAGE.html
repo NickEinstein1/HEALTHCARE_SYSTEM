@@ -3,6 +3,8 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniHealth — My Health Portal</title>
@@ -1765,7 +1767,7 @@
         }
     </style>
 </head>
-<body>
+<body data-unihealth-ai-role="patient" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
     <nav class="sb">
         <div class="sb-flag"></div>
@@ -1989,6 +1991,7 @@
                 }
                 attachPageEvents();
                 feather.replace();
+                if (state.currentPage === 'home' && window.UniHealthAI) UniHealthAI.mountPatient();
             }
 
             function getHomeHTML() {
@@ -2006,12 +2009,16 @@
                     <div class="qa" data-nav="records"><span class="qa-e"><i data-feather="folder"></i></span><span class="qa-l">My Records</span></div>
                     <div class="qa" data-action="modal" data-modal="message"><span class="qa-e"><i data-feather="message-square"></i></span><span class="qa-l">Message Doctor</span></div>
                 </div>
-                <div class="ai-widget green">
-                    <div class="ai-widget-hd"><div><div class="ai-widget-ti"><i data-feather="cpu"></i> AI Health Insights — Wangui Njoroge</div><div style="font-size:10.5px;color:var(--t3);margin-top:2px">Personalised analysis based on your latest results & vitals</div></div><span class="kdpa-badge"><i data-feather="lock"></i> Model Data Protection Act</span></div>
+                <div class="ai-widget green" style="animation-delay:.1s" data-uh-ai="patient-insights" id="uh-ai-patient-widget">
+                    <div class="ai-widget-hd"><div><div class="ai-widget-ti"><i data-feather="cpu"></i> AI Health Insights — Wangui Njoroge</div><div style="font-size:10.5px;color:var(--t3);margin-top:2px">Live API when gateway is running · rules-based CDS pilot</div></div><span class="kdpa-badge"><i data-feather="lock"></i> Model Data Protection Act</span></div>
+                    <div data-uh-ai-live="insights" id="uh-ai-patient-insights-body"></div>
+                    <div data-uh-ai-live="alerts" id="uh-ai-patient-alerts"></div>
+                    <div class="uh-ai-static-fallback">
                     <div class="ai-row"><span class="ai-row-ico"><i data-feather="alert-triangle" style="color:var(--am)"></i></span><div class="ai-row-body"><div class="ai-row-ti">Potassium levels require follow-up</div><div class="ai-row-su">Your latest test (K⁺ 6.8 mmol/L, 2 Apr 2026) is above the safe range. Your doctor has been notified.</div></div><span class="tag r">ACTION NEEDED</span></div>
                     <div class="ai-row"><span class="ai-row-ico"><i data-feather="package" style="color:var(--b)"></i></span><div class="ai-row-body"><div class="ai-row-ti">Medication refill due in 5 days</div><div class="ai-row-su">Amlodipine and Ferrous Sulphate are due for refill by 15 Apr 2026.</div></div><span class="tag am">REMINDER</span></div>
                     <div class="ai-row"><span class="ai-row-ico"><i data-feather="eye" style="color:var(--pu)"></i></span><div class="ai-row-body"><div class="ai-row-ti">Preventive care: annual eye check overdue</div><div class="ai-row-su">Book via your ModelCover optical benefit (remaining: 3,500).</div></div><span class="tag b">PREVENTIVE</span></div>
                     <div style="margin-top:10px;padding:8px 12px;background:rgba(10,74,38,.05);border:1px solid rgba(10,74,38,.1);border-radius:7px;font-size:10.5px;color:var(--gd);font-weight:600;display:flex;align-items:center;gap:7px"><i data-feather="lock"></i> AI insights are generated from your own health records only.</div>
+                    </div>
                 </div>
                 <div class="g2">
                     <div>
@@ -2271,5 +2278,6 @@
             feather.replace({ width: 16, height: 16, strokeWidth: 2 });
         })();
     </script>
+    <script src="ai-assist-dashboard.js"></script>
 </body>
 </html>

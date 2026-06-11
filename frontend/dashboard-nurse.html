@@ -3,6 +3,8 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniHealth — Nursing Station</title>
@@ -1360,7 +1362,7 @@
         }
     </style>
 </head>
-<body>
+<body data-unihealth-ai-role="nurse" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
     <!-- ═══════════════ SIDEBAR ═══════════════ -->
     <nav class="sb">
@@ -1618,6 +1620,7 @@
                 }
                 attachPageEvents();
                 feather.replace();
+                if (window.UniHealthAI) UniHealthAI.mountAll(document.getElementById('contentArea'));
             }
 
             // ═══════════════ HTML GENERATORS ═══════════════
@@ -1630,6 +1633,7 @@
                     <div style="display:flex;gap:8px"><button class="btn-s btn-sm" data-nav="handover"><i data-feather="clipboard"></i> Handover Notes</button><button class="btn-p" data-nav="vitals"><i data-feather="activity"></i> Record Vitals</button></div>
                 </div>
                 <div class="sync-bar"><i data-feather="check-circle" style="color:var(--primary)"></i><span>UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready for offline</span><button style="margin-left:auto;font-size:10px;font-weight:700;padding:4px 9px;background:none;border:1px solid var(--primary-muted);border-radius:5px;color:var(--primary-dark);cursor:pointer;font-family:var(--font)" data-action="syncNow"><i data-feather="refresh-cw"></i> Sync Now</button></div>
+                <div data-uh-ai="risk"></div>
                 <div class="ai-widget teal">
                     <div class="ai-widget-hd"><div><div class="ai-widget-ti"><i data-feather="cpu"></i> AI Early Warning Score (NEWS2)</div><div style="font-size:10px;color:var(--t3);margin-top:1px">Automated vital-sign analysis · Real-time risk escalation</div></div><button style="font-size:11px;font-weight:700;padding:5px 11px;background:none;border:1.5px solid rgba(13,148,136,.3);border-radius:7px;color:var(--accent-teal);cursor:pointer;font-family:var(--font)" data-action="escalateAll">Escalate All →</button></div>
                     <div class="ai-row"><span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--accent-red)"></i></span><div class="ai-row-body"><div class="ai-row-ti">Bed 01 — Wangui Njoroge &nbsp;<span class="ewe-badge ewe-high">NEWS2: 7 — HIGH</span></div><div class="ai-row-su">AI alert: RR 24, SpO₂ 91%, HR 118. Deterioration trend over 2h. <strong>Immediate medical review required.</strong></div></div><span class="ai-pri crit">ESCALATE</span></div>
@@ -1705,6 +1709,7 @@
                     <div class="ve-vals"><span class="ve-v">BP: ${v.bp}</span><span class="ve-v">HR: ${v.hr}</span><span class="ve-v">T: ${v.temp}°C</span><span class="ve-v">SpO₂: ${v.spo2}%</span></div>
                 </div>`).join('');
                 return `<div class="ph"><div><div class="ph-ey">Observation Chart</div><div class="ph-ti">Record Vitals</div><div class="ph-su">Ward 4B · 4-hourly observations schedule</div></div><button class="btn-p" data-action="modal" data-modal="vitalsEntry"><i data-feather="plus"></i> Record Vitals</button></div>
+                <div data-uh-ai="risk"></div>
                 <div class="notice am"><span class="notice-e"><i data-feather="clock"></i></span><div class="notice-tx"><strong>4 patients have vitals due now:</strong> Bed 01, Bed 04, Bed 07, Bed 10. Next scheduled round: 12:00.</div></div>
                 <div class="gcol3">
                     <div class="panel"><div class="pnl-hd"><div><div class="pnl-ti">Recent Vital Entries</div><div class="pnl-su">Today · 4B · All patients</div></div></div><div class="pnl-bd">${vRows}</div></div>
@@ -1965,5 +1970,6 @@
             feather.replace({ width: 16, height: 16, strokeWidth: 2 });
         })();
     </script>
+    <script src="ai-assist-dashboard.js"></script>
 </body>
 </html>

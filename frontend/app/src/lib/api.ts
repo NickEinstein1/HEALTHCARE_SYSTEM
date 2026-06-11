@@ -432,6 +432,24 @@ export const api = {
     return getJson("/ai/status");
   },
 
+  aiPatientInsights(
+    payload: { patient_id: string; vitals?: Record<string, number> },
+    role = "patient",
+  ): Promise<{ insights?: { title: string; body: string; severity?: string }[] }> {
+    return postJson("/ai/patient/insights", payload, { headers: authHeaders(role) });
+  },
+
+  aiPatientAlerts(
+    params: { patient_id: string; limit?: number },
+    role = "patient",
+  ): Promise<{ alerts?: { title?: string; body?: string }[] }> {
+    const qs = new URLSearchParams({
+      patient_id: params.patient_id,
+      limit: String(params.limit ?? 6),
+    });
+    return getJson(`/ai/patient/alerts?${qs}`, { headers: authHeaders(role) });
+  },
+
   aiRiskScore(payload: {
     patient_id: string;
     features?: Record<string, number>;

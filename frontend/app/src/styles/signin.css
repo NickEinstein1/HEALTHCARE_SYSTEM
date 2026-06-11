@@ -497,27 +497,71 @@ body.unihealth-auth-bg {
   word-break: break-word !important;
 }
 
-/* ── Role grid ──────────────────────────────────────────────────── */
-.sign-in-root .rgrid {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 8px !important;
+/* ── Role picker — horizontal scroll ───────────────────────────── */
+.sign-in-root .rscroll-wrap {
+  position: relative !important;
   margin-bottom: 16px !important;
+}
+.sign-in-root .rscroll-hint {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin: 0 0 8px !important;
+  font-size: 9.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: #4a6a88 !important;
+}
+.sign-in-root .rscroll-arrows {
+  color: #00aadd !important;
+  font-size: 11px !important;
+  letter-spacing: 0.12em !important;
+}
+.sign-in-root .rscroll {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 4px 2px 10px !important;
+  margin: 0 -2px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #1e5a7a #0a1528 !important;
+}
+.sign-in-root .rscroll::-webkit-scrollbar {
+  height: 6px !important;
+}
+.sign-in-root .rscroll::-webkit-scrollbar-track {
+  background: #0a1528 !important;
+  border-radius: 3px !important;
+}
+.sign-in-root .rscroll::-webkit-scrollbar-thumb {
+  background: #1e5a7a !important;
+  border-radius: 3px !important;
+}
+.sign-in-root .rscroll::-webkit-scrollbar-thumb:hover {
+  background: #00aadd !important;
 }
 .sign-in-root .rc {
   display: flex !important;
+  flex: 0 0 132px !important;
+  min-width: 132px !important;
+  scroll-snap-align: start !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 5px !important;
-  padding: 12px 8px !important;
+  padding: 12px 10px !important;
   background: #0d1e3a !important;
   border: 1.5px solid #1e3a5a !important;
   border-radius: 11px !important;
   cursor: pointer !important;
   text-align: center !important;
   position: relative !important;
-  min-height: 96px !important;
+  min-height: 104px !important;
   transition: border-color .18s, background .18s, box-shadow .18s !important;
 }
 .sign-in-root .rc:hover {
@@ -1357,8 +1401,8 @@ body.unihealth-auth-bg {
   }
   .sign-in-root .stitle { font-size: 17px !important; }
   .sign-in-root .ssub { font-size: 10.5px !important; }
-  .sign-in-root .rgrid { gap: 6px !important; }
-  .sign-in-root .rc { min-height: 84px !important; padding: 10px 6px !important; }
+  .sign-in-root .rscroll { gap: 8px !important; }
+  .sign-in-root .rc { flex: 0 0 118px !important; min-width: 118px !important; min-height: 92px !important; padding: 10px 8px !important; }
   .sign-in-root .rnm { font-size: 10px !important; }
   .sign-in-root .pin-box { width: 42px !important; height: 46px !important; font-size: 20px !important; }
   .sign-in-root .obox { width: 36px !important; height: 44px !important; font-size: 16px !important; }
@@ -1381,13 +1425,11 @@ body.unihealth-auth-bg {
   .sign-in-root .sign-in-mobile-brand-name {
     font-size: 1.15rem !important;
   }
-  .sign-in-root .rgrid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 5px !important;
-  }
   .sign-in-root .rc {
-    min-height: 78px !important;
-    padding: 8px 4px !important;
+    flex: 0 0 108px !important;
+    min-width: 108px !important;
+    min-height: 86px !important;
+    padding: 8px 6px !important;
   }
   .sign-in-root .remi {
     font-size: 18px !important;

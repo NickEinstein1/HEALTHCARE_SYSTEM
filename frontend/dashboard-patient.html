@@ -3,6 +3,7 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UniHealth — My Health Portal</title>
@@ -453,7 +454,7 @@ body{display:flex;min-height:100vh;}
 
 </style>
 </head>
-<body>
+<body data-unihealth-ai-role="patient" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
 <!-- ═══ SIDEBAR ═══ -->
 <nav class="sb">
@@ -574,14 +575,17 @@ body{display:flex;min-height:100vh;}
         <div>
           
       <!-- AI Health Insights -->
-      <div class="ai-widget green" style="animation-delay:.1s">
+      <div class="ai-widget green" style="animation-delay:.1s" data-uh-ai="patient-insights" id="uh-ai-patient-widget">
         <div class="ai-widget-hd">
           <div>
             <div class="ai-widget-ti">🤖 AI Health Insights — Wangui Njoroge</div>
-            <div style="font-size:10.5px;color:var(--t3);margin-top:2px">Personalised analysis based on your latest results &amp; vitals</div>
+            <div style="font-size:10.5px;color:var(--t3);margin-top:2px">Live API when gateway is running · rules-based CDS pilot</div>
           </div>
           <span class="kdpa-badge">🔒 KDPA 2019</span>
         </div>
+        <div data-uh-ai-live="insights" id="uh-ai-patient-insights-body"></div>
+        <div data-uh-ai-live="alerts" id="uh-ai-patient-alerts"></div>
+        <div class="uh-ai-static-fallback">
         <div class="ai-row">
           <span class="ai-row-ico">⚠️</span>
           <div class="ai-row-body">
@@ -608,6 +612,7 @@ body{display:flex;min-height:100vh;}
         </div>
         <div style="margin-top:10px;padding:8px 12px;background:rgba(10,74,38,.05);border:1px solid rgba(10,74,38,.1);border-radius:7px;font-size:10.5px;color:var(--gd);font-weight:600;display:flex;align-items:center;gap:7px">
           🔒 AI insights are generated from your own health records only. Your data is never shared without your consent (KDPA 2019).
+        </div>
         </div>
       </div>
 <div class="panel" style="margin-bottom:16px;animation-delay:.06s">
@@ -1471,3 +1476,10 @@ function animAll(){
     });
     var fill=document.getElementById('ringFill');
     if(fill){var circ=2*Math.PI*37;fill.style.strokeDashoffset=(circ-(circ*0.78)).toString();}
+  },80);
+}
+animAll();
+</script>
+<script src="ai-assist-dashboard.js"></script>
+</body>
+</html>

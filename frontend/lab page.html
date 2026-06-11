@@ -3,6 +3,7 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniHealth — Laboratory & Diagnostic Imaging Portal</title>
@@ -975,7 +976,7 @@
         }
     </style>
 </head>
-<body>
+<body data-unihealth-ai-role="lab" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
     <!-- ═══════════════ SIDEBAR ═══════════════ -->
     <nav class="sb">
@@ -1720,5 +1721,6 @@
             feather.replace();
         })();
     </script>
+    <script src="ai-assist-dashboard.js"></script>
 </body>
 </html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniHealth Web Interface — Complete User Manual</title>
+  <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #475569;
+      --accent: #0d9488;
+      --accent-dark: #0f766e;
+      --border: #e2e8f0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --warn: #b45309;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(160deg, #020617 0%, #0c4a6e 38%, #134e4a 72%, #042f2e 100%);
+      color: #f8fafc;
+      padding: 2.5rem 2rem 2rem;
+      page-break-after: always;
+      position: relative;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .cover::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 212, 255, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(0, 229, 160, 0.12), transparent);
+      pointer-events: none;
+    }
+    .cover-moh {
+      position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #000 33.33%, #b91c1c 33.33%, #b91c1c 66.66%, #15803d 66.66%);
+    }
+    .cover-logos {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; justify-content: center; gap: 1.75rem;
+      margin-top: 2rem;
+    }
+    .cover-logos img { width: 80px; height: 80px; filter: drop-shadow(0 6px 20px rgba(0,0,0,.35)); }
+    .cover-logos .lbl { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-top: .35rem; }
+    .cover-logos .blk { display: flex; flex-direction: column; align-items: center; }
+    .cover-logos .sep { width: 1px; height: 64px; background: linear-gradient(180deg, transparent, rgba(148,163,184,.5), transparent); }
+    .cover-hero { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 560px; }
+    .cover .doc-type {
+      display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+      color: #5eead4; border: 1px solid rgba(94,234,212,.4); border-radius: 999px; padding: .35rem 1rem; margin-bottom: 1rem;
+    }
+    .cover h1 { font-size: 2.35rem; font-weight: 800; margin: 0 0 .5rem; letter-spacing: -.02em; line-height: 1.12; }
+    .cover h1 em { font-style: normal; background: linear-gradient(90deg, #00d4ff, #00e5a0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .cover .subtitle { font-size: 1.05rem; color: #cbd5e1; max-width: 520px; margin: 0 auto 1.25rem; line-height: 1.55; }
+    .cover .stripe {
+      width: 72px; height: 4px;
+      background: linear-gradient(90deg, #00d4ff, #00e5a0);
+      border-radius: 2px; margin: 0 auto 1.25rem;
+    }
+    .cover-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; margin-bottom: 1rem; }
+    .cover-chips span {
+      font-size: .75rem; font-weight: 600; padding: .3rem .65rem; border-radius: 6px;
+      background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.25); color: #e2e8f0;
+    }
+    .cover-foot { position: relative; z-index: 1; border-top: 1px solid rgba(148,163,184,.2); padding-top: 1.25rem; width: 100%; max-width: 520px; }
+    .cover .facility { font-size: .95rem; font-weight: 700; margin-bottom: .35rem; }
+    .cover .meta { font-size: .82rem; color: #94a3b8; line-height: 1.55; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+    h2 {
+      font-size: 1.65rem; color: var(--accent-dark);
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: .4rem; margin: 2.5rem 0 1rem;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 1.2rem; margin: 1.75rem 0 .75rem; color: var(--ink); page-break-after: avoid; }
+    h4 { font-size: 1rem; margin: 1.25rem 0 .5rem; color: var(--muted); }
+    p { margin: 0 0 1rem; }
+    .toc {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin: 2rem 0;
+      page-break-after: always;
+    }
+    .toc h2 { border: none; margin-top: 0; font-size: 1.4rem; }
+    .toc ol { columns: 2; column-gap: 2rem; padding-left: 1.25rem; }
+    .toc li { margin: .35rem 0; break-inside: avoid; }
+    .toc a { color: var(--accent-dark); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    table {
+      width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem;
+      font-size: .92rem; background: var(--card);
+    }
+    th, td { border: 1px solid var(--border); padding: .55rem .75rem; text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; font-weight: 600; }
+    tr:nth-child(even) td { background: #fafbfc; }
+    figure {
+      margin: 1.5rem 0 2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+    figure img, figure svg { width: 100%; display: block; }
+    figcaption {
+      padding: .85rem 1.1rem;
+      font-size: .88rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: #f8fafc;
+    }
+    figcaption strong { color: var(--ink); }
+    .steps { counter-reset: step; list-style: none; padding: 0; margin: 1rem 0; }
+    .steps li {
+      counter-increment: step;
+      position: relative;
+      padding: .65rem 0 .65rem 2.75rem;
+      border-left: 2px solid var(--border);
+      margin-left: 1rem;
+    }
+    .steps li::before {
+      content: counter(step);
+      position: absolute; left: -1.05rem; top: .55rem;
+      width: 1.75rem; height: 1.75rem;
+      background: var(--accent); color: #fff;
+      border-radius: 50%; font-size: .8rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #ecfdf5;
+      padding: 1rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.25rem 0;
+      font-size: .93rem;
+    }
+    .callout.warn { border-color: var(--warn); background: #fffbeb; }
+    .callout strong { display: block; margin-bottom: .25rem; }
+    .role-card {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: .75rem;
+      margin: 1rem 0 1.5rem;
+    }
+    .role-card div {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .85rem 1rem;
+      font-size: .9rem;
+    }
+    .role-card strong { color: var(--accent-dark); display: block; }
+    .page-break { page-break-before: always; }
+    .footer-note {
+      margin-top: 3rem; padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: .85rem; color: var(--muted); text-align: center;
+    }
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      .wrap { max-width: 100%; padding: 0; }
+      .no-print { display: none; }
+      figure { box-shadow: none; }
+      a { color: var(--ink); }
+    }
+    @media (max-width: 700px) {
+      .toc ol { columns: 1; }
+      .cover h1 { font-size: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-moh" aria-hidden="true"></div>
+  <div class="cover-logos">
+    <div class="blk">
+      <img src="images/unihealth-logo.svg" alt="UniHealth" width="80" height="80" />
+      <span class="lbl">UniHealth</span>
+    </div>
+    <div class="sep" aria-hidden="true"></div>
+    <div class="blk">
+      <img src="images/facility-knh-logo.svg" alt="Kenya National Hospital" width="80" height="80" />
+      <span class="lbl">Pilot Facility — KNH</span>
+    </div>
+  </div>
+  <div class="cover-hero">
+    <span class="doc-type">Official User Manual</span>
+    <h1>UniHealth <em>Web Interface</em></h1>
+    <p class="subtitle">Complete guide for all user roles — sign-in, clinical dashboards, patient portal, laboratory, pharmacy, and UniHealth 360 enterprise modules.</p>
+    <div class="stripe"></div>
+    <div class="cover-chips">
+      <span>Doctor · Nurse · Patient</span>
+      <span>Admin · Lab · Pharmacy</span>
+      <span>KDPA 2019</span>
+      <span>FHIR R5</span>
+    </div>
+  </div>
+  <div class="cover-foot">
+    <p class="facility">Kenya National Hospital (KNH) — UniHealth Phase 1 Pilot</p>
+    <p class="meta">Version 1.1 · June 2026 · Ministry of Health · Kenya National Health Information System<br />Confidential — for authorised facility staff and patients · DOC-UI-001</p>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <nav class="toc" id="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#intro">1. Introduction</a></li>
+      <li><a href="#requirements">2. System Requirements</a></li>
+      <li><a href="#signin">3. Sign-in &amp; Authentication</a></li>
+      <li><a href="#layout">4. Dashboard Layout</a></li>
+      <li><a href="#doctor">5. Doctor Dashboard</a></li>
+      <li><a href="#nurse">6. Nurse Dashboard</a></li>
+      <li><a href="#patient">7. Patient Portal</a></li>
+      <li><a href="#admin">8. Administrator Console</a></li>
+      <li><a href="#lab">9. Laboratory Dashboard</a></li>
+      <li><a href="#pharmacy">10. Pharmacy Dashboard</a></li>
+      <li><a href="#portal">11. UniHealth 360 Portal</a></li>
+      <li><a href="#ai">12. AI Assist (Pilot)</a></li>
+      <li><a href="#privacy">13. Privacy &amp; Compliance</a></li>
+      <li><a href="#troubleshoot">14. Troubleshooting</a></li>
+      <li><a href="#quickref">15. Quick Reference</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="intro">1. Introduction</h2>
+  <p>This manual describes how to use the <strong>UniHealth web application</strong> — the React single-page application that powers clinical, administrative, laboratory, pharmacy, and patient-facing workflows. It applies to all six production role dashboards and the UniHealth 360 enterprise portal.</p>
+  <p>This document is an operational guide. It does <em>not</em> replace your facility’s clinical policies, Ministry of Health directives, or statutory obligations under the Kenya Data Protection Act (KDPA) 2019.</p>
+
+  <div class="role-card">
+    <div><strong>Doctor</strong>/dashboard/doctor</div>
+    <div><strong>Nurse</strong>/dashboard/nurse</div>
+    <div><strong>Patient</strong>/dashboard/patient</div>
+    <div><strong>Administrator</strong>/dashboard/admin</div>
+    <div><strong>Laboratory</strong>/dashboard/lab</div>
+    <div><strong>Pharmacy</strong>/dashboard/pharmacy</div>
+    <div><strong>UniHealth 360</strong>/portal → /modules/*</div>
+  </div>
+
+  <figure>
+    <img src="images/01-landing.png" alt="UniHealth landing page" width="1440" height="900" />
+    <figcaption><strong>Figure 1.</strong> UniHealth marketing home page. Select <em>Sign in</em> to access your role dashboard, or open the UniHealth 360 portal for the module catalog.</figcaption>
+  </figure>
+
+  <h2 id="requirements">2. System Requirements</h2>
+  <table>
+    <thead><tr><th>Requirement</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>Browser</td><td>Recent Chrome, Firefox, Safari, or Edge (desktop recommended)</td></tr>
+      <tr><td>Network</td><td>Access to facility UniHealth gateway (staging: port 8100)</td></tr>
+      <tr><td>Credentials</td><td>Issued by facility HR/IT; staging test accounts in technical runbook</td></tr>
+      <tr><td>Screen</td><td>1280×720 minimum; 1440×900 recommended for clinical workstations</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Development / staging URLs</h3>
+  <table>
+    <thead><tr><th>Page</th><th>URL</th></tr></thead>
+    <tbody>
+      <tr><td>Web application</td><td><code>http://localhost:5173</code></td></tr>
+      <tr><td>Sign in</td><td><code>http://localhost:5173/sign-in</code></td></tr>
+      <tr><td>Patient registration</td><td><code>http://localhost:5173/register</code></td></tr>
+      <tr><td>UniHealth 360 portal</td><td><code>http://localhost:5173/portal</code></td></tr>
+      <tr><td>API gateway</td><td><code>http://localhost:8100</code></td></tr>
+    </tbody>
+  </table>
+  <p>Production URLs are provided by your facility IT team.</p>
+
+  <h2 id="signin" class="page-break">3. Sign-in &amp; Authentication</h2>
+  <p>Every user completes a <strong>four-step sign-in flow</strong>: role selection → credentials → multi-factor authentication (MFA) → launch dashboard.</p>
+
+  <h3>Step 1 — Select your role</h3>
+  <figure>
+    <img src="images/02-signin-step1-role-select.png" alt="Sign-in step 1 role selection" />
+    <figcaption><strong>Figure 2.</strong> Choose the tile matching your job function. Badges indicate pilot access level.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li>Open <code>/sign-in</code> and review the six role tiles.</li>
+    <li>Click your role (Doctor, Nurse/CO, Laboratory, Pharmacy, Administrator, or Patient).</li>
+    <li>Click <strong>Continue</strong> to proceed.</li>
+  </ol>
+
+  <h3>Step 2 — Enter credentials</h3>
+  <h4>Staff (doctor, nurse, lab, pharmacy, admin)</h4>
+  <figure>
+    <img src="images/03-signin-step2-credentials.png" alt="Staff sign-in credentials form" />
+    <figcaption><strong>Figure 3.</strong> Staff sign-in: professional registration number, institutional email, password, and security CAPTCHA.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Registration number</strong> — as printed on your licence (e.g. medical registration for doctors).</li>
+    <li><strong>Institutional email</strong> — facility-issued address.</li>
+    <li><strong>Password</strong> — minimum 8 characters with uppercase and numbers.</li>
+    <li><strong>CAPTCHA</strong> — complete the arithmetic security check.</li>
+    <li>Alternative: <strong>Smart Card</strong> or <strong>Practice 360</strong> where enabled.</li>
+  </ul>
+
+  <h4>Patient</h4>
+  <figure>
+    <img src="images/06-signin-patient-credentials.png" alt="Patient sign-in form" />
+    <figcaption><strong>Figure 4.</strong> Patient portal sign-in using national ID (or passport), UniHealth PIN, and mobile number.</figcaption>
+  </figure>
+  <ul>
+    <li>ID type and number (National ID, passport, etc.).</li>
+    <li>Four-digit <strong>UniHealth PIN</strong> set at registration.</li>
+    <li>Mobile number in <code>+254…</code> format.</li>
+  </ul>
+
+  <h3>Step 3 — Multi-factor authentication</h3>
+  <figure>
+    <img src="images/04-signin-step3-mfa.png" alt="MFA verification screen" />
+    <figcaption><strong>Figure 5.</strong> MFA options: email/SMS OTP (six digits), biometric scan, or Practice 360 push approval.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Method</th><th>Typical use</th></tr></thead>
+    <tbody>
+      <tr><td>Email OTP</td><td>Staff roles</td></tr>
+      <tr><td>SMS OTP</td><td>Patient portal</td></tr>
+      <tr><td>Biometric</td><td>Where hardware is available</td></tr>
+      <tr><td>Practice 360</td><td>Pilot / demo environments</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Step 4 — Launch dashboard</h3>
+  <figure>
+    <img src="images/05-signin-step4-launch.png" alt="Access granted launch screen" />
+    <figcaption><strong>Figure 6.</strong> After successful MFA, click <strong>Launch Dashboard</strong> to open your role-specific workspace.</figcaption>
+  </figure>
+
+  <h3>Patient registration (new users)</h3>
+  <figure>
+    <img src="images/07-register.png" alt="Patient registration wizard" />
+    <figcaption><strong>Figure 7.</strong> Four-step registration wizard for new patient portal accounts.</figcaption>
+  </figure>
+  <ol class="steps">
+    <li>Navigate to <code>/register</code>.</li>
+    <li>Complete identity, contact, UniHealth linkage, and confirmation steps.</li>
+    <li>Sign in as <strong>Patient</strong> with your ID and PIN.</li>
+  </ol>
+  <div class="callout"><strong>Note</strong>Staff accounts are created by administrators — not via self-service registration.</div>
+
+  <h2 id="layout" class="page-break">4. Dashboard Layout</h2>
+  <p>All six production dashboards share a consistent shell. Navigation changes the main content area without a full page reload.</p>
+  <figure>
+    <img src="images/dashboard-layout.svg" alt="Annotated dashboard layout diagram" />
+    <figcaption><strong>Figure 8.</strong> Standard layout: sidebar navigation, top bar, and main work area with KPI cards and panels.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Element</th><th>Function</th></tr></thead>
+    <tbody>
+      <tr><td>Sidebar</td><td>Primary navigation grouped by clinical or operational sections</td></tr>
+      <tr><td>Top bar</td><td>Page title, breadcrumbs, search, notifications, connection status</td></tr>
+      <tr><td>Main content</td><td>KPIs, tables, forms, modals, AI panels</td></tr>
+      <tr><td>Toasts</td><td>Short confirmations after actions (auto-dismiss)</td></tr>
+      <tr><td>MOH stripe</td><td>National programme branding and compliance indicator</td></tr>
+      <tr><td>Sign out</td><td>Ends session and returns to sign-in</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="doctor" class="page-break">5. Doctor Dashboard</h2>
+  <p><strong>URL:</strong> <code>/dashboard/doctor</code> · <strong>Audience:</strong> Physicians and specialists</p>
+  <figure>
+    <img src="images/09-dashboard-doctor.png" alt="Doctor dashboard overview" />
+    <figcaption><strong>Figure 9.</strong> Doctor dashboard — Today's Overview with clinical KPIs, patient queue, and AI Assist risk panel.</figcaption>
+  </figure>
+
+  <h3>Navigation</h3>
+  <h4>Clinical</h4>
+  <table>
+    <thead><tr><th>Menu</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Today's Overview</td><td>Shift summary, KPIs, alerts</td></tr>
+      <tr><td>Patient Chart</td><td>Longitudinal record for active patient</td></tr>
+      <tr><td>Patient Queue</td><td>Outpatient / consult waiting list</td></tr>
+      <tr><td>Patient Workup</td><td>Structured assessment and plan</td></tr>
+      <tr><td>Ward / Beds</td><td>Inpatient list and bed status</td></tr>
+      <tr><td>Lab Orders &amp; Results</td><td>Order tests, review and acknowledge results</td></tr>
+      <tr><td>Prescriptions</td><td>Create and manage medication orders</td></tr>
+      <tr><td>Imaging &amp; Reports</td><td>Request studies, read reports</td></tr>
+    </tbody>
+  </table>
+  <h4>Workflow</h4>
+  <table>
+    <thead><tr><th>Menu</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Clinical Notes</td><td>Progress, admission, discharge notes</td></tr>
+      <tr><td>Referrals</td><td>Inter-facility and specialty referrals</td></tr>
+      <tr><td>Procedures</td><td>Log procedures and consent</td></tr>
+      <tr><td>UniHealth Claims</td><td>Insurance and cover claims</td></tr>
+      <tr><td>My Schedule</td><td>Clinic and theatre blocks</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Key workflows</h3>
+  <h4>See the next outpatient</h4>
+  <ol class="steps">
+    <li>Open <strong>Patient Queue</strong> from the sidebar.</li>
+    <li>Select the next patient or use the call-next action.</li>
+    <li>Review <strong>Patient Chart</strong> or <strong>Patient Workup</strong>.</li>
+    <li>Document the encounter in <strong>Clinical Notes</strong>.</li>
+  </ol>
+  <h4>Order laboratory tests</h4>
+  <ol class="steps">
+    <li>From chart or <strong>Lab Orders &amp; Results</strong>, choose <strong>New lab order</strong>.</li>
+    <li>Select tests and set priority (routine / urgent).</li>
+    <li>Submit — order appears on the Laboratory dashboard queue.</li>
+  </ol>
+  <h4>Prescribe and discharge</h4>
+  <ol class="steps">
+    <li>Add medications under <strong>Prescriptions</strong>; pharmacy receives the order.</li>
+    <li>For discharge: open patient from <strong>Ward / Beds</strong>, complete summary, confirm bed release.</li>
+  </ol>
+
+  <h2 id="nurse" class="page-break">6. Nurse Dashboard</h2>
+  <p><strong>URL:</strong> <code>/dashboard/nurse</code> · <strong>Audience:</strong> Nurses and clinical officers</p>
+  <figure>
+    <img src="images/10-dashboard-nurse.png" alt="Nurse dashboard shift overview" />
+    <figcaption><strong>Figure 10.</strong> Nurse dashboard — Shift Overview with assigned patients, vitals due, and triage badges.</figcaption>
+  </figure>
+
+  <h3>Navigation</h3>
+  <table>
+    <thead><tr><th>Section</th><th>Key menus</th></tr></thead>
+    <tbody>
+      <tr><td>Ward</td><td>Shift Overview, My Patients, Patient Chart, Triage Queue, Record Vitals, MAR, Tasks, Handover</td></tr>
+      <tr><td>More</td><td>Fluid Balance, Wound Care, Incidents, Supplies</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Record vitals</h3>
+  <ol class="steps">
+    <li>Open <strong>Record Vitals</strong> and select the patient.</li>
+    <li>Enter BP, HR, RR, temperature, SpO₂, glucose, pain score, and AVPU as required.</li>
+    <li>Save — values appear on the doctor chart and feed AI risk rules when online.</li>
+  </ol>
+
+  <h3>MAR and handover</h3>
+  <ol class="steps">
+    <li><strong>MAR</strong> — filter due doses; mark given, held, or refused with reason.</li>
+    <li><strong>Handover</strong> — complete SBAR-style notes for each assigned patient before shift end.</li>
+  </ol>
+
+  <h2 id="patient" class="page-break">7. Patient Portal</h2>
+  <p><strong>URL:</strong> <code>/dashboard/patient</code> · <strong>Audience:</strong> Patients and authorised carers</p>
+  <figure>
+    <img src="images/11-dashboard-patient.png" alt="Patient portal dashboard" />
+    <figcaption><strong>Figure 11.</strong> Patient portal — My Dashboard with health summary, notifications, and quick links to appointments and payments.</figcaption>
+  </figure>
+
+  <h3>Navigation</h3>
+  <table>
+    <thead><tr><th>Section</th><th>Menus</th></tr></thead>
+    <tbody>
+      <tr><td>My Health</td><td>My Dashboard, Appointments, Visit History, Test Results, Medications, Vitals &amp; Trends</td></tr>
+      <tr><td>Payments</td><td>My UniHealth Cover, Contributions, Bills &amp; Invoices, Make a Payment</td></tr>
+      <tr><td>My Records</td><td>Health Records, Documents, My Profile</td></tr>
+      <tr><td>Privacy &amp; Security</td><td>Privacy &amp; Consent (KDPA 2019)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Common tasks</h3>
+  <h4>View lab results</h4>
+  <ol class="steps">
+    <li>Check notifications on <strong>My Dashboard</strong>.</li>
+    <li>Open <strong>Test Results</strong> for values and reference ranges.</li>
+    <li>Contact your clinician for interpretation — the portal displays data, not medical advice.</li>
+  </ol>
+  <h4>Pay a contribution (M-PESA)</h4>
+  <ol class="steps">
+    <li>Review amount due under <strong>Contributions</strong>.</li>
+    <li>Go to <strong>Make a Payment</strong> → select <strong>M-PESA</strong>.</li>
+    <li>Approve the STK push on your phone; confirmation appears in transaction history.</li>
+  </ol>
+  <h4>Manage privacy</h4>
+  <ol class="steps">
+    <li>Open <strong>Privacy &amp; Consent</strong>.</li>
+    <li>Review and toggle consent categories; changes are audit-logged per KDPA 2019.</li>
+  </ol>
+
+  <h2 id="admin" class="page-break">8. Administrator Console</h2>
+  <p><strong>URL:</strong> <code>/dashboard/admin</code> · <strong>Audience:</strong> Facility and system administrators</p>
+  <figure>
+    <img src="images/12-dashboard-admin.png" alt="Administrator dashboard" />
+    <figcaption><strong>Figure 12.</strong> Administrator overview — user management, facility registry, AI monitor, and system health.</figcaption>
+  </figure>
+
+  <table>
+    <thead><tr><th>Section</th><th>Menus</th></tr></thead>
+    <tbody>
+      <tr><td>Main</td><td>Overview, User Management, Facilities, County Coverage</td></tr>
+      <tr><td>Clinical</td><td>Patient Registry, UniHealth Integration</td></tr>
+      <tr><td>Security &amp; Intelligence</td><td>AI Monitor, RBAC &amp; Roles, Audit Log</td></tr>
+      <tr><td>System</td><td>System Health, Reports, Settings</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Onboard staff</h3>
+  <ol class="steps">
+    <li><strong>User Management</strong> → Add user with role and facility.</li>
+    <li>Assign RBAC group; send credentials per policy.</li>
+    <li>Verify first login and MFA enrollment.</li>
+  </ol>
+
+  <h2 id="lab" class="page-break">9. Laboratory Dashboard</h2>
+  <p><strong>URL:</strong> <code>/dashboard/lab</code> · <strong>Audience:</strong> Lab scientists, phlebotomists, imaging staff</p>
+  <figure>
+    <img src="images/13-dashboard-lab.png" alt="Laboratory dashboard" />
+    <figcaption><strong>Figure 13.</strong> Laboratory overview — sample collection backlog, test queue, and imaging worklists.</figcaption>
+  </figure>
+
+  <table>
+    <thead><tr><th>Section</th><th>Menus</th></tr></thead>
+    <tbody>
+      <tr><td>Lab Workflow</td><td>Overview, Sample Collection, Test Queue, Results Entry, Quality Control</td></tr>
+      <tr><td>Diagnostic Imaging</td><td>All Imaging, X-Ray, MRI/CT, Ultrasound, Mammography, Nuclear Medicine</td></tr>
+      <tr><td>Specialised Labs</td><td>Pathology, Microbiology, Blood Bank, Molecular Dx</td></tr>
+      <tr><td>Inventory &amp; Compliance</td><td>Reagents &amp; Supplies, Reports, Audit Trail, System Health</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Specimen to result</h3>
+  <ol class="steps">
+    <li><strong>Sample Collection</strong> — verify two patient identifiers; label and collect.</li>
+    <li><strong>Test Queue</strong> — accept specimen on instrument or bench.</li>
+    <li><strong>Results Entry</strong> — enter, validate, authorise; critical values require read-back documentation.</li>
+  </ol>
+
+  <h2 id="pharmacy" class="page-break">10. Pharmacy Dashboard</h2>
+  <p><strong>URL:</strong> <code>/dashboard/pharmacy</code> · <strong>Audience:</strong> Pharmacists and dispensing staff</p>
+  <figure>
+    <img src="images/14-dashboard-pharmacy.png" alt="Pharmacy dashboard" />
+    <figcaption><strong>Figure 14.</strong> Pharmacy overview — prescription queue, verification workflow, and stock alerts.</figcaption>
+  </figure>
+
+  <table>
+    <thead><tr><th>Section</th><th>Menus</th></tr></thead>
+    <tbody>
+      <tr><td>Dispensing</td><td>Overview, Prescription Queue, Verify &amp; Approve, Patient Lookup, Compounding</td></tr>
+      <tr><td>Inventory</td><td>Stock Levels, Reorder List, ModelCover Claims, Vaccinations</td></tr>
+      <tr><td>Clinical</td><td>Drug Interactions, Pharmacist Notes</td></tr>
+      <tr><td>Security &amp; Compliance</td><td>Audit Trail, System Health</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Dispense workflow</h3>
+  <ol class="steps">
+    <li>Open <strong>Prescription Queue</strong> (red badge = waiting).</li>
+    <li><strong>Verify &amp; Approve</strong> — check allergies, interactions, and dose.</li>
+    <li>Label, counsel patient, confirm identity with two identifiers.</li>
+    <li>Record dispense event — appears in audit trail.</li>
+  </ol>
+
+  <h2 id="portal" class="page-break">11. UniHealth 360 Portal</h2>
+  <p><strong>URL:</strong> <code>/portal</code> · Enterprise module catalog for multi-department access.</p>
+  <figure>
+    <img src="images/08-portal.png" alt="UniHealth 360 portal module catalog" />
+    <figcaption><strong>Figure 15.</strong> UniHealth 360 portal — launch clinician EMR, admin console, or any of 20 enterprise modules.</figcaption>
+  </figure>
+  <figure>
+    <img src="images/15-module-emr.png" alt="EMR module dashboard" />
+    <figcaption><strong>Figure 16.</strong> EMR / EHR module at <code>/modules/emr</code> — clinical hub within the v2 module shell.</figcaption>
+  </figure>
+
+  <table>
+    <thead><tr><th>Section</th><th>Modules</th></tr></thead>
+    <tbody>
+      <tr><td>Clinical</td><td>EMR, Maternity &amp; NICU, Laboratory*, Radiology, Pharmacy*, ICU, Surgery, Rehab, Nutrition</td></tr>
+      <tr><td>Operations</td><td>Billing, Insurance, Inventory, Ambulance, Mortuary, Telemedicine</td></tr>
+      <tr><td>Management</td><td>Administration, HR &amp; Payroll, AI Analytics, Research, Patient Portal*</td></tr>
+    </tbody>
+  </table>
+  <p><em>* Laboratory, Pharmacy, and Patient Portal link to production dashboards at <code>/dashboard/*</code> to avoid duplicate interfaces.</em></p>
+
+  <h2 id="ai" class="page-break">12. AI Assist (Pilot)</h2>
+  <div class="callout warn">
+    <strong>Clinical disclaimer</strong>
+    AI Assist on doctor and nurse dashboards uses <strong>rules-based</strong> clinical decision support (NEWS2, vitals/lab thresholds). It is a pilot — not diagnostic AI. Clinical judgement always applies.
+  </div>
+  <table>
+    <thead><tr><th>Do</th><th>Don't</th></tr></thead>
+    <tbody>
+      <tr><td>Use as a triage hint alongside examination</td><td>Treat the score as a standalone diagnosis</td></tr>
+      <tr><td>Escalate per local protocol when score is high</td><td>Override judgement without documentation</td></tr>
+      <tr><td>Note the pilot disclaimer on the panel</td><td>Assume full ML validation where only rules are deployed</td></tr>
+    </tbody>
+  </table>
+  <p>Patient dashboards may show <strong>AI Health Insights</strong> (informational trends). Technical scope is documented in the project AI assist scope reference.</p>
+
+  <h2 id="privacy">13. Privacy &amp; Compliance</h2>
+  <ul>
+    <li><strong>KDPA 2019</strong> — patients control consent via Privacy &amp; Consent; administrators maintain audit trails.</li>
+    <li><strong>MOH alignment</strong> — facility and county tiles support national visibility programmes.</li>
+    <li><strong>Credentials</strong> — never share PINs, passwords, or OTP codes.</li>
+    <li><strong>Session hygiene</strong> — sign out on shared workstations; use Sign out all sessions if compromise is suspected.</li>
+  </ul>
+
+  <h2 id="troubleshoot">14. Troubleshooting</h2>
+  <table>
+    <thead><tr><th>Symptom</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Blank data / API offline toast</td><td>Confirm gateway running (port 8100); refresh browser</td></tr>
+      <tr><td>Sign-in loops to step 1</td><td>Clear cache; verify correct role tile and credential format</td></tr>
+      <tr><td>MFA code not received</td><td>Check spam (email) or network (SMS); contact IT</td></tr>
+      <tr><td>Wrong dashboard</td><td>Sign out; re-select correct role at step 1</td></tr>
+      <tr><td>404 on bookmark</td><td>Production: <code>/dashboard/&lt;role&gt;</code>; v2 modules: <code>/modules/&lt;slug&gt;</code></td></tr>
+      <tr><td>Module shows placeholder UI</td><td>v2 shell — use production dashboard where linked from portal</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="quickref" class="page-break">15. Quick Reference</h2>
+  <table>
+    <thead><tr><th>Role</th><th>Sign-in tile</th><th>Dashboard URL</th><th>First menu to open</th></tr></thead>
+    <tbody>
+      <tr><td>Doctor</td><td>Doctor</td><td>/dashboard/doctor</td><td>Today's Overview</td></tr>
+      <tr><td>Nurse</td><td>Nurse / CO</td><td>/dashboard/nurse</td><td>Shift Overview</td></tr>
+      <tr><td>Patient</td><td>Patient</td><td>/dashboard/patient</td><td>My Dashboard</td></tr>
+      <tr><td>Administrator</td><td>Administrator</td><td>/dashboard/admin</td><td>Overview</td></tr>
+      <tr><td>Laboratory</td><td>Laboratory</td><td>/dashboard/lab</td><td>Overview</td></tr>
+      <tr><td>Pharmacy</td><td>Pharmacy</td><td>/dashboard/pharmacy</td><td>Overview</td></tr>
+      <tr><td>Enterprise</td><td>—</td><td>/portal</td><td>Launch Clinician Portal</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>PDF editions</strong>
+    Pre-built PDFs: <em>UniHealth-Web-User-Manual.pdf</em> (full manual) and <em>UniHealth-Web-User-Manual-Cover.pdf</em> (branded cover). Or print this HTML with “Background graphics” enabled.
+  </div>
+
+  <p class="footer-note">
+    UniHealth Web Interface — Complete User Manual v1.1 · June 2026<br />
+    Ministry of Health aligned · Kenya Data Protection Act 2019 · UniHealth Phase 1 Pilot
+  </p>
+
+</div>
+</body>
+</html>

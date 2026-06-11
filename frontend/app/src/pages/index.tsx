@@ -1,16 +1,18 @@
 // Main Pages
-export { PortalPage } from './PortalPage';
-export { EMRDashboard } from './EMRDashboard';
-export { ModuleDashboard } from './ModuleDashboard';
-export type { ModuleConfig, ModuleDashboardProps } from './ModuleDashboard';
+export { PortalPage } from "./PortalPage";
+export { EMRDashboard } from "./EMRDashboard";
+export { ModuleDashboard } from "./ModuleDashboard";
+export type { ModuleConfig, ModuleDashboardProps } from "./ModuleDashboard";
+export { DashboardPage } from "./DashboardPage";
+export { ModuleDashboardPage } from "./ModuleDashboardPage";
 
-// Module Dashboards
+// v2.0 module shells (ModuleDashboard templates)
 export {
   EMRModuleDashboard,
   MaternityDashboard,
   LaboratoryDashboard,
   RadiologyDashboard,
-  PharmacyDashboard,
+  V2PharmacyModuleDashboard,
   ICUDashboard,
   SurgeryDashboard,
   RehabilitationDashboard,
@@ -25,8 +27,8 @@ export {
   HRDashboard,
   AnalyticsDashboard,
   ResearchDashboard,
-  PatientDashboard,
+  V2PatientModuleDashboard,
   SuperAdminDashboard,
-  NurseDashboard,
-  DoctorDashboard,
-} from './dashboards';
+  V2NurseModuleDashboard,
+  V2DoctorModuleDashboard,
+} from "./dashboards";

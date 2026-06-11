@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UniHealth Web User Manual — Cover</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .cover-page {
+      width: 210mm;
+      height: 297mm;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, #020617 0%, #0c4a6e 38%, #134e4a 72%, #042f2e 100%);
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18mm 16mm 14mm;
+    }
+    .cover-page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 212, 255, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(0, 229, 160, 0.12), transparent);
+      pointer-events: none;
+    }
+    .moh-stripe {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #000 33.33%, #b91c1c 33.33%, #b91c1c 66.66%, #15803d 66.66%);
+    }
+    .top-logos {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 8mm;
+    }
+    .logo-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-block img, .logo-block svg {
+      width: 88px;
+      height: 88px;
+      filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.35));
+    }
+    .logo-label {
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .logo-divider {
+      width: 1px;
+      height: 72px;
+      background: linear-gradient(180deg, transparent, rgba(148, 163, 184, 0.5), transparent);
+    }
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 8mm;
+      max-width: 170mm;
+    }
+    .doc-type {
+      display: inline-block;
+      font-size: 9pt;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #5eead4;
+      border: 1px solid rgba(94, 234, 212, 0.4);
+      border-radius: 999px;
+      padding: 6px 18px;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 30pt;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, #00d4ff, #00e5a0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .subtitle {
+      font-size: 12.5pt;
+      line-height: 1.5;
+      color: #cbd5e1;
+      margin-bottom: 18px;
+    }
+    .accent-line {
+      width: 72px;
+      height: 4px;
+      background: linear-gradient(90deg, #00d4ff, #00e5a0);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .chip {
+      font-size: 8.5pt;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      color: #e2e8f0;
+    }
+    .footer {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      text-align: center;
+      border-top: 1px solid rgba(148, 163, 184, 0.2);
+      padding-top: 10mm;
+    }
+    .facility-name {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+    .footer-meta {
+      font-size: 8.5pt;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+    .version-badge {
+      position: absolute;
+      bottom: 14mm;
+      right: 16mm;
+      z-index: 2;
+      font-size: 8pt;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.08em;
+    }
+  </style>
+</head>
+<body>
+  <div class="cover-page">
+    <div class="moh-stripe"></div>
+
+    <div class="top-logos">
+      <div class="logo-block">
+        <img src="images/unihealth-logo.svg" alt="UniHealth" width="88" height="88" />
+        <span class="logo-label">UniHealth</span>
+      </div>
+      <div class="logo-divider" aria-hidden="true"></div>
+      <div class="logo-block">
+        <img src="images/facility-knh-logo.svg" alt="Kenya National Hospital" width="88" height="88" />
+        <span class="logo-label">Pilot Facility</span>
+      </div>
+    </div>
+
+    <div class="hero">
+      <span class="doc-type">Official User Manual</span>
+      <h1>UniHealth <em>Web Interface</em></h1>
+      <p class="subtitle">
+        Complete guide for all user roles — sign-in, clinical dashboards,
+        patient portal, laboratory, pharmacy, and UniHealth 360 enterprise modules.
+      </p>
+      <div class="accent-line"></div>
+      <div class="chips">
+        <span class="chip">Doctor · Nurse · Patient</span>
+        <span class="chip">Admin · Lab · Pharmacy</span>
+        <span class="chip">KDPA 2019</span>
+        <span class="chip">FHIR R5</span>
+        <span class="chip">MOH Aligned</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="facility-name">Kenya National Hospital (KNH) — UniHealth Phase 1 Pilot</div>
+      <div class="footer-meta">
+        Version 1.1 · June 2026<br />
+        Ministry of Health · Kenya National Health Information System<br />
+        Confidential — for authorised facility staff and patients
+      </div>
+    </div>
+
+    <div class="version-badge">DOC-UI-001</div>
+  </div>
+</body>
+</html>

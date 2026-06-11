@@ -3,6 +3,8 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniHealth — Doctor Dashboard</title>
@@ -1140,7 +1142,7 @@
         }
     </style>
 </head>
-<body>
+<body data-unihealth-ai-role="doctor" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
     <nav class="sb">
         <div class="sb-flag"></div>
@@ -1358,6 +1360,7 @@
                 }
                 feather.replace();
                 attachPageEvents();
+                if (window.UniHealthAI) UniHealthAI.mountAll(document.getElementById('contentArea'));
             }
 
             function getHomeHTML() {
@@ -1366,6 +1369,7 @@
                     <div><div class="ph-ey">Internal Medicine · Central Referral Hospital</div><div class="ph-ti">Good morning, Dr. Mutuku</div><div class="ph-su">8 patients in queue · 3 pending labs · Shift: 08:00–16:00</div></div>
                     <div style="display:flex;gap:8px"><button class="btn-s" data-nav="notes"><i data-feather="edit-3"></i> Quick Note</button><button class="btn-p" data-nav="patient"><i data-feather="clipboard"></i> Open Workup</button></div>
                 </div>
+<div data-uh-ai="risk"></div>
                 <div class="ai-widget">
                     <div class="ai-widget-hd"><div><div class="ai-widget-ti"><i data-feather="cpu"></i> AI Clinical & Security Alerts</div><div style="font-size:10px;color:var(--t3);margin-top:1px">Real-time safety and anomaly detection</div></div><span class="tag g">ACTIVE</span></div>
                     <div class="ai-row"><span class="ai-row-ico"><i data-feather="alert-circle" style="color:var(--r)"></i></span><div class="ai-row-body"><div class="ai-row-ti">Critical K⁺ — Wangui Njoroge</div><div class="ai-row-su">K⁺ 6.8 mmol/L. ECG ordered. Dr. Mutuku notified.</div></div><span class="tag r">CRITICAL</span></div>
@@ -1409,6 +1413,7 @@
 
             function getPatientHTML() {
                 return `
+                <div data-uh-ai="risk"></div>
                 <div class="ph"><div><div class="ph-ey">Clinical Workup</div><div class="ph-ti">Patient Workup</div></div><div class="ph-r"><button class="btn-s" data-action="modal" data-modal="discharge"><i data-feather="home"></i> Discharge</button><button class="btn-s" data-action="modal" data-modal="refer"><i data-feather="share-2"></i> Refer</button><button class="btn-p" data-action="modal" data-modal="note"><i data-feather="edit-3"></i> Add Note</button></div></div>
                 <div class="pt-banner"><div class="pt-in"><div class="pt-av">WN</div><div><div class="pt-name">Wangui Njoroge</div><div class="pt-meta">Female · 35 yrs · O+ · Capital Region<br>Admitted: 4 Mar 2026 · Ward 4B · Bed 07</div><div style="margin-top:7px"><span class="tag r">⚠ Penicillin Allergy</span></div></div><div class="pt-ids"><div class="pt-id-pill">ModelCover ID: ModelCover-2024-XX-78841209</div></div></div><div class="pt-stats"><div class="pt-stat"><div class="pt-sv">4</div><div class="pt-sl">Days</div></div><div class="pt-stat"><div class="pt-sv" style="color:#f87171">6.8</div><div class="pt-sl">K⁺ mmol/L</div></div><div class="pt-stat"><div class="pt-sv">120/80</div><div class="pt-sl">BP</div></div><div class="pt-stat"><div class="pt-sv">72</div><div class="pt-sl">HR</div></div><div class="pt-stat"><div class="pt-sv">36.8</div><div class="pt-sl">Temp</div></div></div></div>
                 <div class="gcol3">
@@ -1650,5 +1655,6 @@
             feather.replace({ width: 16, height: 16, strokeWidth: 2 });
         })();
     </script>
+    <script src="ai-assist-dashboard.js"></script>
 </body>
 </html>

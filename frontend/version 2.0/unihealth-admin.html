@@ -147,7 +147,8 @@ select.fi option{background:#060e08}
 @media(max-width:800px){.sb{width:180px}.g3{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.app{flex-direction:column}.sb{display:none}.content{padding:12px}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-</style></head><body>
+</style>    <link rel="stylesheet" href="../ai-assist-dashboard.css" />
+</head><body data-unihealth-ai-role="admin" data-uh-patient-id="P001" data-uh-api="http://localhost:8100" data-uh-theme="v2">
 <div class="app">
 <nav class="sb" aria-label="Navigation">
   <div class="sb-brand"><div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
@@ -165,6 +166,7 @@ select.fi option{background:#060e08}
   <div class="clk" id="clock"></div>
 </div>
 <div class="content">
+    <div data-uh-ai="admin-status"></div>
 <div class="g4" style="margin-bottom:14px">
   <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="284">0</div><div class="stat-l">Staff On Duty</div><div class="stat-s">14 departments</div></div>
   <div class="stat" style="--mc:#60a5fa"><div class="stat-v" data-val="78">0</div><div class="stat-l">Bed Occupancy %</div><div class="stat-s">847 / 1,086 beds</div></div>
@@ -347,4 +349,5 @@ document.querySelectorAll('[data-search]').forEach(inp=>inp.addEventListener('in
 // Audit log
 function auditLog(msg){const al=document.getElementById('auditLog');if(!al)return;const t=new Date().toLocaleTimeString('en-KE',{hour12:false});const r=document.createElement('div');r.style.cssText='font-size:9.5px;color:rgba(240,253,244,.2);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:'JetBrains Mono',monospace';r.textContent='['+t+'] '+msg;al.prepend(r);if(al.children.length>12)al.lastChild.remove();}
 document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditLog(el.dataset.audit)));
-</script></body></html>
+</script>    <script src="../ai-assist-dashboard.js"></script>
+</body></html>

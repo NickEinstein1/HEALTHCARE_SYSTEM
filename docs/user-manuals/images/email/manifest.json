@@ -1,0 +1,118 @@
+{
+  "generated": "2026-06-11T06:48:17.123Z",
+  "manualMaxWidth": 1280,
+  "emailMaxWidth": 960,
+  "totals": {
+    "before": 28032383,
+    "manualPng": 2826316,
+    "emailWebp": 441358,
+    "emailJpeg": 692498
+  },
+  "files": [
+    {
+      "name": "01-landing.png",
+      "beforeBytes": 587791,
+      "manualPngBytes": 108440,
+      "emailWebpBytes": 23378,
+      "emailJpegBytes": 34165
+    },
+    {
+      "name": "02-signin-step1-role-select.png",
+      "beforeBytes": 3552834,
+      "manualPngBytes": 302980,
+      "emailWebpBytes": 25810,
+      "emailJpegBytes": 41808
+    },
+    {
+      "name": "03-signin-step2-credentials.png",
+      "beforeBytes": 3520046,
+      "manualPngBytes": 295963,
+      "emailWebpBytes": 29534,
+      "emailJpegBytes": 46591
+    },
+    {
+      "name": "04-signin-step3-mfa.png",
+      "beforeBytes": 3512035,
+      "manualPngBytes": 299177,
+      "emailWebpBytes": 29460,
+      "emailJpegBytes": 46737
+    },
+    {
+      "name": "05-signin-step4-launch.png",
+      "beforeBytes": 3704298,
+      "manualPngBytes": 308195,
+      "emailWebpBytes": 29586,
+      "emailJpegBytes": 46679
+    },
+    {
+      "name": "06-signin-patient-credentials.png",
+      "beforeBytes": 3549149,
+      "manualPngBytes": 304659,
+      "emailWebpBytes": 31768,
+      "emailJpegBytes": 48695
+    },
+    {
+      "name": "07-register.png",
+      "beforeBytes": 3654076,
+      "manualPngBytes": 333148,
+      "emailWebpBytes": 30276,
+      "emailJpegBytes": 45718
+    },
+    {
+      "name": "08-portal.png",
+      "beforeBytes": 1043708,
+      "manualPngBytes": 176813,
+      "emailWebpBytes": 37238,
+      "emailJpegBytes": 64039
+    },
+    {
+      "name": "09-dashboard-doctor.png",
+      "beforeBytes": 630227,
+      "manualPngBytes": 99783,
+      "emailWebpBytes": 28976,
+      "emailJpegBytes": 46457
+    },
+    {
+      "name": "10-dashboard-nurse.png",
+      "beforeBytes": 927328,
+      "manualPngBytes": 139382,
+      "emailWebpBytes": 41962,
+      "emailJpegBytes": 62979
+    },
+    {
+      "name": "11-dashboard-patient.png",
+      "beforeBytes": 1267815,
+      "manualPngBytes": 139907,
+      "emailWebpBytes": 37922,
+      "emailJpegBytes": 60331
+    },
+    {
+      "name": "12-dashboard-admin.png",
+      "beforeBytes": 809205,
+      "manualPngBytes": 117136,
+      "emailWebpBytes": 38772,
+      "emailJpegBytes": 59965
+    },
+    {
+      "name": "13-dashboard-lab.png",
+      "beforeBytes": 498294,
+      "manualPngBytes": 73988,
+      "emailWebpBytes": 20400,
+      "emailJpegBytes": 30631
+    },
+    {
+      "name": "14-dashboard-pharmacy.png",
+      "beforeBytes": 471014,
+      "manualPngBytes": 70351,
+      "emailWebpBytes": 18868,
+      "emailJpegBytes": 28311
+    },
+    {
+      "name": "15-module-emr.png",
+      "beforeBytes": 304563,
+      "manualPngBytes": 56394,
+      "emailWebpBytes": 17408,
+      "emailJpegBytes": 29392
+    }
+  ]
+}

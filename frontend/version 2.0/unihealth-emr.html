@@ -145,8 +145,9 @@ select.fi option{background:#060e08}
 @media(max-width:1100px){.emr-layout{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
+    <link rel="stylesheet" href="../ai-assist-dashboard.css" />
 </head>
-<body>
+<body data-unihealth-ai-role="doctor" data-uh-patient-id="P001" data-uh-api="http://localhost:8100" data-uh-theme="v2">
 <div class="app">
 <!-- SIDEBAR -->
 <nav class="sb" aria-label="EMR Navigation">
@@ -268,6 +269,7 @@ select.fi option{background:#060e08}
             <div class="vital"><div class="vital-v">18</div><div class="vital-l">RR /min</div></div>
           </div>
         </div>
+        <div data-uh-ai="risk"></div>
         <!-- AI Risk Card -->
         <div class="ai-card">
           <div class="ai-header">
@@ -587,5 +589,6 @@ document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click
 // Audit on data-audit elements
 document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditEntry(el.dataset.audit)));
 </script>
+    <script src="../ai-assist-dashboard.js"></script>
 </body>
 </html>

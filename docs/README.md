@@ -10,6 +10,23 @@ All project Markdown lives here (except the repository root **[README.md](../REA
 | [runbook-staging.md](runbook-staging.md) | Staging compose, LAN access, smoke checks |
 | [UniHealth-EHR-Blueprint.md](UniHealth-EHR-Blueprint.md) | Program blueprint |
 
+## User manuals (web interface)
+
+| Doc | Purpose |
+| --- | ------- |
+| [user-manuals/docx/UniHealth-Web-User-Manual-Combined.docx](user-manuals/docx/UniHealth-Web-User-Manual-Combined.docx) | **Combined manual (Word)** — all roles + screenshots |
+| [user-manuals/UniHealth-Web-User-Manual.pdf](user-manuals/UniHealth-Web-User-Manual.pdf) | Combined manual (PDF) — branded KNH cover |
+| [user-manuals/UniHealth-Web-User-Manual.html](user-manuals/UniHealth-Web-User-Manual.html) | Combined manual (HTML) — optimized images for email |
+| [user-manuals/README.md](user-manuals/README.md) | Index — all roles and portal |
+| [user-manuals/00-getting-started.md](user-manuals/00-getting-started.md) | Sign-in, MFA, layout (all users) |
+| [user-manuals/01-doctor.md](user-manuals/01-doctor.md) | Doctor dashboard |
+| [user-manuals/02-nurse.md](user-manuals/02-nurse.md) | Nurse dashboard |
+| [user-manuals/03-patient.md](user-manuals/03-patient.md) | Patient portal |
+| [user-manuals/04-administrator.md](user-manuals/04-administrator.md) | Administrator console |
+| [user-manuals/05-laboratory.md](user-manuals/05-laboratory.md) | Laboratory dashboard |
+| [user-manuals/06-pharmacy.md](user-manuals/06-pharmacy.md) | Pharmacy dashboard |
+| [user-manuals/07-unihealth-360-portal.md](user-manuals/07-unihealth-360-portal.md) | UniHealth 360 module catalog |
+
 ## Phase 1
 
 | Doc | Purpose |

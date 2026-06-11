@@ -3,6 +3,8 @@
 <head>
     <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
     <link rel="stylesheet" href="brand.css" />
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniHealth — Admin Dashboard</title>
@@ -1007,7 +1009,7 @@
         }
     </style>
 </head>
-<body>
+<body data-unihealth-ai-role="admin" data-uh-patient-id="P001" data-uh-api="http://localhost:8100">
 
     <nav class="sb">
         <div class="sb-flag"></div>
@@ -1239,11 +1241,13 @@
                 attachEvents();
                 feather.replace();
                 if (state.currentPage === 'overview') startOverviewWidgets();
+                if (window.UniHealthAI) UniHealthAI.mountAll(document.getElementById('contentArea'));
             }
 
             function getOverviewHTML() {
                 return `
                 <div class="ph"><div><div class="ph-eyebrow">MOH Kenya · 2026</div><div class="ph-title">Good morning, Administrator</div><div class="ph-sub">System overview for <span id="todayFull" style="color:var(--g);font-weight:700"></span></div></div><div class="ph-right"><button class="btn-s" data-action="modal" data-modal="export">📥 Export Report</button><button class="btn-p" data-action="modal" data-modal="addUser">+ Add User</button></div></div>
+                <div data-uh-ai="admin-status"></div>
                 <div class="qa" id="quickActions"></div>
                 <div class="kpis" id="kpiRow1"></div>
                 <div class="kpis" id="kpiRow2"></div>
@@ -1560,5 +1564,6 @@
             width: 0;
         }
     </style>
+    <script src="ai-assist-dashboard.js"></script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { DashIcon } from "../components/brand/DashIcon";
 import { isBrandIcon } from "../components/brand/brandIcon";
 import type { RoleKey } from "../theme/tokens";
@@ -23,6 +24,15 @@ type Props = {
 export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
   const cfg = selected ? ROLE_CONFIG[selected] : null;
 
+  useEffect(() => {
+    if (!selected) return;
+    document.getElementById(`role-opt-${selected}`)?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [selected]);
+
   return (
     <div className="fade">
       {/* ── Step indicator ── */}
@@ -41,26 +51,40 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
         <div className="ssub">Choose the role that matches your access level</div>
       </div>
 
-      {/* ── Role grid ── */}
-      <div className="rgrid">
-        {ROLES.map((r) => {
-          const lbl = ROLE_LABELS[r];
-          const roleCfg = ROLE_CONFIG[r];
-          return (
-            <button
-              key={r}
-              type="button"
-              className={`rc${selected === r ? " sel" : ""}`}
-              onClick={() => onSelect(r)}
-              aria-pressed={selected === r}
-            >
-              <div className="rchk" aria-hidden>✓</div>
-              <div className="remi" aria-hidden>{roleCfg.ico}</div>
-              <div className="rnm">{lbl.name}</div>
-              <div className="rds">{lbl.desc}</div>
-            </button>
-          );
-        })}
+      {/* ── Role picker — horizontal scroll ── */}
+      <div className="rscroll-wrap">
+        <p className="rscroll-hint" aria-hidden="true">
+          <span>Scroll for more roles</span>
+          <span className="rscroll-arrows">← →</span>
+        </p>
+        <div
+          className="rscroll"
+          role="listbox"
+          aria-label="Select your role"
+          aria-activedescendant={selected ? `role-opt-${selected}` : undefined}
+        >
+          {ROLES.map((r) => {
+            const lbl = ROLE_LABELS[r];
+            const roleCfg = ROLE_CONFIG[r];
+            const isSel = selected === r;
+            return (
+              <button
+                key={r}
+                id={`role-opt-${r}`}
+                type="button"
+                role="option"
+                aria-selected={isSel}
+                className={`rc${isSel ? " sel" : ""}`}
+                onClick={() => onSelect(r)}
+              >
+                <div className="rchk" aria-hidden>✓</div>
+                <div className="remi" aria-hidden>{roleCfg.ico}</div>
+                <div className="rnm">{lbl.name}</div>
+                <div className="rds">{lbl.desc}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Role notice box ── */}
