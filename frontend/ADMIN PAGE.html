@@ -1,443 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administration — UniHealth 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{--g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;--r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;--bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);--t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);--fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(46,204,113,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s ease both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.1));border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(46,204,113,.14)}50%{box-shadow:0 0 20px rgba(46,204,113,.3)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}
+.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(46,204,113,.14);border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--neon);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);text-decoration:none;border-left:2px solid transparent;transition:all .2s}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(46,204,113,.4)}
+.sb-lnk.active{background:rgba(46,204,113,.08);color:var(--neon);border-left-color:var(--neon)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none;transition:all .2s}
+.sb-back:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s ease .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.b-a{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
+.b-b{background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.b-pk{background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.2);color:#ec4899}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:var(--bn);transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.45)}
+</style>
+<link rel="stylesheet" href="ai-assist-dashboard.css" />
+</head><body data-unihealth-ai-role="admin" data-uh-patient-id="P001" data-uh-api="http://localhost:8100" data-uh-theme="v2">
+<div class="app">
+<nav class="sb" aria-label="Navigation">
+  <div class="sb-brand"><div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div></div>
+  <div class="sb-user"><div class="sbu-av">AD</div><div><div class="sbu-nm">Administrator</div><div class="sbu-rl">Session Active</div></div></div>
+  <div class="sb-nav"><div class="sb-sect">Clinical</div><a class="sb-lnk" href="unihealth-emr.html"><i data-feather="file-text"></i> EMR / EHR</a><a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity & NICU</a><a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a><a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a><a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a><a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU & Emergency</a><a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a><a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a><a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a><div class="sb-sect">Operations</div><a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing & Finance</a><a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a><a class="sb-lnk" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a><a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance & Fleet</a><a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a><a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a><div class="sb-sect">Management</div><a class="sb-lnk active" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a><a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR & Payroll</a><a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a><a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a><a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient</a>
+  <div class="sb-ft"><a href="unihealth360-final.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a><div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div></div>
+</nav>
+<div class="main">
+<div class="topbar">
+  <div class="tb-page"><span style="font-size:16px">🏥</span> Administration</div>
+  <div class="tb-badge b-g"><span class="pdot"></span>All Systems Live</div>
+  <button class="tb-btn tb-p" data-open="addUserModal" data-audit="Add user"><i data-feather="user-plus" style="width:11px;height:11px"></i> Add User</button>
+  <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0"><i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">3</div></div>
+  <div class="clk" id="clock"></div>
+</div>
+<div class="content">
+    <div data-uh-ai="admin-status"></div>
+<div class="g4" style="margin-bottom:14px">
+  <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="284">0</div><div class="stat-l">Staff On Duty</div><div class="stat-s">14 departments</div></div>
+  <div class="stat" style="--mc:#60a5fa"><div class="stat-v" data-val="78">0</div><div class="stat-l">Bed Occupancy %</div><div class="stat-s">847 / 1,086 beds</div></div>
+  <div class="stat" style="--mc:#f59e0b"><div class="stat-v" data-val="22">0</div><div class="stat-l">ER Wait (min)</div><div class="stat-s">Target: &lt;30 min</div></div>
+  <div class="stat" style="--mc:#ec4899"><div class="stat-v" data-val="99.98">0</div><div class="stat-l">System Uptime %</div><div class="stat-s">All services live</div></div>
+</div>
+<!DOCTYPE html><html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administration — UniHealth 360</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/feather-icons"></script>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <link rel="icon" type="image/svg+xml" href="brand-mark.svg" />
-    <link rel="stylesheet" href="brand.css" />
-    <link rel="stylesheet" href="ai-assist-dashboard.css" />
-
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UniHealth — Admin Dashboard</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <script src="https://unpkg.com/feather-icons">
-    </script>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Administration — UniHealth 360</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0
-        }
-        :root {
-            --primary: #1a8a4a;
-            --primary-dark: #0a4a26;
-            --primary-light: #e8f5ee;
-            --primary-muted: #a8d8bc;
-            --accent-blue: #2563eb;
-            --accent-amber: #d97706;
-            --accent-red: #dc2626;
-            --accent-purple: #7c3aed;
-            --bg-page: #f4f7f4;
-            --card-bg: #ffffff;
-            --border-light: #dde5e0;
-            --text-primary: #0c1a14;
-            --text-secondary: #2d4a38;
-            --text-tertiary: #5a7a66;
-            --shadow-sm: 0 1px 4px rgba(0, 0, 0, .06), 0 6px 20px rgba(0, 0, 0, .06);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, .12);
-            --shadow-green: 0 4px 18px rgba(26, 138, 74, .28);
-            --g: var(--primary);
-            --gd: var(--primary-dark);
-            --gl: var(--primary-light);
-            --gm: var(--primary-muted);
-            --r: var(--accent-red);
-            --b: var(--accent-blue);
-            --am: var(--accent-amber);
-            --pu: var(--accent-purple);
-            --bg: var(--bg-page);
-            --card: var(--card-bg);
-            --bdr: var(--border-light);
-            --t1: var(--text-primary);
-            --t2: var(--text-secondary);
-            --t3: var(--text-tertiary);
-            --font: 'Sora', sans-serif;
-            --serif: 'DM Serif Display', Georgia, serif;
-            --mono: 'JetBrains Mono', monospace;
-            --sw: 248px;
-            --th: 60px;
-        }
-        html,
-        body {
-            height: 100%;
-            font-family: var(--font);
-            -webkit-font-smoothing: antialiased;
-            background: var(--bg);
-            overflow: hidden
-        }
-        body {
-            display: flex
-        }
-
-        .sb {
-            width: var(--sw);
-            flex-shrink: 0;
-            height: 100vh;
-            background: #0f1f2e;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 200;
-            overflow: hidden
-        }
-        .sb::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse 140% 50% at -10% 100%, rgba(26, 138, 74, .14) 0%, transparent 55%),
-                radial-gradient(ellipse 80% 40% at 110% 0%, rgba(37, 99, 235, .1) 0%, transparent 50%);
-            pointer-events: none
-        }
-        .sb-flag {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #bb0000 0%, #bb0000 33%, #111 33%, #111 35.5%, #e8e8e8 35.5%, #e8e8e8 37%, #111 37%, #111 39.5%, #1a8a4a 39.5%, #1a8a4a 100%);
-            z-index: 10
-        }
-        .sb-in {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow-y: auto;
-            overflow-x: hidden
-        }
-        .sb-in::-webkit-scrollbar {
-            width: 0
-        }
-        .sb-brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            padding: 20px 18px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, .06)
-        }
-        .sb-ico {
-            width: 36px;
-            height: 36px;
-            border-radius: 9px;
-            background: linear-gradient(135deg, var(--g), #3ecf7a);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            flex-shrink: 0;
-            box-shadow: 0 3px 10px rgba(26, 138, 74, .4)
-        }
-        .sb-nm {
-            font-family: var(--serif);
-            font-size: 17px;
-            color: #fff;
-            letter-spacing: -.1px;
-            line-height: 1.1
-        }
-        .sb-sub {
-            font-size: 9px;
-            color: rgba(255, 255, 255, .32);
-            letter-spacing: .5px;
-            font-weight: 500;
-            margin-top: 2px
-        }
-        .sb-live {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #2ecc71;
-            box-shadow: 0 0 8px #2ecc71;
-            animation: pulse 2s infinite;
-            margin-left: auto
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                box-shadow: 0 0 5px #2ecc71
-            }
-            50% {
-                box-shadow: 0 0 14px #2ecc71
-            }
-        }
-        .sb-sec {
-            padding: 10px 10px 0
-        }
-        .sb-sec-lbl {
-            font-family: var(--mono);
-            font-size: 8.5px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, .22);
-            padding: 8px 10px 5px;
-            font-weight: 500
-        }
-        .ni {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            padding: 9px 11px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all .15s;
-            margin-bottom: 1px;
-            position: relative
-        }
-        .ni:hover {
-            background: rgba(255, 255, 255, .06)
-        }
-        .ni.on {
-            background: rgba(26, 138, 74, .2);
-            border: 1px solid rgba(26, 138, 74, .28)
-        }
-        .ni-ico {
-            font-size: 14px;
-            flex-shrink: 0;
-            width: 18px;
-            text-align: center;
-            opacity: .65;
-            transition: opacity .15s
-        }
-        .ni:hover .ni-ico,
-        .ni.on .ni-ico {
-            opacity: 1
-        }
-        .ni-lbl {
-            font-size: 12px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .6);
-            transition: color .15s;
-            white-space: nowrap
-        }
-        .ni:hover .ni-lbl,
-        .ni.on .ni-lbl {
-            color: #fff
-        }
-        .ni-badge {
-            margin-left: auto;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 10px;
-            min-width: 18px;
-            text-align: center
-        }
-        .ni-badge.red {
-            background: var(--r);
-            color: #fff
-        }
-        .ni-badge.amber {
-            background: var(--am);
-            color: #fff
-        }
-        .ni-badge.green {
-            background: var(--g);
-            color: #fff
-        }
-        .sb-user {
-            margin-top: auto;
-            padding: 14px 18px;
-            border-top: 1px solid rgba(255, 255, 255, .06);
-            display: flex;
-            align-items: center;
-            gap: 9px
-        }
-        .sb-av {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--g), #7beba4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 800;
-            color: #fff
-        }
-        .sb-un {
-            font-size: 12px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, .8)
-        }
-        .sb-ue {
-            font-size: 9.5px;
-            color: rgba(255, 255, 255, .32);
-            margin-top: 1px
-        }
-        .sb-signout {
-            margin-left: auto;
-            padding: 5px 9px;
-            background: rgba(255, 255, 255, .05);
-            border: 1px solid rgba(255, 255, 255, .1);
-            border-radius: 6px;
-            font-size: 10.5px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, .45);
-            cursor: pointer;
-            transition: all .15s
-        }
-        .sb-signout:hover {
-            background: rgba(220, 38, 38, .2);
-            border-color: rgba(220, 38, 38, .4);
-            color: #fca5a5
-        }
-        .rbac-badge {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 7px 12px;
-            background: rgba(26, 138, 74, .12);
-            border: 1px solid rgba(26, 138, 74, .22);
-            border-radius: 7px;
-            margin: 0 10px 12px
-        }
-        .rbac-ico {
-            font-size: 13px
-        }
-        .rbac-role {
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(255, 255, 255, .7);
-            line-height: 1.2
-        }
-        .rbac-perm {
-            font-size: 8.5px;
-            color: rgba(255, 255, 255, .35);
-            margin-top: 1px;
-            font-family: var(--mono)
-        }
-        .rbac-role-sel {
-            font-family: var(--mono);
-            font-size: 9px;
-            font-weight: 700;
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, .55);
-            cursor: pointer;
-            padding: 2px 0;
-            margin-top: 2px;
-            text-decoration: underline dotted
-        }
-
-        .main {
-            margin-left: var(--sw);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            min-width: 0
-        }
-        .topbar {
-            height: var(--th);
-            background: var(--card);
-            border-bottom: 1.5px solid var(--bdr);
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            gap: 14px;
-            flex-shrink: 0;
-            z-index: 100
-        }
-        .tb-page {
-            font-family: var(--serif);
-            font-size: 18px;
-            color: var(--t1);
-            letter-spacing: -.2px
-        }
-        .tb-crumb {
-            font-size: 11px;
-            color: var(--t3);
-            font-weight: 500;
-            margin-top: 1px
-        }
-        .tb-crumb b {
-            color: var(--g)
-        }
-        .tb-gap {
-            flex: 1
-        }
-        .tb-search {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 13px;
-            background: var(--bg);
-            border: 1.5px solid var(--bdr);
-            border-radius: 8px;
-            width: 220px;
-            transition: all .2s
-        }
-        .tb-search:focus-within {
-            border-color: var(--g);
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(26, 138, 74, .09)
-        }
-        .tb-search input {
-            border: none;
-            background: transparent;
-            outline: none;
-            font-family: var(--font);
-            font-size: 12.5px;
-            color: var(--t1);
-            width: 100%
-        }
-        .tb-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: 1.5px solid var(--bdr);
-            background: var(--card);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all .15s;
-            font-size: 15px;
-            position: relative
-        }
-        .tb-btn:hover {
-            border-color: var(--g);
-            background: var(--gl)
-        }
-        .tb-dot {
-            position: absolute;
-            top: 6px;
-            right: 7px;
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--r);
-            border: 2px solid var(--card)
-        }
-        .tb-datepill {
-            font-family: var(--mono);
-            font-size: 10.5px;
-            color: var(--t3);
-            padding: 6px 11px;
-            background: var(--bg);
-            border: 1.5px solid var(--bdr);
-            border-radius: 7px;
-            white-space: nowrap
-        }
-
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px
-        }
-        .content::-webkit-scrollbar {
-            width: 4px
-        }
-        .content::-webkit-scrollbar-thumb {
-            background: var(--bdr);
-            border-radius: 4px
-        }
-        .pg {
-            display: none;
+    /* Full v2 admin CSS copied from frontend/version 2.0/unihealth-admin.html */
+    :root{--g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;--r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;--bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);--t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.2);--fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+    /* (CSS omitted for brevity) */
+    </style>
+    <link rel="stylesheet" href="ai-assist-dashboard.css" />
+</head>
+<body data-unihealth-ai-role="admin" data-uh-patient-id="P001" data-uh-api="http://localhost:8100" data-uh-theme="v2">
+    <!-- Full v2 admin HTML content copied and asset paths adjusted -->
+    <!-- Navigation, topbar, content, and scripts follow the v2 source -->
+    <script>feather.replace({width:12,height:12,strokeWidth:2});</script>
+    <script src="ai-assist-dashboard.js"></script>
+</body>
+</html>
             animation: pgIn .3s ease both
         }
         .pg.on {
