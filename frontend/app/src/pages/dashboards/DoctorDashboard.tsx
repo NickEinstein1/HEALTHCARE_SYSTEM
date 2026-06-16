@@ -19,7 +19,9 @@ type DocPage =
   | "referrals"
   | "procedures"
   | "claims"
-  | "schedule";
+  | "schedule"
+  | "audit"
+  | "health";
 
 const DOC_TITLES: Record<DocPage, string> = {
   home: "Today's Overview",
@@ -35,6 +37,8 @@ const DOC_TITLES: Record<DocPage, string> = {
   procedures: "Procedures",
   claims: "UniHealth Claims",
   schedule: "My Schedule",
+  audit: "Audit Trail",
+  health: "System Health",
 };
 
 const DOC_LS_FORECAST_WARD = "unihealth.phase3.doctorForecastWard";
@@ -46,6 +50,8 @@ export function DoctorDashboard() {
   const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 5000 });
   const obs = usePolling(() => api.observations(patientId, 10), { intervalMs: 5000 });
   const meds = usePolling(() => api.medicationRequests(patientId, 10), { intervalMs: 7000 });
+  const auditLog = usePolling(() => api.uiActionsList(200), { intervalMs: 8000 });
+  const aiStatus = usePolling(() => api.aiStatus(), { intervalMs: 12000 });
   const { riskScore, riskLoading, fetchRiskScore, vitalMap } = useAiRiskScore(patientId, obs.data, "doctor", {
     onError: (msg) => toast(`Risk score unavailable: ${msg}`),
   });
@@ -850,6 +856,13 @@ export function DoctorDashboard() {
             { id: "procedures", icon: "⚕️", label: "Procedures" },
             { id: "claims", icon: "🛡️", label: "UniHealth Claims" },
             { id: "schedule", icon: "📅", label: "My Schedule" },
+          ],
+        },
+        {
+          label: "Security & Compliance",
+          items: [
+            { id: "audit", icon: "⛓️", label: "Audit Trail" },
+            { id: "health", icon: "💾", label: "System Health" },
           ],
         },
       ]}
@@ -2167,6 +2180,75 @@ export function DoctorDashboard() {
                     <div><strong>14:00</strong> — MDT — Cardiology</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={`pg${page === "audit" ? " on" : ""}`} id="pg-audit">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Security & Compliance</div>
+              <div className="ph-ti">Audit Trail</div>
+              <div className="ph-su">Clinical actions logged for this workstation (synced from gateway).</div>
+            </div>
+          </div>
+          <div className="panel">
+            <div className="pnl-hd"><div className="pnl-ti">Recent entries</div></div>
+            <div className="pnl-bd" style={{ padding: 0 }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th className="mono">Time</th>
+                    <th>Action</th>
+                    <th>Page</th>
+                    <th>Patient</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(auditLog.data ?? [])
+                    .filter((a: { role?: string }) => !a.role || a.role === "doctor")
+                    .slice(0, 100)
+                    .map((a: { ts?: string; label?: string; page?: string; patient_id?: string }, idx: number) => (
+                      <tr key={`${a.ts ?? idx}-${a.label ?? ""}`}>
+                        <td className="mono">{a.ts ?? "—"}</td>
+                        <td style={{ fontWeight: 700 }}>{a.label ?? "—"}</td>
+                        <td>{a.page ?? "—"}</td>
+                        <td className="mono">{a.patient_id ?? "—"}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className={`pg${page === "health" ? " on" : ""}`} id="pg-health">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">System</div>
+              <div className="ph-ti">System Health</div>
+              <div className="ph-su">Gateway, AI services, and clinical workstation connectivity.</div>
+            </div>
+          </div>
+          <div className="g2">
+            <div className="panel">
+              <div className="pnl-hd">
+                <div className="pnl-ti">API Gateway</div>
+                <span className={`tag ${aiStatus.data ? "g" : "am"}`}>{aiStatus.data ? "ONLINE" : "CHECKING"}</span>
+              </div>
+              <div className="pnl-bd" style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.7 }}>
+                <div>AI tier: <strong>{(aiStatus.data as { tier?: string })?.tier ?? "—"}</strong></div>
+                <div>Rules engine: <strong>{(aiStatus.data as { rules_active?: boolean })?.rules_active ? "Active" : "—"}</strong></div>
+                <div>Last check: {aiStatus.loading ? "Refreshing…" : "Live poll every 12s"}</div>
+              </div>
+            </div>
+            <div className="panel">
+              <div className="pnl-hd"><div className="pnl-ti">Clinical workstation</div></div>
+              <div className="pnl-bd" style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.7 }}>
+                <div>Active patient: <span className="mono">{patientId}</span></div>
+                <div>Observations feed: <strong>{obs.loading ? "…" : `${obs.data?.length ?? 0} rows`}</strong></div>
+                <div>Medications feed: <strong>{meds.loading ? "…" : `${meds.data?.length ?? 0} rows`}</strong></div>
               </div>
             </div>
           </div>

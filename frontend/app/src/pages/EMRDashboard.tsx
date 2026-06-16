@@ -4,7 +4,18 @@ import { Card } from '../components/ui/Card';
 import { Tabs } from '../components/ui/Tabs';
 import './EMRDashboard.css';
 
+const API_ENDPOINTS = [
+  { method: 'GET', path: '/api/emr/patients?query=', desc: 'Search patients by name/ID' },
+  { method: 'GET', path: '/api/emr/patient/{id}', desc: 'Get patient details & full record' },
+  { method: 'POST', path: '/api/emr/patient', desc: 'Create new patient record' },
+  { method: 'PUT', path: '/api/emr/patient/{id}', desc: 'Update patient record' },
+  { method: 'POST', path: '/api/emr/patient/{id}/note', desc: 'Add SOAP clinical note' },
+  { method: 'GET', path: '/fhir/Patient/{id}', desc: 'FHIR R5 patient resource' },
+] as const;
+
 export const EMRDashboard: React.FC = () => {
+  const [showNewPatient, setShowNewPatient] = useState(false);
+  const [newPatient, setNewPatient] = useState({ first: '', last: '', dob: '', sex: 'Female' });
   const [selectedPatient, setSelectedPatient] = useState({
     name: 'Mary Wanjiku',
     id: 'KE-00847',
@@ -156,6 +167,69 @@ export const EMRDashboard: React.FC = () => {
         </Card>
       ),
     },
+    {
+      id: 'orders',
+      label: 'Orders',
+      icon: '📋',
+      content: (
+        <Card title="Clinical Orders" action={<button className="btn bp btn-sm" type="button">➕ New Order</button>}>
+          <div className="results-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order Type</th>
+                  <th>Detail</th>
+                  <th>Priority</th>
+                  <th>Ordered By</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Laboratory</td>
+                  <td>HbA1c, Lipid Profile, eGFR</td>
+                  <td><span className="tag ta">Routine</span></td>
+                  <td>Dr. Wanjiku</td>
+                  <td><span className="tag tb_">Pending</span></td>
+                </tr>
+                <tr>
+                  <td>Radiology</td>
+                  <td>Chest X-Ray (PA view)</td>
+                  <td><span className="tag ta">Routine</span></td>
+                  <td>Dr. Wanjiku</td>
+                  <td><span className="tag tg">Completed</span></td>
+                </tr>
+                <tr>
+                  <td>Referral</td>
+                  <td>Cardiology — HTN management</td>
+                  <td><span className="tag tr">Urgent</span></td>
+                  <td>Dr. Wanjiku</td>
+                  <td><span className="tag tb_">Scheduled</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      ),
+    },
+    {
+      id: 'api',
+      label: 'API Ref',
+      icon: '🔗',
+      content: (
+        <Card title="API Reference — EMR Module">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {API_ENDPOINTS.map((ep) => (
+              <div key={ep.path} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontFamily: 'monospace', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: ep.method === 'GET' ? 'rgba(46,204,113,0.15)' : 'rgba(59,130,246,0.15)', color: ep.method === 'GET' ? '#2ecc71' : '#60a5fa' }}>{ep.method}</span>
+                <span style={{ fontFamily: 'monospace', flex: 1, color: 'rgba(240,253,244,0.75)' }}>{ep.path}</span>
+                <span style={{ color: 'rgba(240,253,244,0.45)', fontSize: 11 }}>{ep.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ),
+    },
   ];
 
   return (
@@ -165,6 +239,7 @@ export const EMRDashboard: React.FC = () => {
       currentSection="EMR"
       userName="Dr. Wanjiku"
       userRole="Attending Physician"
+      onNewPatient={() => setShowNewPatient(true)}
     >
       <div className="emr-layout">
         {/* PATIENT LIST */}
@@ -264,6 +339,44 @@ export const EMRDashboard: React.FC = () => {
           <Tabs tabs={tabsContent} />
         </div>
       </div>
+
+      {showNewPatient && (
+        <div className="modal-overlay" role="dialog" aria-modal aria-label="Register new patient" onClick={(e) => { if (e.target === e.currentTarget) setShowNewPatient(false); }}>
+          <div className="modal">
+            <div className="modal-hd">
+              <div className="modal-ttl">Register New Patient</div>
+              <button type="button" className="mc" onClick={() => setShowNewPatient(false)} aria-label="Close">✕</button>
+            </div>
+            <div className="frm-g">
+              <div className="fg">
+                <label className="fl">First Name</label>
+                <input className="fi" value={newPatient.first} onChange={(e) => setNewPatient((s) => ({ ...s, first: e.target.value }))} placeholder="First name" />
+              </div>
+              <div className="fg">
+                <label className="fl">Last Name</label>
+                <input className="fi" value={newPatient.last} onChange={(e) => setNewPatient((s) => ({ ...s, last: e.target.value }))} placeholder="Last name" />
+              </div>
+              <div className="fg">
+                <label className="fl">Date of Birth</label>
+                <input className="fi" type="date" value={newPatient.dob} onChange={(e) => setNewPatient((s) => ({ ...s, dob: e.target.value }))} />
+              </div>
+              <div className="fg">
+                <label className="fl">Sex</label>
+                <select className="fi" value={newPatient.sex} onChange={(e) => setNewPatient((s) => ({ ...s, sex: e.target.value }))}>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div className="modal-ft">
+              <button type="button" className="btn bp" onClick={() => setShowNewPatient(false)}>
+                Register Patient
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

@@ -112,6 +112,7 @@ export function AdminDashboard() {
     | "facilities"
     | "counties"
     | "patients"
+    | "staff"
     | "unihealth"
     | "reports"
     | "audit"
@@ -496,7 +497,7 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
-    if (page !== "users") return;
+    if (page !== "users" && page !== "staff") return;
     void loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, userQ, userRole, userFacility, userStatus]);
@@ -902,6 +903,7 @@ export function AdminDashboard() {
           label: "Clinical",
           items: [
             { id: "patients", icon: "🧑‍⚕️", label: "Patient Registry" },
+            { id: "staff", icon: "💼", label: "Staff Directory" },
             { id: "unihealth", icon: "🛡️", label: "UniHealth Integration", badge: { text: "3", tone: "amber" } },
           ],
         },
@@ -2467,6 +2469,76 @@ export function AdminDashboard() {
           </table>
         </div>
 
+      </div>
+
+      {/* STAFF DIRECTORY */}
+      <div className={`pg${page === "staff" ? " on" : ""}`} id="pg-staff">
+        <div className="ph">
+          <div>
+            <div className="ph-eyebrow">Human Resources</div>
+            <div className="ph-title">Staff Directory</div>
+            <div className="ph-sub">KMPDC and NCK verified clinical staff</div>
+          </div>
+          <button className="btn-p" type="button" onClick={openCreateUser}>
+            + Add Staff Member
+          </button>
+        </div>
+        <div className="panel">
+          <div className="pnl-hd">
+            <div className="pnl-title">Clinical staff</div>
+            <div className="pnl-sub">Doctors, nurses, clinical officers, lab and pharmacy staff</div>
+          </div>
+          <div className="pnl-body" style={{ padding: 0 }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Registration No.</th>
+                  <th>Facility</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {usersError && (
+                  <tr>
+                    <td colSpan={6} style={{ padding: 14, color: "var(--r)" }}>
+                      Failed to load staff directory.
+                    </td>
+                  </tr>
+                )}
+                {!usersError && usersLoading && (
+                  <tr>
+                    <td colSpan={6} style={{ padding: 14, color: "var(--t3)" }}>
+                      Loading staff…
+                    </td>
+                  </tr>
+                )}
+                {!usersError &&
+                  !usersLoading &&
+                  users
+                    .filter((u) => /doctor|nurse|clinical|lab|pharm/i.test(u.role ?? ""))
+                    .map((u) => (
+                      <tr key={u.id}>
+                        <td style={{ fontWeight: 800 }}>{u.name}</td>
+                        <td>{u.role}</td>
+                        <td className="mono">{u.reg ?? "—"}</td>
+                        <td>{u.facility ?? "—"}</td>
+                        <td>
+                          <span className={`tag ${u.status === "Active" ? "g" : "am"}`}>{u.status ?? "—"}</span>
+                        </td>
+                        <td>
+                          <button className="btn-s btn-sm" type="button" onClick={() => openEditUser(u)}>
+                            Manage
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* UNIHEALTH */}

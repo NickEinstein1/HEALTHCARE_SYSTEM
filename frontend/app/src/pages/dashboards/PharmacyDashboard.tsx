@@ -18,7 +18,9 @@ type PharmacyPage =
   | "interactions"
   | "interventions"
   | "audit"
-  | "health";
+  | "health"
+  | "kemsa"
+  | "api";
 
 const TITLES: Record<PharmacyPage, string> = {
   overview: "Overview",
@@ -34,6 +36,8 @@ const TITLES: Record<PharmacyPage, string> = {
   interventions: "Pharmacist Notes",
   audit: "Audit Trail",
   health: "System Health",
+  kemsa: "KEMSA Orders",
+  api: "API Reference",
 };
 
 export function PharmacyDashboard() {
@@ -131,6 +135,7 @@ export function PharmacyDashboard() {
           items: [
             { id: "stock", icon: "📦", label: "Stock Levels", badge: { text: "3", tone: "amber" } },
             { id: "reorder", icon: "🚚", label: "Reorder List" },
+            { id: "kemsa", icon: "🏛️", label: "KEMSA Orders", badge: { text: "2", tone: "amber" } },
             { id: "claims", icon: "🛡️", label: "ModelCover Claims" },
             { id: "vaccinations", icon: "🌡️", label: "Vaccinations" },
           ],
@@ -146,6 +151,7 @@ export function PharmacyDashboard() {
           label: "Security & Compliance",
           items: [
             { id: "audit", icon: "⛓️", label: "Audit Trail" },
+            { id: "api", icon: "🔗", label: "API Reference" },
             { id: "health", icon: "💾", label: "System Health" },
           ],
         },
@@ -541,6 +547,80 @@ export function PharmacyDashboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <div className={`pg${page === "kemsa" ? " on" : ""}`} id="pg-kemsa">
+        <div className="ph">
+          <div>
+            <div className="ph-eyebrow">Inventory</div>
+            <div className="ph-title">KEMSA Supply Orders</div>
+            <div className="ph-sub">Kenya Medical Supplies Authority catalogue orders (synced with v2 pharmacy HTML).</div>
+          </div>
+          <button className="btn-p" type="button" onClick={() => void uiAction("KEMSA order submitted")}>
+            🏛️ New KEMSA Order
+          </button>
+        </div>
+        <div className="panel">
+          <div className="pnl-hd"><div className="pnl-title">Open orders</div></div>
+          <div className="pnl-body" style={{ padding: 0 }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Ordered</th>
+                  <th>ETA</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="mono">KEMSA-2847</td>
+                  <td>Regular Insulin (vials)</td>
+                  <td>200</td>
+                  <td>10 May</td>
+                  <td>15 May</td>
+                  <td><span className="tag am">In Transit</span></td>
+                </tr>
+                <tr>
+                  <td className="mono">KEMSA-2846</td>
+                  <td>Metformin 500mg (tabs)</td>
+                  <td>5000</td>
+                  <td>08 May</td>
+                  <td>12 May</td>
+                  <td><span className="tag g">Delivered</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className={`pg${page === "api" ? " on" : ""}`} id="pg-api">
+        <div className="ph">
+          <div>
+            <div className="ph-eyebrow">Integration</div>
+            <div className="ph-title">API Reference</div>
+            <div className="ph-sub">Pharmacy module endpoints (matches unihealth-pharmacy.html).</div>
+          </div>
+        </div>
+        <div className="panel">
+          <div className="pnl-body" style={{ fontSize: 12, lineHeight: 1.8 }}>
+            {[
+              ["GET", "/pharmacy/prescriptions", "List prescription queue"],
+              ["POST", "/pharmacy/dispense", "Record dispense event"],
+              ["POST", "/api/pharmacy/order", "Create KEMSA purchase order"],
+              ["GET", "/api/kemsa/catalogue", "KEMSA drug catalogue"],
+            ].map(([method, path, desc]) => (
+              <div key={path} style={{ display: "flex", gap: 10, padding: "6px 0", borderBottom: "1px solid var(--bdr)" }}>
+                <span className="mono" style={{ fontWeight: 800, color: "var(--g)" }}>{method}</span>
+                <span className="mono" style={{ flex: 1 }}>{path}</span>
+                <span style={{ color: "var(--t3)" }}>{desc}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

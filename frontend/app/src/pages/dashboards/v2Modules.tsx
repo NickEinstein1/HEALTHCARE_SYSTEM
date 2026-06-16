@@ -37,6 +37,13 @@ export const MaternityDashboard: React.FC = () => (
         { label: 'Critical Cases', value: '3' },
       ],
       widgets: [],
+      syncedTabs: [
+        { id: 'anc', label: 'ANC Clinic', summary: 'Antenatal care visits, risk stratification, and ANC schedules.' },
+        { id: 'labor', label: 'Labor Ward', summary: 'Active labor board, partograph, and delivery suite status.' },
+        { id: 'nicu', label: 'NICU', summary: 'Neonatal intensive care admissions and monitoring.' },
+        { id: 'postnatal', label: 'Postnatal', summary: 'Post-delivery follow-up and maternal recovery.' },
+        { id: 'api', label: 'API Ref', summary: 'Maternity module REST and FHIR endpoints.' },
+      ],
     }}
   />
 );

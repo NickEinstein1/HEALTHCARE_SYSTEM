@@ -72,3 +72,14 @@ cd frontend && python3 -m http.server 3000
 Then open **`http://localhost:3000/sign-in.html`** (and **`dashboard-*.html`** stubs). These files are **not** the React app; prefer **`frontend/app`** for integrations with **`ehr-api`** (see [ehr-api.md](ehr-api.md)).
 
 Legacy pages share **`brand-mark.svg`** and **`brand.css`** in this folder for the UniHealth logo (replacing the old 🏥 emoji). Re-apply branding to all `*.html` here with **`python3 scripts/update-html-branding.py`** if you add new prototypes.
+
+### Keeping HTML and React dashboards aligned
+
+After changing HTML sidebar nav or v2 module tabs, run:
+
+```bash
+python3 scripts/sync_html_dashboard_nav.py   # validates nav/tab parity registries
+python3 scripts/sync_html_ai_dashboards.py # AI Assist mounts + shared CSS
+```
+
+Production React dashboards live under **`frontend/app/src/pages/dashboards/`** (six roles) and **`/modules/*`** (v2 shell + **`EMRDashboard.tsx`**). HTML structure changes should be ported manually to those TSX files, then validated with the nav sync script.

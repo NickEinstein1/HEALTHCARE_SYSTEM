@@ -15,6 +15,8 @@ export interface ModuleConfig {
     content: string;
     metric?: string;
   }>;
+  /** When set, replaces generic Overview/Operations/Reports with HTML-aligned module tabs. */
+  syncedTabs?: Array<{ id: string; label: string; summary: string }>;
 }
 
 export interface ModuleDashboardProps {
@@ -22,8 +24,6 @@ export interface ModuleDashboardProps {
 }
 
 export const ModuleDashboard: React.FC<ModuleDashboardProps> = ({ config }) => {
-  const [activeTab, setActiveTab] = useState('overview');
-
   const dashboardModules: { [key: string]: ModuleConfig } = {
     emr: {
       name: 'EMR',
@@ -239,6 +239,13 @@ export const ModuleDashboard: React.FC<ModuleDashboardProps> = ({ config }) => {
 
   const moduleKey = config.name.toLowerCase();
   const module = dashboardModules[moduleKey] || config;
+  const tabDefs = module.syncedTabs ?? [
+    { id: "overview", label: "Overview", summary: "Module overview and KPI widgets." },
+    { id: "operations", label: "Operations", summary: "Operational dashboard and live workflows." },
+    { id: "reports", label: "Reports", summary: "Reports and analytics exports." },
+  ];
+  const [activeTab, setActiveTab] = useState(tabDefs[0]?.id ?? "overview");
+  const useSyncedTabs = !!module.syncedTabs;
 
   return (
     <DashboardLayout
@@ -266,26 +273,29 @@ export const ModuleDashboard: React.FC<ModuleDashboardProps> = ({ config }) => {
 
         {/* TABS */}
         <div className="module-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Overview
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'operations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('operations')}
-          >
-            Operations
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reports')}
-          >
-            Reports
-          </button>
+          {tabDefs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
+        {useSyncedTabs ? (
+          <div className="tab-content">
+            <Card title={tabDefs.find((t) => t.id === activeTab)?.label ?? "Module"}>
+              <p className="widget-content">{tabDefs.find((t) => t.id === activeTab)?.summary}</p>
+              <p style={{ marginTop: 12, fontSize: 11.5, color: "rgba(240, 253, 244, 0.55)" }}>
+                Content aligned with v2 HTML module tabs. Wire API workflows in the next integration pass.
+              </p>
+            </Card>
+          </div>
+        ) : (
+          <>
         {/* TAB CONTENT - OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="tab-content">
@@ -334,6 +344,8 @@ export const ModuleDashboard: React.FC<ModuleDashboardProps> = ({ config }) => {
               </div>
             </div>
           </Card>
+        )}
+          </>
         )}
       </div>
     </DashboardLayout>

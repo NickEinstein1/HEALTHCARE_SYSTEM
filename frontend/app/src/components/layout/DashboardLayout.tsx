@@ -10,6 +10,7 @@ export interface DashboardLayoutProps {
   currentSection?: string;
   userRole?: string;
   userName?: string;
+  onNewPatient?: () => void;
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -18,6 +19,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   pageIcon = "🏥",
   userRole = "Attending Physician",
   userName = "Dr. Wanjiku",
+  onNewPatient,
 }) => {
   const location = useLocation();
   const [time, setTime] = useState("");
@@ -108,7 +110,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <span className="pdot" />
             LIVE · FHIR R5
           </div>
-          <button type="button" className="tb-btn bp">
+          <button type="button" className="tb-btn bp" onClick={onNewPatient}>
             <span>➕</span> New Patient
           </button>
           <div

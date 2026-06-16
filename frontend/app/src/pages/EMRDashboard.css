@@ -548,3 +548,52 @@ tr:hover td {
     font-size: 14px;
   }
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-overlay .modal {
+  background: #0a1a10;
+  border: 1px solid var(--bn);
+  border-radius: 12px;
+  width: min(440px, 100%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.modal-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.modal-ttl { font-weight: 800; color: var(--t1); }
+
+.mc {
+  background: transparent;
+  border: none;
+  color: var(--t2);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.frm-g { padding: 16px; display: grid; gap: 12px; }
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.fl { font-size: 11px; font-weight: 700; color: var(--t2); }
+.fi {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--bd);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--t1);
+}
+.modal-ft { padding: 0 16px 16px; }
