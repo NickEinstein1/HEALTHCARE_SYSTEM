@@ -6,19 +6,16 @@ on:
       - main
   pull_request:
 
-# GitHub Actions: Node 24 is the default for JavaScript actions (Node 20 deprecated).
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
+# GitHub Actions: use Node 24-native action majors (Node 20 deprecated on runners).
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -47,7 +44,7 @@ jobs:
           cd ehr-api && PYTHONPATH=. pytest tests/ -q
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm

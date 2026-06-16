@@ -34,7 +34,7 @@ This guide applies to **all users** before you open a role-specific manual.
 
 ### Step 2 — Enter credentials
 
-**Staff (doctor, nurse, lab, pharmacy, admin)**
+#### Staff (doctor, nurse, lab, pharmacy, admin)
 
 - Professional registration or staff ID (role-specific field).
 - Institutional email address.
@@ -42,7 +42,7 @@ This guide applies to **all users** before you open a role-specific manual.
 - Complete the captcha when shown.
 - If your site uses **Keycloak OIDC**, you may also sign in via the institutional SSO button when enabled.
 
-**Patient**
+#### Patient
 
 - National ID, passport, or other supported ID type.
 - ID number.
@@ -107,9 +107,9 @@ cd frontend/app && npm run dev
 
 | Service | URL |
 | ------- | --- |
-| Web app | http://localhost:5173 |
-| API gateway | http://localhost:8100 |
-| API docs | http://localhost:8100/docs |
+| Web app | `http://localhost:5173` |
+| API gateway | `http://localhost:8100` |
+| API docs | `http://localhost:8100/docs` |
 
 Example staging staff (Keycloak): `doctor` / `Changeme1!` — see [runbook-staging.md](../runbook-staging.md).
 
