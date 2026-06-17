@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cancer Center — UniHealth 360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;
+  --r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;
+  --dept-color:#a78bfa;--dept-glow:rgba(167,139,250,.18);
+  --bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);
+  --t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.20);
+  --fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(139,92,246,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s ease both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(139,92,246,.18),rgba(109,40,217,.1));border:1px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(139,92,246,.14)}50%{box-shadow:0 0 22px rgba(139,92,246,.35)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}
+.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--dept-color);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);text-decoration:none;border-left:2px solid transparent;transition:all .2s}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(139,92,246,.4)}
+.sb-lnk.active{background:rgba(139,92,246,.08);color:var(--dept-color);border-left-color:var(--dept-color)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none;transition:all .2s}
+.sb-back:hover{background:var(--gl2);border-color:rgba(139,92,246,.3);color:var(--dept-color)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s ease .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-pu{background:rgba(139,92,246,.09);border:1px solid rgba(139,92,246,.25);color:#a78bfa}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.b-a{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-b{background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.b-pk{background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.2);color:#ec4899}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.4;transform:scale(1.3)}}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid;transition:all .2s}
+.tb-p{background:linear-gradient(135deg,rgba(109,40,217,.8),rgba(139,92,246,.8));border-color:rgba(139,92,246,.3);color:#fff}
+.tb-p:hover{box-shadow:0 3px 14px rgba(139,92,246,.3);transform:translateY(-1px)}
+.tb-g{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.tb-g:hover{background:var(--gl2);border-color:rgba(139,92,246,.3);color:var(--t1)}
+.tb-ic{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--gl);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);position:relative;transition:all .2s}
+.tb-ic:hover{background:var(--gl2);border-color:rgba(139,92,246,.3);color:var(--dept-color)}
+.nn{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--r);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg)}
+.clk{font-family:var(--fm);font-size:9px;color:var(--t4)}
+.content{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin;animation:ct-in .6s ease .1s both}
+@keyframes ct-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:rgba(139,92,246,.25);transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.45)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.25),transparent);opacity:0;transition:opacity .2s}
+.card:hover::before{opacity:1}
+.dept-card{border-color:rgba(139,92,246,.18)}
+.dept-card:hover{border-color:rgba(139,92,246,.4);box-shadow:0 6px 28px rgba(139,92,246,.1)}
+.dept-card::before{background:linear-gradient(90deg,transparent,rgba(139,92,246,.25),transparent)!important}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.card-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--t4);font-family:var(--fm);display:flex;align-items:center;gap:5px}
+.stat{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;animation:su .5s ease both;transition:all .22s}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc,var(--dept-color));opacity:.5}
+.stat:hover{border-color:rgba(139,92,246,.25);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.4)}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-v{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--mc,var(--dept-color));line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+.stat-s{font-family:var(--fm);font-size:8px;color:var(--t4);margin-top:3px}
+.tabs{display:flex;gap:2px;background:var(--gl);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--t3);border:none;background:none;font-family:var(--fn);transition:all .2s}
+.tab.act{background:rgba(139,92,246,.13);color:var(--dept-color);border:1px solid rgba(139,92,246,.25)}
+.tp{display:none}.tp.show{display:block;animation:tp-in .3s ease}
+@keyframes tp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:7px 10px;font-family:var(--fm);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--gl)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:8px;font-weight:700}
+.tg{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+.tr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#ef4444}
+.ta{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#f59e0b}
+.tb_{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#60a5fa}
+.tpu{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#a78bfa}
+.tp_{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.22);color:#ec4899}
+.dept-tag{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#a78bfa;font-family:var(--fm);font-size:8px;padding:2px 7px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid;transition:all .2s}
+.bp{background:linear-gradient(135deg,rgba(109,40,217,.8),rgba(139,92,246,.8));border-color:rgba(139,92,246,.3);color:#fff}
+.bp:hover{box-shadow:0 4px 16px rgba(139,92,246,.3);transform:translateY(-1px)}
+.bg_{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.bg_:hover{background:var(--gl2);border-color:rgba(139,92,246,.3);color:var(--t1)}
+.btn-sm{padding:4px 10px;font-size:10.5px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--t3)}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;color:var(--t1);font-family:var(--fn);font-size:12px;outline:none;transition:all .2s}
+.fi:focus{border-color:rgba(139,92,246,.45);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.fi::placeholder{color:var(--t4)}
+textarea.fi{resize:vertical;min-height:72px}
+select.fi option{background:#060e08}
+.prog{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.prog-f{height:100%;border-radius:2px;transition:width 1.2s ease}
+.al{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:9px;font-size:11.5px;line-height:1.5;border:1px solid;margin-bottom:10px}
+.al-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.85);animation:al-f 2s ease infinite}
+.al-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:rgba(245,158,11,.85)}
+.al-g{background:rgba(46,204,113,.07);border-color:rgba(46,204,113,.2);color:rgba(46,204,113,.85)}
+.al-b{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);color:rgba(59,130,246,.85)}
+.al-pu{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.2);color:rgba(139,92,246,.85)}
+@keyframes al-f{0%,100%{border-color:rgba(239,68,68,.2)}50%{border-color:rgba(239,68,68,.5);box-shadow:0 0 8px rgba(239,68,68,.12)}}
+.api-box{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.14);border-radius:10px;padding:12px 14px}
+.api-ttl{font-family:var(--fm);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px}
+.api-r{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10.5px}
+.api-r:last-child{border-bottom:none}
+.m-g{font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;min-width:36px;text-align:center;background:rgba(46,204,113,.1);color:var(--neon)}
+.m-p{background:rgba(59,130,246,.1);color:#60a5fa}
+.m-u{background:rgba(245,158,11,.1);color:#f59e0b}
+.m-d{background:rgba(239,68,68,.1);color:#ef4444}
+.api-ep{font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1}
+.api-d{font-size:9.5px;color:var(--t4)}
+.srch{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px;flex:1;max-width:260px;transition:all .2s}
+.srch:focus-within{border-color:rgba(139,92,246,.35)}
+.srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--fn);font-size:12px;flex:1}
+.srch input::placeholder{color:var(--t4)}
+.srch i{color:var(--t4);width:12px;height:12px}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:510px;padding:20px;animation:su .3s ease;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-ttl{font-size:15px;font-weight:700;color:var(--t1)}
+.mc{background:none;border:none;color:var(--t3);cursor:pointer;border-radius:6px;padding:4px;display:flex;align-items:center;transition:color .2s}
+.mc:hover{color:var(--t1);background:var(--gl)}
+.frm-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:3px}
+.prog-row span{font-family:var(--fm)}
+.mb12{margin-bottom:12px}
+/* Bay cards */
+.bay-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.bay-card{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center;transition:all .2s}
+.bay-card.active{border-color:rgba(139,92,246,.35);animation:bay-pulse 2.5s ease-in-out infinite}
+@keyframes bay-pulse{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0)}50%{box-shadow:0 0 8px rgba(139,92,246,.2)}}
+.bay-num{font-family:var(--fm);font-size:13px;font-weight:700;color:var(--dept-color);margin-bottom:4px}
+.bay-info{font-size:9px;color:var(--t3);line-height:1.5}
+/* Timeline */
+.tl{position:relative;padding-left:18px}
+.tl::before{content:'';position:absolute;left:5px;top:0;bottom:0;width:1px;background:rgba(139,92,246,.15)}
+.tl-item{position:relative;margin-bottom:12px}
+.tl-dot{position:absolute;left:-16px;top:3px;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--dept-color);background:rgba(139,92,246,.3)}
+.tl-dot.done{background:var(--dept-color);box-shadow:0 0 6px rgba(139,92,246,.4)}
+.tl-dot.now{background:var(--dept-color);animation:tl-pulse 2s ease infinite}
+@keyframes tl-pulse{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.5)}50%{box-shadow:0 0 0 5px rgba(139,92,246,0)}}
+#auditLog div{font-size:9.5px;color:rgba(240,253,244,.22);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--fm)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.sb{width:180px}.g3{grid-template-columns:1fr 1fr}.bay-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.app{flex-direction:column}.sb{display:none}.content{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sb" aria-label="Navigation">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sbu-av">DR</div>
+    <div><div class="sbu-nm">Dr. Kamande</div><div class="sbu-rl">Oncologist · Session Active</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sect">Clinical</div>
+    <a class="sb-lnk" href="unihealth-emr.html"><i data-feather="file-text"></i> EMR / EHR</a>
+    <a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity &amp; NICU</a>
+    <a class="sb-lnk" href="unihealth-dental.html"><i data-feather="smile"></i> Dental</a>
+    <a class="sb-lnk active" href="unihealth-cancer.html"><i data-feather="shield"></i> Cancer Center</a>
+    <a class="sb-lnk" href="unihealth-gynecology.html"><i data-feather="users"></i> Gynecology</a>
+    <a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a>
+    <a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a>
+    <a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a>
+    <a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU &amp; Emergency</a>
+    <a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a>
+    <a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a>
+    <a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a>
+    <div class="sb-sect">Operations</div>
+    <a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing &amp; Finance</a>
+    <a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a>
+    <a class="sb-lnk" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a>
+    <a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance &amp; Fleet</a>
+    <a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a>
+    <a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a>
+    <div class="sb-sect">Management</div>
+    <a class="sb-lnk" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a>
+    <a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR &amp; Payroll</a>
+    <a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a>
+    <a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a>
+    <a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient Portal</a>
+  </div>
+  <div class="sb-ft">
+    <a href="unihealth360-auth-portal-v2.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a>
+    <div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-page"><span style="font-size:16px">🩺</span> Cancer Center</div>
+    <div class="tb-badge b-pu"><span class="pdot"></span> Oncology Active</div>
+    <button class="tb-btn tb-p" data-open="newOncPatientModal" data-audit="Opened Register Oncology Patient modal"><i data-feather="user-plus" style="width:11px;height:11px"></i> Register Patient</button>
+    <button class="tb-btn tb-g" data-open="tumorBoardModal" data-audit="Opened Tumor Board modal"><i data-feather="crosshair" style="width:11px;height:11px"></i> Tumor Board</button>
+    <div class="tb-btn tb-g" style="cursor:default">
+      <span style="font-family:var(--fm);font-size:9px;color:var(--t4)">Patients Today:</span>
+      <span style="font-family:var(--fm);font-size:11px;color:var(--dept-color);font-weight:700">38</span>
+    </div>
+    <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0"><i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">4</div></div>
+    <div class="clk" id="clock"></div>
+  </div>
+
+  <div class="content">
+    <!-- STAT CARDS -->
+    <div class="g4 mb12">
+      <div class="stat" style="--mc:#a78bfa"><div class="stat-v" data-val="38">0</div><div class="stat-l">Active Cases</div><div class="stat-s">12 inpatient · 26 OPD</div></div>
+      <div class="stat" style="--mc:var(--r)"><div class="stat-v" data-val="4">0</div><div class="stat-l">Critical Patients</div><div class="stat-s">ICU-oncology liaison</div></div>
+      <div class="stat" style="--mc:var(--am)"><div class="stat-v" data-val="8">0</div><div class="stat-l">Chemo Sessions</div><div class="stat-s">Infusion capacity: 10 bays</div></div>
+      <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="94">0</div><div class="stat-l">Treatment Plan %</div><div class="stat-s">On-track protocol</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab act" onclick="showTab(this,'onc-overview')">📊 Overview</button>
+      <button class="tab" onclick="showTab(this,'onc-patients')">🩺 Patients</button>
+      <button class="tab" onclick="showTab(this,'onc-tumboard')">🎯 Tumor Board</button>
+      <button class="tab" onclick="showTab(this,'onc-treatment')">💊 Treatment Plans</button>
+      <button class="tab" onclick="showTab(this,'onc-chemo')">⚗️ Chemotherapy</button>
+      <button class="tab" onclick="showTab(this,'onc-radiology')">☢️ Radiation</button>
+      <button class="tab" onclick="showTab(this,'onc-sideeffects')">🩹 Side Effects</button>
+      <button class="tab" onclick="showTab(this,'onc-palliative')">💜 Palliative</button>
+      <button class="tab" onclick="showTab(this,'onc-consent')">📝 Consent</button>
+      <button class="tab" onclick="showTab(this,'onc-api')">🔌 API Ref</button>
+    </div>
+
+    <!-- ═══ TAB: OVERVIEW ═══ -->
+    <div class="tp show" id="tp-onc-overview">
+      <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Critical:</strong> Lucy Adhiambo (ONC-005) — SpO₂ 94% dropping. Bay 5 infusion rate reduced. Physician alerted.</div>
+      <div class="g2 mb12">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="pie-chart"></i> Cancer Type Distribution</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div class="prog-row"><span>Breast Cancer</span><span style="color:#ec4899">38%</span></div><div class="prog"><div class="prog-f" data-w="38%" style="background:#ec4899"></div></div></div>
+            <div><div class="prog-row"><span>Cervical Cancer</span><span style="color:#a78bfa">22%</span></div><div class="prog"><div class="prog-f" data-w="22%" style="background:#a78bfa"></div></div></div>
+            <div><div class="prog-row"><span>Prostate Cancer</span><span style="color:#60a5fa">18%</span></div><div class="prog"><div class="prog-f" data-w="18%" style="background:#60a5fa"></div></div></div>
+            <div><div class="prog-row"><span>Colorectal</span><span style="color:var(--neon)">12%</span></div><div class="prog"><div class="prog-f" data-w="12%" style="background:var(--neon)"></div></div></div>
+            <div><div class="prog-row"><span>Leukemia</span><span style="color:var(--am)">6%</span></div><div class="prog"><div class="prog-f" data-w="6%" style="background:var(--am)"></div></div></div>
+            <div><div class="prog-row"><span>Other</span><span style="color:var(--t3)">4%</span></div><div class="prog"><div class="prog-f" data-w="4%" style="background:rgba(240,253,244,.3)"></div></div></div>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="trending-up"></i> Treatment Outcomes — This Quarter</div></div>
+          <table>
+            <thead><tr><th>Metric</th><th>Value</th><th>Trend</th></tr></thead>
+            <tbody>
+              <tr><td>Complete Remission</td><td style="font-family:var(--fm);color:var(--neon)">12 patients</td><td><span class="tag tg">↑ +3</span></td></tr>
+              <tr><td>Partial Response</td><td style="font-family:var(--fm);color:var(--am)">18 patients</td><td><span class="tag ta">→</span></td></tr>
+              <tr><td>Stable Disease</td><td style="font-family:var(--fm);color:var(--neon)">5 patients</td><td><span class="tag tg">→</span></td></tr>
+              <tr><td>Disease Progression</td><td style="font-family:var(--fm);color:var(--r)">3 patients</td><td><span class="tag tr">↓ +1</span></td></tr>
+              <tr><td>Palliative Care</td><td style="font-family:var(--fm);color:var(--am)">4 patients</td><td><span class="tag ta">—</span></td></tr>
+              <tr><td>5-Year Survival Rate</td><td style="font-family:var(--fm);color:var(--dept-color)">64%</td><td><span class="tag tg">↑ +2%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="cpu"></i> AI Oncology Intelligence Platform</div><div class="tb-badge b-pu"><span class="pdot"></span> ACTIVE</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">
+          <div><div class="prog-row"><span>Tumour Classification Accuracy</span><span style="color:var(--dept-color)">96%</span></div><div class="prog"><div class="prog-f" data-w="96%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+          <div><div class="prog-row"><span>Treatment Protocol Match</span><span style="color:var(--dept-color)">91%</span></div><div class="prog"><div class="prog-f" data-w="91%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+          <div><div class="prog-row"><span>Drug Resistance Prediction</span><span style="color:var(--dept-color)">88%</span></div><div class="prog"><div class="prog-f" data-w="88%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+          <div><div class="prog-row"><span>Survival Outcome Modelling</span><span style="color:var(--dept-color)">84%</span></div><div class="prog"><div class="prog-f" data-w="84%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+          <div><div class="prog-row"><span>Genetic Marker Analysis</span><span style="color:var(--dept-color)">79%</span></div><div class="prog"><div class="prog-f" data-w="79%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+          <div><div class="prog-row"><span>Side Effect Probability</span><span style="color:var(--dept-color)">93%</span></div><div class="prog"><div class="prog-f" data-w="93%" style="background:linear-gradient(90deg,#6d28d9,#a78bfa)"></div></div></div>
+        </div>
+        <div class="al al-g" style="margin-top:12px;margin-bottom:0"><i data-feather="check-circle" style="width:12px;height:12px;flex-shrink:0"></i> AI flagged optimal gemcitabine + carboplatin protocol for 3 patients — Oncologist review required before administration</div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="lock"></i> Live Audit Trail</div><span class="dept-tag">APPEND-ONLY</span></div>
+        <div id="auditLog" style="max-height:150px;overflow-y:auto">
+          <div>[09:55:20] ONC INFUSION_START patient=Wanjiku protocol=AC-T cycle=3 bay=A1 user=Nurse.Akinyi</div>
+          <div>[09:48:14] ONC CRITICAL_ALERT patient=ONC-005 flag=SpO2_DROP value=94% user=System</div>
+          <div>[09:42:00] ONC CONSENT_SIGNED patient=ONC-006 procedure=CHOP user=Dr.Kamande</div>
+          <div>[09:30:44] ONC TUMOR_BOARD_SCHEDULED date=14Jun14:00 cases=3 user=Dr.Kamande</div>
+          <div>[09:00:11] AUTH LOGIN_SUCCESS user=Dr.Kamande role=Oncologist dept=Oncology</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PATIENTS ═══ -->
+    <div class="tp" id="tp-onc-patients">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-ttl"><i data-feather="users"></i> Oncology Patient Registry</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="srch"><i data-feather="search"></i><input type="text" placeholder="Search patients…" data-search="#oncPatientsTable"></div>
+            <button class="btn bp btn-sm" data-open="newOncPatientModal" data-audit="Opened Register Patient modal"><i data-feather="user-plus" style="width:11px;height:11px"></i> Register</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="oncPatientsTable">
+            <thead><tr><th>ID</th><th>Name</th><th>Cancer Type</th><th>Stage</th><th>Oncologist</th><th>Protocol</th><th>Next Session</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><span class="dept-tag">ONC-001</span></td><td>Margaret Njeri</td><td>Breast Cancer</td><td><span class="tag tp_">Stage II</span></td><td>Dr. Kamande</td><td>AC-T Chemo</td><td style="font-family:var(--fm);font-size:10px">15 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-002</span></td><td>David Omondi</td><td>Prostate</td><td><span class="tag tpu">Stage III</span></td><td>Dr. Patel</td><td>Hormonal + RT</td><td style="font-family:var(--fm);font-size:10px">18 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-003</span></td><td>Rose Wambua</td><td>Cervical</td><td><span class="tag tg">Stage I</span></td><td>Dr. Kamande</td><td>Cisplatin + RT</td><td style="font-family:var(--fm);font-size:10px">14 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-004</span></td><td>Samuel Kiprop</td><td>Colorectal</td><td><span class="tag tr">Stage IV</span></td><td>Dr. Patel</td><td>FOLFOX</td><td style="font-family:var(--fm);font-size:10px">16 May</td><td><span class="tag tr">Critical</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-005</span></td><td>Lucy Adhiambo</td><td>Leukemia (AML)</td><td><span class="tag tr">Blast Crisis</span></td><td>Dr. Kamande</td><td>Cytarabine</td><td style="font-family:var(--fm);font-size:10px">Ongoing</td><td><span class="tag tr">Critical</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-006</span></td><td>Patrick Maina</td><td>Non-Hodgkin Lymphoma</td><td><span class="tag tpu">Stage II</span></td><td>Dr. Patel</td><td>CHOP</td><td style="font-family:var(--fm);font-size:10px">20 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+              <tr><td><span class="dept-tag">ONC-007</span></td><td>Esther Wekesa</td><td>Ovarian</td><td><span class="tag tpu">Stage III</span></td><td>Dr. Kamande</td><td>Paclitaxel + Carbo</td><td style="font-family:var(--fm);font-size:10px">17 May</td><td><span class="tag ta">Monitoring</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View Plan</button><button class="btn bg_ btn-sm">Update</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: TUMOR BOARD ═══ -->
+    <div class="tp" id="tp-onc-tumboard">
+      <div class="g2 mb12">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="crosshair"></i> Tumor Board — Today 14:00</div><button class="btn bp btn-sm" data-open="tumorBoardModal" data-audit="Added tumor board case">Add Case</button></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Diagnosis</th><th>Stage</th><th>Presenting Issue</th><th>Priority</th></tr></thead>
+            <tbody>
+              <tr><td>Margaret Njeri</td><td>Breast CA HER2+</td><td>II</td><td>Neutropenia G4 — cycle 3 delay</td><td><span class="tag tr">Urgent</span></td></tr>
+              <tr><td>Samuel Kiprop</td><td>Colorectal CA</td><td>IV</td><td>PSMA PET CT: new L3 met — protocol switch?</td><td><span class="tag ta">High</span></td></tr>
+              <tr><td>New: Agnes Kamau</td><td>Pancreatic CA</td><td>IIB</td><td>New Dx — resectability assessment</td><td><span class="tag ta">High</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;font-size:10px;color:var(--t3)"><strong>Attendees:</strong> Dr. Kamande · Dr. Patel · Dr. Otieno (Radiology) · Dr. Njeri (Pathology) · Dr. Hassan (Palliative)</div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="clock"></i> Board History</div></div>
+          <div class="tl">
+            <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:11px;font-weight:600;color:var(--t1)">07 Jun 2026 — Patrick Maina</div><div style="font-size:10px;color:var(--t3);margin-top:2px">Decision: CHOP ×6 initiated. PET-CT baseline done. BM biopsy: 40% involvement.</div></div>
+            <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:11px;font-weight:600;color:var(--t1)">31 May 2026 — Rose Wambua</div><div style="font-size:10px;color:var(--t3);margin-top:2px">Decision: Concurrent cisplatin + EBRT 45 Gy. Response MRI scheduled week 8.</div></div>
+            <div class="tl-item"><div class="tl-dot done"></div><div style="font-size:11px;font-weight:600;color:var(--t1)">24 May 2026 — Esther Wekesa</div><div style="font-size:10px;color:var(--t3);margin-top:2px">Decision: Continue carbo/paclitaxel. CA-125 trending down. BRCA1 confirmed.</div></div>
+            <div class="tl-item"><div class="tl-dot now"></div><div style="font-size:11px;font-weight:600;color:var(--dept-color)">14 Jun 2026 — Today 14:00</div><div style="font-size:10px;color:var(--t3);margin-top:2px">3 cases pending — MDT link sent to all attendees.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: TREATMENT PLANS ═══ -->
+    <div class="tp" id="tp-onc-treatment">
+      <div class="al al-b"><i data-feather="info" style="width:13px;height:13px;flex-shrink:0"></i> All treatment protocols require oncologist digital signature before administration. KEMSA supplies pre-approved cytotoxic drugs.</div>
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="settings"></i> Protocol Assignment</div></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="fg"><label class="fl">Select Patient</label><select class="fi"><option>ONC-001 — Margaret Njeri</option><option>ONC-002 — David Omondi</option><option>ONC-003 — Rose Wambua</option><option>ONC-004 — Samuel Kiprop</option><option>ONC-005 — Lucy Adhiambo</option><option>ONC-006 — Patrick Maina</option><option>ONC-007 — Esther Wekesa</option></select></div>
+            <div class="fg"><label class="fl">Protocol Type</label><select class="fi"><option>AC-T</option><option>FOLFOX</option><option>CHOP</option><option>FOLFIRI</option><option>XELOX</option><option>BEP</option><option>Hormonal</option><option>Immunotherapy</option><option>Palliative</option></select></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="fg"><label class="fl">Cycle Number</label><input class="fi" type="number" min="1" max="12" placeholder="e.g. 1"></div>
+              <div class="fg"><label class="fl">Duration</label><select class="fi"><option>14 days</option><option>21 days</option><option>28 days</option></select></div>
+              <div class="fg"><label class="fl">Drug 1</label><input class="fi" type="text" placeholder="Drug name"></div>
+              <div class="fg"><label class="fl">Drug 2</label><input class="fi" type="text" placeholder="Drug name"></div>
+              <div class="fg"><label class="fl">Dosage</label><input class="fi" type="text" placeholder="mg/m²"></div>
+            </div>
+            <div class="fg"><label class="fl">Oncologist Notes</label><textarea class="fi" placeholder="Clinical rationale, dose modifications…"></textarea></div>
+            <button class="btn bp" onclick="toast('Treatment protocol assigned ✓ — Pharmacy notified for drug preparation');auditLog('PROTOCOL_ASSIGNED user=Dr.Kamande')"><i data-feather="check" style="width:11px;height:11px"></i> Assign Protocol</button>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="list"></i> Active Protocols</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Protocol</th><th>Cycle</th><th>Start</th><th>End</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Margaret Njeri</td><td>AC-T</td><td style="font-family:var(--fm)">4/8</td><td style="font-family:var(--fm);font-size:10px">01 Apr</td><td style="font-family:var(--fm);font-size:10px">30 Jun</td><td><span class="tag tg">On Track</span></td></tr>
+              <tr><td>David Omondi</td><td>Hormonal+RT</td><td style="font-family:var(--fm)">2/6</td><td style="font-family:var(--fm);font-size:10px">15 Mar</td><td style="font-family:var(--fm);font-size:10px">15 Sep</td><td><span class="tag tg">On Track</span></td></tr>
+              <tr><td>Rose Wambua</td><td>Cisplatin+RT</td><td style="font-family:var(--fm)">3/6</td><td style="font-family:var(--fm);font-size:10px">01 Apr</td><td style="font-family:var(--fm);font-size:10px">30 Jun</td><td><span class="tag tg">On Track</span></td></tr>
+              <tr><td>Samuel Kiprop</td><td>FOLFOX</td><td style="font-family:var(--fm)">6/12</td><td style="font-family:var(--fm);font-size:10px">01 Jan</td><td style="font-family:var(--fm);font-size:10px">31 Dec</td><td><span class="tag tr">Review</span></td></tr>
+              <tr><td>Lucy Adhiambo</td><td>Cytarabine</td><td style="font-family:var(--fm)">2/4</td><td style="font-family:var(--fm);font-size:10px">05 May</td><td style="font-family:var(--fm);font-size:10px">05 Jul</td><td><span class="tag tr">Critical</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: CHEMOTHERAPY ═══ -->
+    <div class="tp" id="tp-onc-chemo">
+      <div class="g4 mb12" style="gap:8px">
+        <div class="card" style="padding:10px 12px"><div style="font-family:var(--fm);font-size:18px;font-weight:700;color:var(--dept-color)">10</div><div style="font-size:9px;color:var(--t3)">Infusion Bays Total</div></div>
+        <div class="card" style="padding:10px 12px"><div style="font-family:var(--fm);font-size:18px;font-weight:700;color:var(--r)">8</div><div style="font-size:9px;color:var(--t3)">Occupied</div></div>
+        <div class="card" style="padding:10px 12px"><div style="font-family:var(--fm);font-size:18px;font-weight:700;color:var(--neon)">2</div><div style="font-size:9px;color:var(--t3)">Available</div></div>
+        <div class="card" style="padding:10px 12px"><div style="font-family:var(--fm);font-size:18px;font-weight:700;color:var(--am)">4.2h</div><div style="font-size:9px;color:var(--t3)">Avg Session</div></div>
+      </div>
+      <div class="al al-pu" style="border-color:rgba(139,92,246,.3);background:rgba(139,92,246,.06);color:rgba(167,139,250,.9)"><i data-feather="shield" style="width:13px;height:13px;flex-shrink:0"></i> All chemo orders require dual oncologist verification. NIOSH hazardous drug handling protocols apply. PPE mandatory.</div>
+      <div class="card dept-card mb12">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="activity"></i> Infusion Suite — Live Bay Status</div><div style="font-family:var(--fm);font-size:8px;color:var(--neon)"><span class="pdot" style="display:inline-block;margin-right:4px"></span>Real-time</div></div>
+        <div class="bay-grid">
+          <div class="bay-card active"><div class="bay-num">A1</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Margaret Njeri<br>Doxorubicin<br>2h 15m left</div></div>
+          <div class="bay-card active"><div class="bay-num">A2</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">David Omondi<br>Docetaxel<br>1h 40m left</div></div>
+          <div class="bay-card active"><div class="bay-num">A3</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Rose Wambua<br>Cisplatin<br>3h 00m left</div></div>
+          <div class="bay-card active"><div class="bay-num">A4</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Patrick Maina<br>CHOP Cycle 1<br>45m left</div></div>
+          <div class="bay-card active" style="border-color:rgba(239,68,68,.4)"><div class="bay-num" style="color:var(--r)">A5</div><div class="tag tr" style="margin-bottom:5px;font-size:7px">⚠️ Alert</div><div class="bay-info">Lucy Adhiambo<br>Cytarabine<br>SpO₂ 94%</div></div>
+          <div class="bay-card active"><div class="bay-num">A6</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Esther Wekesa<br>Paclitaxel<br>2h 30m left</div></div>
+          <div class="bay-card active"><div class="bay-num">A7</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Samuel Kiprop<br>FOLFOX<br>4h 00m left</div></div>
+          <div class="bay-card active"><div class="bay-num">A8</div><div class="tag tpu" style="margin-bottom:5px;font-size:7px">Infusing</div><div class="bay-info">Anon. Patient<br>Carboplatin<br>1h 15m left</div></div>
+          <div class="bay-card" style="border-color:rgba(46,204,113,.3)"><div class="bay-num" style="color:var(--neon)">A9</div><div class="tag tg" style="margin-bottom:5px;font-size:7px">Available</div><div class="bay-info" style="color:var(--t4)">Ready · cleaned</div></div>
+          <div class="bay-card" style="border-color:rgba(46,204,113,.3)"><div class="bay-num" style="color:var(--neon)">A10</div><div class="tag tg" style="margin-bottom:5px;font-size:7px">Available</div><div class="bay-info" style="color:var(--t4)">Ready · cleaned</div></div>
+        </div>
+      </div>
+      <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i> <strong>🔴 ALERT:</strong> Lucy Adhiambo (Bay A5) — SpO₂ dropping. Physician notified. Infusion rate reduced. Nurse Akinyi attending.</div>
+    </div>
+
+    <!-- ═══ TAB: RADIATION ═══ -->
+    <div class="tp" id="tp-onc-radiology">
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="zap"></i> Radiation Therapy Schedule</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Type</th><th>Machine</th><th>Fraction</th><th>Today's Dose</th><th>Oncologist</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>David Omondi</td><td>IMRT</td><td style="font-family:var(--fm)">Linac-1</td><td style="font-family:var(--fm)">18/35</td><td style="font-family:var(--fm)">2 Gy</td><td>Dr. Patel</td><td><span class="tag tg">Completed</span></td></tr>
+              <tr><td>Rose Wambua</td><td>EBRT</td><td style="font-family:var(--fm)">Linac-2</td><td style="font-family:var(--fm)">12/25</td><td style="font-family:var(--fm)">1.8 Gy</td><td>Dr. Kamande</td><td><span class="tag tg">Scheduled</span></td></tr>
+              <tr><td>Esther Wekesa</td><td>Brachytherapy</td><td>Suite A</td><td style="font-family:var(--fm)">3/5</td><td style="font-family:var(--fm)">HDR</td><td>Dr. Patel</td><td><span class="tag ta">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="cpu"></i> Equipment Status</div></div>
+          <table>
+            <thead><tr><th>Equipment</th><th>Model</th><th>Status</th><th>Last QA</th><th>Next Service</th></tr></thead>
+            <tbody>
+              <tr><td>Linear Accelerator 1</td><td style="font-size:10px;color:var(--t4)">Varian TrueBeam</td><td><span class="tag tg">Operational</span></td><td style="font-family:var(--fm);font-size:10px">10 May</td><td style="font-family:var(--fm);font-size:10px">10 Jun</td></tr>
+              <tr><td>Linear Accelerator 2</td><td style="font-size:10px;color:var(--t4)">Elekta Versa HD</td><td><span class="tag tg">Operational</span></td><td style="font-family:var(--fm);font-size:10px">08 May</td><td style="font-family:var(--fm);font-size:10px">08 Jun</td></tr>
+              <tr><td>CT Simulator</td><td style="font-size:10px;color:var(--t4)">Siemens SOMATOM</td><td><span class="tag tg">Operational</span></td><td style="font-family:var(--fm);font-size:10px">05 May</td><td style="font-family:var(--fm);font-size:10px">05 Jun</td></tr>
+              <tr><td>Brachytherapy Suite</td><td style="font-size:10px;color:var(--t4)">Nucletron</td><td><span class="tag ta">Sched. Maint</span></td><td style="font-family:var(--fm);font-size:10px">01 May</td><td style="font-family:var(--fm);font-size:10px">15 May</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: SIDE EFFECTS ═══ -->
+    <div class="tp" id="tp-onc-sideeffects">
+      <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Grade 4 — Action Required:</strong> Lucy Adhiambo — Febrile Neutropenia. G-CSF administered. Cycle hold pending haematology review.</div>
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="thermometer"></i> Side Effect Monitor — Active Sessions (CTCAE v5)</div></div>
+        <table>
+          <thead><tr><th>Patient</th><th>Drug</th><th>BP</th><th>SpO₂</th><th>Nausea</th><th>CTCAE Grade</th><th>Action</th><th>Nurse</th></tr></thead>
+          <tbody>
+            <tr><td>Margaret Njeri</td><td>Doxorubicin</td><td style="font-family:var(--fm)">122/78</td><td style="font-family:var(--fm);color:var(--neon)">98%</td><td>Mild</td><td><span class="tag tg">Grade 1</span></td><td><span class="tag tg">None</span></td><td>Nurse Akinyi</td></tr>
+            <tr><td>Rose Wambua</td><td>Cisplatin</td><td style="font-family:var(--fm)">118/76</td><td style="font-family:var(--fm);color:var(--am)">97%</td><td>Moderate</td><td><span class="tag ta">Grade 2</span></td><td><span class="tag ta">Monitor</span></td><td>Nurse Atieno</td></tr>
+            <tr><td>Lucy Adhiambo</td><td>Cytarabine</td><td style="font-family:var(--fm)">108/70</td><td style="font-family:var(--fm);color:var(--r)">94%</td><td>Severe</td><td><span class="tag tr">Grade 4</span></td><td><span class="tag tr">🔴 Alert</span></td><td>Nurse Akinyi</td></tr>
+            <tr><td>Patrick Maina</td><td>Rituximab</td><td style="font-family:var(--fm)">120/80</td><td style="font-family:var(--fm);color:var(--neon)">99%</td><td>None</td><td><span class="tag tg">Grade 1</span></td><td><span class="tag tg">Ondansetron</span></td><td>Nurse Otieno</td></tr>
+            <tr><td>Samuel Kiprop</td><td>Oxaliplatin</td><td style="font-family:var(--fm)">130/85</td><td style="font-family:var(--fm);color:var(--neon)">96%</td><td>Mild</td><td><span class="tag ta">Grade 2</span></td><td><span class="tag ta">Dose Reduce 20%</span></td><td>Nurse Atieno</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PALLIATIVE ═══ -->
+    <div class="tp" id="tp-onc-palliative">
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="heart"></i> Palliative Care Patients</div><button class="btn bp btn-sm" onclick="toast('Palliative care plan created ✓')">New Care Plan</button></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Diagnosis</th><th>ECOG</th><th>Main Symptoms</th><th>Opioid</th><th>Prognosis</th></tr></thead>
+            <tbody>
+              <tr><td>Samuel Kiprop</td><td>Colorectal CA mCRC</td><td style="font-family:var(--fm)">3</td><td>Pain · fatigue</td><td>Morphine 30mg/day</td><td><span class="tag ta">3–6 months</span></td></tr>
+              <tr><td>Lucy Adhiambo</td><td>AML Blast Crisis</td><td style="font-family:var(--fm)">4</td><td>Pain · neutropenia</td><td>Fentanyl 25mcg patch</td><td><span class="tag tr">&lt;3 months</span></td></tr>
+              <tr><td>Agnes Kamau</td><td>Pancreatic CA IIB</td><td style="font-family:var(--fm)">2</td><td>Pain · jaundice</td><td>Tramadol 100mg</td><td><span class="tag ta">6–12 months</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="award"></i> Survivorship Programme</div></div>
+          <div class="al al-g" style="margin-bottom:10px"><i data-feather="check-circle" style="width:12px;height:12px;flex-shrink:0"></i> 3 patients completed primary treatment this month and entered survivorship surveillance.</div>
+          <table>
+            <thead><tr><th>Patient</th><th>Diagnosis</th><th>Completed</th><th>Next Review</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Ruth Kamau</td><td>Breast CA ER+</td><td style="font-family:var(--fm);font-size:10px">Jan 2026</td><td style="font-family:var(--fm);font-size:10px">Dec 2026</td><td><span class="tag tg">Disease-free</span></td></tr>
+              <tr><td>Peter Njoroge</td><td>Testicular CA</td><td style="font-family:var(--fm);font-size:10px">Mar 2025</td><td style="font-family:var(--fm);font-size:10px">Sep 2026</td><td><span class="tag tg">Disease-free</span></td></tr>
+              <tr><td>Christine Atieno</td><td>Thyroid CA</td><td style="font-family:var(--fm);font-size:10px">Nov 2024</td><td style="font-family:var(--fm);font-size:10px">Nov 2026</td><td><span class="tag tg">Disease-free</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: CONSENT ═══ -->
+    <div class="tp" id="tp-onc-consent">
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="file-text"></i> Consent Management</div><button class="btn bp btn-sm" onclick="toast('Consent form issued ✓ — Patient copy sent')" data-audit="Consent form issued">Issue Consent</button></div>
+        <table>
+          <thead><tr><th>Patient</th><th>Procedure</th><th>Issued</th><th>Method</th><th>Witnessed By</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Patrick Maina</td><td>CHOP Chemotherapy</td><td style="font-family:var(--fm);font-size:10px">14 Jun 2026</td><td>Written + verbal</td><td>Dr. Kamande · Nurse Akinyi</td><td><span class="tag tg">Signed</span></td></tr>
+            <tr><td>Margaret Njeri</td><td>AC-T Chemotherapy</td><td style="font-family:var(--fm);font-size:10px">01 Apr 2026</td><td>Written</td><td>Dr. Kamande</td><td><span class="tag tg">Signed</span></td></tr>
+            <tr><td>Agnes Kamau</td><td>Surgery + SABR</td><td style="font-family:var(--fm);font-size:10px">13 Jun 2026</td><td>Written</td><td>Dr. Patel</td><td><span class="tag ta">Pending Patient Sig</span></td></tr>
+            <tr><td>Esther Wekesa</td><td>BRCA Genetic Testing</td><td style="font-family:var(--fm);font-size:10px">05 Jun 2026</td><td>Written + counselling</td><td>Dr. Kamande</td><td><span class="tag tg">Signed</span></td></tr>
+            <tr><td>Lucy Adhiambo</td><td>Cytarabine — Palliative</td><td style="font-family:var(--fm);font-size:10px">10 May 2026</td><td>Video + written</td><td>Dr. Kamande · Family</td><td><span class="tag tg">Signed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: API REF ═══ -->
+    <div class="tp" id="tp-onc-api">
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="code"></i> Oncology API Reference</div><div class="dept-tag">REST · FHIR R5</div></div>
+        <div class="api-box">
+          <div class="api-ttl">Cancer Center Endpoints</div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/patients</span><span class="api-d">List oncology patients</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/patients</span><span class="api-d">Register new oncology patient</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/patients/{id}/plan</span><span class="api-d">Get treatment plan</span></div>
+          <div class="api-r"><span class="m-u">PUT</span><span class="api-ep">/api/oncology/patients/{id}/plan</span><span class="api-d">Update treatment protocol</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/tumor-board</span><span class="api-d">Submit tumor board case</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/chemo/session</span><span class="api-d">Log chemo session</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/chemo/bay-status</span><span class="api-d">Real-time infusion bay status</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/radiation/session</span><span class="api-d">Log radiation therapy session</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/sideeffects/alert</span><span class="api-d">Raise side effect alert (CTCAE)</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/ai/classify</span><span class="api-d">AI tumour classification</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/outcomes/summary</span><span class="api-d">Treatment outcome summary</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/oncology/consent</span><span class="api-d">Record signed consent</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/palliative/cases</span><span class="api-d">List palliative care patients</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/oncology/audit?from=&amp;to=</span><span class="api-d">Oncology audit trail</span></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-ov" id="newOncPatientModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🩺 Register Oncology Patient</div><button class="mc" data-close="newOncPatientModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" type="text" placeholder="Patient full name" required></div>
+      <div class="fg"><label class="fl">National ID / Passport</label><input class="fi" type="text" placeholder="ID number"></div>
+      <div class="fg"><label class="fl">Date of Birth</label><input class="fi" type="date"></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" type="tel" placeholder="+254 7XX XXX XXX"></div>
+      <div class="fg"><label class="fl">Referral Source</label><select class="fi"><option>Emergency</option><option>GP Referral</option><option>Specialist</option><option>Self-Referral</option><option>MOH Program</option></select></div>
+      <div class="fg"><label class="fl">Cancer Type</label><select class="fi"><option>Breast</option><option>Cervical</option><option>Prostate</option><option>Colorectal</option><option>Leukemia</option><option>Lymphoma</option><option>Ovarian</option><option>Lung</option><option>Other</option></select></div>
+      <div class="fg"><label class="fl">Clinical Stage</label><select class="fi"><option>Stage I</option><option>Stage II</option><option>Stage III</option><option>Stage IV</option><option>Unknown / Staging</option></select></div>
+      <div class="fg"><label class="fl">Assigned Oncologist</label><select class="fi"><option>Dr. Kamande</option><option>Dr. Patel</option></select></div>
+      <div class="fg"><label class="fl">Insurance</label><select class="fi"><option>None</option><option>CIC Insurance</option><option>Old Mutual</option><option>NHIF</option><option>SHA</option></select></div>
+      <div class="fg"><label class="fl">ECOG Status</label><select class="fi"><option>0 – Fully active</option><option>1 – Restricted</option><option>2 – Ambulatory</option><option>3 – Limited</option><option>4 – Confined</option></select></div>
+    </div>
+    <div class="frm-g" style="grid-template-columns:1fr">
+      <div class="fg"><label class="fl">Biopsy Results</label><textarea class="fi" placeholder="Biopsy / pathology summary…"></textarea></div>
+      <div class="fg"><label class="fl">Comorbidities</label><textarea class="fi" placeholder="Relevant comorbidities…"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="newOncPatientModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Patient registered ✓ — Oncology team notified. Initial consultation scheduled.');closeModal('newOncPatientModal');auditLog('PATIENT_REGISTERED user=Dr.Kamande')"><i data-feather="check" style="width:11px;height:11px"></i> Register Patient</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="tumorBoardModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🎯 Submit Tumor Board Case</div><button class="mc" data-close="tumorBoardModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Patient</label><input class="fi" type="text" placeholder="Patient name or ID"></div>
+      <div class="fg"><label class="fl">Diagnosis</label><input class="fi" type="text" placeholder="Primary diagnosis"></div>
+      <div class="fg"><label class="fl">Presenting Issue</label><input class="fi" type="text" placeholder="Key clinical question"></div>
+      <div class="fg"><label class="fl">Priority</label><select class="fi"><option>Routine</option><option>High</option><option>Urgent</option></select></div>
+      <div class="fg" style="grid-column:span 2"><label class="fl">Case Summary</label><textarea class="fi" placeholder="Staging, imaging findings, pathology summary…"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="tumorBoardModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Case submitted to Tumor Board ✓ — MDT notified');closeModal('tumorBoardModal');auditLog('TUMOR_BOARD_CASE_SUBMITTED user=Dr.Kamande')"><i data-feather="send" style="width:11px;height:11px"></i> Submit Case</button>
+    </div>
+  </div>
+</div>
+
+<script>
+feather.replace({width:12,height:12,strokeWidth:2});
+(function(){function t(){const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString('en-KE',{hour12:false})}t();setInterval(t,1000)})();
+function showTab(btn,id){const w=btn.closest('.tabs');w.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tp').forEach(p=>{p.classList.remove('show');p.style.display='none'});const el=document.getElementById('tp-'+id);if(el){el.style.display='block';setTimeout(()=>el.classList.add('show'),10);feather.replace({width:12,height:12,strokeWidth:2})}}
+document.querySelectorAll('.tp').forEach((p,i)=>{if(i>0)p.style.display='none'});
+function animCnt(){document.querySelectorAll('.stat-v[data-val]').forEach(el=>{const tg=parseFloat(el.dataset.val);let s=performance.now();(function go(n){const p=Math.min((n-s)/1400,1);const e=1-Math.pow(1-p,3);el.textContent=Math.round(tg*e).toLocaleString();if(p<1)requestAnimationFrame(go)})(s)})}
+setTimeout(animCnt,250);
+setTimeout(()=>{document.querySelectorAll('.prog-f[data-w]').forEach(b=>{b.style.width='0';setTimeout(()=>b.style.width=b.dataset.w,150)})},350);
+function openModal(id){const m=document.getElementById(id);if(m)m.style.display='flex'}
+function closeModal(id){const m=document.getElementById(id);if(m)m.style.display='none'}
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.open)));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.style.display='none'}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(o=>{if(o.style.display==='flex')o.style.display='none'})});
+function toast(msg,type='g'){const t=document.createElement('div');const col=type==='r'?'#ef4444':type==='a'?'#f59e0b':type==='b'?'#60a5fa':'#a78bfa';t.style.cssText=`position:fixed;bottom:20px;right:20px;background:rgba(5,12,7,.99);border:1px solid ${col}55;border-radius:10px;padding:10px 16px;font-size:12px;color:#f0fdf4;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:su .3s ease;font-family:'Sora',sans-serif`;t.innerHTML=`<span style="color:${col}">●</span> ${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+document.querySelectorAll('[data-search]').forEach(inp=>{inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();const tb=document.querySelector(inp.dataset.search);if(!tb)return;tb.querySelectorAll('tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'})})});
+function auditLog(msg){const al=document.getElementById('auditLog');if(!al)return;const t=new Date().toLocaleTimeString('en-KE',{hour12:false});const r=document.createElement('div');r.textContent='['+t+'] '+msg;al.prepend(r);if(al.children.length>15)al.lastChild.remove()}
+document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditLog(el.dataset.audit)));
+const nb=document.getElementById('notifBtn');if(nb)nb.addEventListener('click',()=>{const ex=document.getElementById('_np');if(ex){ex.remove();return}const p=document.createElement('div');p.id='_np';p.style.cssText="position:fixed;top:60px;right:12px;width:300px;background:rgba(5,12,7,.99);border:1px solid rgba(255,255,255,.08);border-radius:13px;z-index:300;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7)";p.innerHTML='<div style="font-size:9.5px;font-weight:700;color:rgba(240,253,244,.72);margin-bottom:8px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;text-transform:uppercase">Oncology Alerts</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Lucy Adhiambo — SpO₂ 94% — Bay A5 alert</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Neutropenia G4 — Margaret Njeri — cycle hold</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 Tumor Board 14:00 today — 3 pending cases</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0">🟢 AI: Optimal protocol flagged — 3 patients</div>';document.body.appendChild(p);setTimeout(()=>document.addEventListener('click',function h(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',h)}},true),10)});
+</script>
+</body>
+</html>

@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gynecology Department — UniHealth 360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;
+  --r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;
+  --dept-color:#ec4899;--dept-glow:rgba(236,72,153,.18);
+  --bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);
+  --t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.20);
+  --fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(236,72,153,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s ease both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(236,72,153,.18),rgba(157,23,77,.1));border:1px solid rgba(236,72,153,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(236,72,153,.14)}50%{box-shadow:0 0 22px rgba(236,72,153,.35)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}
+.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(236,72,153,.14);border:1px solid rgba(236,72,153,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--dept-color);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);text-decoration:none;border-left:2px solid transparent;transition:all .2s}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(236,72,153,.4)}
+.sb-lnk.active{background:rgba(236,72,153,.08);color:var(--dept-color);border-left-color:var(--dept-color)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none;transition:all .2s}
+.sb-back:hover{background:var(--gl2);border-color:rgba(236,72,153,.3);color:var(--dept-color)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s ease .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-pk{background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.25);color:#ec4899}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.b-a{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-b{background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.b-pu{background:rgba(139,92,246,.09);border:1px solid rgba(139,92,246,.2);color:#a78bfa}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.4;transform:scale(1.3)}}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid;transition:all .2s}
+.tb-p{background:linear-gradient(135deg,rgba(157,23,77,.8),rgba(236,72,153,.8));border-color:rgba(236,72,153,.3);color:#fff}
+.tb-p:hover{box-shadow:0 3px 14px rgba(236,72,153,.3);transform:translateY(-1px)}
+.tb-g{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.tb-g:hover{background:var(--gl2);border-color:rgba(236,72,153,.3);color:var(--t1)}
+.tb-ic{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--gl);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);position:relative;transition:all .2s}
+.tb-ic:hover{background:var(--gl2);border-color:rgba(236,72,153,.3);color:var(--dept-color)}
+.nn{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--r);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg)}
+.clk{font-family:var(--fm);font-size:9px;color:var(--t4)}
+.content{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin;animation:ct-in .6s ease .1s both}
+@keyframes ct-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:rgba(236,72,153,.2);transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.45)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(236,72,153,.25),transparent);opacity:0;transition:opacity .2s}
+.card:hover::before{opacity:1}
+.dept-card{border-color:rgba(236,72,153,.18)}
+.dept-card:hover{border-color:rgba(236,72,153,.4);box-shadow:0 6px 28px rgba(236,72,153,.08)}
+.dept-card::before{background:linear-gradient(90deg,transparent,rgba(236,72,153,.25),transparent)!important}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.card-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--t4);font-family:var(--fm);display:flex;align-items:center;gap:5px}
+.stat{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;animation:su .5s ease both;transition:all .22s}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc,var(--dept-color));opacity:.5}
+.stat:hover{border-color:rgba(236,72,153,.2);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.4)}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-v{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--mc,var(--dept-color));line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+.stat-s{font-family:var(--fm);font-size:8px;color:var(--t4);margin-top:3px}
+.tabs{display:flex;gap:2px;background:var(--gl);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--t3);border:none;background:none;font-family:var(--fn);transition:all .2s}
+.tab.act{background:rgba(236,72,153,.13);color:var(--dept-color);border:1px solid rgba(236,72,153,.25)}
+.tp{display:none}.tp.show{display:block;animation:tp-in .3s ease}
+@keyframes tp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:7px 10px;font-family:var(--fm);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--gl)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:8px;font-weight:700}
+.tg{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+.tr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#ef4444}
+.ta{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#f59e0b}
+.tb_{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#60a5fa}
+.tpu{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#a78bfa}
+.tp_{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.22);color:#ec4899}
+.dept-tag{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.22);color:#ec4899;font-family:var(--fm);font-size:8px;padding:2px 7px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid;transition:all .2s}
+.bp{background:linear-gradient(135deg,rgba(157,23,77,.8),rgba(236,72,153,.8));border-color:rgba(236,72,153,.3);color:#fff}
+.bp:hover{box-shadow:0 4px 16px rgba(236,72,153,.3);transform:translateY(-1px)}
+.bg_{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.bg_:hover{background:var(--gl2);border-color:rgba(236,72,153,.3);color:var(--t1)}
+.btn-sm{padding:4px 10px;font-size:10.5px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--t3)}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;color:var(--t1);font-family:var(--fn);font-size:12px;outline:none;transition:all .2s}
+.fi:focus{border-color:rgba(236,72,153,.45);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(236,72,153,.1)}
+.fi::placeholder{color:var(--t4)}
+textarea.fi{resize:vertical;min-height:72px}
+select.fi option{background:#060e08}
+.prog{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.prog-f{height:100%;border-radius:2px;transition:width 1.2s ease}
+.al{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:9px;font-size:11.5px;line-height:1.5;border:1px solid;margin-bottom:10px}
+.al-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.85);animation:al-f 2s ease infinite}
+.al-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:rgba(245,158,11,.85)}
+.al-g{background:rgba(46,204,113,.07);border-color:rgba(46,204,113,.2);color:rgba(46,204,113,.85)}
+.al-b{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);color:rgba(59,130,246,.85)}
+.al-pk{background:rgba(236,72,153,.07);border-color:rgba(236,72,153,.2);color:rgba(236,72,153,.85)}
+@keyframes al-f{0%,100%{border-color:rgba(239,68,68,.2)}50%{border-color:rgba(239,68,68,.5);box-shadow:0 0 8px rgba(239,68,68,.12)}}
+.api-box{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.14);border-radius:10px;padding:12px 14px}
+.api-ttl{font-family:var(--fm);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px}
+.api-r{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10.5px}
+.api-r:last-child{border-bottom:none}
+.m-g{font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;min-width:36px;text-align:center;background:rgba(46,204,113,.1);color:var(--neon)}
+.m-p{background:rgba(59,130,246,.1);color:#60a5fa}
+.m-u{background:rgba(245,158,11,.1);color:#f59e0b}
+.api-ep{font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1}
+.api-d{font-size:9.5px;color:var(--t4)}
+.srch{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px;flex:1;max-width:260px;transition:all .2s}
+.srch:focus-within{border-color:rgba(236,72,153,.35)}
+.srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--fn);font-size:12px;flex:1}
+.srch input::placeholder{color:var(--t4)}
+.srch i{color:var(--t4);width:12px;height:12px}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:510px;padding:20px;animation:su .3s ease;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-ttl{font-size:15px;font-weight:700;color:var(--t1)}
+.mc{background:none;border:none;color:var(--t3);cursor:pointer;border-radius:6px;padding:4px;display:flex;align-items:center;transition:color .2s}
+.mc:hover{color:var(--t1);background:var(--gl)}
+.frm-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:3px}
+.prog-row span{font-family:var(--fm)}
+.mb12{margin-bottom:12px}
+/* Education cards */
+.edu-card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:11px;padding:14px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden}
+.edu-card:hover{border-color:var(--ec,rgba(236,72,153,.4));transform:translateY(-2px);box-shadow:0 8px 22px rgba(236,72,153,.08)}
+.edu-card::before{content:'';display:block;height:2px;background:var(--ec,var(--dept-color));border-radius:1px;margin-bottom:10px;opacity:.6}
+/* Risk bar */
+.risk-bar{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-top:4px}
+.risk-f{height:100%;border-radius:3px;transition:width 1.2s ease}
+/* Audit log */
+#auditLog div{font-size:9.5px;color:rgba(240,253,244,.22);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--fm)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.sb{width:180px}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.app{flex-direction:column}.sb{display:none}.content{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sb" aria-label="Navigation">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sbu-av">DR</div>
+    <div><div class="sbu-nm">Dr. Mwangi</div><div class="sbu-rl">Gynaecologist · Active</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sect">Clinical</div>
+    <a class="sb-lnk" href="unihealth-emr.html"><i data-feather="file-text"></i> EMR / EHR</a>
+    <a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity &amp; NICU</a>
+    <a class="sb-lnk" href="unihealth-dental.html"><i data-feather="smile"></i> Dental</a>
+    <a class="sb-lnk" href="unihealth-cancer.html"><i data-feather="shield"></i> Cancer Center</a>
+    <a class="sb-lnk active" href="unihealth-gynecology.html"><i data-feather="users"></i> Gynecology</a>
+    <a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a>
+    <a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a>
+    <a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a>
+    <a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU &amp; Emergency</a>
+    <a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a>
+    <a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a>
+    <a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a>
+    <div class="sb-sect">Operations</div>
+    <a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing &amp; Finance</a>
+    <a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a>
+    <a class="sb-lnk" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a>
+    <a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance &amp; Fleet</a>
+    <a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a>
+    <a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a>
+    <div class="sb-sect">Management</div>
+    <a class="sb-lnk" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a>
+    <a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR &amp; Payroll</a>
+    <a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a>
+    <a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a>
+    <a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient Portal</a>
+  </div>
+  <div class="sb-ft">
+    <a href="unihealth360-auth-portal-v2.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a>
+    <div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-page"><span style="font-size:16px">🌸</span> Gynecology Department</div>
+    <div class="tb-badge b-pk"><span class="pdot"></span> Gynecology Active</div>
+    <button class="tb-btn tb-p" data-open="newGynPatientModal" data-audit="Opened New Consultation modal"><i data-feather="user-plus" style="width:11px;height:11px"></i> New Consultation</button>
+    <button class="tb-btn tb-g" data-open="quickScreenModal" data-audit="Opened Quick Screen modal"><i data-feather="search" style="width:11px;height:11px"></i> Quick Screen</button>
+    <div class="tb-btn tb-g" style="cursor:default">
+      <span style="font-family:var(--fm);font-size:9px;color:var(--t4)">Patients Today:</span>
+      <span style="font-family:var(--fm);font-size:11px;color:var(--dept-color);font-weight:700">53</span>
+    </div>
+    <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0"><i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">5</div></div>
+    <div class="clk" id="clock"></div>
+  </div>
+
+  <div class="content">
+    <!-- STAT CARDS -->
+    <div class="g4 mb12">
+      <div class="stat" style="--mc:#ec4899"><div class="stat-v" data-val="53">0</div><div class="stat-l">Patients Today</div><div class="stat-s">28 OPD · 25 procedure</div></div>
+      <div class="stat" style="--mc:var(--pu)"><div class="stat-v" data-val="4">0</div><div class="stat-l">Procedures Today</div><div class="stat-s">2 laparoscopic · 2 colpo</div></div>
+      <div class="stat" style="--mc:var(--am)"><div class="stat-v" data-val="7">0</div><div class="stat-l">Awaiting Results</div><div class="stat-s">Pap smear · HPV · STI</div></div>
+      <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="91">0</div><div class="stat-l">Screening Rate %</div><div class="stat-s">Cervical cancer program</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab act" onclick="showTab(this,'gyn-overview')">📊 Overview</button>
+      <button class="tab" onclick="showTab(this,'gyn-opd')">🏥 OPD Workflow</button>
+      <button class="tab" onclick="showTab(this,'gyn-patients')">🌸 Patients</button>
+      <button class="tab" onclick="showTab(this,'gyn-procedures')">⚙️ Procedures</button>
+      <button class="tab" onclick="showTab(this,'gyn-screening')">🔬 Screening</button>
+      <button class="tab" onclick="showTab(this,'gyn-menstrual')">📅 Menstrual</button>
+      <button class="tab" onclick="showTab(this,'gyn-fertility')">💊 Fertility</button>
+      <button class="tab" onclick="showTab(this,'gyn-sti')">🔒 STI</button>
+      <button class="tab" onclick="showTab(this,'gyn-ultrasound')">🖼️ Ultrasound</button>
+      <button class="tab" onclick="showTab(this,'gyn-riskalerts')">🔔 Risk Alerts</button>
+      <button class="tab" onclick="showTab(this,'gyn-education')">📚 Education</button>
+      <button class="tab" onclick="showTab(this,'gyn-api')">🔌 API Ref</button>
+    </div>
+
+    <!-- ═══ TAB: OVERVIEW ═══ -->
+    <div class="tp show" id="tp-gyn-overview">
+      <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Risk Alert:</strong> Patricia Ndung'u (GYN-007) — Pap result CIN-II. LEEP procedure scheduled 14 May. Consent form pending.</div>
+      <div class="g2 mb12">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="pie-chart"></i> Condition Distribution</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div class="prog-row"><span>Menstrual Disorders</span><span style="color:#ec4899">32%</span></div><div class="prog"><div class="prog-f" data-w="32%" style="background:#ec4899"></div></div></div>
+            <div><div class="prog-row"><span>PCOS / Ovarian Cysts</span><span style="color:#a78bfa">24%</span></div><div class="prog"><div class="prog-f" data-w="24%" style="background:#a78bfa"></div></div></div>
+            <div><div class="prog-row"><span>Uterine Fibroids</span><span style="color:var(--am)">18%</span></div><div class="prog"><div class="prog-f" data-w="18%" style="background:var(--am)"></div></div></div>
+            <div><div class="prog-row"><span>STI Management</span><span style="color:#60a5fa">12%</span></div><div class="prog"><div class="prog-f" data-w="12%" style="background:#60a5fa"></div></div></div>
+            <div><div class="prog-row"><span>Menopause</span><span style="color:var(--tl)">8%</span></div><div class="prog"><div class="prog-f" data-w="8%" style="background:var(--tl)"></div></div></div>
+            <div><div class="prog-row"><span>Gynae Oncology Referral</span><span style="color:var(--r)">6%</span></div><div class="prog"><div class="prog-f" data-w="6%" style="background:var(--r)"></div></div></div>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="trending-up"></i> Department KPIs</div></div>
+          <table>
+            <thead><tr><th>KPI</th><th>Value</th><th>Target</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Pap Smear Screening Rate</td><td style="font-family:var(--fm);color:var(--neon)">91%</td><td style="font-family:var(--fm);color:var(--t4)">≥90%</td><td><span class="tag tg">✓ Met</span></td></tr>
+              <tr><td>Avg Consult Duration</td><td style="font-family:var(--fm);color:var(--neon)">18 min</td><td style="font-family:var(--fm);color:var(--t4)">≤20 min</td><td><span class="tag tg">✓ Met</span></td></tr>
+              <tr><td>HPV Vaccination Coverage</td><td style="font-family:var(--fm);color:var(--am)">74%</td><td style="font-family:var(--fm);color:var(--t4)">≥80%</td><td><span class="tag ta">Improving</span></td></tr>
+              <tr><td>STI Contact Tracing</td><td style="font-family:var(--fm);color:var(--neon)">88%</td><td style="font-family:var(--fm);color:var(--t4)">≥85%</td><td><span class="tag tg">✓ Met</span></td></tr>
+              <tr><td>Fibroid Recurrence Rate</td><td style="font-family:var(--fm);color:var(--neon)">8%</td><td style="font-family:var(--fm);color:var(--t4)">≤10%</td><td><span class="tag tg">✓ Met</span></td></tr>
+              <tr><td>Laparoscopy Complication</td><td style="font-family:var(--fm);color:var(--neon)">0.9%</td><td style="font-family:var(--fm);color:var(--t4)">≤2%</td><td><span class="tag tg">✓ Met</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card dept-card mb12">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="cpu"></i> AI Gynecology Screening Engine</div><div class="tb-badge b-pk"><span class="pdot"></span> ACTIVE</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px">
+          <div><div class="prog-row"><span>Cervical Lesion Detection</span><span style="color:var(--dept-color)">93%</span></div><div class="prog"><div class="prog-f" data-w="93%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+          <div><div class="prog-row"><span>Ovarian Cyst Classification</span><span style="color:var(--dept-color)">88%</span></div><div class="prog"><div class="prog-f" data-w="88%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+          <div><div class="prog-row"><span>Endometrial Thickness Analysis</span><span style="color:var(--dept-color)">91%</span></div><div class="prog"><div class="prog-f" data-w="91%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+          <div><div class="prog-row"><span>PCOS Hormonal Pattern</span><span style="color:var(--dept-color)">86%</span></div><div class="prog"><div class="prog-f" data-w="86%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+          <div><div class="prog-row"><span>Fibroid Mapping (Ultrasound)</span><span style="color:var(--dept-color)">84%</span></div><div class="prog"><div class="prog-f" data-w="84%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+          <div><div class="prog-row"><span>HPV Genotype Risk Scoring</span><span style="color:var(--dept-color)">90%</span></div><div class="prog"><div class="prog-f" data-w="90%" style="background:linear-gradient(90deg,#9d174d,#ec4899)"></div></div></div>
+        </div>
+        <div style="margin-top:8px;font-family:var(--fm);font-size:8px;color:var(--t4)">Clinician review required before any clinical action based on AI output.</div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="lock"></i> Live Audit Trail</div><span class="dept-tag">APPEND-ONLY</span></div>
+        <div id="auditLog" style="max-height:150px;overflow-y:auto">
+          <div>[09:55:11] GYNE PAP_RESULT patient=GYN-007 result=CIN-II action=LEEP_SCHEDULED user=Dr.Mwangi</div>
+          <div>[09:48:22] GYNE IUCD_INSERTION patient=GYN-005 user=Dr.Mwangi</div>
+          <div>[09:42:08] GYNE ULTRASOUND_ORDERED patient=GYN-001 reason=PCOS user=Dr.Mwangi</div>
+          <div>[09:35:44] GYNE STI_RESULT patient=GYN-005 result=Chlamydia_positive user=Lab.System</div>
+          <div>[09:00:09] AUTH LOGIN_SUCCESS user=Dr.Mwangi role=Gynaecologist dept=Gynecology</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: OPD WORKFLOW ═══ -->
+    <div class="tp" id="tp-gyn-opd">
+      <div class="g2 mb12">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="clipboard"></i> Today's OPD Queue</div>
+            <div class="srch"><i data-feather="search"></i><input type="text" placeholder="Search…" data-search="#opdTable"></div>
+          </div>
+          <div style="overflow-x:auto">
+            <table id="opdTable">
+              <thead><tr><th>Patient</th><th>Age</th><th>Time</th><th>Complaint</th><th>Vitals</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Grace Wambui</td><td>32</td><td style="font-family:var(--fm);color:var(--dept-color)">08:00</td><td>Annual review + Pap</td><td style="font-family:var(--fm);font-size:10px">BP 118/76 · HR 72</td><td><span class="tag tg">Done</span></td></tr>
+                <tr><td>Jane Muthoni</td><td>38</td><td style="font-family:var(--fm);color:var(--dept-color)">08:30</td><td>Abnormal bleeding</td><td style="font-family:var(--fm);font-size:10px">BP 122/80 · HR 78</td><td><span class="tag tr">Urgent</span></td></tr>
+                <tr><td>Mercy Akinyi</td><td>27</td><td style="font-family:var(--fm);color:var(--dept-color)">09:00</td><td>FP — IUCD insertion</td><td style="font-family:var(--fm);font-size:10px">BP 110/70 · HR 68</td><td><span class="tag tg">In Room</span></td></tr>
+                <tr><td>Patricia Ndung'u</td><td>47</td><td style="font-family:var(--fm);color:var(--dept-color)">09:30</td><td>LEEP follow-up</td><td style="font-family:var(--fm);font-size:10px">BP 126/82 · HR 80</td><td><span class="tag ta">Waiting</span></td></tr>
+                <tr><td>Diana Korir</td><td>24</td><td style="font-family:var(--fm);color:var(--dept-color)">10:00</td><td>STI — Chlamydia Tx</td><td style="font-family:var(--fm);font-size:10px">BP 112/72 · HR 74</td><td><span class="tag ta">Waiting</span></td></tr>
+                <tr><td>Ruth Simiyu</td><td>30</td><td style="font-family:var(--fm);color:var(--dept-color)">10:30</td><td>Ovarian cyst USS</td><td style="font-family:var(--fm);font-size:10px">BP 119/78 · HR 76</td><td><span class="tag tb_">Registered</span></td></tr>
+                <tr><td>Naomi Wanja</td><td>55</td><td style="font-family:var(--fm);color:var(--dept-color)">11:00</td><td>Menopause mgmt</td><td style="font-family:var(--fm);font-size:10px">BP 134/86 · HR 82</td><td><span class="tag tb_">Registered</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="bar-chart-2"></i> Triage Summary</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;text-align:center">
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:8px;padding:12px 8px"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--dept-color)">7</div><div style="font-size:9px;color:var(--t3)">Registered</div></div>
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:8px;padding:12px 8px"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--am)">4</div><div style="font-size:9px;color:var(--t3)">In Room</div></div>
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:8px;padding:12px 8px"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--neon)">13</div><div style="font-size:9px;color:var(--t3)">Complete</div></div>
+          </div>
+          <div class="al al-g" style="margin-bottom:8px"><i data-feather="check-circle" style="width:12px;height:12px;flex-shrink:0"></i> NHIF/SHA eligibility check: <strong>Active</strong> — real-time verification online.</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div><div class="prog-row"><span>Cervical Screening Coverage</span><span style="color:var(--neon)">91%</span></div><div class="prog"><div class="prog-f" data-w="91%" style="background:var(--neon)"></div></div></div>
+            <div><div class="prog-row"><span>HPV Vaccination</span><span style="color:var(--am)">74%</span></div><div class="prog"><div class="prog-f" data-w="74%" style="background:var(--am)"></div></div></div>
+            <div><div class="prog-row"><span>Family Planning Coverage</span><span style="color:#60a5fa">71%</span></div><div class="prog"><div class="prog-f" data-w="71%" style="background:#60a5fa"></div></div></div>
+            <div><div class="prog-row"><span>STI Screening Uptake</span><span style="color:var(--pu)">47%</span></div><div class="prog"><div class="prog-f" data-w="47%" style="background:var(--pu)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PATIENTS ═══ -->
+    <div class="tp" id="tp-gyn-patients">
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-ttl"><i data-feather="users"></i> Gynecology Patient Registry</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="srch"><i data-feather="search"></i><input type="text" placeholder="Search patients…" data-search="#gynPatientsTable"></div>
+            <button class="btn bp btn-sm" data-open="newGynPatientModal" data-audit="Opened New Consultation modal"><i data-feather="user-plus" style="width:11px;height:11px"></i> New Consult</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="gynPatientsTable">
+            <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Condition</th><th>Gynaecologist</th><th>Last Visit</th><th>Next Visit</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><span class="dept-tag">GYN-001</span></td><td>Amina Hassan</td><td>28</td><td>PCOS</td><td>Dr. Mwangi</td><td style="font-family:var(--fm);font-size:10px">10 May</td><td style="font-family:var(--fm);font-size:10px">10 Jun</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-002</span></td><td>Sylvia Kamau</td><td>42</td><td>Uterine Fibroids</td><td>Dr. Otieno</td><td style="font-family:var(--fm);font-size:10px">08 May</td><td style="font-family:var(--fm);font-size:10px">22 May</td><td><span class="tag ta">Pre-Op</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-003</span></td><td>Christine Auma</td><td>35</td><td>Menorrhagia</td><td>Dr. Mwangi</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td style="font-family:var(--fm);font-size:10px">26 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-004</span></td><td>Naomi Wanja</td><td>55</td><td>Menopause Mgmt</td><td>Dr. Otieno</td><td style="font-family:var(--fm);font-size:10px">05 May</td><td style="font-family:var(--fm);font-size:10px">05 Jun</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-005</span></td><td>Diana Korir</td><td>24</td><td>Chlamydia</td><td>Dr. Mwangi</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td style="font-family:var(--fm);font-size:10px">26 May</td><td><span class="tag tb_">Treatment</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-006</span></td><td>Jane Maina</td><td>33</td><td>Endometriosis</td><td>Dr. Otieno</td><td style="font-family:var(--fm);font-size:10px">02 May</td><td style="font-family:var(--fm);font-size:10px">16 May</td><td><span class="tag tg">Active</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-007</span></td><td>Patricia Ndung'u</td><td>47</td><td>Cervical Lesion CIN-II</td><td>Dr. Mwangi</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td style="font-family:var(--fm);font-size:10px">14 May</td><td><span class="tag tr">Urgent</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+              <tr><td><span class="dept-tag">GYN-008</span></td><td>Ruth Simiyu</td><td>30</td><td>Ovarian Cyst 4cm</td><td>Dr. Otieno</td><td style="font-family:var(--fm);font-size:10px">11 May</td><td style="font-family:var(--fm);font-size:10px">18 May</td><td><span class="tag ta">Monitoring</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Note</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PROCEDURES ═══ -->
+    <div class="tp" id="tp-gyn-procedures">
+      <div class="al al-a"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Action Required:</strong> Patricia Ndung'u (GYN-007) — LEEP procedure for CIN-II scheduled 14 May. Consent form pending signature.</div>
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="clock"></i> Today's Procedure Schedule</div></div>
+          <table>
+            <thead><tr><th>Time</th><th>Patient</th><th>Procedure</th><th>Theatre</th><th>Gynaecologist</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="font-family:var(--fm);color:var(--dept-color)">08:00</td><td>Sylvia Kamau</td><td>Diagnostic Laparoscopy</td><td>Suite 2</td><td>Dr. Otieno</td><td><span class="tag tg">Completed</span></td></tr>
+              <tr><td style="font-family:var(--fm);color:var(--dept-color)">09:30</td><td>Jane Maina</td><td>Laparoscopic Cystectomy</td><td>Theatre 4</td><td>Dr. Otieno</td><td><span class="tag tg">In Progress</span></td></tr>
+              <tr><td style="font-family:var(--fm);color:var(--dept-color)">11:00</td><td>Patricia Ndung'u</td><td>Colposcopy + LEEP</td><td>Suite 1</td><td>Dr. Mwangi</td><td><span class="tag ta">Awaiting</span></td></tr>
+              <tr><td style="font-family:var(--fm);color:var(--dept-color)">13:00</td><td>Ruth Simiyu</td><td>Transvaginal Ultrasound</td><td>Suite 1</td><td>Dr. Mwangi</td><td><span class="tag tg">Scheduled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="bar-chart-2"></i> Monthly Procedure Summary</div></div>
+          <table>
+            <thead><tr><th>Procedure</th><th>Count</th><th>Avg Duration</th><th>Complications</th><th>Rate</th></tr></thead>
+            <tbody>
+              <tr><td>Colposcopy</td><td style="font-family:var(--fm)">34</td><td style="font-family:var(--fm)">25 min</td><td style="font-family:var(--fm)">0</td><td><span class="tag tg">0%</span></td></tr>
+              <tr><td>LEEP / LLETZ</td><td style="font-family:var(--fm)">12</td><td style="font-family:var(--fm)">45 min</td><td style="font-family:var(--fm)">0</td><td><span class="tag tg">0%</span></td></tr>
+              <tr><td>Laparoscopy</td><td style="font-family:var(--fm)">8</td><td style="font-family:var(--fm)">90 min</td><td style="font-family:var(--fm)">1</td><td><span class="tag ta">1.3%</span></td></tr>
+              <tr><td>Hysteroscopy</td><td style="font-family:var(--fm)">15</td><td style="font-family:var(--fm)">35 min</td><td style="font-family:var(--fm)">0</td><td><span class="tag tg">0%</span></td></tr>
+              <tr><td>Myomectomy</td><td style="font-family:var(--fm)">4</td><td style="font-family:var(--fm)">120 min</td><td style="font-family:var(--fm)">0</td><td><span class="tag tg">0%</span></td></tr>
+              <tr><td>Hysterectomy</td><td style="font-family:var(--fm)">2</td><td style="font-family:var(--fm)">150 min</td><td style="font-family:var(--fm)">0</td><td><span class="tag tg">0%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: SCREENING ═══ -->
+    <div class="tp" id="tp-gyn-screening">
+      <div class="al al-g"><i data-feather="check-circle" style="width:13px;height:13px;flex-shrink:0"></i> Cervical Cancer Screening Program: <strong>91% coverage</strong> achieved this quarter. HPV vaccination drive: 1,247 women screened.</div>
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="layers"></i> Screening Results Queue</div><button class="btn bp btn-sm" onclick="toast('New screening result recorded ✓')">Record Result</button></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Test</th><th>Date</th><th>Result</th><th>Action Required</th></tr></thead>
+            <tbody>
+              <tr><td>Christine Auma</td><td>Pap Smear</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td><span class="tag ta">ASCUS</span></td><td>Repeat in 6 months</td></tr>
+              <tr><td>Patricia Ndung'u</td><td>HPV + Pap</td><td style="font-family:var(--fm);font-size:10px">08 May</td><td><span class="tag tr">CIN-II</span></td><td>LEEP scheduled 14 May</td></tr>
+              <tr><td>Diana Korir</td><td>STI Panel</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td><span class="tag tr">Chlamydia+</span></td><td>Treatment initiated</td></tr>
+              <tr><td>Amina Hassan</td><td>Hormonal Panel</td><td style="font-family:var(--fm);font-size:10px">10 May</td><td><span class="tag tg">Normal</span></td><td>No action needed</td></tr>
+              <tr><td>Ruth Simiyu</td><td>Pelvic USS</td><td style="font-family:var(--fm);font-size:10px">11 May</td><td><span class="tag ta">Cyst 4cm</span></td><td>Monitor at 6 weeks</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="activity"></i> HPV &amp; STI Dashboard</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:9px;padding:11px;text-align:center"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--neon)">89</div><div style="font-size:9px;color:var(--t3)">HPV Doses (Month)</div></div>
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:9px;padding:11px;text-align:center"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--am)">23</div><div style="font-size:9px;color:var(--t3)">STI Cases (Month)</div></div>
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:9px;padding:11px;text-align:center"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:#60a5fa">88%</div><div style="font-size:9px;color:var(--t3)">Contact Tracing</div></div>
+            <div style="background:var(--gl);border:1px solid var(--bd);border-radius:9px;padding:11px;text-align:center"><div style="font-family:var(--fm);font-size:20px;font-weight:700;color:var(--pu)">19</div><div style="font-size:9px;color:var(--t3)">Partner Notifications</div></div>
+          </div>
+          <div style="font-size:9px;color:var(--t4);font-family:var(--fm);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">STI Breakdown</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div><div class="prog-row"><span>Chlamydia</span><span style="color:var(--dept-color)">40%</span></div><div class="prog"><div class="prog-f" data-w="40%" style="background:var(--dept-color)"></div></div></div>
+            <div><div class="prog-row"><span>Gonorrhoea</span><span style="color:#a78bfa">25%</span></div><div class="prog"><div class="prog-f" data-w="25%" style="background:#a78bfa"></div></div></div>
+            <div><div class="prog-row"><span>Syphilis</span><span style="color:var(--am)">15%</span></div><div class="prog"><div class="prog-f" data-w="15%" style="background:var(--am)"></div></div></div>
+            <div><div class="prog-row"><span>HPV</span><span style="color:var(--tl)">15%</span></div><div class="prog"><div class="prog-f" data-w="15%" style="background:var(--tl)"></div></div></div>
+            <div><div class="prog-row"><span>Other</span><span style="color:var(--t3)">5%</span></div><div class="prog"><div class="prog-f" data-w="5%" style="background:rgba(240,253,244,.3)"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: MENSTRUAL HISTORY ═══ -->
+    <div class="tp" id="tp-gyn-menstrual">
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="calendar"></i> Menstrual History — Registry</div><button class="btn bp btn-sm" onclick="toast('Menstrual history recorded ✓ — EMR updated')" data-audit="Menstrual history recorded">Record History</button></div>
+        <table>
+          <thead><tr><th>Patient</th><th>Menarche</th><th>Cycle Length</th><th>Duration</th><th>Flow</th><th>LMP</th><th>Dysmenorrhoea</th><th>PCOS Risk</th></tr></thead>
+          <tbody>
+            <tr><td>Grace Wambui</td><td style="font-family:var(--fm)">13 yrs</td><td style="font-family:var(--fm)">28 days</td><td style="font-family:var(--fm)">5 days</td><td>Normal</td><td style="font-family:var(--fm);font-size:10px">28 May 2026</td><td><span class="tag tg">None</span></td><td><span class="tag tg">Low</span></td></tr>
+            <tr><td>Jane Muthoni</td><td style="font-family:var(--fm)">12 yrs</td><td style="font-family:var(--fm)">21–35 days</td><td style="font-family:var(--fm)">7–10 days</td><td>Heavy</td><td style="font-family:var(--fm);font-size:10px">20 May 2026</td><td><span class="tag tr">Severe</span></td><td><span class="tag ta">Moderate</span></td></tr>
+            <tr><td>Amina Hassan</td><td style="font-family:var(--fm)">14 yrs</td><td style="font-family:var(--fm)">32–40 days</td><td style="font-family:var(--fm)">4 days</td><td>Scanty</td><td style="font-family:var(--fm);font-size:10px">01 May 2026</td><td><span class="tag tg">Mild</span></td><td><span class="tag tr">High</span></td></tr>
+            <tr><td>Christine Auma</td><td style="font-family:var(--fm)">13 yrs</td><td style="font-family:var(--fm)">25–30 days</td><td style="font-family:var(--fm)">8 days</td><td>Very Heavy</td><td style="font-family:var(--fm);font-size:10px">05 May 2026</td><td><span class="tag tr">Severe</span></td><td><span class="tag tg">Low</span></td></tr>
+            <tr><td>Naomi Wanja</td><td style="font-family:var(--fm)">11 yrs</td><td style="font-family:var(--fm)">Amenorrhoea</td><td style="font-family:var(--fm)">N/A</td><td>None</td><td style="font-family:var(--fm);font-size:10px">Dec 2024</td><td><span class="tag tg">None</span></td><td><span class="tag tg">N/A — Menopause</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: FERTILITY ═══ -->
+    <div class="tp" id="tp-gyn-fertility">
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="star"></i> Active Fertility Cases</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Age</th><th>Diagnosis</th><th>Protocol</th><th>Cycle</th><th>Gynaecologist</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Amina Hassan</td><td>28</td><td>PCOS — Anovulation</td><td>Clomiphene 50mg</td><td style="font-family:var(--fm)">Cycle 2</td><td>Dr. Mwangi</td><td><span class="tag ta">Monitoring</span></td></tr>
+              <tr><td>Priscilla Weru</td><td>34</td><td>Unexplained Infertility</td><td>IUI Prep</td><td style="font-family:var(--fm)">Pre-IUI</td><td>Dr. Otieno</td><td><span class="tag tg">Active</span></td></tr>
+              <tr><td>Susan Mbeki</td><td>38</td><td>Diminished Ovarian Reserve</td><td>IVF Referral</td><td style="font-family:var(--fm)">Referral</td><td>Dr. Mwangi</td><td><span class="tag tb_">Referred</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="droplet"></i> Hormonal Panel — Recent Results</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>FSH</th><th>LH</th><th>Estradiol</th><th>AMH</th><th>TSH</th><th>Interpretation</th></tr></thead>
+            <tbody>
+              <tr><td>Amina Hassan</td><td style="font-family:var(--fm)">8.2</td><td style="font-family:var(--fm)">14.1</td><td style="font-family:var(--fm)">48</td><td style="font-family:var(--fm);color:var(--dept-color)">6.8</td><td style="font-family:var(--fm)">2.1</td><td><span class="tag ta">PCOS Pattern</span></td></tr>
+              <tr><td>Priscilla Weru</td><td style="font-family:var(--fm)">7.4</td><td style="font-family:var(--fm)">8.2</td><td style="font-family:var(--fm)">55</td><td style="font-family:var(--fm);color:var(--neon)">2.1</td><td style="font-family:var(--fm)">1.8</td><td><span class="tag tg">Normal Range</span></td></tr>
+              <tr><td>Susan Mbeki</td><td style="font-family:var(--fm);color:var(--r)">18.4</td><td style="font-family:var(--fm);color:var(--r)">20.3</td><td style="font-family:var(--fm)">32</td><td style="font-family:var(--fm);color:var(--r)">0.4</td><td style="font-family:var(--fm)">1.5</td><td><span class="tag tr">Low Reserve</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bd)">
+            <div class="card-ttl" style="margin-bottom:8px"><i data-feather="pill"></i> Endocrine Management</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div><div class="prog-row"><span>Hormonal Therapy Compliance</span><span style="color:var(--dept-color)">84%</span></div><div class="prog"><div class="prog-f" data-w="84%" style="background:var(--dept-color)"></div></div></div>
+              <div><div class="prog-row"><span>Thyroid Management Cases</span><span style="color:var(--tl)">67%</span></div><div class="prog"><div class="prog-f" data-w="67%" style="background:var(--tl)"></div></div></div>
+              <div><div class="prog-row"><span>Insulin Resistance (PCOS) Tx</span><span style="color:var(--am)">78%</span></div><div class="prog"><div class="prog-f" data-w="78%" style="background:var(--am)"></div></div></div>
+            </div>
+            <div style="margin-top:8px;font-family:var(--fm);font-size:8px;color:var(--t4)">All hormonal prescriptions require pharmacist verification before dispensing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: STI WORKFLOW ═══ -->
+    <div class="tp" id="tp-gyn-sti">
+      <div class="al al-pk"><i data-feather="shield" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Confidential:</strong> All STI records are privacy-gated. Partner notification requires patient consent. Access is role and consent-restricted.</div>
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="lock"></i> STI Screening &amp; Management</div><button class="btn bp btn-sm" onclick="toast('STI screening record created ✓ — Privacy-gated')">Record Screening</button></div>
+        <table>
+          <thead><tr><th>Patient</th><th>Date</th><th>HIV</th><th>Chlamydia</th><th>Gonorrhoea</th><th>Syphilis</th><th>HPV</th><th>Treatment</th></tr></thead>
+          <tbody>
+            <tr><td>Diana Korir</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td><span class="tag tg">Non-reactive</span></td><td><span class="tag tr">Positive</span></td><td><span class="tag tg">Negative</span></td><td><span class="tag tg">Non-reactive</span></td><td><span class="tag tg">Negative</span></td><td>Azithromycin 1g stat</td></tr>
+            <tr><td>Grace Wambui</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td><span class="tag tg">Non-reactive</span></td><td><span class="tag tg">Negative</span></td><td><span class="tag tg">Negative</span></td><td><span class="tag tg">Non-reactive</span></td><td><span class="tag tg">Negative</span></td><td><span class="tag tg">No treatment</span></td></tr>
+            <tr><td>Anonymous</td><td style="font-family:var(--fm);font-size:10px">10 May 2026</td><td><span class="tag tr">Reactive</span></td><td><span class="tag ta">Not done</span></td><td><span class="tag ta">Not done</span></td><td><span class="tag ta">Not done</span></td><td><span class="tag ta">Not done</span></td><td><span class="tag tpu">CCC Referral</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: ULTRASOUND ═══ -->
+    <div class="tp" id="tp-gyn-ultrasound">
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="image"></i> Pelvic &amp; Obstetric Ultrasound — PACS Linked</div><button class="btn bp btn-sm" onclick="toast('USS request raised ✓ — Radiology notified')" data-audit="USS request raised">Request USS</button></div>
+        <table>
+          <thead><tr><th>Ref #</th><th>Patient</th><th>Type</th><th>Indication</th><th>Date</th><th>Sonographer</th><th>Findings</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:var(--fm)">USS-GYN-181</td><td>Amina Hassan</td><td>Pelvic (TV)</td><td>PCOS workup</td><td style="font-family:var(--fm);font-size:10px">12 May</td><td>Dr. Mwenda</td><td>PCOS morphology · AFC 14</td><td><span class="tag tg">Reported</span></td></tr>
+            <tr><td style="font-family:var(--fm)">USS-GYN-182</td><td>Ruth Simiyu</td><td>Pelvic (TV)</td><td>Ovarian cyst</td><td style="font-family:var(--fm);font-size:10px">11 May</td><td>Dr. Mwenda</td><td>Simple cyst R ovary 4.2cm</td><td><span class="tag tg">Reported</span></td></tr>
+            <tr><td style="font-family:var(--fm)">USS-GYN-183</td><td>Sylvia Kamau</td><td>Pelvic (TA)</td><td>Fibroid mapping</td><td style="font-family:var(--fm);font-size:10px">08 May</td><td>Dr. Mwenda</td><td>Multiple fibroids — largest 6cm intramural</td><td><span class="tag tg">Reported</span></td></tr>
+            <tr><td style="font-family:var(--fm)">USS-GYN-184</td><td>Priscilla Weru</td><td>Pelvic (TV)</td><td>Follicle tracking</td><td style="font-family:var(--fm);font-size:10px">13 May</td><td>Dr. Mwenda</td><td>Dominant follicle 18mm L ovary</td><td><span class="tag tg">Reported</span></td></tr>
+            <tr><td style="font-family:var(--fm)">USS-GYN-185</td><td>New patient</td><td>Obstetric</td><td>Dating scan</td><td style="font-family:var(--fm);font-size:10px">14 May</td><td>Dr. Mwenda</td><td>Pending</td><td><span class="tag ta">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: RISK ALERTS ═══ -->
+    <div class="tp" id="tp-gyn-riskalerts">
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="bell"></i> Active Risk Alerts</div><div style="font-family:var(--fm);font-size:8px;color:var(--neon)"><span class="pdot" style="display:inline-block;margin-right:4px"></span>Live Monitoring</div></div>
+        <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Critical:</strong> GYN-007 Patricia Ndung'u — CIN-II confirmed. LEEP scheduled 14 May. Clinician acknowledgement required within 24h.</div>
+        <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Critical:</strong> GYN-005 Diana Korir — Chlamydia trachomatis positive. Partner notification protocol initiated. Treatment commenced.</div>
+        <div class="al al-a"><i data-feather="clock" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Overdue Screening:</strong> 3 patients — last Pap smear &gt;3 years ago. Outreach coordinator notified. SMS recall active.</div>
+        <div class="al al-a"><i data-feather="info" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">Fertility Watch:</strong> Susan Mbeki — AMH 0.4 ng/mL (severely diminished reserve). Time-sensitive IVF referral submitted today.</div>
+        <div class="al al-g"><i data-feather="check-circle" style="width:13px;height:13px;flex-shrink:0"></i><strong style="margin-left:2px">All Clear:</strong> Grace Wambui — Pap NILM · HPV negative · STI negative. Next review Jun 2027. Patient notified.</div>
+        <div style="margin-top:12px">
+          <div class="card-ttl" style="margin-bottom:8px"><i data-feather="activity"></i> Follow-up Schedule</div>
+          <table>
+            <thead><tr><th>Patient</th><th>Reason</th><th>Due Date</th><th>Channel</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Patricia Ndung'u</td><td>Post-LEEP review</td><td style="font-family:var(--fm);font-size:10px">Aug 2026</td><td>In-person</td><td><span class="tag tb_">To Book</span></td></tr>
+              <tr><td>Diana Korir</td><td>STI treatment review</td><td style="font-family:var(--fm);font-size:10px">26 May 2026</td><td>Telemedicine</td><td><span class="tag tg">Confirmed</span></td></tr>
+              <tr><td>Susan Mbeki</td><td>IVF prep counselling</td><td style="font-family:var(--fm);font-size:10px">17 May 2026</td><td>In-person</td><td><span class="tag tg">Confirmed</span></td></tr>
+              <tr><td>Rebecca Kamau</td><td>Overdue DMPA injection</td><td style="font-family:var(--fm);font-size:10px">ASAP</td><td>Phone recall</td><td><span class="tag tr">Overdue</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: EDUCATION CARDS ═══ -->
+    <div class="tp" id="tp-gyn-education">
+      <div style="margin-bottom:10px;font-size:11.5px;color:var(--t3)">Patient education materials — print or send directly to patient portal or via SMS.</div>
+      <div class="g3">
+        <div class="edu-card" style="--ec:#ec4899" onclick="toast('Cervical Health card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">🎗️</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">Cervical Health</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">Understanding Pap smears, HPV, and what CIN grades mean. When to seek care and what treatment options exist.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+        <div class="edu-card" style="--ec:#3b82f6" onclick="toast('Family Planning card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">💊</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">Family Planning</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">Comparing contraceptive methods — effectiveness, side effects, and how to choose the right option for you.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+        <div class="edu-card" style="--ec:#f59e0b" onclick="toast('Breast Awareness card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">🎀</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">Breast Awareness</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">How to perform breast self-examination, when to see a doctor, and screening guidelines by age group.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+        <div class="edu-card" style="--ec:#8b5cf6" onclick="toast('STI Prevention card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">🛡️</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">STI Prevention</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">Reducing STI risk, partner notification, HIV PrEP eligibility, and recommended testing timelines.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+        <div class="edu-card" style="--ec:#14b8a6" onclick="toast('Fertility card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">⭐</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">Understanding Fertility</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">Ovulation tracking, when to seek help, and fertility treatment overview — IUI, IVF, ICSI options.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+        <div class="edu-card" style="--ec:#2ecc71" onclick="toast('Menstrual Health card printed ✓')">
+          <div style="font-size:28px;margin-bottom:8px">🌸</div>
+          <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:5px">Menstrual Health</div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:12px">Normal vs abnormal periods, endometriosis, PCOS, and when heavy bleeding warrants urgent attention.</div>
+          <button class="btn bp btn-sm" style="width:100%"><i data-feather="printer" style="width:10px;height:10px"></i> Print / Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: API REF ═══ -->
+    <div class="tp" id="tp-gyn-api">
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="code"></i> Gynecology API Reference</div><div class="dept-tag">REST · FHIR R5</div></div>
+        <div class="api-box">
+          <div class="api-ttl">Gynecology Department Endpoints</div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/patients</span><span class="api-d">List gynecology patients</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/patients</span><span class="api-d">Register new patient</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/patients/{id}</span><span class="api-d">Get patient record + history</span></div>
+          <div class="api-r"><span class="m-u">PUT</span><span class="api-ep">/api/gynecology/patients/{id}</span><span class="api-d">Update patient record</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/screening/pap</span><span class="api-d">Record Pap smear result</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/screening/hpv</span><span class="api-d">Record HPV test + vaccination</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/sti/screening</span><span class="api-d">Record STI results (privacy-gated)</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/procedures/schedule</span><span class="api-d">Get procedure schedule</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/procedures/log</span><span class="api-d">Log completed procedure</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/fertility/cases</span><span class="api-d">List fertility management cases</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/hormones/panel</span><span class="api-d">Submit hormonal panel results</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/ultrasound/request</span><span class="api-d">Request USS → PACS/Radiology</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/ai/screening</span><span class="api-d">AI cervical lesion analysis</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/gynecology/referral</span><span class="api-d">Generate oncology / IVF referral</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/risk-alerts</span><span class="api-d">Active patient risk alerts</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/gynecology/audit?from=&amp;to=</span><span class="api-d">Gynecology audit trail</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-ov" id="newGynPatientModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🌸 New Gynecology Consultation</div><button class="mc" data-close="newGynPatientModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" type="text" placeholder="Patient full name" required></div>
+      <div class="fg"><label class="fl">Date of Birth</label><input class="fi" type="date"></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" type="tel" placeholder="+254 7XX XXX XXX"></div>
+      <div class="fg"><label class="fl">National ID</label><input class="fi" type="text" placeholder="ID number"></div>
+      <div class="fg"><label class="fl">Referral Source</label><select class="fi"><option>Walk-in</option><option>GP</option><option>Midwife</option><option>Self-Referral</option><option>ANC Referral</option><option>Oncology</option></select></div>
+      <div class="fg"><label class="fl">Chief Complaint</label><select class="fi"><option>Menstrual Irregularity</option><option>Pelvic Pain</option><option>Vaginal Discharge</option><option>Fertility Concerns</option><option>PCOS Symptoms</option><option>Menopause</option><option>Routine Screening</option><option>STI Concern</option><option>Fibroid Follow-up</option><option>Post-procedure</option></select></div>
+      <div class="fg"><label class="fl">Assigned Gynaecologist</label><select class="fi"><option>Dr. Mwangi</option><option>Dr. Otieno</option></select></div>
+      <div class="fg"><label class="fl">Parity</label><select class="fi"><option>Nulliparous</option><option>Para 1</option><option>Para 2</option><option>Para 3</option><option>Para 4+</option></select></div>
+      <div class="fg"><label class="fl">Contraception</label><select class="fi"><option>None</option><option>OCP</option><option>IUCD</option><option>Implant</option><option>Condoms</option><option>Sterilisation</option><option>Other</option></select></div>
+      <div class="fg"><label class="fl">Last Menstrual Period</label><input class="fi" type="date"></div>
+      <div class="fg"><label class="fl">Insurance</label><select class="fi"><option>None</option><option>CIC Insurance</option><option>Old Mutual</option><option>NHIF</option><option>SHA</option></select></div>
+      <div class="fg"><label class="fl">Allergies</label><input class="fi" type="text" placeholder="Drug / latex allergies"></div>
+    </div>
+    <div class="fg" style="margin-bottom:14px"><label class="fl">Consultation Notes</label><textarea class="fi" placeholder="Clinical notes, presenting history…"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="newGynPatientModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Consultation registered ✓ — Gynaecologist notified. File created.');closeModal('newGynPatientModal');auditLog('CONSULTATION_REGISTERED user=Dr.Mwangi')"><i data-feather="check" style="width:11px;height:11px"></i> Register &amp; Consult</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="quickScreenModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🔬 Quick Screening Entry</div><button class="mc" data-close="quickScreenModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Patient</label><input class="fi" type="text" placeholder="Search patient name or ID"></div>
+      <div class="fg"><label class="fl">Screening Type</label><select class="fi"><option>Pap Smear</option><option>HPV Test</option><option>STI Panel</option><option>Hormonal Panel</option><option>Pelvic Ultrasound</option><option>Mammogram</option></select></div>
+      <div class="fg"><label class="fl">Date Collected</label><input class="fi" type="date"></div>
+      <div class="fg"><label class="fl">Result</label><select class="fi"><option>Normal / Negative</option><option>ASCUS</option><option>LSIL / CIN-I</option><option>HSIL / CIN-II</option><option>HSIL / CIN-III</option><option>Positive</option><option>Pending</option></select></div>
+      <div class="fg" style="grid-column:span 2"><label class="fl">Action / Notes</label><textarea class="fi" placeholder="Recommended action, clinical notes…"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="quickScreenModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Screening result recorded ✓ — EMR updated');closeModal('quickScreenModal');auditLog('SCREENING_RESULT_RECORDED user=Dr.Mwangi')"><i data-feather="save" style="width:11px;height:11px"></i> Save Result</button>
+    </div>
+  </div>
+</div>
+
+<script>
+feather.replace({width:12,height:12,strokeWidth:2});
+(function(){function t(){const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString('en-KE',{hour12:false})}t();setInterval(t,1000)})();
+function showTab(btn,id){const w=btn.closest('.tabs');w.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tp').forEach(p=>{p.classList.remove('show');p.style.display='none'});const el=document.getElementById('tp-'+id);if(el){el.style.display='block';setTimeout(()=>el.classList.add('show'),10);feather.replace({width:12,height:12,strokeWidth:2})}}
+document.querySelectorAll('.tp').forEach((p,i)=>{if(i>0)p.style.display='none'});
+function animCnt(){document.querySelectorAll('.stat-v[data-val]').forEach(el=>{const tg=parseFloat(el.dataset.val);let s=performance.now();(function go(n){const p=Math.min((n-s)/1400,1);const e=1-Math.pow(1-p,3);el.textContent=Math.round(tg*e).toLocaleString();if(p<1)requestAnimationFrame(go)})(s)})}
+setTimeout(animCnt,250);
+setTimeout(()=>{document.querySelectorAll('.prog-f[data-w]').forEach(b=>{b.style.width='0';setTimeout(()=>b.style.width=b.dataset.w,150)})},350);
+function openModal(id){const m=document.getElementById(id);if(m)m.style.display='flex'}
+function closeModal(id){const m=document.getElementById(id);if(m)m.style.display='none'}
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.open)));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.style.display='none'}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(o=>{if(o.style.display==='flex')o.style.display='none'})});
+function toast(msg,type='g'){const t=document.createElement('div');const col=type==='r'?'#ef4444':type==='a'?'#f59e0b':type==='b'?'#60a5fa':'#ec4899';t.style.cssText=`position:fixed;bottom:20px;right:20px;background:rgba(5,12,7,.99);border:1px solid ${col}55;border-radius:10px;padding:10px 16px;font-size:12px;color:#f0fdf4;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:su .3s ease;font-family:'Sora',sans-serif`;t.innerHTML=`<span style="color:${col}">●</span> ${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+document.querySelectorAll('[data-search]').forEach(inp=>{inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();const tb=document.querySelector(inp.dataset.search);if(!tb)return;tb.querySelectorAll('tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'})})});
+function auditLog(msg){const al=document.getElementById('auditLog');if(!al)return;const t=new Date().toLocaleTimeString('en-KE',{hour12:false});const r=document.createElement('div');r.textContent='['+t+'] '+msg;al.prepend(r);if(al.children.length>15)al.lastChild.remove()}
+document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditLog(el.dataset.audit)));
+const nb=document.getElementById('notifBtn');if(nb)nb.addEventListener('click',()=>{const ex=document.getElementById('_np');if(ex){ex.remove();return}const p=document.createElement('div');p.id='_np';p.style.cssText="position:fixed;top:60px;right:12px;width:300px;background:rgba(5,12,7,.99);border:1px solid rgba(255,255,255,.08);border-radius:13px;z-index:300;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7)";p.innerHTML='<div style="font-size:9.5px;font-weight:700;color:rgba(240,253,244,.72);margin-bottom:8px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;text-transform:uppercase">Gynecology Alerts</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Patricia Ndung\'u — CIN-II · LEEP consent pending</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Diana Korir — Chlamydia+ · Treatment commenced</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 3 patients overdue for cervical screening</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 Susan Mbeki — AMH 0.4 · IVF referral sent</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0">🟢 Cervical screening: 91% coverage achieved</div>';document.body.appendChild(p);setTimeout(()=>document.addEventListener('click',function h(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',h)}},true),10)});
+</script>
+</body>
+</html>

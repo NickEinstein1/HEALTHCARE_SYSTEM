@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dental Department — UniHealth 360</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/feather-icons"></script>
+<style>
+:root{
+  --g:#1a8a4a;--gd:#0a4a26;--neon:#2ecc71;
+  --r:#ef4444;--b:#3b82f6;--am:#f59e0b;--pu:#8b5cf6;--pk:#ec4899;--tl:#14b8a6;
+  --dept-color:#22d3ee;--dept-glow:rgba(34,211,238,.18);
+  --bg:#030a05;--gl:rgba(255,255,255,.04);--gl2:rgba(255,255,255,.07);--bd:rgba(255,255,255,.08);--bn:rgba(46,204,113,.22);
+  --t1:#f0fdf4;--t2:rgba(240,253,244,.72);--t3:rgba(240,253,244,.42);--t4:rgba(240,253,244,.20);
+  --fn:'Sora',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:rgba(46,204,113,.18);border-radius:2px}
+.app{display:flex;height:100vh;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.sb{width:210px;flex-shrink:0;background:rgba(3,8,5,.98);border-right:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;animation:sb-in .5s ease both}
+@keyframes sb-in{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.sb-brand{display:flex;align-items:center;gap:9px;padding:14px 12px 9px;border-bottom:1px solid var(--bd)}
+.sb-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,rgba(46,204,113,.18),rgba(26,138,74,.1));border:1px solid var(--bn);display:flex;align-items:center;justify-content:center;flex-shrink:0;animation:lg 4s ease infinite}
+@keyframes lg{0%,100%{box-shadow:0 0 10px rgba(46,204,113,.14)}50%{box-shadow:0 0 20px rgba(46,204,113,.3)}}
+.sb-nm{font-size:12px;font-weight:700;color:var(--t1);line-height:1}
+.sb-tag{font-size:7px;color:var(--t4);letter-spacing:1.2px;text-transform:uppercase;font-family:var(--fm);margin-top:2px}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--gl);border-bottom:1px solid var(--bd)}
+.sbu-av{width:29px;height:29px;border-radius:7px;background:rgba(34,211,238,.14);border:1px solid rgba(34,211,238,.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--dept-color);flex-shrink:0}
+.sbu-nm{font-size:11px;font-weight:600;color:var(--t1)}.sbu-rl{font-size:7.5px;color:var(--t4);font-family:var(--fm)}
+.sb-nav{flex:1;overflow-y:auto;padding:5px 0;scrollbar-width:none}.sb-nav::-webkit-scrollbar{display:none}
+.sb-sect{font-family:var(--fm);font-size:6.5px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);padding:8px 12px 3px}
+.sb-lnk{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:11.5px;color:var(--t3);text-decoration:none;border-left:2px solid transparent;transition:all .2s}
+.sb-lnk:hover{background:var(--gl);color:var(--t1);border-left-color:rgba(46,204,113,.4)}
+.sb-lnk.active{background:rgba(34,211,238,.08);color:var(--dept-color);border-left-color:var(--dept-color)}
+.sb-lnk i{width:12px;height:12px;flex-shrink:0}
+.sb-ft{padding:8px 12px;border-top:1px solid var(--bd)}
+.sb-back{width:100%;padding:7px 10px;background:var(--gl);border:1px solid var(--bd);border-radius:7px;color:var(--t3);font-size:11px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:5px;justify-content:center;text-decoration:none;transition:all .2s}
+.sb-back:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.sb-ver{font-family:var(--fm);font-size:7px;color:var(--t4);text-align:center;margin-top:5px}
+.topbar{height:54px;flex-shrink:0;background:rgba(3,8,5,.96);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px;animation:tb-in .5s ease .08s both}
+@keyframes tb-in{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.tb-page{font-size:14px;font-weight:700;color:var(--t1);flex:1;display:flex;align-items:center;gap:7px}
+.tb-badge{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--fm);font-size:7.5px;font-weight:700}
+.b-b{background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.b-r{background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.b-a{background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.2);color:#f59e0b}
+.b-g{background:rgba(46,204,113,.1);border:1px solid var(--bn);color:var(--neon)}
+.b-pk{background:rgba(236,72,153,.09);border:1px solid rgba(236,72,153,.2);color:#ec4899}
+.b-pu{background:rgba(139,92,246,.09);border:1px solid rgba(139,92,246,.2);color:#a78bfa}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pd 2s infinite}
+@keyframes pd{0%,100%{opacity:1}50%{opacity:.4;transform:scale(1.3)}}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;border:1px solid;transition:all .2s}
+.tb-p{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.tb-p:hover{box-shadow:0 3px 14px rgba(46,204,113,.28);transform:translateY(-1px)}
+.tb-g{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.tb-g:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.tb-ic{width:30px;height:30px;border-radius:7px;border:1px solid var(--bd);background:var(--gl);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);position:relative;transition:all .2s}
+.tb-ic:hover{background:var(--gl2);border-color:var(--bn);color:var(--neon)}
+.nn{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--r);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--bg)}
+.clk{font-family:var(--fm);font-size:9px;color:var(--t4)}
+.content{flex:1;overflow-y:auto;padding:16px 18px;scrollbar-width:thin;animation:ct-in .6s ease .1s both}
+@keyframes ct-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:13px;padding:14px 16px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:var(--bn);transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,0,0,.45)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(46,204,113,.25),transparent);opacity:0;transition:opacity .2s}
+.card:hover::before{opacity:1}
+.dept-card{border-color:rgba(34,211,238,.18)}
+.dept-card:hover{border-color:rgba(34,211,238,.4);box-shadow:0 6px 28px rgba(34,211,238,.1)}
+.dept-card::before{background:linear-gradient(90deg,transparent,rgba(34,211,238,.25),transparent)!important}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.card-ttl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--t4);font-family:var(--fm);display:flex;align-items:center;gap:5px}
+.stat{background:rgba(5,12,7,.97);border:1px solid var(--bd);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;animation:su .5s ease both;transition:all .22s}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--mc,var(--neon));opacity:.5}
+.stat:hover{border-color:var(--bn);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.4)}
+@keyframes su{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stat-v{font-family:var(--fm);font-size:20px;font-weight:700;color:var(--mc,var(--neon));line-height:1;margin-bottom:3px}
+.stat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+.stat-s{font-family:var(--fm);font-size:8px;color:var(--t4);margin-top:3px}
+.tabs{display:flex;gap:2px;background:var(--gl);border-radius:8px;padding:3px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:6px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--t3);border:none;background:none;font-family:var(--fn);transition:all .2s}
+.tab.act{background:rgba(34,211,238,.13);color:var(--dept-color);border:1px solid rgba(34,211,238,.22)}
+.tp{display:none}.tp.show{display:block;animation:tp-in .3s ease}
+@keyframes tp-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th{text-align:left;padding:7px 10px;font-family:var(--fm);font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--t4);border-bottom:1px solid var(--bd)}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--t2);vertical-align:middle}
+tr:hover td{background:var(--gl)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-family:var(--fm);font-size:8px;font-weight:700}
+.tg{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.22);color:var(--neon)}
+.tr{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);color:#ef4444}
+.ta{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.22);color:#f59e0b}
+.tb_{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);color:#60a5fa}
+.tp_{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.22);color:#ec4899}
+.tpu{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22);color:#a78bfa}
+.dept-tag{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.22);color:#22d3ee;font-family:var(--fm);font-size:8px;padding:2px 7px;border-radius:100px;font-weight:700;display:inline-flex;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:8px;font-family:var(--fn);font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid;transition:all .2s}
+.bp{background:linear-gradient(135deg,rgba(26,138,74,.88),rgba(46,204,113,.82));border-color:rgba(46,204,113,.3);color:#fff}
+.bp:hover{box-shadow:0 4px 16px rgba(46,204,113,.28);transform:translateY(-1px)}
+.bg_{background:var(--gl);border-color:var(--bd);color:var(--t2)}
+.bg_:hover{background:var(--gl2);border-color:var(--bn);color:var(--t1)}
+.btn-sm{padding:4px 10px;font-size:10.5px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--t3)}
+.fi{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;color:var(--t1);font-family:var(--fn);font-size:12px;outline:none;transition:all .2s}
+.fi:focus{border-color:rgba(34,211,238,.45);background:rgba(255,255,255,.06);box-shadow:0 0 0 3px rgba(34,211,238,.1)}
+.fi::placeholder{color:var(--t4)}
+textarea.fi{resize:vertical;min-height:72px}
+select.fi option{background:#060e08}
+.prog{height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.prog-f{height:100%;border-radius:2px;background:var(--neon);transition:width 1.2s ease}
+.al{display:flex;align-items:flex-start;gap:8px;padding:9px 12px;border-radius:9px;font-size:11.5px;line-height:1.5;border:1px solid;margin-bottom:10px}
+.al-r{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.2);color:rgba(239,68,68,.85);animation:al-f 2s ease infinite}
+.al-a{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.2);color:rgba(245,158,11,.85)}
+.al-g{background:rgba(46,204,113,.07);border-color:rgba(46,204,113,.2);color:rgba(46,204,113,.85)}
+.al-b{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);color:rgba(59,130,246,.85)}
+@keyframes al-f{0%,100%{border-color:rgba(239,68,68,.2)}50%{border-color:rgba(239,68,68,.5);box-shadow:0 0 8px rgba(239,68,68,.12)}}
+.api-box{background:rgba(59,130,246,.04);border:1px solid rgba(59,130,246,.14);border-radius:10px;padding:12px 14px}
+.api-ttl{font-family:var(--fm);font-size:7.5px;letter-spacing:2px;text-transform:uppercase;color:#60a5fa;margin-bottom:8px}
+.api-r{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10.5px}
+.api-r:last-child{border-bottom:none}
+.m-g{font-family:var(--fm);font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;min-width:36px;text-align:center;background:rgba(46,204,113,.1);color:var(--neon)}
+.m-p{background:rgba(59,130,246,.1);color:#60a5fa}
+.m-u{background:rgba(245,158,11,.1);color:#f59e0b}
+.api-ep{font-family:var(--fm);font-size:9.5px;color:var(--t2);flex:1}
+.api-d{font-size:9.5px;color:var(--t4)}
+.bar-wrap{display:flex;gap:4px;align-items:flex-end;height:64px}
+.bar-c{flex:1;border-radius:3px 3px 0 0;min-height:4px;background:linear-gradient(180deg,var(--dept-color),rgba(34,211,238,.4));transition:height 1.2s ease}
+.bar-lbl{font-size:7.5px;color:var(--t4);text-align:center;margin-top:3px}
+.srch{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.04);border:1.5px solid var(--bd);border-radius:8px;padding:6px 10px;flex:1;max-width:260px;transition:all .2s}
+.srch:focus-within{border-color:rgba(34,211,238,.35)}
+.srch input{background:none;border:none;outline:none;color:var(--t1);font-family:var(--fn);font-size:12px;flex:1}
+.srch input::placeholder{color:var(--t4)}
+.srch i{color:var(--t4);width:12px;height:12px}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:rgba(5,12,7,.99);border:1px solid var(--bd);border-radius:16px;width:100%;max-width:490px;padding:20px;animation:su .3s ease;max-height:90vh;overflow-y:auto}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.modal-ttl{font-size:15px;font-weight:700;color:var(--t1)}
+.mc{background:none;border:none;color:var(--t3);cursor:pointer;border-radius:6px;padding:4px;display:flex;align-items:center;transition:color .2s}
+.mc:hover{color:var(--t1);background:var(--gl)}
+.frm-g{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.live{display:inline-flex;align-items:center;gap:4px;font-family:var(--fm);font-size:8px;color:var(--dept-color)}
+.live-d{width:5px;height:5px;border-radius:50%;background:var(--dept-color);animation:pd 2s infinite}
+.chair-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.chair-card{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;transition:all .2s}
+.chair-card:hover{border-color:rgba(34,211,238,.3)}
+.chair-num{font-family:var(--fm);font-size:14px;font-weight:700;color:var(--dept-color);line-height:1;margin-bottom:4px}
+.chair-info{font-size:9.5px;color:var(--t3);line-height:1.5}
+.row-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mb12{margin-bottom:12px}.mb8{margin-bottom:8px}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-bottom:3px}
+.prog-row span{font-family:var(--fm)}
+/* ── Odontogram ── */
+.odonto-wrap{display:flex;flex-direction:column;gap:6px;align-items:center;padding:8px 0}
+.odonto-row{display:flex;gap:3px;justify-content:center}
+.tooth{width:26px;height:32px;border-radius:5px 5px 7px 7px;border:1.5px solid rgba(34,211,238,.2);background:rgba(34,211,238,.04);display:flex;align-items:center;justify-content:center;font-size:7px;font-family:var(--fm);color:var(--t4);cursor:pointer;transition:all .22s;position:relative;flex-direction:column;gap:1px}
+.tooth:hover{border-color:rgba(34,211,238,.6);background:rgba(34,211,238,.12);color:var(--dept-color);transform:translateY(-2px)}
+.tooth.filled{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.4);color:#f59e0b}
+.tooth.extracted{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#ef4444;text-decoration:line-through}
+.tooth.crown{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3);color:#a78bfa}
+.tooth.healthy{background:rgba(46,204,113,.08);border-color:rgba(46,204,113,.25);color:var(--neon)}
+.tooth-pulse{animation:tooth-p 2.5s ease-in-out infinite}
+@keyframes tooth-p{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,0)}50%{box-shadow:0 0 0 4px rgba(34,211,238,.12)}}
+.tooth-num{font-size:6px;color:var(--t4);margin-top:1px}
+/* ── Pain scale ── */
+.pain-row{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+.pain-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--bd);background:var(--gl);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fm);color:var(--t3);transition:all .2s}
+.pain-btn:hover,.pain-btn.sel{border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.12);color:var(--dept-color)}
+.pain-btn.p-high.sel{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.12);color:#ef4444}
+/* ── Audit log ── */
+#auditLog div{font-size:9.5px;color:rgba(240,253,244,.22);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-family:var(--fm)}
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:800px){.sb{width:180px}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.app{flex-direction:column}.sb{display:none}.content{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav class="sb" aria-label="Navigation">
+  <div class="sb-brand">
+    <div class="sb-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M8 10v4M2 8h4M10 8h4" stroke="#2ecc71" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+    <div><div class="sb-nm">UniHealth 360</div><div class="sb-tag">Healthcare OS</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sbu-av">DR</div>
+    <div><div class="sbu-nm">Dr. Kamau</div><div class="sbu-rl">Dentist · Session Active</div></div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sect">Clinical</div>
+    <a class="sb-lnk" href="unihealth-emr.html"><i data-feather="file-text"></i> EMR / EHR</a>
+    <a class="sb-lnk" href="unihealth-maternity.html"><i data-feather="heart"></i> Maternity &amp; NICU</a>
+    <a class="sb-lnk active" href="unihealth-dental.html"><i data-feather="smile"></i> Dental</a>
+    <a class="sb-lnk" href="unihealth-cancer.html"><i data-feather="shield"></i> Cancer Center</a>
+    <a class="sb-lnk" href="unihealth-gynecology.html"><i data-feather="users"></i> Gynecology</a>
+    <a class="sb-lnk" href="unihealth-lab.html"><i data-feather="droplet"></i> Laboratory</a>
+    <a class="sb-lnk" href="unihealth-radiology.html"><i data-feather="aperture"></i> Radiology</a>
+    <a class="sb-lnk" href="unihealth-pharmacy.html"><i data-feather="package"></i> Pharmacy</a>
+    <a class="sb-lnk" href="unihealth-icu.html"><i data-feather="zap"></i> ICU &amp; Emergency</a>
+    <a class="sb-lnk" href="unihealth-surgery.html"><i data-feather="scissors"></i> Surgery</a>
+    <a class="sb-lnk" href="unihealth-rehab.html"><i data-feather="activity"></i> Rehabilitation</a>
+    <a class="sb-lnk" href="unihealth-nutrition.html"><i data-feather="coffee"></i> Nutrition</a>
+    <div class="sb-sect">Operations</div>
+    <a class="sb-lnk" href="unihealth-billing.html"><i data-feather="dollar-sign"></i> Billing &amp; Finance</a>
+    <a class="sb-lnk" href="unihealth-insurance.html"><i data-feather="shield"></i> Insurance</a>
+    <a class="sb-lnk" href="unihealth-inventory.html"><i data-feather="box"></i> Inventory</a>
+    <a class="sb-lnk" href="unihealth-fleet.html"><i data-feather="truck"></i> Ambulance &amp; Fleet</a>
+    <a class="sb-lnk" href="unihealth-mortuary.html"><i data-feather="moon"></i> Mortuary</a>
+    <a class="sb-lnk" href="unihealth-teleconsult.html"><i data-feather="video"></i> Telemedicine</a>
+    <div class="sb-sect">Management</div>
+    <a class="sb-lnk" href="unihealth-admin.html"><i data-feather="settings"></i> Administration</a>
+    <a class="sb-lnk" href="unihealth-hr.html"><i data-feather="users"></i> HR &amp; Payroll</a>
+    <a class="sb-lnk" href="unihealth-analytics.html"><i data-feather="bar-chart-2"></i> AI Analytics</a>
+    <a class="sb-lnk" href="unihealth-research.html"><i data-feather="search"></i> Research</a>
+    <a class="sb-lnk" href="unihealth-patient.html"><i data-feather="user"></i> Patient Portal</a>
+  </div>
+  <div class="sb-ft">
+    <a href="unihealth360-auth-portal-v2.html" class="sb-back"><i data-feather="log-out" style="width:11px;height:11px"></i> Sign Out</a>
+    <div class="sb-ver">UniHealth 360 v4.0 · FHIR R5 · HIPAA</div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-page"><span style="font-size:16px">🦷</span> Dental Department</div>
+    <div class="tb-badge b-b"><span class="pdot"></span> Dental Unit Active</div>
+    <button class="tb-btn tb-p" data-open="newAppointmentModal" data-audit="Opened New Appointment modal"><i data-feather="calendar" style="width:11px;height:11px"></i> New Appointment</button>
+    <div class="tb-btn tb-g" style="cursor:default">
+      <span style="font-family:var(--fm);font-size:9px;color:var(--t4)">Patients Today:</span>
+      <span style="font-family:var(--fm);font-size:11px;color:var(--dept-color);font-weight:700">47</span>
+    </div>
+    <div class="tb-ic" id="notifBtn" title="Notifications" role="button" tabindex="0"><i data-feather="bell" style="width:13px;height:13px"></i><div class="nn">5</div></div>
+    <div class="clk" id="clock"></div>
+  </div>
+
+  <div class="content">
+    <!-- STAT CARDS -->
+    <div class="g4 mb12">
+      <div class="stat" style="--mc:#22d3ee"><div class="stat-v" data-val="47">0</div><div class="stat-l">Patients Today</div><div class="stat-s">8 emergency slots</div></div>
+      <div class="stat" style="--mc:var(--neon)"><div class="stat-v" data-val="6">0</div><div class="stat-l">Chairs Available</div><div class="stat-s">12 total dental chairs</div></div>
+      <div class="stat" style="--mc:var(--am)"><div class="stat-v" data-val="3">0</div><div class="stat-l">Pending X-Rays</div><div class="stat-s">OPG · Periapical · CBCT</div></div>
+      <div class="stat" style="--mc:var(--r)"><div class="stat-v" data-val="2">0</div><div class="stat-l">Emergency Cases</div><div class="stat-s">Acute toothache alerts</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab act" onclick="showTab(this,'dental-appointments')">🗓️ Appointments</button>
+      <button class="tab" onclick="showTab(this,'dental-patients')">🦷 Patients</button>
+      <button class="tab" onclick="showTab(this,'dental-odonto')">🗺️ Odontogram</button>
+      <button class="tab" onclick="showTab(this,'dental-procedures')">⚙️ Procedures</button>
+      <button class="tab" onclick="showTab(this,'dental-xray')">📸 X-Ray &amp; AI</button>
+      <button class="tab" onclick="showTab(this,'dental-perio')">📊 Periodontal</button>
+      <button class="tab" onclick="showTab(this,'dental-sterilization')">🛡️ Sterilization</button>
+      <button class="tab" onclick="showTab(this,'dental-api')">🔌 API Ref</button>
+    </div>
+
+    <!-- ═══ TAB: APPOINTMENTS ═══ -->
+    <div class="tp show" id="tp-dental-appointments">
+      <div class="al al-r"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i> <strong>Emergency — Chair 5:</strong> Tom Kariuki presenting with acute maxillary abscess. Physician alerted. Priority override applied.</div>
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd">
+            <div class="card-ttl"><i data-feather="calendar"></i> Appointment Queue</div>
+            <div class="live"><div class="live-d"></div> Live</div>
+          </div>
+          <div class="srch mb8" style="max-width:100%"><i data-feather="search"></i><input type="text" placeholder="Search appointments…" data-search="#apptTable"></div>
+          <div style="overflow-x:auto">
+            <table id="apptTable">
+              <thead><tr><th>Patient</th><th>Time</th><th>Dentist</th><th>Type</th><th>Chair</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Mary Wanjiku</td><td style="font-family:var(--fm);color:var(--dept-color)">08:00</td><td>Dr. Kamau</td><td>Routine Cleaning</td><td>C1</td><td><span class="tag tg">In Chair</span></td></tr>
+                <tr><td>James Ochieng</td><td style="font-family:var(--fm);color:var(--dept-color)">08:30</td><td>Dr. Atieno</td><td>Root Canal</td><td>C2</td><td><span class="tag ta">Waiting</span></td></tr>
+                <tr><td>Faith Njoroge</td><td style="font-family:var(--fm);color:var(--dept-color)">09:00</td><td>Dr. Kamau</td><td>Extraction</td><td>C3</td><td><span class="tag tg">Scheduled</span></td></tr>
+                <tr><td>Peter Mwangi</td><td style="font-family:var(--fm);color:var(--dept-color)">09:30</td><td>Dr. Atieno</td><td>Crown Fitting</td><td>C4</td><td><span class="tag tb_">Confirmed</span></td></tr>
+                <tr><td>Grace Akinyi</td><td style="font-family:var(--fm);color:var(--dept-color)">10:00</td><td>Dr. Mutua</td><td>Fillings ×2</td><td>C1</td><td><span class="tag tg">Scheduled</span></td></tr>
+                <tr><td>Tom Kariuki</td><td style="font-family:var(--fm);color:var(--dept-color)">10:30</td><td>Dr. Kamau</td><td>OPG X-Ray</td><td>C5</td><td><span class="tag tr">Emergency</span></td></tr>
+                <tr><td>Ann Chebet</td><td style="font-family:var(--fm);color:var(--dept-color)">11:00</td><td>Dr. Mutua</td><td>Orthodontics Check</td><td>C3</td><td><span class="tag tb_">Confirmed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="grid"></i> Chair Status — Live</div><div class="live"><div class="live-d"></div> Real-time</div></div>
+          <div class="chair-grid">
+            <div class="chair-card" style="border-color:rgba(46,204,113,.3)"><div class="chair-num">C1</div><div class="tag tg" style="margin-bottom:5px">Occupied</div><div class="chair-info">Dr. Kamau<br>Mary Wanjiku<br>Since 08:00</div></div>
+            <div class="chair-card" style="border-color:rgba(245,158,11,.3)"><div class="chair-num">C2</div><div class="tag ta" style="margin-bottom:5px">Waiting</div><div class="chair-info">Dr. Atieno<br>James Ochieng<br>Root Canal</div></div>
+            <div class="chair-card" style="border-color:rgba(46,204,113,.3)"><div class="chair-num">C3</div><div class="tag tg" style="margin-bottom:5px">Occupied</div><div class="chair-info">Dr. Kamau<br>Faith Njoroge<br>Extraction</div></div>
+            <div class="chair-card" style="border-color:rgba(34,211,238,.3)"><div class="chair-num">C4</div><div class="dept-tag" style="margin-bottom:5px">Available</div><div class="chair-info" style="color:var(--t4)">— Open —</div></div>
+            <div class="chair-card" style="border-color:rgba(239,68,68,.4)"><div class="chair-num">C5</div><div class="tag tr" style="margin-bottom:5px">Emergency</div><div class="chair-info">Tom Kariuki<br>Abscess</div></div>
+            <div class="chair-card" style="border-color:rgba(34,211,238,.3)"><div class="chair-num">C6</div><div class="dept-tag" style="margin-bottom:5px">Available</div><div class="chair-info" style="color:var(--t4)">— Open —</div></div>
+          </div>
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-family:var(--fm);font-size:8px;color:var(--t4)">
+            <span>Total: 12</span><span style="color:var(--neon)">Available: 6</span><span style="color:var(--am)">Occupied: 4</span><span style="color:var(--r)">Emergency: 1</span>
+          </div>
+        </div>
+      </div>
+      <!-- Audit Log -->
+      <div class="card" style="margin-top:12px">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="lock"></i> Live Audit Trail</div><span class="dept-tag">APPEND-ONLY</span></div>
+        <div id="auditLog" style="max-height:160px;overflow-y:auto">
+          <div>[09:52:14] DENTAL APPOINTMENT_OPENED patient=Otieno chair=C1 user=Dr.Kamau</div>
+          <div>[09:48:02] DENTAL XRAY_ORDERED patient=DEN-006 tooth=maxilla user=Dr.Kamau</div>
+          <div>[09:44:30] DENTAL EMERGENCY_FLAG patient=DEN-006 reason=Abscess user=System</div>
+          <div>[09:38:11] DENTAL STERILIZATION_CYCLE chair=C3 status=COMPLETE user=Nurse.Atieno</div>
+          <div>[09:00:11] AUTH LOGIN_SUCCESS user=Dr.Kamau role=Dentist dept=Dental</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PATIENTS ═══ -->
+    <div class="tp" id="tp-dental-patients">
+      <div class="card">
+        <div class="row-hd">
+          <div class="card-ttl"><i data-feather="users"></i> Dental Patient Registry</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="srch"><i data-feather="search"></i><input type="text" placeholder="Search patients…" data-search="#patientsTable"></div>
+            <button class="btn bp btn-sm" data-open="addDentalPatientModal" data-audit="Opened Add Dental Patient modal"><i data-feather="user-plus" style="width:11px;height:11px"></i> Add Patient</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table id="patientsTable">
+            <thead><tr><th>Patient ID</th><th>Name</th><th>DOB</th><th>Last Visit</th><th>Dentist</th><th>Condition</th><th>Insurance</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td><span class="dept-tag">DEN-001</span></td><td>Mary Wanjiku</td><td style="font-family:var(--fm);font-size:10px">14 Mar 1988</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td>Dr. Kamau</td><td>Gingivitis</td><td><span class="tag tb_">CIC</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm" data-audit="Viewed patient DEN-001">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+              <tr><td><span class="dept-tag">DEN-002</span></td><td>James Ochieng</td><td style="font-family:var(--fm);font-size:10px">07 Jul 1975</td><td style="font-family:var(--fm);font-size:10px">05 Apr 2026</td><td>Dr. Atieno</td><td>Root Canal — #46</td><td><span class="tag tg">Old Mutual</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+              <tr><td><span class="dept-tag">DEN-003</span></td><td>Faith Njoroge</td><td style="font-family:var(--fm);font-size:10px">22 Nov 1995</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td>Dr. Kamau</td><td>Impacted Wisdom #28</td><td><span class="tag tr">None</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+              <tr><td><span class="dept-tag">DEN-004</span></td><td>Peter Mwangi</td><td style="font-family:var(--fm);font-size:10px">03 Feb 1980</td><td style="font-family:var(--fm);font-size:10px">28 Mar 2026</td><td>Dr. Atieno</td><td>Crown — Molar #36</td><td><span class="tag tg">NHIF</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+              <tr><td><span class="dept-tag">DEN-005</span></td><td>Grace Akinyi</td><td style="font-family:var(--fm);font-size:10px">18 Aug 2002</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td>Dr. Mutua</td><td>Dental Caries ×2</td><td><span class="tag tb_">CIC</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+              <tr><td><span class="dept-tag">DEN-006</span></td><td>Tom Kariuki</td><td style="font-family:var(--fm);font-size:10px">30 Oct 1969</td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td><td>Dr. Kamau</td><td>Maxillary Abscess</td><td><span class="tag tg">Old Mutual</span></td><td style="display:flex;gap:4px"><button class="btn bg_ btn-sm">View</button><button class="btn bg_ btn-sm">Notes</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: ODONTOGRAM ═══ -->
+    <div class="tp" id="tp-dental-odonto">
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd">
+            <div class="card-ttl"><i data-feather="grid"></i> Odontogram — FDI Notation</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span class="tag tg">Healthy</span>
+              <span class="tag ta">Filled</span>
+              <span class="tag tr">Extracted</span>
+              <span class="tpu tag">Crown</span>
+            </div>
+          </div>
+          <div class="odonto-wrap">
+            <div style="font-size:8px;color:var(--t4);font-family:var(--fm);align-self:flex-start">UPPER JAW</div>
+            <div class="odonto-row">
+              <div class="tooth crown tooth-pulse" onclick="selectTooth(this,'18')" tabindex="0" title="Tooth 18">🦷<span class="tooth-num">18</span></div>
+              <div class="tooth filled" onclick="selectTooth(this,'17')" tabindex="0" title="Tooth 17">🦷<span class="tooth-num">17</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'16')" tabindex="0" title="Tooth 16">🦷<span class="tooth-num">16</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'15')" tabindex="0" title="Tooth 15">🦷<span class="tooth-num">15</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'14')" tabindex="0" title="Tooth 14">🦷<span class="tooth-num">14</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'13')" tabindex="0" title="Tooth 13">🦷<span class="tooth-num">13</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'12')" tabindex="0" title="Tooth 12">🦷<span class="tooth-num">12</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'11')" tabindex="0" title="Tooth 11">🦷<span class="tooth-num">11</span></div>
+              <div style="width:1px;background:rgba(255,255,255,.08);margin:0 2px"></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'21')" tabindex="0" title="Tooth 21">🦷<span class="tooth-num">21</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'22')" tabindex="0" title="Tooth 22">🦷<span class="tooth-num">22</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'23')" tabindex="0" title="Tooth 23">🦷<span class="tooth-num">23</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'24')" tabindex="0" title="Tooth 24">🦷<span class="tooth-num">24</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'25')" tabindex="0" title="Tooth 25">🦷<span class="tooth-num">25</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'26')" tabindex="0" title="Tooth 26">🦷<span class="tooth-num">26</span></div>
+              <div class="tooth extracted" onclick="selectTooth(this,'27')" tabindex="0" title="Tooth 27">✕<span class="tooth-num">27</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'28')" tabindex="0" title="Tooth 28">🦷<span class="tooth-num">28</span></div>
+            </div>
+            <div style="height:10px;border-left:1px dashed rgba(255,255,255,.06);margin-left:50%"></div>
+            <div class="odonto-row">
+              <div class="tooth healthy" onclick="selectTooth(this,'48')" tabindex="0" title="Tooth 48">🦷<span class="tooth-num">48</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'47')" tabindex="0" title="Tooth 47">🦷<span class="tooth-num">47</span></div>
+              <div class="tooth filled" onclick="selectTooth(this,'46')" tabindex="0" title="Tooth 46">🦷<span class="tooth-num">46</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'45')" tabindex="0" title="Tooth 45">🦷<span class="tooth-num">45</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'44')" tabindex="0" title="Tooth 44">🦷<span class="tooth-num">44</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'43')" tabindex="0" title="Tooth 43">🦷<span class="tooth-num">43</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'42')" tabindex="0" title="Tooth 42">🦷<span class="tooth-num">42</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'41')" tabindex="0" title="Tooth 41">🦷<span class="tooth-num">41</span></div>
+              <div style="width:1px;background:rgba(255,255,255,.08);margin:0 2px"></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'31')" tabindex="0" title="Tooth 31">🦷<span class="tooth-num">31</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'32')" tabindex="0" title="Tooth 32">🦷<span class="tooth-num">32</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'33')" tabindex="0" title="Tooth 33">🦷<span class="tooth-num">33</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'34')" tabindex="0" title="Tooth 34">🦷<span class="tooth-num">34</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'35')" tabindex="0" title="Tooth 35">🦷<span class="tooth-num">35</span></div>
+              <div class="tooth filled" onclick="selectTooth(this,'36')" tabindex="0" title="Tooth 36">🦷<span class="tooth-num">36</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'37')" tabindex="0" title="Tooth 37">🦷<span class="tooth-num">37</span></div>
+              <div class="tooth healthy" onclick="selectTooth(this,'38')" tabindex="0" title="Tooth 38">🦷<span class="tooth-num">38</span></div>
+            </div>
+            <div style="font-size:8px;color:var(--t4);font-family:var(--fm);align-self:flex-start;margin-top:4px">LOWER JAW</div>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="info"></i> Tooth Detail Panel</div></div>
+          <div id="toothDetail" style="font-size:12px;color:var(--t3);padding:16px 0;text-align:center">
+            <i data-feather="mouse-pointer" style="width:22px;height:22px;color:var(--t4);display:block;margin:0 auto 8px"></i>
+            Click any tooth to inspect
+          </div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)">
+            <div class="card-ttl" style="margin-bottom:10px"><i data-feather="thermometer"></i> Pain Score</div>
+            <div class="pain-row">
+              <span style="font-size:8px;color:var(--t4);font-family:var(--fm)">0</span>
+              <div class="pain-btn" onclick="setPain(this,0)">0</div><div class="pain-btn" onclick="setPain(this,1)">1</div><div class="pain-btn" onclick="setPain(this,2)">2</div><div class="pain-btn" onclick="setPain(this,3)">3</div><div class="pain-btn" onclick="setPain(this,4)">4</div>
+              <div class="pain-btn p-high" onclick="setPain(this,5)">5</div><div class="pain-btn p-high" onclick="setPain(this,6)">6</div><div class="pain-btn p-high" onclick="setPain(this,7)">7</div><div class="pain-btn p-high" onclick="setPain(this,8)">8</div><div class="pain-btn p-high" onclick="setPain(this,9)">9</div><div class="pain-btn p-high" onclick="setPain(this,10)">10</div>
+              <span style="font-size:8px;color:var(--t4);font-family:var(--fm)">10</span>
+            </div>
+            <div id="painLabel" style="font-size:10px;color:var(--t4);margin-top:6px;font-family:var(--fm)">No score selected</div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
+            <div class="card-ttl" style="margin-bottom:8px"><i data-feather="edit-3"></i> Quick Note</div>
+            <textarea class="fi" placeholder="Clinical finding for selected tooth…" style="min-height:56px"></textarea>
+            <button class="btn bp btn-sm" style="margin-top:8px;width:100%" onclick="toast('Tooth note saved ✓ — EMR updated')"><i data-feather="save" style="width:10px;height:10px"></i> Save Note</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PROCEDURES ═══ -->
+    <div class="tp" id="tp-dental-procedures">
+      <div class="g2 mb12">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="activity"></i> Procedure Performance</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div class="prog-row"><span>Routine Cleaning</span><span style="color:var(--neon)">92%</span></div><div class="prog"><div class="prog-f" data-w="92%" style="background:var(--neon)"></div></div></div>
+            <div><div class="prog-row"><span>Fillings</span><span style="color:#22d3ee">78%</span></div><div class="prog"><div class="prog-f" data-w="78%" style="background:#22d3ee"></div></div></div>
+            <div><div class="prog-row"><span>Root Canals</span><span style="color:var(--am)">65%</span></div><div class="prog"><div class="prog-f" data-w="65%" style="background:var(--am)"></div></div></div>
+            <div><div class="prog-row"><span>Extractions</span><span style="color:var(--r)">43%</span></div><div class="prog"><div class="prog-f" data-w="43%" style="background:var(--r)"></div></div></div>
+            <div><div class="prog-row"><span>Orthodontics</span><span style="color:var(--pu)">38%</span></div><div class="prog"><div class="prog-f" data-w="38%" style="background:var(--pu)"></div></div></div>
+            <div><div class="prog-row"><span>Crowns &amp; Bridges</span><span style="color:var(--tl)">55%</span></div><div class="prog"><div class="prog-f" data-w="55%" style="background:var(--tl)"></div></div></div>
+            <div><div class="prog-row"><span>Implants</span><span style="color:#22d3ee">22%</span></div><div class="prog"><div class="prog-f" data-w="22%" style="background:#22d3ee;opacity:.7"></div></div></div>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="bar-chart-2"></i> Procedures This Week</div></div>
+          <div class="bar-wrap">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="40px" style="height:4px;width:100%"></div><div class="bar-lbl">Mon</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="55px" style="height:4px;width:100%"></div><div class="bar-lbl">Tue</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="35px" style="height:4px;width:100%"></div><div class="bar-lbl">Wed</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="60px" style="height:4px;width:100%"></div><div class="bar-lbl">Thu</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="52px" style="height:4px;width:100%"></div><div class="bar-lbl">Fri</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="28px" style="height:4px;width:100%"></div><div class="bar-lbl">Sat</div></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div class="bar-c" data-h="18px" style="height:4px;width:100%"></div><div class="bar-lbl">Sun</div></div>
+          </div>
+          <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;font-size:9px;color:var(--t4);font-family:var(--fm)">
+            <span>Weekly total: <span style="color:var(--dept-color)">288</span></span><span>Avg/day: <span style="color:var(--neon)">41</span></span><span>↑ vs last week: <span style="color:var(--neon)">+12%</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="dollar-sign"></i> Billing Summary — May 2026</div></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Procedure</th><th>Count</th><th>Avg Cost (KES)</th><th>Revenue (KES)</th><th>Insurance Cover</th></tr></thead>
+            <tbody>
+              <tr><td>Routine Cleaning</td><td style="font-family:var(--fm);color:var(--dept-color)">124</td><td style="font-family:var(--fm)">2,500</td><td style="font-family:var(--fm);color:var(--neon)">310,000</td><td><span class="tag tg">78%</span></td></tr>
+              <tr><td>Fillings</td><td style="font-family:var(--fm);color:var(--dept-color)">87</td><td style="font-family:var(--fm)">4,200</td><td style="font-family:var(--fm);color:var(--neon)">365,400</td><td><span class="tag tg">65%</span></td></tr>
+              <tr><td>Root Canal</td><td style="font-family:var(--fm);color:var(--dept-color)">34</td><td style="font-family:var(--fm)">18,500</td><td style="font-family:var(--fm);color:var(--neon)">629,000</td><td><span class="tag tg">82%</span></td></tr>
+              <tr><td>Extraction</td><td style="font-family:var(--fm);color:var(--dept-color)">56</td><td style="font-family:var(--fm)">5,800</td><td style="font-family:var(--fm);color:var(--neon)">324,800</td><td><span class="tag tg">70%</span></td></tr>
+              <tr><td>Crown / Bridge</td><td style="font-family:var(--fm);color:var(--dept-color)">18</td><td style="font-family:var(--fm)">45,000</td><td style="font-family:var(--fm);color:var(--neon)">810,000</td><td><span class="tag ta">55%</span></td></tr>
+              <tr><td>Orthodontics</td><td style="font-family:var(--fm);color:var(--dept-color)">12</td><td style="font-family:var(--fm)">85,000</td><td style="font-family:var(--fm);color:var(--neon)">1,020,000</td><td><span class="tag ta">40%</span></td></tr>
+              <tr><td>Implants</td><td style="font-family:var(--fm);color:var(--dept-color)">5</td><td style="font-family:var(--fm)">180,000</td><td style="font-family:var(--fm);color:var(--neon)">900,000</td><td><span class="tag tr">20%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:16px;font-family:var(--fm);font-size:9px;color:var(--t4)">
+          <span>Total Revenue: <span style="color:var(--neon);font-size:11px">KES 4,359,200</span></span>
+          <span>Insurer: <span style="color:var(--dept-color);font-size:11px">CIC · Old Mutual · NHIF · SHA</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: X-RAY & AI ═══ -->
+    <div class="tp" id="tp-dental-xray">
+      <div class="al al-a"><i data-feather="alert-triangle" style="width:13px;height:13px;flex-shrink:0"></i> <strong>3 X-Ray results pending radiologist review</strong> — OPG scans require approval before treatment can proceed</div>
+      <div class="g2">
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="camera"></i> Imaging Queue</div><div class="live"><div class="live-d"></div> Live</div></div>
+          <table>
+            <thead><tr><th>Patient</th><th>Type</th><th>Date</th><th>Status</th><th>Radiologist</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>Tom Kariuki</td><td><span class="dept-tag">OPG</span></td><td style="font-family:var(--fm);font-size:10px">12 May</td><td><span class="tag ta">Pending Read</span></td><td>Dr. Otieno</td><td><button class="btn bg_ btn-sm" data-audit="Opened OPG review for Kariuki">Review</button></td></tr>
+              <tr><td>Mary Wanjiku</td><td><span class="dept-tag">Periapical</span></td><td style="font-family:var(--fm);font-size:10px">12 May</td><td><span class="tag tg">Reviewed</span></td><td>Dr. Otieno</td><td><button class="btn bg_ btn-sm">View</button></td></tr>
+              <tr><td>James Ochieng</td><td><span class="dept-tag">CBCT</span></td><td style="font-family:var(--fm);font-size:10px">10 May</td><td><span class="tag tb_">In Progress</span></td><td>Dr. Otieno</td><td><button class="btn bg_ btn-sm">View</button></td></tr>
+              <tr><td>Faith Njoroge</td><td><span class="dept-tag">Bitewing</span></td><td style="font-family:var(--fm);font-size:10px">11 May</td><td><span class="tag tg">Reviewed</span></td><td>Dr. Otieno</td><td><button class="btn bg_ btn-sm">View</button></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px">
+            <button class="btn bp btn-sm" onclick="toast('X-Ray upload interface ready — select DICOM or JPEG file')"><i data-feather="upload" style="width:11px;height:11px"></i> Upload X-Ray</button>
+          </div>
+        </div>
+        <div class="card dept-card">
+          <div class="card-hd"><div class="card-ttl"><i data-feather="cpu"></i> AI Dental Diagnostic Assist</div><div class="tb-badge b-b"><span class="pdot"></span> ACTIVE</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div class="prog-row"><span>Caries Detection</span><span style="color:var(--dept-color)">94%</span></div><div class="prog"><div class="prog-f" data-w="94%" style="background:var(--dept-color)"></div></div></div>
+            <div><div class="prog-row"><span>Periodontal Analysis</span><span style="color:var(--neon)">87%</span></div><div class="prog"><div class="prog-f" data-w="87%" style="background:var(--neon)"></div></div></div>
+            <div><div class="prog-row"><span>Root Canal Assessment</span><span style="color:var(--dept-color)">91%</span></div><div class="prog"><div class="prog-f" data-w="91%" style="background:var(--dept-color)"></div></div></div>
+            <div><div class="prog-row"><span>Bone Density Analysis</span><span style="color:var(--tl)">82%</span></div><div class="prog"><div class="prog-f" data-w="82%" style="background:var(--tl)"></div></div></div>
+            <div><div class="prog-row"><span>Implant Planning</span><span style="color:var(--pu)">78%</span></div><div class="prog"><div class="prog-f" data-w="78%" style="background:var(--pu)"></div></div></div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:rgba(34,211,238,.04);border:1px solid rgba(34,211,238,.12);border-radius:8px;font-family:var(--fm);font-size:8px;color:var(--t4);line-height:1.6">AI analysis runs on uploaded DICOM/JPEG dental X-rays. Confidence scores updated after each scan review. <span style="color:var(--am)">Clinician review required before any clinical action.</span></div>
+          <div class="al al-g" style="margin-top:10px;margin-bottom:0"><i data-feather="check-circle" style="width:12px;height:12px;flex-shrink:0"></i> AI flagged calculus buildup in 2 patients — Dentist review recommended before next session</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: PERIODONTAL ═══ -->
+    <div class="tp" id="tp-dental-perio">
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="bar-chart-2"></i> Periodontal Chart — BPE / Full Mouth</div><button class="btn bp btn-sm" onclick="toast('New periodontal chart opened ✓')"><i data-feather="plus" style="width:10px;height:10px"></i> Record Chart</button></div>
+        <table>
+          <thead><tr><th>Patient</th><th>Tooth</th><th>Probing Depth</th><th>BOP</th><th>Recession</th><th>Mobility</th><th>Classification</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr><td>James Ochieng</td><td style="font-family:var(--fm)">#16</td><td style="font-family:var(--fm)">4/5/4 mm</td><td><span class="tag tr">Yes</span></td><td style="font-family:var(--fm)">1 mm</td><td>Grade I</td><td><span class="tag ta">Stage II</span></td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td></tr>
+            <tr><td>Mary Wanjiku</td><td style="font-family:var(--fm)">#36</td><td style="font-family:var(--fm)">3/3/3 mm</td><td><span class="tag tg">No</span></td><td style="font-family:var(--fm)">0 mm</td><td>None</td><td><span class="tag tg">Stage I</span></td><td style="font-family:var(--fm);font-size:10px">12 May 2026</td></tr>
+            <tr><td>Tom Kariuki</td><td style="font-family:var(--fm)">#26</td><td style="font-family:var(--fm)">6/7/6 mm</td><td><span class="tag tr">Yes</span></td><td style="font-family:var(--fm)">2 mm</td><td>Grade II</td><td><span class="tag tr">Stage III</span></td><td style="font-family:var(--fm);font-size:10px">11 May 2026</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: STERILIZATION ═══ -->
+    <div class="tp" id="tp-dental-sterilization">
+      <div class="al al-a"><i data-feather="alert-circle" style="width:13px;height:13px;flex-shrink:0"></i> <strong>Chair 3 autoclave cycle in progress</strong> — estimated completion 10 minutes. Do not assign patients until cleared.</div>
+      <div class="card dept-card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="shield"></i> Infection Control &amp; Sterilization Log</div><button class="btn bp btn-sm" onclick="toast('Sterilization cycle logged ✓ — Infection control notified')" data-audit="Sterilization cycle logged"><i data-feather="plus" style="width:10px;height:10px"></i> Log Cycle</button></div>
+        <table>
+          <thead><tr><th>Cycle ID</th><th>Chair / Kit</th><th>Method</th><th>Temp (°C)</th><th>Duration</th><th>Staff</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:var(--fm)">STER-0091</td><td>Chair 3 Handpieces</td><td>Autoclave</td><td style="font-family:var(--fm)">134°</td><td style="font-family:var(--fm)">18 min</td><td>Nurse Atieno</td><td><span class="tag ta">In Progress</span></td></tr>
+            <tr><td style="font-family:var(--fm)">STER-0090</td><td>Chair 1 Instruments</td><td>Autoclave</td><td style="font-family:var(--fm)">134°</td><td style="font-family:var(--fm)">18 min</td><td>Nurse Atieno</td><td><span class="tag tg">Complete</span></td></tr>
+            <tr><td style="font-family:var(--fm)">STER-0089</td><td>Endo Kit Set B</td><td>Chemical</td><td style="font-family:var(--fm)">N/A</td><td style="font-family:var(--fm)">60 min</td><td>Nurse Atieno</td><td><span class="tag tg">Complete</span></td></tr>
+            <tr><td style="font-family:var(--fm)">STER-0088</td><td>Extraction Kit</td><td>Autoclave</td><td style="font-family:var(--fm)">134°</td><td style="font-family:var(--fm)">18 min</td><td>Nurse Njeri</td><td><span class="tag tg">Complete</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: API REF ═══ -->
+    <div class="tp" id="tp-dental-api">
+      <div class="card">
+        <div class="card-hd"><div class="card-ttl"><i data-feather="code"></i> Dental Department API Reference</div><div class="dept-tag">REST · FHIR R5</div></div>
+        <div class="api-box">
+          <div class="api-ttl">Dental Department Endpoints</div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/appointments?date=</span><span class="api-d">List appointments by date</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/dental/appointments</span><span class="api-d">Book new appointment</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/patients/{id}</span><span class="api-d">Get dental patient record</span></div>
+          <div class="api-r"><span class="m-u">PUT</span><span class="api-ep">/api/dental/patients/{id}</span><span class="api-d">Update dental record</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/odontogram/{patientId}</span><span class="api-d">Fetch patient odontogram</span></div>
+          <div class="api-r"><span class="m-u">PUT</span><span class="api-ep">/api/dental/odontogram/{patientId}/tooth/{num}</span><span class="api-d">Update tooth status</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/dental/xray/upload</span><span class="api-d">Upload X-ray (DICOM/JPEG)</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/xray/{id}/ai-analysis</span><span class="api-d">Get AI diagnostic result</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/chairs/status</span><span class="api-d">Real-time chair occupancy</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/dental/procedures/log</span><span class="api-d">Log completed procedure</span></div>
+          <div class="api-r"><span class="m-p">POST</span><span class="api-ep">/api/dental/sterilization</span><span class="api-d">Log sterilization cycle</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/periodontal/{patientId}</span><span class="api-d">Periodontal chart data</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/billing/summary</span><span class="api-d">Billing &amp; insurance summary</span></div>
+          <div class="api-r"><span class="m-g">GET</span><span class="api-ep">/api/dental/audit?from=&amp;to=</span><span class="api-d">Dental audit trail</span></div>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,.02);border:1px solid var(--bd);border-radius:9px">
+          <div style="font-family:var(--fm);font-size:7.5px;color:var(--t4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">Auth Headers Required</div>
+          <div style="font-family:var(--fm);font-size:10px;color:var(--t3)">Authorization: Bearer &lt;jwt_token&gt;<br>X-UniHealth-Role: dentist | admin<br>X-UniHealth-Dept: dental<br>Content-Type: application/json</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ MODAL: NEW APPOINTMENT ═══ -->
+<div class="modal-ov" id="newAppointmentModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🦷 Book Dental Appointment</div><button class="mc" data-close="newAppointmentModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Patient Name *</label><input class="fi" type="text" placeholder="Full name" required></div>
+      <div class="fg"><label class="fl">Phone *</label><input class="fi" type="tel" placeholder="+254 7XX XXX XXX" required></div>
+      <div class="fg"><label class="fl">Date *</label><input class="fi" type="date" required></div>
+      <div class="fg"><label class="fl">Time *</label><input class="fi" type="time" required></div>
+      <div class="fg"><label class="fl">Dentist</label><select class="fi"><option>Dr. Kamau</option><option>Dr. Atieno</option><option>Dr. Mutua</option></select></div>
+      <div class="fg"><label class="fl">Procedure Type</label><select class="fi"><option>Routine Cleaning</option><option>Filling</option><option>Root Canal</option><option>Extraction</option><option>Crown / Bridge</option><option>Orthodontics</option><option>Implant</option><option>Emergency</option></select></div>
+      <div class="fg"><label class="fl">Chair</label><select class="fi"><option>Chair 1</option><option>Chair 2</option><option>Chair 3</option><option>Chair 4</option><option>Chair 5</option><option>Chair 6</option></select></div>
+      <div class="fg"><label class="fl">Insurance Provider</label><select class="fi"><option>None</option><option>CIC Insurance</option><option>Old Mutual</option><option>NHIF</option><option>SHA</option></select></div>
+    </div>
+    <div class="fg" style="margin-bottom:14px"><label class="fl">Notes</label><textarea class="fi" placeholder="Clinical notes, special requirements…"></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="newAppointmentModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Appointment booked ✓ — SMS confirmation sent to patient');closeModal('newAppointmentModal');auditLog('APPOINTMENT_BOOKED user=Dr.Kamau')"><i data-feather="check" style="width:11px;height:11px"></i> Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: ADD PATIENT ═══ -->
+<div class="modal-ov" id="addDentalPatientModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-ttl">🦷 Add Dental Patient</div><button class="mc" data-close="addDentalPatientModal"><i data-feather="x" style="width:16px;height:16px"></i></button></div>
+    <div class="frm-g">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" type="text" placeholder="Patient full name" required></div>
+      <div class="fg"><label class="fl">Phone *</label><input class="fi" type="tel" placeholder="+254 7XX XXX XXX"></div>
+      <div class="fg"><label class="fl">Date of Birth</label><input class="fi" type="date"></div>
+      <div class="fg"><label class="fl">National ID</label><input class="fi" type="text" placeholder="National ID number"></div>
+      <div class="fg"><label class="fl">Insurance Provider</label><select class="fi"><option>None</option><option>CIC Insurance</option><option>Old Mutual</option><option>NHIF</option><option>SHA</option></select></div>
+      <div class="fg"><label class="fl">Insurance Number</label><input class="fi" type="text" placeholder="Policy number"></div>
+      <div class="fg"><label class="fl">Referring Doctor</label><input class="fi" type="text" placeholder="Referring clinician"></div>
+      <div class="fg"><label class="fl">Emergency Contact</label><input class="fi" type="text" placeholder="Name · Phone"></div>
+    </div>
+    <div class="frm-g" style="grid-template-columns:1fr">
+      <div class="fg"><label class="fl">Allergies</label><textarea class="fi" placeholder="Drug allergies, latex, etc.…"></textarea></div>
+      <div class="fg"><label class="fl">Medical History</label><textarea class="fi" placeholder="Relevant medical history…"></textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn bg_" data-close="addDentalPatientModal">Cancel</button>
+      <button class="btn bp" onclick="toast('Patient record created ✓ — Dental file opened');closeModal('addDentalPatientModal');auditLog('PATIENT_REGISTERED user=Dr.Kamau')"><i data-feather="check" style="width:11px;height:11px"></i> Save Patient</button>
+    </div>
+  </div>
+</div>
+
+<script>
+feather.replace({width:12,height:12,strokeWidth:2});
+(function(){function t(){const c=document.getElementById('clock');if(c)c.textContent=new Date().toLocaleTimeString('en-KE',{hour12:false})}t();setInterval(t,1000)})();
+function showTab(btn,id){const w=btn.closest('.tabs');w.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tp').forEach(p=>{p.classList.remove('show');p.style.display='none'});const el=document.getElementById('tp-'+id);if(el){el.style.display='block';setTimeout(()=>el.classList.add('show'),10);feather.replace({width:12,height:12,strokeWidth:2})}}
+document.querySelectorAll('.tp').forEach((p,i)=>{if(i>0)p.style.display='none'});
+function animCnt(){document.querySelectorAll('.stat-v[data-val]').forEach(el=>{const tg=parseFloat(el.dataset.val);const fr=String(el.dataset.val).includes('.');let s=performance.now();(function go(n){const p=Math.min((n-s)/1400,1);const e=1-Math.pow(1-p,3);const v=tg*e;el.textContent=fr?v.toFixed(1):Math.round(v).toLocaleString();if(p<1)requestAnimationFrame(go)})(s)})}
+setTimeout(animCnt,250);
+setTimeout(()=>{document.querySelectorAll('.prog-f[data-w]').forEach(b=>{b.style.width='0';setTimeout(()=>b.style.width=b.dataset.w,150)})},350);
+setTimeout(()=>{document.querySelectorAll('.bar-c[data-h]').forEach(b=>{b.style.height='4px';setTimeout(()=>b.style.height=b.dataset.h,200+Math.random()*300)})},500);
+function openModal(id){const m=document.getElementById(id);if(m)m.style.display='flex'}
+function closeModal(id){const m=document.getElementById(id);if(m)m.style.display='none'}
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.open)));
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-ov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.style.display='none'}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-ov').forEach(o=>{if(o.style.display==='flex')o.style.display='none'})});
+function toast(msg,type='g'){const t=document.createElement('div');const col=type==='r'?'#ef4444':type==='a'?'#f59e0b':type==='b'?'#60a5fa':'#22d3ee';t.style.cssText=`position:fixed;bottom:20px;right:20px;background:rgba(5,12,7,.99);border:1px solid ${col}55;border-radius:10px;padding:10px 16px;font-size:12px;color:#f0fdf4;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.6);animation:su .3s ease;font-family:'Sora',sans-serif`;t.innerHTML=`<span style="color:${col}">●</span> ${msg}`;document.body.appendChild(t);setTimeout(()=>t.remove(),3200)}
+document.querySelectorAll('[data-search]').forEach(inp=>{inp.addEventListener('input',()=>{const q=inp.value.toLowerCase();const tb=document.querySelector(inp.dataset.search);if(!tb)return;tb.querySelectorAll('tr').forEach(r=>{r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'})})});
+function auditLog(msg){const al=document.getElementById('auditLog');if(!al)return;const t=new Date().toLocaleTimeString('en-KE',{hour12:false});const r=document.createElement('div');r.textContent='['+t+'] '+msg;al.prepend(r);if(al.children.length>15)al.lastChild.remove()}
+document.querySelectorAll('[data-audit]').forEach(el=>el.addEventListener('click',()=>auditLog(el.dataset.audit)));
+// Odontogram
+function selectTooth(el,num){document.querySelectorAll('.tooth').forEach(t=>t.style.outline='none');el.style.outline='2px solid #22d3ee';el.style.outlineOffset='2px';const s=el.classList.contains('filled')?'Filled':el.classList.contains('extracted')?'Extracted':el.classList.contains('crown')?'Crown / Bridge':el.classList.contains('healthy')?'Healthy':'Unknown';const dd=document.getElementById('toothDetail');if(dd){dd.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><span style="font-size:8px;color:var(--t4);font-family:var(--fm);display:block;margin-bottom:2px">TOOTH</span><span style="font-size:16px;font-family:var(--fm);font-weight:700;color:#22d3ee">#${num}</span></div><div><span style="font-size:8px;color:var(--t4);font-family:var(--fm);display:block;margin-bottom:2px">STATUS</span><span style="font-size:11px;color:var(--t2)">${s}</span></div><div><span style="font-size:8px;color:var(--t4);font-family:var(--fm);display:block;margin-bottom:2px">SURFACE</span><span style="font-size:11px;color:var(--t2)">M · D · O · B · L</span></div><div><span style="font-size:8px;color:var(--t4);font-family:var(--fm);display:block;margin-bottom:2px">LAST NOTED</span><span style="font-size:11px;color:var(--t2)">12 May 2026</span></div></div>`;feather.replace({width:12,height:12,strokeWidth:2})}auditLog('ODONTOGRAM_VIEW tooth=#'+num+' user=Dr.Kamau')}
+// Pain scale
+function setPain(btn,score){document.querySelectorAll('.pain-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');const label=document.getElementById('painLabel');if(label){const desc=score===0?'No pain':score<=3?'Mild':score<=6?'Moderate':score<=8?'Severe':'Worst possible';label.textContent='Score '+score+'/10 — '+desc;label.style.color=score>=7?'#ef4444':score>=5?'#f59e0b':'#22d3ee'}auditLog('PAIN_SCORE score='+score+' user=Dr.Kamau')}
+// Notification panel
+const nb=document.getElementById('notifBtn');if(nb)nb.addEventListener('click',()=>{const ex=document.getElementById('_np');if(ex){ex.remove();return}const p=document.createElement('div');p.id='_np';p.style.cssText="position:fixed;top:60px;right:12px;width:290px;background:rgba(5,12,7,.99);border:1px solid rgba(255,255,255,.08);border-radius:13px;z-index:300;padding:11px;box-shadow:0 16px 50px rgba(0,0,0,.7)";p.innerHTML='<div style="font-size:9.5px;font-weight:700;color:rgba(240,253,244,.72);margin-bottom:8px;font-family:\'JetBrains Mono\',monospace;letter-spacing:1px;text-transform:uppercase">Dental Alerts</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🔴 Emergency: Tom Kariuki — maxillary abscess</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 OPG scan pending radiologist review</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 Chair 3 sterilization in progress</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">🟡 CIC claim #9981 needs approval</div><div style="font-size:11px;color:rgba(240,253,244,.72);padding:6px 0">🟢 AI flagged calculus buildup — 2 patients</div>';document.body.appendChild(p);setTimeout(()=>document.addEventListener('click',function h(e){if(!p.contains(e.target)){p.remove();document.removeEventListener('click',h)}},true),10)});
+</script>
+</body>
+</html>
