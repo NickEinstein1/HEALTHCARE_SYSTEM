@@ -1445,3 +1445,442 @@ body.unihealth-auth-bg {
     display: flex !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MASTER INTELLIGENCE DASHBOARD — Module Pull (unihealth360-final)
+═══════════════════════════════════════════════════════════════════ */
+.sign-in-root .master-dash.lp {
+  width: min(480px, 44vw) !important;
+  min-width: 360px;
+}
+.sign-in-root .master-dash .lp-in {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  height: 100%;
+  padding: 22px 18px 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.sign-in-root .master-dash .hero.master-hero {
+  margin-top: 8px;
+  flex: none;
+}
+.sign-in-root .master-dash .master-hl {
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.sign-in-root .master-dash .hd {
+  font-size: 11px;
+  line-height: 1.55;
+  max-width: none;
+}
+.sign-in-root .master-badge {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(0, 212, 255, 0.85);
+}
+.sign-in-root .master-sbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: rgba(184, 224, 255, 0.65);
+  letter-spacing: 0.3px;
+}
+.sign-in-root .master-sbar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e5a0;
+  box-shadow: 0 0 8px rgba(0, 229, 160, 0.55);
+  flex-shrink: 0;
+  animation: gl 2.1s infinite;
+}
+.sign-in-root .master-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.sign-in-root .master-mc {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 9px;
+  padding: 8px 6px;
+  position: relative;
+  overflow: hidden;
+}
+.sign-in-root .master-mc::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mcc, #00d4ff);
+  opacity: 0.55;
+}
+.sign-in-root .master-mv {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mcc, #00d4ff);
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.sign-in-root .master-ml {
+  font-size: 7px;
+  color: rgba(184, 224, 255, 0.55);
+  line-height: 1.25;
+}
+.sign-in-root .master-md {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: rgba(0, 229, 160, 0.55);
+  margin-top: 2px;
+}
+.sign-in-root .master-dp,
+.sign-in-root .master-ss,
+.sign-in-root .master-mw,
+.sign-in-root .master-mods,
+.sign-in-root .master-af {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 11px;
+}
+.sign-in-root .master-dp-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sign-in-root .master-dp-ttl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(184, 224, 255, 0.65);
+}
+.sign-in-root .master-dp-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(0, 212, 255, 0.55);
+}
+.sign-in-root .master-bw { margin-bottom: 6px; }
+.sign-in-root .master-bl {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: rgba(184, 224, 255, 0.55);
+  margin-bottom: 3px;
+}
+.sign-in-root .master-bl span:last-child {
+  font-family: var(--mono);
+  color: #00d4ff;
+}
+.sign-in-root .master-bb {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sign-in-root .master-bf {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #0090b5, #00d4ff);
+  transition: width 0.9s ease;
+}
+.sign-in-root .master-dp-mods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 7px;
+}
+.sign-in-root .master-dp-mod {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 7.5px;
+  font-weight: 600;
+  color: rgba(184, 224, 255, 0.5);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  background: rgba(0, 212, 255, 0.06);
+}
+.sign-in-root .master-dp-mod.on {
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.28);
+  background: rgba(0, 212, 255, 0.12);
+}
+.sign-in-root .master-dp-mod.mat {
+  border-color: rgba(255, 77, 133, 0.28);
+  color: #ff4d85;
+  background: rgba(255, 77, 133, 0.1);
+}
+.sign-in-root .master-shd {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(184, 224, 255, 0.35);
+  margin-bottom: 7px;
+}
+.sign-in-root .master-sg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.sign-in-root .master-si {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 7px;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+}
+.sign-in-root .master-si-ic {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.sign-in-root .master-si-ic.tone-g { background: rgba(0, 229, 160, 0.12); }
+.sign-in-root .master-si-ic.tone-b { background: rgba(61, 142, 248, 0.12); }
+.sign-in-root .master-si-ic.tone-p { background: rgba(168, 85, 247, 0.12); }
+.sign-in-root .master-si-ic.tone-a { background: rgba(255, 184, 48, 0.12); }
+.sign-in-root .master-si-ic.tone-t { background: rgba(0, 212, 255, 0.12); }
+.sign-in-root .master-si-ic.tone-pk { background: rgba(255, 77, 133, 0.12); }
+.sign-in-root .master-si-nm {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(240, 248, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sign-in-root .master-si-st {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: #00e5a0;
+}
+.sign-in-root .master-sipip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00e5a0;
+  margin-left: auto;
+  flex-shrink: 0;
+  animation: gl 2.1s infinite;
+}
+.sign-in-root .master-mw {
+  background: linear-gradient(135deg, rgba(255, 77, 133, 0.06), rgba(168, 85, 247, 0.05));
+  border-color: rgba(255, 77, 133, 0.18);
+}
+.sign-in-root .master-mw-badge {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ff4d85;
+}
+.sign-in-root .master-mw-g {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin: 8px 0;
+}
+.sign-in-root .master-mw-c {
+  text-align: center;
+  padding: 6px 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 7px;
+}
+.sign-in-root .master-mw-v {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff4d85;
+}
+.sign-in-root .master-mw-l {
+  font-size: 7px;
+  color: rgba(184, 224, 255, 0.4);
+}
+.sign-in-root .master-mw-alert {
+  font-size: 8px;
+  color: rgba(255, 77, 133, 0.8);
+  padding: 6px 8px;
+  background: rgba(255, 77, 133, 0.08);
+  border: 1px solid rgba(255, 77, 133, 0.15);
+  border-radius: 6px;
+}
+.sign-in-root .master-mg {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.sign-in-root .master-mod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.12);
+}
+.sign-in-root .master-mod.mat {
+  border-color: rgba(255, 77, 133, 0.15);
+}
+.sign-in-root .master-mod-ic { font-size: 11px; }
+.sign-in-root .master-mod-nm {
+  font-size: 6.5px;
+  font-weight: 600;
+  color: rgba(184, 224, 255, 0.45);
+  text-align: center;
+  line-height: 1.2;
+}
+.sign-in-root .master-af-t {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(184, 224, 255, 0.35);
+  margin-bottom: 8px;
+}
+.sign-in-root .master-fn-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.sign-in-root .master-fn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.sign-in-root .master-fn-c {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.35s;
+}
+.sign-in-root .master-fn-c.on {
+  border-color: rgba(0, 212, 255, 0.4);
+  background: rgba(0, 212, 255, 0.14);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.2);
+}
+.sign-in-root .master-fn-l {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: rgba(184, 224, 255, 0.4);
+  text-align: center;
+  max-width: 42px;
+  line-height: 1.2;
+}
+.sign-in-root .master-fa {
+  width: 14px;
+  height: 1px;
+  background: rgba(0, 212, 255, 0.2);
+  margin: 0 2px 12px;
+  flex-shrink: 0;
+}
+.sign-in-root .master-dash .ai-monitor {
+  margin-top: 0;
+}
+.sign-in-root .master-dash .audit-ticker {
+  margin-top: 0;
+}
+.sign-in-root .master-ft {
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  margin-top: 4px;
+}
+
+/* Module Pull chips on sign-in success step */
+.sign-in-root .module-pull-strip {
+  text-align: left;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+}
+.sign-in-root .module-pull-lbl {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(0, 100, 140, 0.85);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.sign-in-root .module-pull-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.sign-in-root .module-pull-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #0a4a26;
+  background: rgba(0, 212, 255, 0.12);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+}
+.sign-in-root .module-pull-chip.mat {
+  color: #9d174d;
+  background: rgba(255, 77, 133, 0.1);
+  border-color: rgba(255, 77, 133, 0.25);
+}
+.sign-in-root .module-pull-chip:hover {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.18);
+}
+
+@media (max-width: 1100px) {
+  .sign-in-root .master-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sign-in-root .master-mg {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

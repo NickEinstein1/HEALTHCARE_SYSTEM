@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Card } from '../components/ui/Card';
-import './ModuleDashboard.css';
+import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import {
+  DashboardShell,
+  type DashboardShellVariant,
+  useDashboardToast,
+} from "../components/dashboard/DashboardShell";
+import { buildV2ModuleNav } from "../lib/moduleNav";
 
 export interface ModuleConfig {
   name: string;
@@ -9,345 +13,159 @@ export interface ModuleConfig {
   icon: string;
   description: string;
   role: string;
-  stats: Array<{ label: string; value: string }>;
-  widgets: Array<{
-    title: string;
-    content: string;
-    metric?: string;
-  }>;
-  /** When set, replaces generic Overview/Operations/Reports with HTML-aligned module tabs. */
-  syncedTabs?: Array<{ id: string; label: string; summary: string }>;
+  stats: Array<{ label: string; value: string; meta?: string }>;
+  widgets?: Array<{ title: string; content: string; metric?: string }>;
+  syncedTabs?: Array<{ id: string; label: string; summary?: string }>;
+  shellVariant?: DashboardShellVariant;
+  defaultPage?: string;
+  renderPage?: (pageId: string, toast: (msg: string) => void) => ReactNode;
 }
 
 export interface ModuleDashboardProps {
   config: ModuleConfig;
 }
 
-export const ModuleDashboard: React.FC<ModuleDashboardProps> = ({ config }) => {
-  const dashboardModules: { [key: string]: ModuleConfig } = {
-    emr: {
-      name: 'EMR',
-      title: 'Electronic Medical Records',
-      icon: '🏥',
-      description: 'Complete patient medical records and clinical documentation',
-      role: 'Attending Physician',
-      stats: [
-        { label: 'Active Patients', value: '1,245' },
-        { label: 'Pending Orders', value: '38' },
-        { label: 'Lab Results', value: '12' },
-        { label: 'Alerts', value: '5' },
-      ],
-      widgets: [
-        {
-          title: 'Today\'s Schedule',
-          content: '8 appointments scheduled',
-          metric: '3 completed',
-        },
-        {
-          title: 'Patient Queue',
-          content: 'Waiting room: 4 patients',
-          metric: '2 in consultation',
-        },
-        {
-          title: 'Critical Alerts',
-          content: 'High BP readings detected',
-          metric: '3 patients',
-        },
-        {
-          title: 'Lab Processing',
-          content: 'Samples in queue',
-          metric: '45 samples',
-        },
-      ],
-    },
-    maternity: {
-      name: 'Maternity & NICU',
-      title: 'Maternal & Neonatal Care',
-      icon: '❤️',
-      description: 'Maternity and neonatal intensive care unit management',
-      role: 'OB/GYN Specialist',
-      stats: [
-        { label: 'Expecting Mothers', value: '156' },
-        { label: 'NICU Admissions', value: '24' },
-        { label: 'Deliveries Today', value: '6' },
-        { label: 'Critical Cases', value: '3' },
-      ],
-      widgets: [
-        {
-          title: 'Delivery Suite Status',
-          content: 'All suites operational',
-          metric: '3/3 in use',
-        },
-        {
-          title: 'NICU Capacity',
-          content: 'Current occupancy',
-          metric: '24/30 beds',
-        },
-        {
-          title: 'Vital Signs Monitoring',
-          content: 'All mothers stable',
-          metric: '156 monitored',
-        },
-        {
-          title: 'Birth Certificates',
-          content: 'Pending processing',
-          metric: '8 documents',
-        },
-      ],
-    },
-    laboratory: {
-      name: 'Laboratory',
-      title: 'Laboratory Services',
-      icon: '🧪',
-      description: 'Laboratory testing and result management',
-      role: 'Lab Technician',
-      stats: [
-        { label: 'Tests Queued', value: '342' },
-        { label: 'Completed Today', value: '1,204' },
-        { label: 'Critical Values', value: '7' },
-        { label: 'Equipment Status', value: '8/8 OK' },
-      ],
-      widgets: [
-        {
-          title: 'Analyzer Status',
-          content: 'All machines operational',
-          metric: '8 active',
-        },
-        {
-          title: 'Sample Receipt',
-          content: 'Currently processing',
-          metric: '45 samples',
-        },
-        {
-          title: 'Quality Control',
-          content: 'Daily QC checks',
-          metric: '✓ Passed',
-        },
-        {
-          title: 'Turnaround Time',
-          content: 'Average processing',
-          metric: '2.3 hours',
-        },
-      ],
-    },
-    pharmacy: {
-      name: 'Pharmacy',
-      title: 'Pharmacy Management',
-      icon: '💊',
-      description: 'Medication dispensing and inventory management',
-      role: 'Pharmacist',
-      stats: [
-        { label: 'Prescriptions Today', value: '287' },
-        { label: 'Dispensed', value: '256' },
-        { label: 'Pending Review', value: '31' },
-        { label: 'Low Stock Items', value: '12' },
-      ],
-      widgets: [
-        {
-          title: 'Prescription Queue',
-          content: 'Waiting for dispensing',
-          metric: '31 pending',
-        },
-        {
-          title: 'Inventory Status',
-          content: 'Low stock alerts',
-          metric: '12 items',
-        },
-        {
-          title: 'Drug Interactions',
-          content: 'Potential conflicts checked',
-          metric: '0 flagged',
-        },
-        {
-          title: 'Controlled Substances',
-          content: 'Audit trail complete',
-          metric: '✓ Compliant',
-        },
-      ],
-    },
-    billing: {
-      name: 'Billing',
-      title: 'Financial Management',
-      icon: '💰',
-      description: 'Billing, invoicing, and financial tracking',
-      role: 'Billing Officer',
-      stats: [
-        { label: 'Invoices Today', value: '156' },
-        { label: 'Amount Billed', value: 'KES 2.3M' },
-        { label: 'Unpaid Invoices', value: '34' },
-        { label: 'Collection Rate', value: '94%' },
-      ],
-      widgets: [
-        {
-          title: 'Daily Revenue',
-          content: 'Amount collected today',
-          metric: 'KES 1.8M',
-        },
-        {
-          title: 'Outstanding Balance',
-          content: 'Accounts receivable',
-          metric: 'KES 450K',
-        },
-        {
-          title: 'Insurance Claims',
-          content: 'Pending approval',
-          metric: '12 claims',
-        },
-        {
-          title: 'Payment Methods',
-          content: 'Cash vs Card payments',
-          metric: '60/40',
-        },
-      ],
-    },
-    admin: {
-      name: 'Administration',
-      title: 'System Administration',
-      icon: '⚙️',
-      description: 'System configuration and facility management',
-      role: 'System Administrator',
-      stats: [
-        { label: 'System Uptime', value: '99.98%' },
-        { label: 'Active Users', value: '347' },
-        { label: 'Database Size', value: '245GB' },
-        { label: 'Backup Status', value: '✓ Good' },
-      ],
-      widgets: [
-        {
-          title: 'System Health',
-          content: 'All services operational',
-          metric: '15/15 OK',
-        },
-        {
-          title: 'Disk Usage',
-          content: 'Storage capacity',
-          metric: '68% used',
-        },
-        {
-          title: 'Active Licenses',
-          content: 'Valid subscriptions',
-          metric: '450/500',
-        },
-        {
-          title: 'API Performance',
-          content: 'Response time',
-          metric: '124ms avg',
-        },
-      ],
-    },
-  };
+const KPI_BARS = ["g", "b", "am", "r"] as const;
 
-  const moduleKey = config.name.toLowerCase();
-  const module = dashboardModules[moduleKey] || config;
-  const tabDefs = module.syncedTabs ?? [
+export function ModuleDashboard({ config }: ModuleDashboardProps) {
+  const toast = useDashboardToast();
+  const tabDefs = config.syncedTabs ?? [
     { id: "overview", label: "Overview", summary: "Module overview and KPI widgets." },
     { id: "operations", label: "Operations", summary: "Operational dashboard and live workflows." },
     { id: "reports", label: "Reports", summary: "Reports and analytics exports." },
   ];
-  const [activeTab, setActiveTab] = useState(tabDefs[0]?.id ?? "overview");
-  const useSyncedTabs = !!module.syncedTabs;
+
+  const [page, setPage] = useState(config.defaultPage ?? tabDefs[0]?.id ?? "overview");
+  const shellVariant = config.shellVariant ?? "doctor";
+  const scopeClass =
+    shellVariant === "nurse" ? "nurse" : shellVariant === "admin" ? "admin" : shellVariant === "lab" ? "lab" : "doc";
+
+  const pageTitle = useMemo(
+    () => tabDefs.find((t) => t.id === page)?.label ?? config.title,
+    [tabDefs, page, config.title],
+  );
+
+  const nav = buildV2ModuleNav([
+    {
+      label: config.name,
+      items: tabDefs.map((t) => ({
+        id: t.id,
+        icon: config.icon,
+        label: t.label,
+      })),
+    },
+  ]);
+
+  const widgets = config.widgets ?? [];
 
   return (
-    <DashboardLayout
-      pageTitle={module.title}
-      pageIcon={module.icon}
-      currentSection={module.name}
-      userRole={module.role}
+    <DashboardShell
+      shellVariant={shellVariant}
+      title={config.title}
+      crumb={pageTitle}
+      portalSubtitle={`${config.name} Module`}
+      userInitials={config.name.slice(0, 2).toUpperCase()}
+      userName={config.role}
+      userEmail={`${config.name.toLowerCase()}@unihealth.ke`}
+      activeNavId={page}
+      onNavSelect={setPage}
+      nav={nav}
+      onTopbarNotificationsClick={() => toast(`${config.name} notifications — no critical alerts.`)}
+      onTopbarStatusClick={() => toast(`${config.name} module online.`)}
     >
-      <div className="module-dashboard">
-        {/* HEADER */}
-        <Card className="module-header">
-          <h2 className="module-title">{module.title}</h2>
-          <p className="module-desc">{module.description}</p>
-        </Card>
-
-        {/* STATS */}
-        <div className="stats-grid">
-          {module.stats.map((stat, idx) => (
-            <Card key={idx} className="stat-card">
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
-            </Card>
-          ))}
-        </div>
-
-        {/* TABS */}
-        <div className="module-tabs">
-          {tabDefs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {useSyncedTabs ? (
-          <div className="tab-content">
-            <Card title={tabDefs.find((t) => t.id === activeTab)?.label ?? "Module"}>
-              <p className="widget-content">{tabDefs.find((t) => t.id === activeTab)?.summary}</p>
-              <p style={{ marginTop: 12, fontSize: 11.5, color: "rgba(240, 253, 244, 0.55)" }}>
-                Content aligned with v2 HTML module tabs. Wire API workflows in the next integration pass.
-              </p>
-            </Card>
-          </div>
-        ) : (
-          <>
-        {/* TAB CONTENT - OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div className="tab-content">
-            <div className="widgets-grid">
-              {module.widgets.map((widget, idx) => (
-                <Card key={idx} title={widget.title} action={<span className="metric">{widget.metric}</span>}>
-                  <p className="widget-content">{widget.content}</p>
-                </Card>
-              ))}
+      <div className={scopeClass}>
+        <div className={`pg on`} id={`pg-mod-${page}`}>
+          <div className="ph">
+            <div>
+              <div className="ph-ey">UniHealth 360 · {config.name}</div>
+              <div className="ph-ti">{pageTitle}</div>
+              <div className="ph-su">{config.description}</div>
             </div>
           </div>
-        )}
 
-        {/* TAB CONTENT - OPERATIONS */}
-        {activeTab === 'operations' && (
-          <Card title="Operational Dashboard">
-            <div className="operations-content">
-              <div style={{fontSize: '11.5px', color: 'rgba(240, 253, 244, 0.72)', lineHeight: 1.6}}>
-                <h3 style={{marginBottom: 10, color: '#f0fdf4'}}>Current Operations</h3>
-                <ul style={{paddingLeft: 20, listStyle: 'disc'}}>
-                  <li>All systems operational and performing normally</li>
-                  <li>No critical incidents reported</li>
-                  <li>Scheduled maintenance completed successfully</li>
-                  <li>All performance targets being met</li>
-                  <li>Staff availability: 98%</li>
-                </ul>
-              </div>
-            </div>
-          </Card>
-        )}
+          {config.renderPage ? (
+            config.renderPage(page, toast)
+          ) : (
+            <>
+              {(page === "overview" || !config.syncedTabs) && page === "overview" && (
+                <>
+                  <div className="kpis">
+                    {config.stats.map((stat, idx) => (
+                      <div className="kpi" key={stat.label}>
+                        <div className={`kpi-bar ${KPI_BARS[idx % KPI_BARS.length]}`} />
+                        <div className="kpi-ico">{config.icon}</div>
+                        <div className="kpi-lbl">{stat.label}</div>
+                        <div className="kpi-val">{stat.value}</div>
+                        {stat.meta ? <div className="kpi-meta">{stat.meta}</div> : null}
+                      </div>
+                    ))}
+                  </div>
+                  {widgets.length > 0 && (
+                    <div className="g2" style={{ marginTop: 14 }}>
+                      {widgets.map((w) => (
+                        <div className="panel" key={w.title}>
+                          <div className="pnl-hd">
+                            <div className="pnl-title">{w.title}</div>
+                            {w.metric ? <span className="tag b">{w.metric}</span> : null}
+                          </div>
+                          <div className="pnl-body">
+                            <p style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6 }}>{w.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
 
-        {/* TAB CONTENT - REPORTS */}
-        {activeTab === 'reports' && (
-          <Card title="Reports & Analytics">
-            <div className="reports-content">
-              <div style={{fontSize: '11.5px', color: 'rgba(240, 253, 244, 0.72)', lineHeight: 1.6}}>
-                <h3 style={{marginBottom: 10, color: '#f0fdf4'}}>Available Reports</h3>
-                <ul style={{paddingLeft: 20, listStyle: 'disc'}}>
-                  <li>Daily Performance Report</li>
-                  <li>Monthly Summary & Trends</li>
-                  <li>Resource Utilization Analysis</li>
-                  <li>Compliance & Audit Trail</li>
-                  <li>Financial Summary & Forecasting</li>
-                </ul>
-                <p style={{marginTop: 10}}>📊 <a href="#" style={{color: 'var(--neon)', textDecoration: 'none'}}>Download Reports</a></p>
-              </div>
-            </div>
-          </Card>
-        )}
-          </>
-        )}
+              {config.syncedTabs && page !== "overview" && (
+                <div className="panel">
+                  <div className="pnl-hd">
+                    <div className="pnl-title">{pageTitle}</div>
+                  </div>
+                  <div className="pnl-body">
+                    <p style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6 }}>
+                      {tabDefs.find((t) => t.id === page)?.summary}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {!config.syncedTabs && page === "operations" && (
+                <div className="panel">
+                  <div className="pnl-hd">
+                    <div className="pnl-title">Operational Dashboard</div>
+                  </div>
+                  <div className="pnl-body">
+                    <ul style={{ paddingLeft: 18, color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
+                      <li>All systems operational and performing normally</li>
+                      <li>No critical incidents reported</li>
+                      <li>Scheduled maintenance completed successfully</li>
+                      <li>Staff availability: 98%</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {!config.syncedTabs && page === "reports" && (
+                <div className="panel">
+                  <div className="pnl-hd">
+                    <div className="pnl-title">Reports & Analytics</div>
+                  </div>
+                  <div className="pnl-body">
+                    <ul style={{ paddingLeft: 18, color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
+                      <li>Daily Performance Report</li>
+                      <li>Monthly Summary & Trends</li>
+                      <li>Resource Utilization Analysis</li>
+                      <li>Compliance & Audit Trail</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </DashboardLayout>
+    </DashboardShell>
   );
-};
+}

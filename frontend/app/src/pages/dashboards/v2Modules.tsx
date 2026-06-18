@@ -1,5 +1,6 @@
 import React from 'react';
 import { ModuleDashboard } from "../ModuleDashboard";
+import { MaternityModule } from "../modules/MaternityModule";
 
 // EMR Dashboard
 export const EMRModuleDashboard: React.FC = () => (
@@ -21,32 +22,8 @@ export const EMRModuleDashboard: React.FC = () => (
   />
 );
 
-// Maternity Dashboard
-export const MaternityDashboard: React.FC = () => (
-  <ModuleDashboard
-    config={{
-      name: 'Maternity',
-      title: 'Maternal & Neonatal Care',
-      icon: '❤️',
-      description: 'Maternity and neonatal intensive care unit management',
-      role: 'OB/GYN Specialist',
-      stats: [
-        { label: 'Expecting Mothers', value: '156' },
-        { label: 'NICU Admissions', value: '24' },
-        { label: 'Deliveries Today', value: '6' },
-        { label: 'Critical Cases', value: '3' },
-      ],
-      widgets: [],
-      syncedTabs: [
-        { id: 'anc', label: 'ANC Clinic', summary: 'Antenatal care visits, risk stratification, and ANC schedules.' },
-        { id: 'labor', label: 'Labor Ward', summary: 'Active labor board, partograph, and delivery suite status.' },
-        { id: 'nicu', label: 'NICU', summary: 'Neonatal intensive care admissions and monitoring.' },
-        { id: 'postnatal', label: 'Postnatal', summary: 'Post-delivery follow-up and maternal recovery.' },
-        { id: 'api', label: 'API Ref', summary: 'Maternity module REST and FHIR endpoints.' },
-      ],
-    }}
-  />
-);
+// Maternity Dashboard — production shell with HTML-aligned clinical pages
+export const MaternityDashboard: React.FC = () => <MaternityModule />;
 
 // Laboratory Dashboard
 export const LaboratoryDashboard: React.FC = () => (

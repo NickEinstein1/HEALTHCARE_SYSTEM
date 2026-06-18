@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { V2_MODULE_NAV } from "../routes/dashboardRoutes";
+import { MASTER_PORTAL_SECTIONS } from "../lib/modulePull";
 import "./PortalPage.css";
 
-const PORTAL_MODULES = V2_MODULE_NAV.flatMap((section) =>
+const PORTAL_MODULES = MASTER_PORTAL_SECTIONS.flatMap((section) =>
   section.items.map((item) => ({
     icon: item.icon,
     label: item.label,
@@ -29,7 +29,7 @@ export const PortalPage: React.FC = () => {
   ];
 
   const stats = [
-    { value: "20", label: "Modules" },
+    { value: String(PORTAL_MODULES.length), label: "Modules" },
     { value: "5K+", label: "Users" },
     { value: "1.2M", label: "Patients" },
     { value: "99.9%", label: "Uptime" },
@@ -58,11 +58,8 @@ export const PortalPage: React.FC = () => {
           </p>
           <div className="stripe" />
           <div className="meta-chips">
-            <div className="chip ch-g">
-              <span className="pdot" />
-              ALL SYSTEMS LIVE
-            </div>
-            <div className="chip ch-g">20 Modules Built</div>
+            <div className="chip ch-g">ALL SYSTEMS LIVE</div>
+            <div className="chip ch-g">{PORTAL_MODULES.length} Modules · Module Pull</div>
             <div className="chip ch-b">FHIR R5 · JWT · RBAC</div>
             <div className="chip ch-pk">Maternity AI Active</div>
           </div>

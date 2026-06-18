@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { DashIcon } from "../brand/DashIcon";
 import { SearchBarBrand } from "../brand/SearchBarBrand";
 import { UniHealthLogo } from "../brand/UniHealthLogo";
@@ -20,6 +20,8 @@ export type DashboardNavItem = {
   icon: string;
   label: string;
   badge?: { text: string; tone: "red" | "amber" | "green" };
+  /** When set, navigates via React Router instead of onNavSelect. */
+  href?: string;
 };
 
 export type DashboardNavSection = {
@@ -76,6 +78,7 @@ export function DashboardShell(props: {
   ].filter(Boolean).join(" ");
 
   const navigate   = useNavigate();
+  const location   = useLocation();
   const [dateText, setDateText]     = useState("");
   const [timeText, setTimeText]     = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -187,20 +190,30 @@ export function DashboardShell(props: {
                     <div className="sb-sec-line" />
                   </div>
                   {sec.items.map((it, idx) => {
-                    const isActive = activeNavId
-                      ? activeNavId === it.id
-                      : idx === 0 && sec === nav[0];
+                    const isActive = it.href
+                      ? location.pathname === it.href
+                      : activeNavId
+                        ? activeNavId === it.id
+                        : idx === 0 && sec === nav[0];
                     return (
                       <button
                         key={it.id}
                         className={`ni${isActive ? " on" : ""}`}
                         type="button"
                         aria-current={isActive ? "page" : undefined}
-                        onClick={() => { onNavSelect?.(it.id); setSidebarOpen(false); }}
+                        onClick={() => {
+                          if (it.href) {
+                            navigate(it.href);
+                          } else {
+                            onNavSelect?.(it.id);
+                          }
+                          setSidebarOpen(false);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
-                            onNavSelect?.(it.id);
+                            if (it.href) navigate(it.href);
+                            else onNavSelect?.(it.id);
                             setSidebarOpen(false);
                           }
                         }}

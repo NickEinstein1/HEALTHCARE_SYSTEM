@@ -73,7 +73,12 @@ export function SignInPage() {
 
   return (
     <div className="sign-in-root">
-      <BrandPanel aiAttempts={aiAttempts} auditLines={auditLines} />
+      <BrandPanel
+        aiAttempts={aiAttempts}
+        auditLines={auditLines}
+        selectedRole={role}
+        signInStep={step}
+      />
       <div className="rp">
         <div className="sign-in-rp-inner">
           <SignInMobileBrand />

@@ -303,6 +303,25 @@ html, body {
 /* Small variant */
 .btn-sm { padding: 5px 10px !important; font-size: 11.5px !important; }
 
+.dash-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.dash-subtabs .btn-s.on {
+  border-color: rgba(0, 212, 255, 0.45) !important;
+  color: #00d4ff !important;
+  background: rgba(0, 212, 255, 0.12) !important;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.12) !important;
+}
+.nurse .dash-subtabs .btn-s.on {
+  border-color: rgba(255, 77, 133, 0.45) !important;
+  color: #ff4d85 !important;
+  background: rgba(255, 77, 133, 0.12) !important;
+  box-shadow: 0 0 12px rgba(255, 77, 133, 0.12) !important;
+}
+
 /* ── Inputs & selects ────────────────────────────────────────────── */
 input:not(.pin-box):not(.obox):not([type=range]),
 select,
