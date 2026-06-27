@@ -48,8 +48,11 @@ def emit_aggregate_sync(
     if prod is None:
         _log.debug("analytics aggregate skipped (no kafka): %s", payload)
         return
-    prod.produce(TOPIC_AGGREGATE, json.dumps(payload).encode("utf-8"))
-    prod.flush()
+    try:
+        prod.produce(TOPIC_AGGREGATE, json.dumps(payload).encode("utf-8"))
+        prod.flush(timeout=0.5)
+    except Exception as exc:
+        _log.debug("analytics aggregate emit failed: %s", exc)
 
 
 def _ai_patient_scope(patient_id: str | None) -> str:

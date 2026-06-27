@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type PollingState<T> = {
   data: T | null;
@@ -8,64 +8,89 @@ export type PollingState<T> = {
   refresh: () => void;
 };
 
+const MIN_INTERVAL_MS = 3000;
+
+/**
+ * Polls an async fetcher on an interval. Uses a ref for the fetcher so inline
+ * lambdas do not restart the interval every render (avoids proxy/API storms).
+ */
 export function usePolling<T>(
   fetcher: () => Promise<T>,
-  opts: { intervalMs: number; enabled?: boolean }
+  opts: { intervalMs: number; enabled?: boolean },
 ): PollingState<T> {
-  const { intervalMs, enabled = true } = opts;
+  const { enabled = true } = opts;
+  const intervalMs = Math.max(MIN_INTERVAL_MS, opts.intervalMs);
+
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
+
+  const inFlightRef = useRef(false);
+  const mountedRef = useRef(true);
+
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const [refreshNonce, setRefreshNonce] = useState(0);
 
-  const runOnce = useCallback(async () => {
+  const runOnce = useCallback(async (opts?: { showLoading?: boolean }) => {
+    if (!mountedRef.current || inFlightRef.current) return;
+    inFlightRef.current = true;
+    if (opts?.showLoading) setLoading(true);
     try {
-      const v = await fetcher();
+      const v = await fetcherRef.current();
+      if (!mountedRef.current) return;
       setData(v);
       setError(null);
       setLastUpdatedAt(Date.now());
     } catch (e) {
+      if (!mountedRef.current) return;
       setError(e instanceof Error ? e.message : String(e));
     } finally {
-      setLoading(false);
+      inFlightRef.current = false;
+      if (mountedRef.current) setLoading(false);
     }
-  }, [fetcher]);
+  }, []);
 
   const refresh = useCallback(() => {
-    setLoading(true);
     setRefreshNonce((n) => n + 1);
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    setLoading(true);
-    fetcher().then(
-      (v) => {
-        if (cancelled) return;
-        setData(v);
-        setError(null);
-        setLastUpdatedAt(Date.now());
-      },
-      (e) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : String(e));
-      }
-    ).finally(() => {
-      if (cancelled) return;
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) {
       setLoading(false);
-    });
-    const id = window.setInterval(() => {
-      void runOnce();
-    }, intervalMs);
+      return;
+    }
+
+    let cancelled = false;
+    let intervalId: number | undefined;
+
+    const tick = () => {
+      if (!cancelled && !document.hidden) void runOnce();
+    };
+
+    void runOnce({ showLoading: true });
+
+    intervalId = window.setInterval(tick, intervalMs);
+
+    const onVisible = () => {
+      if (!document.hidden && !cancelled) void runOnce();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      if (intervalId !== undefined) clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisible);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, intervalMs, fetcher, runOnce, refreshNonce]);
+  }, [enabled, intervalMs, runOnce, refreshNonce]);
 
   return { data, error, loading, lastUpdatedAt, refresh };
 }
-

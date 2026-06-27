@@ -23,11 +23,12 @@
 
 import { useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTheme } from "../lib/theme";
 
 const MEDICAL_SCENE_HOST_ID = "unihealth-med-scene-host";
 
 // ── Colour palette ──────────────────────────────────────────────────
-const C = {
+const C_DARK = {
   cyan:   "rgba(0,212,255,",
   green:  "rgba(0,229,160,",
   violet: "rgba(150,80,255,",
@@ -37,6 +38,40 @@ const C = {
   white:  "rgba(210,235,255,",
   blue:   "rgba(40,100,255,",
 };
+
+const C_LIGHT = {
+  cyan:   "rgba(90,165,210,",
+  green:  "rgba(4,120,87,",
+  violet: "rgba(109,40,217,",
+  pink:   "rgba(190,18,60,",
+  amber:  "rgba(180,83,9,",
+  teal:   "rgba(13,148,136,",
+  white:  "rgba(31,42,56,",
+  blue:   "rgba(74,143,196,",
+};
+
+function sceneTone(isLight: boolean) {
+  return {
+    C: isLight ? C_LIGHT : C_DARK,
+    bg: isLight
+      ? (["#e8d9b0", "#d4bc82", "#cfc08e", "#c4b078"] as const)
+      : (["#0c2850", "#061a38", "#040c22", "#020510"] as const),
+    hexStroke: isLight ? "rgba(90,165,210,0.24)" : "rgba(0,160,255,0.085)",
+    hubCol: isLight ? "rgba(90,165,210," : "rgba(0,212,255,",
+    hubBase: isLight ? 0.16 : 0.065,
+    hubDecay: isLight ? 0.022 : 0.008,
+    connMul: isLight ? 0.14 : 0.055,
+    particleCol: isLight ? "rgba(90,165,210," : "rgba(0,200,255,",
+    particleFill: isLight ? 0.95 : 0.65,
+    particleLine: isLight ? 0.22 : 0.11,
+    scanLine: isLight ? "rgba(90,165,210,0.26)" : "rgba(0,212,255,0.10)",
+    blobMul: isLight ? 2.6 : 1,
+    hudAlpha: isLight ? 0.72 : 0.42,
+  };
+}
+
+/** Static scene tables (draw loop uses `tone.C` for live palette). */
+const C = C_DARK;
 
 // ── ECG waveform ────────────────────────────────────────────────────
 const ECG_PTS: [number, number][] = [
@@ -579,6 +614,8 @@ function drawMedCross(
 
 // ── Main component ──────────────────────────────────────────────────
 export function MedicalBackground() {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
 
   useLayoutEffect(() => {
@@ -622,26 +659,27 @@ export function MedicalBackground() {
     const H = () => lh;
 
     if (reduceMotion) {
+      const tone = sceneTone(isLight);
       const repaintStatic = () => {
         resize();
         const w = W(), h = H();
         const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.75);
-        bg.addColorStop(0, "#0a2448");
-        bg.addColorStop(0.45, "#06152c");
-        bg.addColorStop(0.82, "#041020");
-        bg.addColorStop(1, "#020510");
+        bg.addColorStop(0, tone.bg[0]);
+        bg.addColorStop(0.45, tone.bg[1]);
+        bg.addColorStop(0.82, tone.bg[2]);
+        bg.addColorStop(1, tone.bg[3]);
         ctx.fillStyle = bg;
         ctx.fillRect(0, 0, w, h);
         const topBand = ctx.createLinearGradient(0, 0, 0, h * 0.35);
-        topBand.addColorStop(0, "rgba(0,212,255,0.12)");
-        topBand.addColorStop(0.5, "rgba(168,85,247,0.04)");
+        topBand.addColorStop(0, isLight ? "rgba(90, 165, 210,0.14)" : "rgba(0,212,255,0.12)");
+        topBand.addColorStop(0.5, isLight ? "rgba(4,120,87,0.06)" : "rgba(168,85,247,0.04)");
         topBand.addColorStop(1, "rgba(0,0,0,0)");
         ctx.fillStyle = topBand;
         ctx.fillRect(0, 0, w, h * 0.35);
-        ctx.fillStyle = "rgba(0,229,160,0.07)";
+        ctx.fillStyle = isLight ? "rgba(4,120,87,0.10)" : "rgba(0,229,160,0.07)";
         ctx.fillRect(0, 0, w, Math.min(h * 0.14, 110));
         const hubX = w * 0.52, hubY = h * 0.48;
-        ctx.strokeStyle = "rgba(0,212,255,0.09)";
+        ctx.strokeStyle = isLight ? "rgba(90, 165, 210,0.14)" : "rgba(0,212,255,0.09)";
         ctx.lineWidth = 1.4;
         for (let ri = 1; ri <= 4; ri++) {
           const R = Math.min(w, h) * (0.12 + ri * 0.072);
@@ -661,7 +699,7 @@ export function MedicalBackground() {
               k === 0 ? ctx.moveTo(ax, ay) : ctx.lineTo(ax, ay);
             }
             ctx.closePath();
-            ctx.strokeStyle = "rgba(40,160,255,0.07)"; ctx.lineWidth = 0.75; ctx.stroke();
+            ctx.strokeStyle = tone.hexStroke; ctx.lineWidth = 0.75; ctx.stroke();
           }
         }
       };
@@ -700,40 +738,46 @@ export function MedicalBackground() {
 
     const draw = () => {
       try {
+      const tone = sceneTone(isLight);
+      const C = tone.C;
       const w = W(), h = H();
       ctx.clearRect(0, 0, w, h);
 
       // ── 1. Background (richer theatre wash) ───────────────────
       const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.78);
-      bg.addColorStop(0,   "#0c2850");
-      bg.addColorStop(0.35,"#061a38");
-      bg.addColorStop(0.72,"#040c22");
-      bg.addColorStop(1,   "#020510");
+      bg.addColorStop(0,   tone.bg[0]);
+      bg.addColorStop(0.35,tone.bg[1]);
+      bg.addColorStop(0.72,tone.bg[2]);
+      bg.addColorStop(1,   tone.bg[3]);
       ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
 
       const washT = ctx.createRadialGradient(w * 0.12, h * 0.88, 0, w * 0.12, h * 0.88, Math.max(w, h) * 0.42);
-      washT.addColorStop(0, "rgba(0,229,160,0.08)");
-      washT.addColorStop(0.5, "rgba(0,120,140,0.03)");
+      washT.addColorStop(0, isLight ? "rgba(4,120,87,0.14)" : "rgba(0,229,160,0.08)");
+      washT.addColorStop(0.5, isLight ? "rgba(90, 165, 210,0.06)" : "rgba(0,120,140,0.03)");
       washT.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = washT; ctx.fillRect(0, 0, w, h);
 
       const washC = ctx.createRadialGradient(w * 0.88, h * 0.12, 0, w * 0.88, h * 0.12, Math.max(w, h) * 0.48);
-      washC.addColorStop(0, "rgba(168,85,247,0.10)");
-      washC.addColorStop(0.45, "rgba(0,100,220,0.06)");
+      washC.addColorStop(0, isLight ? "rgba(109,40,217,0.10)" : "rgba(168,85,247,0.10)");
+      washC.addColorStop(0.45, isLight ? "rgba(29,78,216,0.07)" : "rgba(0,100,220,0.06)");
       washC.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = washC; ctx.fillRect(0, 0, w, h);
 
-      // Side framing (stronger than before)
+      const sideA = isLight ? 0.09 : 0.16;
       const lgL = ctx.createLinearGradient(0, 0, w * 0.28, 0);
-      lgL.addColorStop(0, "rgba(0,140,220,0.16)"); lgL.addColorStop(0.45, "rgba(0,60,140,0.05)"); lgL.addColorStop(1, "rgba(0,0,0,0)");
+      lgL.addColorStop(0, isLight ? `rgba(90, 165, 210,${sideA})` : "rgba(0,140,220,0.16)");
+      lgL.addColorStop(0.45, isLight ? "rgba(90, 165, 210,0.03)" : "rgba(0,60,140,0.05)");
+      lgL.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = lgL; ctx.fillRect(0, 0, w * 0.28, h);
       const lgR = ctx.createLinearGradient(w, 0, w * 0.72, 0);
-      lgR.addColorStop(0, "rgba(0,200,255,0.12)"); lgR.addColorStop(0.42, "rgba(40,100,220,0.06)"); lgR.addColorStop(1, "rgba(0,0,0,0)");
+      lgR.addColorStop(0, isLight ? `rgba(90, 165, 210,${sideA * 0.85})` : "rgba(0,200,255,0.12)");
+      lgR.addColorStop(0.42, isLight ? "rgba(29,78,216,0.04)" : "rgba(40,100,220,0.06)");
+      lgR.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = lgR; ctx.fillRect(w * 0.72, 0, w * 0.28, h);
 
       const ve = ctx.createRadialGradient(w * 0.5, 0, 0, w * 0.5, h * 0.15, Math.max(w, h) * 0.65);
-      ve.addColorStop(0, "rgba(0,212,255,0.10)");
-      ve.addColorStop(0.6, "rgba(20,80,160,0.03)");
+      ve.addColorStop(0, isLight ? "rgba(90, 165, 210,0.12)" : "rgba(0,212,255,0.10)");
+      ve.addColorStop(0.6, isLight ? "rgba(90, 165, 210,0.04)" : "rgba(20,80,160,0.03)");
       ve.addColorStop(1, "rgba(0,0,0,0)");
       ctx.fillStyle = ve; ctx.fillRect(0, 0, w, h * 0.45);
 
@@ -751,7 +795,7 @@ export function MedicalBackground() {
             k === 0 ? ctx.moveTo(ax, ay) : ctx.lineTo(ax, ay);
           }
           ctx.closePath();
-          ctx.strokeStyle = "rgba(0,160,255,0.085)"; ctx.lineWidth = 0.85; ctx.stroke();
+          ctx.strokeStyle = tone.hexStroke; ctx.lineWidth = 0.85; ctx.stroke();
         }
       }
 
@@ -767,7 +811,7 @@ export function MedicalBackground() {
         { xf: 0.38, yf: 0.22, col: C.pink,   r: 120 },
       ].forEach(blob => {
         const bx = blob.xf * w, by = blob.yf * h;
-        const p  = 0.032 + 0.016 * Math.sin(now * 0.55 + blob.r * 0.01);
+        const p  = (0.032 + 0.016 * Math.sin(now * 0.55 + blob.r * 0.01)) * tone.blobMul;
         const rg = ctx.createRadialGradient(bx, by, 0, bx, by, blob.r);
         rg.addColorStop(0, `${blob.col}${p})`);
         rg.addColorStop(0.5, `${blob.col}${p * 0.45})`);
@@ -783,12 +827,12 @@ export function MedicalBackground() {
         const R = Math.min(w, h) * (0.095 + ri * 0.062) + breathe;
         ctx.beginPath();
         ctx.ellipse(hubX, hubY, R * 1.08 + ri * 3, R * 0.88 + ri * 2, now * 0.05 + ri * 0.02, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(0,212,255,${0.065 - ri * 0.008})`;
+        ctx.strokeStyle = `${tone.hubCol}${tone.hubBase - ri * tone.hubDecay})`;
         ctx.lineWidth = 1.55 - ri * 0.18;
         ctx.stroke();
       }
       ctx.beginPath(); ctx.arc(hubX, hubY, Math.min(w, h) * 0.028, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(0,229,160,0.35)"; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.strokeStyle = isLight ? "rgba(4,120,87,0.55)" : "rgba(0,229,160,0.35)"; ctx.lineWidth = 1.2; ctx.stroke();
 
       // ── 4. Kenya facility network ──────────────────────────────
       // Connection lines
@@ -799,7 +843,7 @@ export function MedicalBackground() {
           const d = Math.hypot(bx - ax, by - ay);
           if (d > 0.42 * Math.min(w, h)) continue;
           ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
-          ctx.strokeStyle = `rgba(0,200,255,${0.055 * (1 - d / (0.42 * Math.min(w, h)))})`;
+          ctx.strokeStyle = `${tone.particleCol}${tone.connMul * (1 - d / (0.42 * Math.min(w, h)))})`;
           ctx.lineWidth = 0.85; ctx.stroke();
         }
       }
@@ -865,11 +909,12 @@ export function MedicalBackground() {
       // ── 6. Patient figure (left side) ─────────────────────────
       const patCX = w * 0.20, patCY = h * 0.58;
       const patScale = Math.min(w, h) * 0.20;
-      drawPatient(ctx, patCX, patCY, patScale, 0.88, now);
+      const figAlpha = isLight ? 1.4 : 1;
+      drawPatient(ctx, patCX, patCY, patScale, 0.88 * figAlpha, now);
 
       // Patient vitals HUD
       const ptPanelX = patCX - 100, ptPanelY = patCY - patScale * 0.68;
-      drawVitalsPanel(ctx, ptPanelX, ptPanelY, PT_VITALS, 0.78, C.cyan);
+      drawVitalsPanel(ctx, ptPanelX, ptPanelY, PT_VITALS, isLight ? 0.92 : 0.78, C.cyan);
 
       // Connector line from panel to patient head
       ctx.strokeStyle = "rgba(0,212,255,0.38)"; ctx.lineWidth = 1.0;
@@ -883,11 +928,11 @@ export function MedicalBackground() {
       // ── 7. Doctor figure (right side) ─────────────────────────
       const drCX = w * 0.82, drCY = h * 0.52;
       const drScale = Math.min(w, h) * 0.26;
-      drawDoctor(ctx, drCX, drCY, drScale, 0.90, now);
+      drawDoctor(ctx, drCX, drCY, drScale, 0.90 * figAlpha, now);
 
       // Doctor vitals HUD
       const drPanelX = drCX - 220, drPanelY = drCY - drScale * 0.50;
-      drawVitalsPanel(ctx, drPanelX, drPanelY, DR_VITALS, 0.78, C.green);
+      drawVitalsPanel(ctx, drPanelX, drPanelY, DR_VITALS, isLight ? 0.92 : 0.78, C.green);
 
       // Connector line from panel to doctor's clipboard area
       ctx.strokeStyle = "rgba(0,229,160,0.34)"; ctx.lineWidth = 1.0;
@@ -947,7 +992,7 @@ export function MedicalBackground() {
       scanGrad.addColorStop(1,   "rgba(0,229,160,0)");
       ctx.fillStyle = scanGrad; ctx.fillRect(0, scanY - 52, w, 104);
       ctx.beginPath(); ctx.moveTo(0, scanY); ctx.lineTo(w, scanY);
-      ctx.strokeStyle = "rgba(0,212,255,0.10)"; ctx.lineWidth = 1.05; ctx.stroke();
+      ctx.strokeStyle = tone.scanLine; ctx.lineWidth = 1.05; ctx.stroke();
 
       // ── 11. Floating particle web ──────────────────────────────
       PTS.forEach(p => {
@@ -961,13 +1006,13 @@ export function MedicalBackground() {
           const d = Math.sqrt(dx * dx + dy * dy);
           if (d < 130) {
             ctx.beginPath(); ctx.moveTo(PTS[i].x, PTS[i].y); ctx.lineTo(PTS[j].x, PTS[j].y);
-            ctx.strokeStyle = `rgba(0,200,255,${(1 - d / 130) * 0.11})`; ctx.lineWidth = 0.65; ctx.stroke();
+            ctx.strokeStyle = `${tone.particleCol}${(1 - d / 130) * tone.particleLine})`; ctx.lineWidth = 0.65; ctx.stroke();
           }
         }
       }
       PTS.forEach(p => {
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0,200,255,${p.alpha * 0.65})`; ctx.fill();
+        ctx.fillStyle = `${tone.particleCol}${p.alpha * tone.particleFill})`; ctx.fill();
       });
 
       // ── 12. ECG strips (bottom) ────────────────────────────────
@@ -1008,22 +1053,24 @@ export function MedicalBackground() {
 
       // ── 14. Corner HUD brackets ───────────────────────────────
       const M = 18;
-      drawBracket(ctx, M,     M,     "TL", C.cyan,   0.42);
-      drawBracket(ctx, w - M, M,     "TR", C.cyan,   0.42);
-      drawBracket(ctx, M,     h - M, "BL", C.green, 0.36);
-      drawBracket(ctx, w - M, h - M, "BR", C.green, 0.36);
+      const bracketA = isLight ? 0.62 : 0.42;
+      const bracketB = isLight ? 0.54 : 0.36;
+      drawBracket(ctx, M,     M,     "TL", C.cyan,   bracketA);
+      drawBracket(ctx, w - M, M,     "TR", C.cyan,   bracketA);
+      drawBracket(ctx, M,     h - M, "BL", C.green, bracketB);
+      drawBracket(ctx, w - M, h - M, "BR", C.green, bracketB);
 
-      ctx.font = "8px 'JetBrains Mono', monospace";
-      ctx.fillStyle = "rgba(0,212,255,0.42)";
+      ctx.font = "8px ui-monospace, monospace";
+      ctx.fillStyle = `${C.cyan}${tone.hudAlpha})`;
       ctx.fillText("UNI-EHR v3.0", M + 30, M + 4);
       ctx.fillText(new Date().toLocaleTimeString("en-KE", { hour12: false }), M + 30, M + 14);
-      ctx.fillStyle = "rgba(0,229,160,0.38)";
+      ctx.fillStyle = `${C.green}${tone.hudAlpha * 0.9})`;
       ctx.fillText("KDPA 2019 · FHIR R5", w - M - 138, h - M + 4);
       ctx.fillText("ISO 27001 · HL7",     w - M - 114, h - M - 6);
 
       // CT scan readout
-      ctx.font = "7px 'JetBrains Mono', monospace";
-      ctx.fillStyle = "rgba(0,212,255,0.42)";
+      ctx.font = "7px ui-monospace, monospace";
+      ctx.fillStyle = `${C.cyan}${tone.hudAlpha})`;
       ctx.fillText(`CT  ${Math.floor(((ctScanY + 0.4) / 1.8) * 100)}%`,
         bodyCX + bodyScale * 0.25,
         bodyCY + (ctScanY - 0.5) * bodyScale * 1.2);
@@ -1036,7 +1083,7 @@ export function MedicalBackground() {
 
     raf = requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
-  }, [canvasEl]);
+  }, [canvasEl, theme]);
 
   const sceneInterior = (
     <>

@@ -581,7 +581,13 @@ _metrics_latency_sum_ms = defaultdict(float)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+    ],
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -601,6 +607,15 @@ async def on_startup() -> None:
 async def on_shutdown() -> None:
     await close_redis_client()
     await close_postgres_pool()
+
+
+@app.middleware("http")
+async def esign_legacy_path_alias(request: Request, call_next):
+    """Map deprecated /legal/* to /esign/* (ad blockers often block URLs containing 'legal')."""
+    path = request.scope.get("path") or ""
+    if path == "/legal" or path.startswith("/legal/"):
+        request.scope["path"] = "/esign" + path[len("/legal") :]
+    return await call_next(request)
 
 
 @app.middleware("http")

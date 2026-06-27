@@ -1,0 +1,221 @@
+/* ═══════════════════════════════════════════════════════════════════
+   UNIHEALTH — System typography & readable UI hierarchy
+   Loaded last — applies across all pages and themes
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Base: system font everywhere ───────────────────────────────── */
+*,
+*::before,
+*::after {
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea,
+optgroup {
+  font-family: var(--font-system);
+}
+
+.mono,
+[class*="mono"],
+.ai-title,
+.ai-val,
+.ai-bar-lbl span,
+.at-lbl,
+.at-entry,
+.master-badge,
+.master-sbar,
+.master-af-t,
+.master-fn-l,
+.master-mw-badge,
+.module-pull-lbl,
+.ph-eyebrow,
+.ph-ey,
+.pin-box,
+.obox,
+.captcha-q,
+.captcha-row input,
+.node-id,
+.node-lat,
+.feed-time,
+.bc-val {
+  font-family: var(--font-mono) !important;
+}
+
+/* Headings & display — system sans, strong weight */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hl,
+.stitle,
+.sxtitle,
+.ph-title,
+.ph-ti,
+.brand-nm,
+.kpi-val,
+.kpi-v,
+.master-hl,
+.master-mv,
+.panel-title {
+  font-family: var(--font-system) !important;
+  font-weight: var(--fw-display);
+  line-height: var(--lh-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Labels & UI chrome */
+label,
+.lbl,
+.lbl-row label,
+.eyebrow,
+.master-ml,
+.master-bl,
+.master-dp-ttl,
+.nav-item,
+.lp-nav-link {
+  font-weight: var(--fw-label);
+}
+
+/* Body copy */
+p,
+li,
+.ssub,
+.sxsub,
+.hd,
+.master-dash .hd,
+.panel-sub,
+.kpi-lbl,
+.kpi-l,
+.ph-sub {
+  font-weight: var(--fw-body);
+  line-height: var(--lh-body);
+}
+
+/* Buttons & CTAs */
+.btn,
+.lp-btn-primary,
+.lp-btn-ghost,
+.vtab,
+.altbn,
+.doc .btn-p,
+.admin .btn-p,
+.nurse .btn-p,
+.patient .btn-p {
+  font-weight: var(--fw-title) !important;
+  font-family: var(--font-system) !important;
+}
+
+/* ── Light mode: enforce readable contrast & sizing ─────────────── */
+html[data-theme="light"] {
+  color: var(--t1);
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4 {
+  color: var(--t1);
+  font-weight: var(--fw-display);
+}
+
+html[data-theme="light"] p,
+html[data-theme="light"] li {
+  font-weight: var(--fw-body);
+  color: var(--t2);
+}
+
+html[data-theme="light"] label,
+html[data-theme="light"] .lbl,
+html[data-theme="light"] th,
+html[data-theme="light"] .panel-title,
+html[data-theme="light"] .nav-item {
+  color: var(--t1);
+  font-weight: var(--fw-label);
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea {
+  color: var(--t1);
+  font-weight: var(--fw-label);
+}
+
+html[data-theme="light"] ::placeholder {
+  color: var(--t4);
+  font-weight: var(--fw-body);
+  opacity: 1;
+}
+
+/* Sign-in master panel — bump micro type for readability */
+html[data-theme="light"] .sign-in-root .master-dash {
+  font-size: 12px;
+  font-weight: var(--fw-body);
+}
+
+html[data-theme="light"] .sign-in-root .master-badge,
+html[data-theme="light"] .sign-in-root .master-sbar,
+html[data-theme="light"] .sign-in-root .master-ml,
+html[data-theme="light"] .sign-in-root .master-bl,
+html[data-theme="light"] .sign-in-root .master-dp-ttl,
+html[data-theme="light"] .sign-in-root .master-shd,
+html[data-theme="light"] .sign-in-root .master-dp-mod,
+html[data-theme="light"] .sign-in-root .master-si-nm,
+html[data-theme="light"] .sign-in-root .master-si-st,
+html[data-theme="light"] .sign-in-root .master-mod-nm,
+html[data-theme="light"] .sign-in-root .master-fn-l,
+html[data-theme="light"] .sign-in-root .master-mw-l,
+html[data-theme="light"] .sign-in-root .master-mw-v,
+html[data-theme="light"] .sign-in-root .master-mw-alert,
+html[data-theme="light"] .sign-in-root .master-af-t,
+html[data-theme="light"] .sign-in-root .ai-lbl,
+html[data-theme="light"] .sign-in-root .ai-title,
+html[data-theme="light"] .sign-in-root .at-lbl,
+html[data-theme="light"] .sign-in-root .at-entry,
+html[data-theme="light"] .sign-in-root .module-pull-lbl {
+  font-size: max(10px, 1em) !important;
+  font-weight: var(--fw-label) !important;
+  line-height: 1.45 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mv,
+html[data-theme="light"] .sign-in-root .master-hl,
+html[data-theme="light"] .sign-in-root .stitle {
+  font-weight: var(--fw-display) !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-val {
+  font-size: 10px !important;
+  font-weight: var(--fw-title) !important;
+}
+
+/* Dashboards */
+html[data-theme="light"] .dash-main,
+html[data-theme="light"] .portal-page {
+  color: var(--t1);
+  font-weight: var(--fw-body);
+}
+
+html[data-theme="light"] .tbl td {
+  font-weight: var(--fw-body);
+}
+
+html[data-theme="light"] .tbl th {
+  font-weight: var(--fw-title) !important;
+}
+
+/* Reduced motion — keep UI usable */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

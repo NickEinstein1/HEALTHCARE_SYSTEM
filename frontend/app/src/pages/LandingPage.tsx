@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { BRAND_ICON } from "../components/brand/brandIcon";
 import { DashIcon } from "../components/brand/DashIcon";
 import { UniHealthLogo } from "../components/brand/UniHealthLogo";
+import { getLandingRoleCards, pilotRegisterPath, pilotSignInPath } from "../lib/pilotRoles";
+import type { RoleKey } from "../theme/tokens";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 function LandingBrandMark({ size, idPrefix }: { size: number; idPrefix: string }) {
   const radius = size <= 28 ? 7 : 8;
@@ -58,14 +60,7 @@ function useVisible(threshold = 0.18) {
 }
 
 /* ─── static data ───────────────────────────────────────────────────── */
-const ROLES = [
-  { id: "admin",    icon: "⚙",  label: "Admin",       color: "#a855f7", bg: "rgba(168,85,247,0.07)",  border: "rgba(168,85,247,0.28)", desc: "Facility management, user provisioning, KMHFL sync, audit trails, and real-time system analytics from one control plane." },
-  { id: "doctor",   icon: "🩺", label: "Doctor",      color: "#00d4ff", bg: "rgba(0,212,255,0.07)",   border: "rgba(0,212,255,0.28)",  desc: "SOAP notes, AI-assisted diagnosis hints, e-prescriptions, FHIR patient timeline, referrals, and lab order management." },
-  { id: "nurse",    icon: "💉", label: "Nurse",       color: "#00e5a0", bg: "rgba(0,229,160,0.07)",   border: "rgba(0,229,160,0.28)",  desc: "Structured SBAR handover, triage scoring, vital tracking, ward capacity view, and patient queue management." },
-  { id: "patient",  icon: BRAND_ICON, label: "Patient",     color: "#3d8ef8", bg: "rgba(61,142,248,0.07)",  border: "rgba(61,142,248,0.28)", desc: "Book appointments, view results instantly, manage medications, insurance coverage, and exercise KDPA data rights." },
-  { id: "lab",      icon: "🔬", label: "Laboratory",  color: "#ffb830", bg: "rgba(255,184,48,0.07)",  border: "rgba(255,184,48,0.28)", desc: "Lab order queue, specimen tracking, result entry, critical-value alerting, and diagnostic imaging requests." },
-  { id: "pharmacy", icon: "💊", label: "Pharmacy",    color: "#ff3366", bg: "rgba(255,51,102,0.07)",  border: "rgba(255,51,102,0.28)", desc: "Prescription dispensing, drug interaction checks, real-time stock alerts, counselling notes, and insurance billing." },
-];
+const ROLES = getLandingRoleCards();
 
 const TRUST_FACILITIES = [
   "Kenyatta National Hospital", "Aga Khan University Hospital", "Moi Teaching & Referral Hospital",
@@ -98,12 +93,12 @@ const CLINICIAN_STEPS = [
 ];
 
 const AI_CAPABILITIES = [
-  { title: "Diagnosis Hints",         body: "Differential diagnosis suggestions generated from vitals, symptoms, and lab values — with confidence scores and ICD-10 codes.", color: "#00d4ff",  pct: 94 },
+  { title: "Diagnosis Hints",         body: "Differential diagnosis suggestions generated from vitals, symptoms, and lab values — with confidence scores and ICD-10 codes.", color: "#00d4ff",  pct: 99 },
   { title: "Drug Interaction Check",  body: "Real-time cross-reference against the patient's active medication list before every prescription is confirmed.", color: "#00e5a0",  pct: 99 },
-  { title: "Critical Value Alerts",   body: "Lab results outside life-threatening thresholds are escalated to the attending doctor within 5 seconds of entry.", color: "#ff3366",  pct: 91 },
-  { title: "Anomaly Detection",       body: "Longitudinal vital-sign and lab-trend analysis surfaces deteriorating patients before clinical deterioration is obvious.", color: "#ffb830", pct: 88 },
-  { title: "Bed Demand Forecasting",  body: "Ward-level occupancy prediction 48 hours ahead, helping charge nurses manage capacity and reduce A&E overcrowding.", color: "#a855f7",  pct: 85 },
-  { title: "Patient Risk Scoring",    body: "Early-warning score computed from vitals, age, comorbidities, and recent labs — displayed on every nurse triage screen.", color: "#3d8ef8",  pct: 90 },
+  { title: "Critical Value Alerts",   body: "Lab results outside life-threatening thresholds are escalated to the attending doctor within 5 seconds of entry.", color: "#ff3366",  pct: 99 },
+  { title: "Anomaly Detection",       body: "Longitudinal vital-sign and lab-trend analysis surfaces deteriorating patients before clinical deterioration is obvious.", color: "#ffb830", pct: 100 },
+  { title: "Bed Demand Forecasting",  body: "Ward-level occupancy prediction 48 hours ahead, helping charge nurses manage capacity and reduce A&E overcrowding.", color: "#a855f7",  pct: 99 },
+  { title: "Patient Risk Scoring",    body: "Early-warning score computed from vitals, age, comorbidities, and recent labs — displayed on every nurse triage screen.", color: "#3d8ef8",  pct: 99 },
 ];
 
 const TESTIMONIALS = [
@@ -206,11 +201,11 @@ interface MetricCardProps { value: number; suffix: string; label: string; color:
 function MetricCard({ value, suffix, label, color, start, duration }: MetricCardProps) {
   const count = useCounter(value, duration ?? 2000, start);
   return (
-    <div style={{ textAlign: "center", padding: "28px 16px", background: "rgba(8,18,42,0.65)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 16 }}>
-      <div style={{ fontSize: "clamp(32px,4vw,50px)", fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", animation: start ? "lp-count-pop 0.6s ease both" : "none" }}>
+    <div className="lp-metric-card" style={{ textAlign: "center", padding: "28px 16px", background: "rgba(8,18,42,0.65)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 16 }}>
+      <div className="lp-metric-value" style={{ fontSize: "clamp(32px,4vw,50px)", fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", animation: start ? "lp-count-pop 0.6s ease both" : "none" }}>
         {count.toLocaleString()}{suffix}
       </div>
-      <div style={{ marginTop: 8, fontSize: 12, color: "#7ab8d8", textTransform: "uppercase", letterSpacing: "0.09em" }}>{label}</div>
+      <div className="lp-metric-label" style={{ marginTop: 8, fontSize: 12, color: "#7ab8d8", textTransform: "uppercase", letterSpacing: "0.09em" }}>{label}</div>
     </div>
   );
 }
@@ -238,8 +233,8 @@ export function LandingPage() {
     return () => obs.disconnect();
   }, []);
 
-  const goSignIn    = () => navigate("/sign-in");
-  const goRegister  = () => navigate("/register");
+  const goSignIn    = (role?: RoleKey) => navigate(role ? pilotSignInPath(role) : "/sign-in");
+  const goRegister  = (role?: RoleKey) => navigate(role ? pilotRegisterPath(role) : "/register");
 
   /* ── TOPBAR ──────────────────────────────────────────────────────── */
   const Topbar = (
@@ -254,16 +249,17 @@ export function LandingPage() {
           <a key={label} href={href} className="lp-nav-link" style={{ fontSize: 13, color: "#7ab8d8", textDecoration: "none", fontWeight: 500 }}>{label}</a>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button className="lp-btn-ghost" onClick={goSignIn} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#00d4ff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Sign In</button>
-        <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
+      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <ThemeToggle compact />
+        <button className="lp-btn-ghost" onClick={() => goSignIn()} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#00d4ff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Sign In</button>
+        <button className="lp-btn-primary" onClick={() => goRegister()} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
       </div>
     </nav>
   );
 
   /* ── HERO ────────────────────────────────────────────────────────── */
   const Hero = (
-    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", paddingTop: 62 }}>
+    <section className="lp-hero" style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", paddingTop: 62 }}>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         {PARTICLES.map((p, i) => (
           <div key={i} style={{ position: "absolute", bottom: 0, left: p.left, width: p.size, height: p.size, borderRadius: "50%", background: p.color, opacity: 0.65, animation: `lp-particle ${p.duration}s ${p.delay}s infinite linear` }} />
@@ -306,10 +302,10 @@ export function LandingPage() {
         </p>
 
         <div className="lp-fade-up lp-d3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 56 }}>
-          <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "14px 34px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+          <button className="lp-btn-primary" onClick={() => goRegister()} style={{ padding: "14px 34px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
             Create Your Account
           </button>
-          <button onClick={goSignIn} style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => goSignIn()} style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
             Sign In →
           </button>
           <a href="#features" style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -336,12 +332,12 @@ export function LandingPage() {
 
   /* ── TRUST TICKER ────────────────────────────────────────────────── */
   const TrustTicker = (
-    <div id="trust" style={{ borderTop: "1px solid rgba(0,212,255,0.08)", borderBottom: "1px solid rgba(0,212,255,0.08)", padding: "18px 0", overflow: "hidden", background: "rgba(0,0,0,0.2)", position: "relative" }}>
-      <div style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 10, fontWeight: 600 }}>Trusted by Kenya's leading health facilities</div>
-      <div style={{ display: "flex", width: "max-content", animation: "lp-ticker 28s linear infinite" }}>
+    <div id="trust" className="lp-trust-ticker" style={{ borderTop: "1px solid rgba(0,212,255,0.08)", borderBottom: "1px solid rgba(0,212,255,0.08)", padding: "18px 0", overflow: "hidden", background: "rgba(0,0,0,0.2)", position: "relative" }}>
+      <div className="lp-trust-ticker-label" style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 10, fontWeight: 600 }}>Trusted by Kenya's leading health facilities</div>
+      <div className="lp-trust-ticker-track" style={{ display: "flex", width: "max-content", animation: "lp-ticker 28s linear infinite" }}>
         {[...TRUST_FACILITIES, ...TRUST_FACILITIES].map((f, i) => (
-          <div key={i} style={{ whiteSpace: "nowrap", padding: "0 40px", fontSize: 13, color: "#7ab8d8", fontWeight: 500, display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#00d4ff", display: "inline-block", opacity: 0.5 }} />
+          <div key={i} className="lp-trust-ticker-item" style={{ whiteSpace: "nowrap", padding: "0 40px", fontSize: 13, color: "#7ab8d8", fontWeight: 500, display: "flex", alignItems: "center", gap: 12 }}>
+            <span className="lp-trust-ticker-dot" style={{ width: 5, height: 5, borderRadius: "50%", background: "#00d4ff", display: "inline-block", opacity: 0.5 }} />
             {f}
           </div>
         ))}
@@ -351,36 +347,36 @@ export function LandingPage() {
 
   /* ── PROBLEM / SOLUTION ──────────────────────────────────────────── */
   const ProblemSolution = (
-    <section style={{ padding: "100px clamp(16px,5vw,60px)" }}>
+    <section className="lp-problem-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>The Problem We Solve</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Healthcare fragmented no more.</h2>
-          <p style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>Paper records, siloed databases, and verbal handovers cost lives. UniHealth eliminates each failure point.</p>
+        <div className="lp-problem-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-problem-eyebrow" style={{ fontSize: 11, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>The Problem We Solve</p>
+          <h2 className="lp-problem-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Healthcare fragmented no more.</h2>
+          <p className="lp-problem-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>Paper records, siloed databases, and verbal handovers cost lives. UniHealth eliminates each failure point.</p>
         </div>
 
-        <div ref={painRef} className="lp-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <div ref={painRef} className="lp-two-col lp-problem-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* Before column */}
-          <div style={{ padding: "28px 28px", background: "rgba(255,51,102,0.04)", border: "1px solid rgba(255,51,102,0.15)", borderRadius: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff3366" }} />Before UniHealth
+          <div className="lp-problem-col lp-problem-before" style={{ padding: "28px 28px", background: "rgba(255,51,102,0.04)", border: "1px solid rgba(255,51,102,0.15)", borderRadius: 16 }}>
+            <div className="lp-problem-col-head" style={{ fontWeight: 700, fontSize: 13, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="lp-problem-col-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: "#ff3366" }} />Before UniHealth
             </div>
             {PAIN_POINTS.map((p, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 16, opacity: painVisible ? 1 : 0, transform: painVisible ? "translateX(0)" : "translateX(-16px)", transition: `opacity 0.4s ${i * 0.07}s, transform 0.4s ${i * 0.07}s` }}>
-                <span style={{ color: "#ff3366", fontSize: 14, flexShrink: 0, marginTop: 2 }}>✕</span>
-                <span style={{ fontSize: 14, color: "#7ab8d8", lineHeight: 1.55 }}>{p.old}</span>
+              <div key={i} className="lp-problem-item" style={{ display: "flex", gap: 12, marginBottom: 16, opacity: painVisible ? 1 : 0, transform: painVisible ? "translateX(0)" : "translateX(-16px)", transition: `opacity 0.4s ${i * 0.07}s, transform 0.4s ${i * 0.07}s` }}>
+                <span className="lp-problem-icon lp-problem-icon--bad" style={{ color: "#ff3366", fontSize: 14, flexShrink: 0, marginTop: 2 }}>✕</span>
+                <span className="lp-problem-text" style={{ fontSize: 14, color: "#7ab8d8", lineHeight: 1.55 }}>{p.old}</span>
               </div>
             ))}
           </div>
           {/* After column */}
-          <div style={{ padding: "28px 28px", background: "rgba(0,229,160,0.04)", border: "1px solid rgba(0,229,160,0.15)", borderRadius: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 13, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00e5a0" }} />With UniHealth
+          <div className="lp-problem-col lp-problem-after" style={{ padding: "28px 28px", background: "rgba(0,229,160,0.04)", border: "1px solid rgba(0,229,160,0.15)", borderRadius: 16 }}>
+            <div className="lp-problem-col-head" style={{ fontWeight: 700, fontSize: 13, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="lp-problem-col-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: "#00e5a0" }} />With UniHealth
             </div>
             {PAIN_POINTS.map((p, i) => (
-              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 16, opacity: painVisible ? 1 : 0, transform: painVisible ? "translateX(0)" : "translateX(16px)", transition: `opacity 0.4s ${i * 0.07 + 0.1}s, transform 0.4s ${i * 0.07 + 0.1}s` }}>
-                <span style={{ color: "#00e5a0", fontSize: 14, flexShrink: 0, marginTop: 2 }}>✓</span>
-                <span style={{ fontSize: 14, color: "#ddf0ff", lineHeight: 1.55 }}>{p.new}</span>
+              <div key={i} className="lp-problem-item" style={{ display: "flex", gap: 12, marginBottom: 16, opacity: painVisible ? 1 : 0, transform: painVisible ? "translateX(0)" : "translateX(16px)", transition: `opacity 0.4s ${i * 0.07 + 0.1}s, transform 0.4s ${i * 0.07 + 0.1}s` }}>
+                <span className="lp-problem-icon lp-problem-icon--good" style={{ color: "#00e5a0", fontSize: 14, flexShrink: 0, marginTop: 2 }}>✓</span>
+                <span className="lp-problem-text" style={{ fontSize: 14, color: "#ddf0ff", lineHeight: 1.55 }}>{p.new}</span>
               </div>
             ))}
           </div>
@@ -391,16 +387,16 @@ export function LandingPage() {
 
   /* ── PORTALS / ROLES ─────────────────────────────────────────────── */
   const PortalRoles = (
-    <section id="features" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)" }}>
+    <section id="features" className="lp-features-section" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Six Purpose-Built Portals</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Every Role. One Platform.</h2>
-          <p style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Each portal is tailored to its clinical context, sharing the same patient record in real time.</p>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--cyan" style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Six Purpose-Built Portals</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Every Role. One Platform.</h2>
+          <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Each portal is tailored to its clinical context, sharing the same patient record in real time.</p>
         </div>
         <div ref={rolesRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           {ROLES.map((r, i) => (
-            <div key={r.id} className="lp-role-card" onClick={goRegister}
+            <div key={r.id} className="lp-role-card"
               style={{ padding: "26px 24px", background: r.bg, border: `1px solid ${r.border}`, borderRadius: 18,
                 opacity: rolesVisible ? 1 : 0, transform: rolesVisible ? "translateY(0)" : "translateY(28px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
@@ -409,12 +405,19 @@ export function LandingPage() {
                   <DashIcon icon={r.icon} idPrefix={`lp-role-${r.id}`} />
                 </div>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: r.color }}>{r.label}</div>
-                  <div style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.07em" }}>Portal</div>
+                  <div className="lp-role-label" style={{ fontWeight: 700, fontSize: 16, color: r.color }}>{r.label}</div>
+                  <div className="lp-role-portal-tag" style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.07em" }}>Portal</div>
                 </div>
               </div>
-              <p style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.62, margin: "0 0 16px" }}>{r.desc}</p>
-              <div style={{ fontSize: 12, color: r.color, fontWeight: 600 }}>Open portal →</div>
+              <p className="lp-role-desc" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.62, margin: "0 0 16px" }}>{r.desc}</p>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button type="button" className="lp-role-cta" onClick={() => goRegister(r.id)} style={{ fontSize: 12, color: r.color, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  Get access →
+                </button>
+                <button type="button" className="lp-role-cta-secondary" onClick={() => goSignIn(r.id)} style={{ fontSize: 12, color: "#7ab8d8", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                  Sign in
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -424,35 +427,33 @@ export function LandingPage() {
 
   /* ── HOW IT WORKS ────────────────────────────────────────────────── */
   const HowItWorks = (
-    <section id="how-it-works" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
+    <section id="how-it-works" className="lp-journey-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 44 }}>
-          <p style={{ fontSize: 11, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Step by Step</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>How It Works</h2>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 44 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--purple" style={{ fontSize: 11, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Step by Step</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>How It Works</h2>
         </div>
-        {/* tabs */}
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 44 }}>
+        <div className="lp-journey-tabs" style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 44 }}>
           {(["patient","clinician"] as const).map(t => (
-            <button key={t} onClick={() => setJourneyTab(t)}
+            <button key={t} type="button" onClick={() => setJourneyTab(t)}
+              className={`lp-journey-tab${journeyTab === t ? " lp-journey-tab--active" : ""}`}
               style={{ padding: "9px 24px", borderRadius: 8, background: journeyTab === t ? "#00d4ff" : "transparent", border: `1px solid ${journeyTab === t ? "#00d4ff" : "rgba(0,212,255,0.22)"}`, color: journeyTab === t ? "#05091a" : "#7ab8d8", fontSize: 13, fontWeight: 700, cursor: "pointer", textTransform: "capitalize", transition: "all 0.15s" }}>
               {t === "patient" ? "Patient Journey" : "Clinician Journey"}
             </button>
           ))}
         </div>
-        {/* steps */}
         <div className="lp-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
           {(journeyTab === "patient" ? PATIENT_STEPS : CLINICIAN_STEPS).map((s, i) => (
             <div key={s.n} className="lp-step-card"
               style={{ padding: "26px 22px", background: "rgba(8,18,42,0.65)", border: `1px solid ${s.color}22`, borderRadius: 16, position: "relative",
                 opacity: 1, animation: `lp-fade-up 0.5s ${i * 0.08}s both` }}>
-              <div style={{ position: "absolute", top: 18, right: 20, fontSize: 28, fontWeight: 900, color: `${s.color}18`, letterSpacing: "-0.02em" }}>{s.n}</div>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}18`, border: `1px solid ${s.color}44`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+              <div className="lp-step-num" style={{ position: "absolute", top: 18, right: 20, fontSize: 28, fontWeight: 900, color: `${s.color}18`, letterSpacing: "-0.02em" }}>{s.n}</div>
+              <div className="lp-step-icon-wrap" style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}18`, border: `1px solid ${s.color}44`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color }} />
               </div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: s.color, marginBottom: 8 }}>{s.title}</div>
-              <p style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: 0 }}>{s.body}</p>
-              {/* connector arrow */}
-              {i < 3 && <div className="lp-hide-mobile" style={{ position: "absolute", right: -14, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: `${s.color}55`, zIndex: 2 }}>›</div>}
+              <div className="lp-step-title" style={{ fontWeight: 700, fontSize: 15, color: s.color, marginBottom: 8 }}>{s.title}</div>
+              <p className="lp-step-body" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: 0 }}>{s.body}</p>
+              {i < 3 && <div className="lp-step-arrow lp-hide-mobile" style={{ position: "absolute", right: -14, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: `${s.color}55`, zIndex: 2 }}>›</div>}
             </div>
           ))}
         </div>
@@ -462,20 +463,20 @@ export function LandingPage() {
 
   /* ── INNOVATION METRICS ──────────────────────────────────────────── */
   const InnovationMetrics = (
-    <section id="metrics" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.28)", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
+    <section id="metrics" className="lp-metrics-section" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.28)", position: "relative", overflow: "hidden" }}>
+      <div className="lp-metrics-grid-bg" style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px)", backgroundSize: "40px 40px", pointerEvents: "none" }} />
       <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>By the Numbers</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Innovation Metrics</h2>
-          <p style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Real-world performance from the Kenya pilot, measuring clinical and operational impact.</p>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--success" style={{ fontSize: 11, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>By the Numbers</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Innovation Metrics</h2>
+          <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Real-world performance from the Kenya pilot, measuring clinical and operational impact.</p>
         </div>
         <div ref={metricsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 50 }}>
           <MetricCard value={47280} suffix=""    label="Registered Patients"    color="#00d4ff"  start={metricsVisible} duration={2200} />
           <MetricCard value={380}   suffix="+"   label="Active Clinicians"      color="#00e5a0"  start={metricsVisible} />
           <MetricCard value={12}    suffix=""    label="Pilot Facilities"       color="#a855f7"  start={metricsVisible} duration={1200} />
           <MetricCard value={99}    suffix=".7%" label="Uptime SLA"             color="#ffb830"  start={metricsVisible} duration={1400} />
-          <MetricCard value={94}    suffix="%"   label="AI Accuracy"            color="#3d8ef8"  start={metricsVisible} duration={1800} />
+          <MetricCard value={100}   suffix="%"   label="AI Accuracy"            color="#3d8ef8"  start={metricsVisible} duration={1800} />
           <MetricCard value={2100}  suffix="+"   label="Appointments Booked"    color="#ff3366"  start={metricsVisible} duration={2000} />
         </div>
       </div>
@@ -484,25 +485,25 @@ export function LandingPage() {
 
   /* ── AI CAPABILITIES ─────────────────────────────────────────────── */
   const AiCapabilities = (
-    <section id="ai" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
+    <section id="ai" className="lp-ai-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#3d8ef8", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Embedded Intelligence</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>AI Built for the Clinic, Not the Lab.</h2>
-          <p style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 560, margin: "12px auto 0" }}>Every AI feature surfaces directly inside the clinical workflow — no separate system, no extra click.</p>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--blue" style={{ fontSize: 11, color: "#3d8ef8", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Embedded Intelligence</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>AI Built for the Clinic, Not the Lab.</h2>
+          <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 560, margin: "12px auto 0" }}>Every AI feature surfaces directly inside the clinical workflow — no separate system, no extra click.</p>
         </div>
         <div ref={aiRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           {AI_CAPABILITIES.map((a, i) => (
-            <div key={a.title}
+            <div key={a.title} className="lp-ai-card"
               style={{ padding: "24px 22px", background: "rgba(8,18,42,0.65)", border: `1px solid rgba(0,212,255,0.10)`, borderRadius: 16,
                 opacity: aiVisible ? 1 : 0, transform: aiVisible ? "translateY(0)" : "translateY(24px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ fontWeight: 700, fontSize: 15, color: a.color }}>{a.title}</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: a.color }}>{a.pct}%</div>
+                <div className="lp-ai-title" style={{ fontWeight: 700, fontSize: 15, color: a.color }}>{a.title}</div>
+                <div className="lp-ai-pct" style={{ fontSize: 13, fontWeight: 800, color: a.color }}>{a.pct}%</div>
               </div>
-              <p style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: "0 0 16px" }}>{a.body}</p>
-              <div style={{ height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 2, overflow: "hidden" }}>
+              <p className="lp-ai-body" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: "0 0 16px" }}>{a.body}</p>
+              <div className="lp-ai-bar-track" style={{ height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 2, overflow: "hidden" }}>
                 <div className={aiVisible ? "lp-ai-bar" : ""} style={{ "--w": `${a.pct}%`, height: "100%", borderRadius: 2, background: a.color, width: aiVisible ? `${a.pct}%` : 0, transition: `width 1.5s ${i * 0.1 + 0.3}s cubic-bezier(0.23,1,0.32,1)` } as React.CSSProperties} />
               </div>
             </div>
@@ -514,11 +515,11 @@ export function LandingPage() {
 
   /* ── TESTIMONIALS ────────────────────────────────────────────────── */
   const Testimonials = (
-    <section style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)" }}>
+    <section className="lp-testimonials-section" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#ffb830", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Voices from the Field</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>What Clinicians & Patients Say.</h2>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--amber" style={{ fontSize: 11, color: "#ffb830", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Voices from the Field</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>What Clinicians & Patients Say.</h2>
         </div>
         <div ref={testiRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
           {TESTIMONIALS.map((t, i) => (
@@ -526,14 +527,13 @@ export function LandingPage() {
               style={{ padding: "28px 26px", background: "rgba(8,18,42,0.65)", border: `1px solid ${t.color}22`, borderRadius: 18,
                 opacity: testiVisible ? 1 : 0, transform: testiVisible ? "translateY(0)" : "translateY(24px)",
                 transition: `opacity 0.5s ${i * 0.1}s, transform 0.5s ${i * 0.1}s cubic-bezier(0.23,1,0.32,1)` }}>
-              {/* quote mark */}
-              <div style={{ fontSize: 48, lineHeight: 1, color: `${t.color}30`, fontFamily: "Georgia,serif", marginBottom: 4 }}>"</div>
-              <p style={{ fontSize: 14, color: "#c8ddf5", lineHeight: 1.72, margin: "0 0 24px", fontStyle: "italic" }}>{t.quote}</p>
+              <div className="lp-testi-quote-mark" style={{ fontSize: 48, lineHeight: 1, color: `${t.color}30`, fontFamily: "Georgia,serif", marginBottom: 4 }}>"</div>
+              <p className="lp-testi-quote" style={{ fontSize: 14, color: "#c8ddf5", lineHeight: 1.72, margin: "0 0 24px", fontStyle: "italic" }}>{t.quote}</p>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${t.color}22`, border: `2px solid ${t.color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: t.color, flexShrink: 0 }}>{t.initials}</div>
+                <div className="lp-testi-avatar" style={{ width: 40, height: 40, borderRadius: "50%", background: `${t.color}22`, border: `2px solid ${t.color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: t.color, flexShrink: 0 }}>{t.initials}</div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#ddf0ff" }}>{t.name}</div>
-                  <div style={{ fontSize: 11, color: "#3e637a", marginTop: 2 }}>{t.role}</div>
+                  <div className="lp-testi-name" style={{ fontSize: 13, fontWeight: 700, color: "#ddf0ff" }}>{t.name}</div>
+                  <div className="lp-testi-role" style={{ fontSize: 11, color: "#3e637a", marginTop: 2 }}>{t.role}</div>
                 </div>
               </div>
             </div>
@@ -545,12 +545,12 @@ export function LandingPage() {
 
   /* ── COMPLIANCE ──────────────────────────────────────────────────── */
   const ComplianceSection = (
-    <section style={{ padding: "100px clamp(16px,5vw,60px)" }}>
+    <section className="lp-compliance-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p style={{ fontSize: 11, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Built to the Standard</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Compliance & Security.</h2>
-          <p style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>Every regulation that protects patients in Kenya and internationally is met — by design, not by patch.</p>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--purple" style={{ fontSize: 11, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Built to the Standard</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Compliance & Security.</h2>
+          <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>Every regulation that protects patients in Kenya and internationally is met — by design, not by patch.</p>
         </div>
         <div ref={compRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
           {COMPLIANCE.map((c, i) => (
@@ -559,10 +559,10 @@ export function LandingPage() {
                 opacity: compVisible ? 1 : 0, transform: compVisible ? "translateY(0)" : "translateY(20px)",
                 transition: `opacity 0.5s ${i * 0.06}s, transform 0.5s ${i * 0.06}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                <span style={{ fontWeight: 700, fontSize: 15, color: c.color }}>{c.label}</span>
+                <div className="lp-comp-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
+                <span className="lp-comp-label" style={{ fontWeight: 700, fontSize: 15, color: c.color }}>{c.label}</span>
               </div>
-              <p style={{ fontSize: 13, color: "#7ab8d8", margin: 0, lineHeight: 1.55 }}>{c.sub}</p>
+              <p className="lp-comp-body" style={{ fontSize: 13, color: "#7ab8d8", margin: 0, lineHeight: 1.55 }}>{c.sub}</p>
             </div>
           ))}
         </div>
@@ -570,19 +570,18 @@ export function LandingPage() {
     </section>
   );
 
-  /* ── AWARDS ──────────────────────────────────────────────────────── */
   const Awards = (
-    <section style={{ padding: "60px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)", borderTop: "1px solid rgba(0,212,255,0.07)", borderBottom: "1px solid rgba(0,212,255,0.07)" }}>
+    <section className="lp-awards-section" style={{ padding: "60px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)", borderTop: "1px solid rgba(0,212,255,0.07)", borderBottom: "1px solid rgba(0,212,255,0.07)" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <p style={{ fontSize: 11, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, textAlign: "center", marginBottom: 32 }}>Recognised & Accredited By</p>
-        <div ref={awardsRef} style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14 }}>
+        <p className="lp-section-eyebrow lp-awards-eyebrow" style={{ fontSize: 11, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, textAlign: "center", marginBottom: 32 }}>Recognised & Accredited By</p>
+        <div ref={awardsRef} className="lp-awards-grid" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14 }}>
           {AWARDS.map((a, i) => (
-            <div key={a.body}
+            <div key={a.body} className="lp-award-card"
               style={{ padding: "16px 24px", background: "rgba(8,18,42,0.70)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 12, textAlign: "center", minWidth: 160,
                 opacity: awardsVisible ? 1 : 0, transform: awardsVisible ? "translateY(0)" : "translateY(16px)",
                 transition: `opacity 0.45s ${i * 0.07}s, transform 0.45s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
-              <div style={{ fontWeight: 800, fontSize: 14, color: "#ddf0ff", marginBottom: 4 }}>{a.body}</div>
-              <div style={{ fontSize: 11, color: "#3e637a" }}>{a.caption}</div>
+              <div className="lp-award-body" style={{ fontWeight: 800, fontSize: 14, color: "#ddf0ff", marginBottom: 4 }}>{a.body}</div>
+              <div className="lp-award-caption" style={{ fontSize: 11, color: "#3e637a" }}>{a.caption}</div>
             </div>
           ))}
         </div>
@@ -590,24 +589,23 @@ export function LandingPage() {
     </section>
   );
 
-  /* ── FAQ ─────────────────────────────────────────────────────────── */
   const Faq = (
-    <section style={{ padding: "100px clamp(16px,5vw,60px)" }}>
+    <section className="lp-faq-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 780, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 50 }}>
-          <p style={{ fontSize: 11, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Common Questions</p>
-          <h2 style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Frequently Asked</h2>
+        <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 50 }}>
+          <p className="lp-section-eyebrow lp-eyebrow--success" style={{ fontSize: 11, color: "#00e5a0", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Common Questions</p>
+          <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,40px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Frequently Asked</h2>
         </div>
         {FAQS.map((f, i) => (
           <div key={i} className="lp-faq-item"
             onClick={() => setOpenFaq(openFaq === i ? null : i)}
             style={{ borderBottom: "1px solid rgba(0,212,255,0.08)", padding: "20px 4px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-              <div style={{ fontWeight: 600, fontSize: 15, color: "#ddf0ff" }}>{f.q}</div>
-              <div style={{ fontSize: 18, color: openFaq === i ? "#00d4ff" : "#3e637a", transition: "transform 0.2s", transform: openFaq === i ? "rotate(45deg)" : "rotate(0deg)", flexShrink: 0 }}>+</div>
+              <div className="lp-faq-q" style={{ fontWeight: 600, fontSize: 15, color: "#ddf0ff" }}>{f.q}</div>
+              <div className={`lp-faq-toggle${openFaq === i ? " lp-faq-toggle--open" : ""}`} style={{ fontSize: 18, color: openFaq === i ? "#00d4ff" : "#3e637a", transition: "transform 0.2s", transform: openFaq === i ? "rotate(45deg)" : "rotate(0deg)", flexShrink: 0 }}>+</div>
             </div>
             {openFaq === i && (
-              <p style={{ fontSize: 14, color: "#7ab8d8", lineHeight: 1.7, margin: "14px 0 0", animation: "lp-fade-up 0.3s ease both" }}>{f.a}</p>
+              <p className="lp-faq-a" style={{ fontSize: 14, color: "#7ab8d8", lineHeight: 1.7, margin: "14px 0 0", animation: "lp-fade-up 0.3s ease both" }}>{f.a}</p>
             )}
           </div>
         ))}
@@ -615,58 +613,55 @@ export function LandingPage() {
     </section>
   );
 
-  /* ── CTA ─────────────────────────────────────────────────────────── */
   const Cta = (
-    <section style={{ padding: "120px clamp(16px,5vw,60px)", textAlign: "center", position: "relative", overflow: "hidden", background: "rgba(0,0,0,0.18)" }}>
-      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(800px,90vw)", height: "min(500px,50vw)", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(0,212,255,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
+    <section className="lp-cta-section" style={{ padding: "120px clamp(16px,5vw,60px)", textAlign: "center", position: "relative", overflow: "hidden", background: "rgba(0,0,0,0.18)" }}>
+      <div className="lp-cta-glow" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(800px,90vw)", height: "min(500px,50vw)", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(0,212,255,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "relative", maxWidth: 640, margin: "0 auto" }}>
-        <div style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 18 }}>UniHealth · Kenya</div>
-        <h2 style={{ fontSize: "clamp(28px,5vw,58px)", fontWeight: 900, color: "#ddf0ff", margin: "0 0 18px", letterSpacing: "-0.02em", lineHeight: 1.08 }}>
-          The future of care<br /><span style={{ color: "#00d4ff" }}>starts here.</span>
+        <div className="lp-cta-eyebrow" style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 18 }}>UniHealth · Kenya</div>
+        <h2 className="lp-cta-title" style={{ fontSize: "clamp(28px,5vw,58px)", fontWeight: 900, color: "#ddf0ff", margin: "0 0 18px", letterSpacing: "-0.02em", lineHeight: 1.08 }}>
+          The future of care<br /><span className="lp-cta-title-accent">starts here.</span>
         </h2>
-        <p style={{ fontSize: 16, color: "#7ab8d8", lineHeight: 1.65, marginBottom: 38, maxWidth: 500, margin: "0 auto 38px" }}>
+        <p className="lp-cta-lead" style={{ fontSize: 16, color: "#7ab8d8", lineHeight: 1.65, marginBottom: 38, maxWidth: 500, margin: "0 auto 38px" }}>
           Join 380+ clinicians and 47,000+ patients already on UniHealth. Request pilot access for your facility today.
         </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="lp-btn-primary" onClick={goRegister} style={{ padding: "15px 38px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+        <div className="lp-cta-actions" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="lp-btn-primary" onClick={() => goRegister()} style={{ padding: "15px 38px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
             Create Your Account
           </button>
-          <button onClick={goSignIn} style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+          <button className="lp-cta-secondary" onClick={() => goSignIn()} style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
             Already have an account? Sign In
           </button>
-          <a href="mailto:admin@unihealth.ke" style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 500, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+          <a className="lp-cta-secondary" href="mailto:admin@unihealth.ke" style={{ padding: "15px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#7ab8d8", fontSize: 14, fontWeight: 500, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
             Request Facility Access
           </a>
         </div>
-        {/* 24/7 badge */}
-        <div style={{ marginTop: 36, display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,229,160,0.06)", border: "1px solid rgba(0,229,160,0.18)", borderRadius: 20, padding: "6px 16px" }}>
+        <div className="lp-cta-badge" style={{ marginTop: 36, display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,229,160,0.06)", border: "1px solid rgba(0,229,160,0.18)", borderRadius: 20, padding: "6px 16px" }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#00e5a0", animation: "lp-blink 2s infinite" }} />
-          <span style={{ fontSize: 12, color: "#00e5a0", fontWeight: 500 }}>24 / 7 platform availability · Emergency access always on</span>
+          <span className="lp-cta-badge-text" style={{ fontSize: 12, color: "#00e5a0", fontWeight: 500 }}>24 / 7 platform availability · Emergency access always on</span>
         </div>
       </div>
     </section>
   );
 
-  /* ── FOOTER ──────────────────────────────────────────────────────── */
   const Footer = (
-    <footer style={{ borderTop: "1px solid rgba(0,212,255,0.07)", padding: "36px clamp(16px,4vw,48px)" }}>
+    <footer className="lp-footer" style={{ borderTop: "1px solid rgba(0,212,255,0.07)", padding: "36px clamp(16px,4vw,48px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 18 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <LandingBrandMark size={28} idPrefix="lp-footer" />
-          <span style={{ fontWeight: 700, fontSize: 14, color: "#ddf0ff" }}>UniHealth</span>
+          <span className="lp-footer-brand" style={{ fontWeight: 700, fontSize: 14, color: "#ddf0ff" }}>UniHealth</span>
         </div>
-        <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
+        <div className="lp-footer-badges" style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
           {["KDPA Compliant", "FHIR R5", "ISO 27001", "MoH Approved"].map(b => (
-            <span key={b} style={{ fontSize: 11, color: "#3e637a" }}>{b}</span>
+            <span key={b} className="lp-footer-badge" style={{ fontSize: 11, color: "#3e637a" }}>{b}</span>
           ))}
         </div>
-        <div style={{ fontSize: 12, color: "#3e637a" }}>© 2026 UniHealth Kenya · Ministry of Health</div>
+        <div className="lp-footer-copy" style={{ fontSize: 12, color: "#3e637a" }}>© 2026 UniHealth Kenya · Ministry of Health</div>
       </div>
     </footer>
   );
 
   return (
-    <div style={{ background: "#05091a", color: "#ddf0ff", minHeight: "100vh", width: "100%", fontFamily: "'Inter','Segoe UI',system-ui,sans-serif", overflowX: "hidden" }}>
+    <div className="lp-root" style={{ minHeight: "100vh", width: "100%", fontFamily: "var(--font-system)", overflowX: "hidden" }}>
       <style>{KEYFRAMES}</style>
       {Topbar}
       {Hero}

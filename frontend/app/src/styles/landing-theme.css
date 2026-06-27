@@ -1,0 +1,762 @@
+/* Landing page — light mode (overrides inline dark marketing styles) */
+
+html[data-theme="light"] .lp-root {
+  background: var(--bg) !important;
+  color: var(--t1) !important;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root nav {
+  background: color-mix(in srgb, var(--card) 94%, transparent) !important;
+  border-bottom: 1px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root nav span {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root nav .lp-nav-link {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root nav .lp-nav-link:hover {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-btn-ghost {
+  border: 1.5px solid var(--bdr2) !important;
+  color: var(--t1) !important;
+  font-weight: var(--fw-label) !important;
+  background: var(--card) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-btn-ghost:hover {
+  background: var(--p-surface) !important;
+  border-color: var(--pd) !important;
+  color: var(--pd) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-btn-primary {
+  background: var(--pd) !important;
+  border-color: var(--pd) !important;
+  color: #ffffff !important;
+  font-weight: var(--fw-title) !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 168, 0.22) !important;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root section.lp-hero {
+  background: linear-gradient(180deg, var(--surface-muted) 0%, var(--bg) 50%, color-mix(in srgb, var(--bl) 55%, var(--bg)) 100%) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1,
+html[data-theme="light"] .lp-root .lp-hero h1 span {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1 span:first-of-type {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero p {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero button {
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero a {
+  border: 2px solid var(--p) !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+/* Hero floating mock cards — light surfaces */
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[class],
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 8px 28px rgba(26, 35, 50, 0.1) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] div {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] div:first-child {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+/* Top stats row */
+html[data-theme="light"] .lp-root .lp-top-stats {
+  border-top-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-top-stats > div {
+  border-right-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-top-stats > div > div:first-child {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-top-stats > div > div:last-child {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* ── Sections ────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root section {
+  background: var(--bg) !important;
+}
+
+html[data-theme="light"] .lp-root h1,
+html[data-theme="light"] .lp-root h2,
+html[data-theme="light"] .lp-root h3 {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root p,
+html[data-theme="light"] .lp-root li {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .lp-root footer {
+  background: var(--surface-muted) !important;
+  border-top-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-card,
+html[data-theme="light"] .lp-root .lp-step-card,
+html[data-theme="light"] .lp-root .lp-metric-card,
+html[data-theme="light"] .lp-root .lp-comp-card,
+html[data-theme="light"] .lp-root .lp-faq-item {
+  background: var(--card) !important;
+  border: 1px solid var(--bdr) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 50, 0.06) !important;
+}
+
+/* Trust ticker */
+html[data-theme="light"] .lp-root #trust {
+  background: var(--surface-muted) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root #trust div {
+  color: var(--t2) !important;
+}
+
+/* Metric cards with dark inline bg */
+html[data-theme="light"] .lp-root div[style*="rgba(8,18,42"] {
+  background: var(--card) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root div[style*="rgba(8,18,42"] div:last-child {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .theme-toggle-floating .theme-toggle {
+  background: var(--card);
+  border: 1.5px solid var(--bdr2);
+  color: var(--t1);
+  font-weight: var(--fw-label);
+  box-shadow: var(--sh);
+}
+
+/* ── Readable animations (light) ───────────────────────────────── */
+@keyframes lp-glow-readable {
+  0%,
+  100% {
+    opacity: 1;
+    color: #000000;
+    text-shadow: none;
+  }
+  50% {
+    opacity: 1;
+    color: #000000;
+    text-shadow: none;
+  }
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1 span[style*="lp-glow-text"] {
+  animation: lp-glow-readable 3.5s ease-in-out infinite !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: var(--fw-display) !important;
+  text-shadow: none !important;
+}
+
+/* Particles — softer, still visible */
+html[data-theme="light"] .lp-root .lp-hero div[style*="lp-particle"] {
+  opacity: 0.45 !important;
+  filter: saturate(1.2);
+}
+
+/* Scan line — visible on pearl background */
+html[data-theme="light"] .lp-root .lp-hero div[style*="lp-scan"] {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(90, 165, 210, 0.22),
+    transparent
+  ) !important;
+  height: 3px !important;
+}
+
+/* Status badge pulse */
+html[data-theme="light"] .lp-root .lp-hero span[style*="lp-blink"] {
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero div[style*="lp-blink"] span:last-child {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Card hovers — light-appropriate shadows */
+html[data-theme="light"] .lp-root .lp-role-card:hover {
+  box-shadow: 0 12px 32px rgba(26, 35, 50, 0.12) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(90, 165, 210, 0.28) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-item:hover {
+  background: var(--surface-muted) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-comp-card:hover {
+  border-color: var(--p) !important;
+}
+
+/* ── Problem / Solution: Before vs With UniHealth ───────────────── */
+html[data-theme="light"] .lp-root .lp-problem-section {
+  background: var(--bg) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-col-head {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-display) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-col-head {
+  color: var(--text-success) !important;
+  font-weight: var(--fw-display) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-icon--bad {
+  color: var(--text-danger) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-icon--good {
+  color: var(--text-success) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-eyebrow {
+  color: var(--text-danger) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-title {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-lead {
+  color: var(--t2) !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before {
+  background: var(--surface-danger) !important;
+  border: 1.5px solid var(--surface-danger-bdr) !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after {
+  background: var(--surface-success) !important;
+  border: 1.5px solid var(--surface-success-bdr) !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-col-head {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-display) !important;
+  font-size: 14px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-col-head {
+  color: var(--text-success) !important;
+  font-weight: var(--fw-display) !important;
+  font-size: 14px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-col-dot {
+  background: #be123c !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-col-dot {
+  background: #047857 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-icon--bad {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-display) !important;
+  font-size: 15px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-icon--good {
+  color: var(--text-success) !important;
+  font-weight: var(--fw-display) !important;
+  font-size: 15px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-text {
+  color: var(--t2) !important;
+  font-weight: 500 !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-text {
+  color: var(--t1) !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+@media (max-width: 720px) {
+  html[data-theme="light"] .lp-root .lp-problem-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Shared section typography (light) ───────────────────────────── */
+html[data-theme="light"] .lp-root .lp-section-title,
+html[data-theme="light"] .lp-root .lp-problem-title {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-section-lead,
+html[data-theme="light"] .lp-root .lp-problem-lead {
+  color: var(--t2) !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  line-height: 1.6 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-section-eyebrow {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+}
+
+html[data-theme="light"] .lp-root .lp-eyebrow--cyan,
+html[data-theme="light"] .lp-root .lp-cta-eyebrow { color: var(--t1) !important; font-weight: 800 !important; }
+
+html[data-theme="light"] .lp-root .lp-eyebrow--success,
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-col-head { color: var(--emerald) !important; font-weight: 800 !important; }
+
+html[data-theme="light"] .lp-root .lp-eyebrow--purple { color: #5b21b6 !important; font-weight: var(--fw-label) !important; }
+
+html[data-theme="light"] .lp-root .lp-eyebrow--amber { color: var(--text-warning) !important; font-weight: var(--fw-label) !important; }
+
+html[data-theme="light"] .lp-root .lp-eyebrow--blue { color: var(--text-info) !important; font-weight: var(--fw-label) !important; }
+
+/* Alternating section backgrounds */
+html[data-theme="light"] .lp-root .lp-features-section,
+html[data-theme="light"] .lp-root .lp-testimonials-section,
+html[data-theme="light"] .lp-root .lp-metrics-section,
+html[data-theme="light"] .lp-root .lp-awards-section,
+html[data-theme="light"] .lp-root .lp-cta-section {
+  background: var(--surface-muted) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-journey-section,
+html[data-theme="light"] .lp-root .lp-ai-section,
+html[data-theme="light"] .lp-root .lp-compliance-section,
+html[data-theme="light"] .lp-root .lp-faq-section,
+html[data-theme="light"] .lp-root .lp-problem-section {
+  background: var(--bg) !important;
+}
+
+/* ── Trust ticker ──────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-trust-ticker {
+  background: var(--surface-muted) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-trust-ticker-label {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-trust-ticker-item {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-trust-ticker-dot {
+  background: var(--p) !important;
+  opacity: 0.85 !important;
+}
+
+/* ── Role portal cards ─────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-role-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 50, 0.06) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-icon {
+  background: var(--surface-muted) !important;
+  border: 2px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-label {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-portal-tag {
+  color: var(--t3) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-desc {
+  color: var(--t2) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-cta {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-role-cta-secondary {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+/* ── How it works / journey ────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-journey-tab {
+  border: 2px solid var(--bdr) !important;
+  color: var(--t2) !important;
+  font-weight: 700 !important;
+  background: var(--card) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-journey-tab--active {
+  background: var(--p) !important;
+  border-color: var(--p) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .lp-root .lp-step-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 4px 18px rgba(26, 35, 50, 0.06) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-step-title {
+  font-weight: 800 !important;
+  font-size: 16px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-step-body {
+  color: var(--t2) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.6 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-step-arrow {
+  color: var(--t4) !important;
+}
+
+/* ── Metrics ───────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-metrics-grid-bg {
+  background-image:
+    linear-gradient(rgba(90, 165, 210, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 165, 210, 0.06) 1px, transparent 1px) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 50, 0.06) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-value {
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-label {
+  color: var(--t3) !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+/* ── AI capabilities ───────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-ai-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 50, 0.06) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-ai-title,
+html[data-theme="light"] .lp-root .lp-ai-pct {
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-ai-body {
+  color: var(--t2) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-ai-bar-track {
+  background: var(--surface-muted) !important;
+}
+
+/* ── Testimonials ──────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-testi-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 4px 20px rgba(26, 35, 50, 0.06) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-testi-quote {
+  color: var(--t2) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  font-style: italic !important;
+}
+
+html[data-theme="light"] .lp-root .lp-testi-name {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-testi-role {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Compliance ────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-comp-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-comp-label {
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-comp-body {
+  color: var(--t2) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* ── Awards ────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-awards-eyebrow {
+  color: var(--t3) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-award-card {
+  background: var(--card) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 2px 12px rgba(26, 35, 50, 0.05) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-award-body {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-award-caption {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+/* ── FAQ ───────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-faq-item {
+  border-bottom-color: var(--bdr) !important;
+  background: transparent !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-q {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-a {
+  color: var(--t2) !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  line-height: 1.65 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-toggle {
+  color: var(--t3) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-toggle--open {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+/* ── CTA ───────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-cta-glow {
+  background: radial-gradient(ellipse, rgba(90, 165, 210, 0.08) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-title {
+  color: var(--t1) !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-title-accent {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-lead {
+  color: var(--t2) !important;
+  font-weight: 500 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-secondary {
+  border: 2px solid var(--p) !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 700 !important;
+  background: var(--card) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-badge {
+  background: var(--surface-success) !important;
+  border: 1.5px solid var(--surface-success-bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-badge-text {
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+/* ── Footer ────────────────────────────────────────────────────── */
+html[data-theme="light"] .lp-root .lp-footer {
+  background: var(--surface-muted) !important;
+  border-top-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-footer-brand {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-footer-badge,
+html[data-theme="light"] .lp-root .lp-footer-copy {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+/* Section eyebrow / stat labels */
+html[data-theme="light"] .lp-root .lp-top-stats > div > div:first-child {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-top-stats > div > div:last-child {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Inline light-on-dark text cleanup */
+html[data-theme="light"] .lp-root [style*="color: #7ab8d8"],
+html[data-theme="light"] .lp-root [style*="color:#7ab8d8"],
+html[data-theme="light"] .lp-root [style*="color: #3e637a"],
+html[data-theme="light"] .lp-root [style*="color:#3e637a"],
+html[data-theme="light"] .lp-root [style*="color: #ddf0ff"],
+html[data-theme="light"] .lp-root [style*="color:#ddf0ff"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #00d4ff"],
+html[data-theme="light"] .lp-root [style*="color:#00d4ff"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #00e5a0"],
+html[data-theme="light"] .lp-root [style*="color:#00e5a0"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #c8ddf5"],
+html[data-theme="light"] .lp-root [style*="color:#c8ddf5"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #a855f7"],
+html[data-theme="light"] .lp-root [style*="color:#a855f7"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #ffb830"],
+html[data-theme="light"] .lp-root [style*="color:#ffb830"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #3d8ef8"],
+html[data-theme="light"] .lp-root [style*="color:#3d8ef8"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #ff3366"],
+html[data-theme="light"] .lp-root [style*="color:#ff3366"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="dark"] .lp-root {
+  background: #05091a;
+  color: #ddf0ff;
+}
+
+.theme-toggle-floating {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 500;
+}

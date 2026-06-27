@@ -1680,115 +1680,54 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ─────────────────────────────────────────────────────────────
-   ROLE DATA
+   ROLE DATA (synced from shared/pilot-roles.json)
 ───────────────────────────────────────────────────────────── */
+/* PILOT_ROLES_ARRAY_START */
 const ROLES = [
   {
-    id:'doctor', icon:'👨‍⚕️', name:'Doctor',
-    desc:'EMR · Prescriptions · AI Diagnostics · Telemedicine',
-    mods:'EMR · Prescriptions · Maternity Consult · AI Diagnostics · Telemedicine',
-    stats:'12 patients today · 3 pending reviews · 2 critical alerts',
+    id:'doctor', icon:'🩺', name:'Doctor',
+    desc:'EMR, patient data, orders, and clinical tools',
+    mods:'Clinician Portal · Module Pull',
+    stats:'Pilot account · Keycloak username doctor',
     tag:'Core', tagClass:'tag-g'
   },
   {
-    id:'nurse', icon:'👩‍⚕️', name:'Nurse',
-    desc:'Patient Care · Vitals · Medication Admin · Ward Mgmt',
-    mods:'Patient Care · Vitals · Maternity Ward · Medication Admin · NICU Support',
-    stats:'18 patients · 6 pending vitals · 1 critical · Maternity ward access',
+    id:'nurse', icon:'💉', name:'Nurse',
+    desc:'Ward management, vitals, medication rounds, and handover',
+    mods:'Nursing Station · Module Pull',
+    stats:'Pilot account · Keycloak username nurse',
     tag:'Core', tagClass:'tag-g'
   },
   {
-    id:'admin', icon:'🏥', name:'Administrator',
-    desc:'Hospital Mgmt · HR · Finance · All Modules',
-    mods:'Full System Access · HR · Finance · Reports · All Modules incl. Maternity',
-    stats:'Full system access · 5 pending approvals · Insurance dashboard',
+    id:'lab', icon:'🔬', name:'Laboratory',
+    desc:'Specimen workflow, test queue, results entry, and QC',
+    mods:'Laboratory Portal · Module Pull',
+    stats:'Pilot account · Keycloak username lab',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'pharmacy', icon:'💊', name:'Pharmacy',
+    desc:'Dispensing queue, KEMSA orders, stock, and prescriptions',
+    mods:'Pharmacy Portal · Module Pull',
+    stats:'Pilot account · Keycloak username pharmacy',
+    tag:'Core', tagClass:'tag-g'
+  },
+  {
+    id:'admin', icon:'⚙', name:'Admin',
+    desc:'System administration and facility management',
+    mods:'Admin Console · Module Pull',
+    stats:'Pilot account · Keycloak username admin',
     tag:'Admin', tagClass:'tag-r'
   },
   {
-    id:'pharmacist', icon:'💊', name:'Pharmacist',
-    desc:'Pharmacy · Drug Inventory · KEMSA · Billing',
-    mods:'Pharmacy · Drug Inventory · KEMSA · Maternity Meds · Prescriptions',
-    stats:'89 prescriptions queued · 3 drug alerts · 12 maternity orders',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'lab', icon:'🔬', name:'Lab Technician',
-    desc:'Lab Orders · Results · Equipment · Radiology',
-    mods:'Lab Orders · Results · Radiology · Maternal Blood Panel · NICU Labs',
-    stats:'234 tests pending · 12 critical · 18 maternal panels',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'radiologist', icon:'🩻', name:'Radiologist',
-    desc:'Radiology · PACS · Image Review · Reports',
-    mods:'Radiology · PACS · Ultrasound · Maternal Imaging · Reports',
-    stats:'67 scans queued · 4 urgent reads · 8 obstetric ultrasounds',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'surgeon', icon:'🔪', name:'Surgeon',
-    desc:'Theatre · Surgery Schedule · Pre/Post-op · ICU',
-    mods:'Theatre · Surgery Schedule · C-Section Suite · Pre/Post-op · ICU',
-    stats:'3 scheduled · 1 emergency C-section · Theatre 2 available',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'insurance', icon:'🛡️', name:'Insurance Officer',
-    desc:'CIC Insurance · Old Mutual · Claims · Verification',
-    mods:'CIC Insurance · Old Mutual · Claims AI · Fraud Monitor · Billing',
-    stats:'47 claims today · KES 7M processed · 3 fraud alerts',
-    tag:'Insurance', tagClass:'tag-b'
-  },
-  {
-    id:'telemedicine', icon:'📡', name:'Telemedicine Staff',
-    desc:'Virtual Consults · Patient Queue · Prescriptions · EMR',
-    mods:'Virtual Consults · ANC Remote · Patient Queue · Prescriptions · EMR',
-    stats:'8 virtual sessions today · 3 ANC remote consultations',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'maternity', icon:'🤰', name:'Maternity Staff',
-    desc:'ANC · Labor & Delivery · Postnatal · Fetal Monitor',
-    mods:'ANC · Labor & Delivery · Postnatal · NICU · Fetal Monitor · Ultrasound',
-    stats:'26 ANC patients · 3 in labor · 8 NICU babies · 14 postnatal',
-    tag:'Maternity', tagClass:'tag-m'
-  },
-  {
-    id:'nicu', icon:'👶', name:'NICU Specialist',
-    desc:'NICU · Neonatal Care · Incubator Monitoring · Alerts',
-    mods:'NICU Dashboard · Neonatal Vitals · Incubator IoT · Maternal Link · AI Alerts',
-    stats:'8 neonates monitored · 2 critical · AI risk model active',
-    tag:'Maternity', tagClass:'tag-m'
-  },
-  {
-    id:'icu', icon:'🫀', name:'ICU Staff',
-    desc:'ICU · Critical Care · Ventilator · Monitoring',
-    mods:'ICU Dashboard · Critical Care · Ventilator Mgmt · Drug Drips · Alerts',
-    stats:'24 ICU beds · 18 occupied · 3 on ventilator · 2 post-surgical',
-    tag:'Core', tagClass:'tag-g'
-  },
-  {
-    id:'patient', icon:'🧑‍🦽', name:'Patient',
-    desc:'My Records · Appointments · Bills · Prescriptions',
-    mods:'My Health Records · Appointments · Bills · Prescriptions · Telemedicine',
-    stats:'Next appointment: 14 May · 2 lab results ready · Insurance verified',
+    id:'patient', icon:'🙋', name:'Patient',
+    desc:'Health records, appointments, lab results, and insurance',
+    mods:'Patient Portal · Module Pull',
+    stats:'Pilot account · Keycloak username patient',
     tag:'Patient', tagClass:'tag-b'
   },
-  {
-    id:'it_admin', icon:'💻', name:'IT Administrator',
-    desc:'System Admin · Users · Audit Logs · Security',
-    mods:'System Admin · User Management · Audit Logs · Security · API Config',
-    stats:'All modules · Full access · Audit trail enabled',
-    tag:'Admin', tagClass:'tag-r'
-  },
-  {
-    id:'super_admin', icon:'⚡', name:'Super Admin',
-    desc:'ALL MODULES · Multi-Hospital · National Data · AI Config',
-    mods:'⚡ ALL MODULES · Multi-Hospital · National Health Data · AI Engine Config',
-    stats:'National admin access · All hospitals · All data · CIC + Old Mutual admin',
-    tag:'Super', tagClass:'tag-r'
-  },
 ];
+/* PILOT_ROLES_ARRAY_END */
 
 /* ─────────────────────────────────────────────────────────────
    ROLE DROPDOWN
@@ -2056,26 +1995,19 @@ document.getElementById('login-form').addEventListener('submit', async e => {
 });
 
 /* ── Module Registry (RBAC → Module Pull API) ── */
+/* PILOT_MODULE_PULL_START */
 function getModulesForRole(roleId) {
   const registry = {
-    doctor:      ['emr','maternity','lab','pharmacy','telemedicine','ai_diagnostics'],
-    nurse:       ['ward','maternity','nicu','medication_admin','vitals'],
-    admin:       ['*'],
-    pharmacist:  ['pharmacy','drug_inventory','kemsa','maternity_meds','prescriptions','billing'],
-    lab:         ['lab_orders','results','radiology','maternal_panels','nicu_labs'],
-    radiologist: ['radiology','pacs','ultrasound','maternal_imaging','reports'],
-    surgeon:     ['theatre','surgery_schedule','csection_suite','pre_post_op','icu'],
-    insurance:   ['cic_insurance','old_mutual','claims_ai','fraud_monitor','billing'],
-    telemedicine:['virtual_consults','anc_remote','patient_queue','prescriptions','emr'],
-    maternity:   ['maternity','nicu','anc','delivery','postnatal','fetal_monitoring','ultrasound'],
-    nicu:        ['nicu_dashboard','neonatal_vitals','incubator_iot','maternal_link','ai_alerts'],
-    icu:         ['icu_dashboard','critical_care','ventilator_mgmt','drug_drips','alerts'],
-    patient:     ['my_records','appointments','bills','prescriptions','telemedicine'],
-    it_admin:    ['system_admin','user_mgmt','audit_logs','security','api_config'],
-    super_admin: ['*'],
+    doctor: ['emr','maternity','lab','pharmacy','teleconsult','ai_engine'],
+    nurse: ['ward','maternity','nicu','medication','vitals'],
+    lab: ['lab','radiology','maternal_panels','nicu_labs','results'],
+    pharmacy: ['pharmacy','kemsa','inventory','maternity_meds','prescriptions','billing'],
+    admin: ['*'],
+    patient: ['patient_portal','appointments','lab_results','maternity_records','cic','teleconsult'],
   };
   return registry[roleId] || ['emr'];
 }
+/* PILOT_MODULE_PULL_END */
 
 /* ─────────────────────────────────────────────────────────────
    INPUT FOCUS GLOW

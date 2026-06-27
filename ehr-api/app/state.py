@@ -216,6 +216,16 @@ ai_anomalies: list[dict] = []
 # KDPA-compliant AI audit trail (every AI recommendation + clinician feedback)
 ai_audit_log: list[dict] = []
 
+# Clinical AI assessment history (in-memory when Postgres unavailable)
+clinical_ai_assessments: list[dict] = []
+
+# Legal document e-signing (in-memory when Postgres unavailable)
+legal_documents: list[dict] = []
+legal_document_audit: list[dict] = []
+
+# Inter-facility referrals (doctor workflow)
+referrals: list[dict] = []
+
 
 def _merge_sqlite_census_history_if_enabled() -> None:
     """Optional SQLite replay over simulator census — see ``EHR_REPLAY_WARD_CENSUS_SQLITE``."""

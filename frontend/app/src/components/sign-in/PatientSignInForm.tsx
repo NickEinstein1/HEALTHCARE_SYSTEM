@@ -1,5 +1,6 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { ROLE_CONFIG, ID_TYPES, type IdTypeKey } from "../../lib/signInConfig";
+import { fetchPasswordGrantToken, oidcEnabled } from "../../lib/oidc";
 
 const PHONE_RX = /^(\+2547|\+2541|07|01)\d{8,9}$/;
 
@@ -64,10 +65,21 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
     }
     setLoading(true);
     addAudit("AUTH PATIENT_LOGIN_ATTEMPT id_type=" + idType);
-    window.setTimeout(() => {
-      setLoading(false);
-      onSuccess(ph, "sms");
-    }, 2000);
+    (async () => {
+      try {
+        if (oidcEnabled()) {
+          await fetchPasswordGrantToken("patient", "Changeme1!");
+          addAudit("AUTH OIDC_TOKEN role=patient");
+        }
+        onSuccess(ph, "sms");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Sign-in failed";
+        setPatErr(msg);
+        addAudit("AUTH OIDC_FAILED role=patient");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }
 
   function stubAlt(kind: string) {

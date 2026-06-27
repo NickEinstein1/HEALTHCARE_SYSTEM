@@ -1,5 +1,12 @@
 import type {
   AllergyIntolerance,
+  ClinicalAiAssessmentResult,
+  LegalDocument,
+  LegalDocumentVerification,
+  EsignAiAnalysis,
+  EsignDocumentView,
+  EsignVerificationProcess,
+  ReferralRecord,
   MedicationRequest,
   MetricsJson,
   Observation,
@@ -8,64 +15,125 @@ import type {
 import { authHeaders } from "./authHeaders";
 import { getStoredAccessToken } from "./oidc";
 
-function apiBaseUrl() {
-  // Staging: VITE_API_BASE_URL=http://localhost:8100 (see .env.staging.example)
-  const fromEnv = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
-  // Default to same-origin so Vite proxy (dev) or reverse proxy (prod)
-  // can forward API requests without CORS issues.
-  return (fromEnv && fromEnv.trim()) || "";
+export function apiBaseUrl(): string {
+  const env = (import.meta as { env?: Record<string, string> }).env;
+  const fromEnv = env?.VITE_API_BASE_URL?.trim() ?? "";
+  const forceDirect = env?.VITE_API_FORCE_DIRECT === "true";
+  // Dev: same-origin + Vite proxy (vite.config.ts → :8100). Avoids CORS / cross-port fetch failures.
+  if (import.meta.env.DEV && !forceDirect) {
+    return "";
+  }
+  return fromEnv;
+}
+
+/** E-sign API prefix — not /legal (blocked by many browser privacy extensions). */
+const ESIGN = "/esign";
+
+function devDirectApiBase(): string {
+  const env = (import.meta as { env?: Record<string, string> }).env;
+  return env?.VITE_DEV_PROXY_TARGET?.trim() || env?.VITE_API_BASE_URL?.trim() || "http://localhost:8100";
+}
+
+function fetchFailureMessage(path: string, cause: unknown): string {
+  const from = apiBaseUrl() || "(same-origin)";
+  const parts = [
+    `Failed to fetch ${path} from ${from}.`,
+    "Check: (1) ./scripts/run_staging.sh — gateway on :8100,",
+    "(2) cd frontend/app && npm run dev — Vite proxy,",
+    "(3) hard refresh, (4) disable ad/privacy blockers for localhost.",
+  ];
+  if (cause instanceof TypeError) {
+    parts.push(`Network error: ${cause.message}.`);
+  }
+  return parts.join(" ");
+}
+
+/** Fetch with dev fallback: same-origin proxy first, then direct :8100. */
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const attempts: string[] = [];
+  const primary = apiBaseUrl();
+  attempts.push(primary ? `${primary}${path}` : path);
+  if (import.meta.env.DEV && !primary) {
+    attempts.push(`${devDirectApiBase()}${path}`);
+  }
+
+  let lastError: unknown;
+  for (const url of attempts) {
+    try {
+      return await fetch(url, init);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw new Error(fetchFailureMessage(path, lastError));
 }
 
 /** Pilot facility header for FHIR reads/writes (required when EHR_CONSENT_MODE=strict). */
 function fhirHeaders(role?: string): Record<string, string> {
-  return {
+  const h: Record<string, string> = {
     ...authHeaders(role),
     "X-Facility-Id": "FAC-A",
   };
+  if (role) h["X-UniHealth-Role"] = role;
+  return h;
+}
+
+function legalAuthHeaders(role: string, patientId?: string): Record<string, string> {
+  const h: Record<string, string> = { ...authHeaders(role), "X-Facility-Id": "FAC-A" };
+  // Always send role header in dev — OIDC header fallback on gateway
+  if (role) h["X-UniHealth-Role"] = role;
+  if (role === "patient" && patientId) {
+    h["X-Patient-Id"] = patientId;
+  }
+  return h;
 }
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(apiBaseUrl() + path, {
-      ...init,
-      headers: {
-        ...(init?.headers ?? {}),
-        Accept: "application/json",
-      },
-    });
-  } catch (e) {
-    const base = apiBaseUrl() || "(same-origin)";
-    throw new Error(`Failed to fetch ${path} from ${base}. Is the API running / proxy configured?`);
+  let res = await apiFetch(path, {
+    ...init,
+    headers: {
+      ...(init?.headers ?? {}),
+      Accept: "application/json",
+    },
+  });
+  if (res.status === 401) {
+    const body = await res.text().catch(() => "");
+    const initHeaders = (init?.headers ?? {}) as Record<string, string>;
+    const hadBearer = Boolean(initHeaders.Authorization?.startsWith("Bearer "));
+    if (hadBearer && body.includes("access token")) {
+      const { setStoredAccessToken } = await import("./oidc");
+      setStoredAccessToken(null);
+      const retryHeaders: Record<string, string> = { ...initHeaders, Accept: "application/json" };
+      delete retryHeaders.Authorization;
+      res = await apiFetch(path, { ...init, headers: retryHeaders });
+    } else if (body) {
+      throw new Error(`401 Unauthorized — ${body} Sign in again at /sign-in (OIDC token may have expired).`);
+    }
   }
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     const hint =
       res.status === 500 || res.status === 502
-        ? ` Check backend: ./scripts/run_staging.sh (gateway :8100) and frontend/app/.env with VITE_API_BASE_URL=http://localhost:8100`
-        : "";
+        ? ` Check backend: ./scripts/run_staging.sh (gateway :8100)`
+        : res.status === 401
+          ? " Sign in again at /sign-in (OIDC token may have expired)."
+          : "";
     throw new Error(`${res.status} ${res.statusText}${t ? ` — ${t}` : ""}${hint}`);
   }
   return (await res.json()) as T;
 }
 
 async function postJson<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(apiBaseUrl() + path, {
-      method: "POST",
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(init?.headers ?? {}),
-        Accept: "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-  } catch (e) {
-    const base = apiBaseUrl() || "(same-origin)";
-    throw new Error(`Failed to fetch ${path} from ${base}. Is the API running / proxy configured?`);
-  }
+  const res = await apiFetch(path, {
+    method: "POST",
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
+      Accept: "application/json",
+    },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     throw new Error(`${res.status} ${res.statusText}${t ? ` — ${t}` : ""}`);
@@ -105,8 +173,10 @@ export const api = {
   nurseIncident(payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson("/nurse/incidents", payload);
   },
-  nurseIncidents(limit = 50): Promise<any[]> {
-    return getJson(`/nurse/incidents?limit=${limit}`);
+  nurseIncidents(limit = 50, patientId?: string): Promise<any[]> {
+    const qs = new URLSearchParams({ limit: String(limit) });
+    if (patientId) qs.set("patient_id", patientId);
+    return getJson(`/nurse/incidents?${qs.toString()}`);
   },
   nurseIncidentUpdate(incidentId: string, payload: unknown): Promise<{ status: string; id?: string }> {
     return postJson(`/nurse/incidents/${encodeURIComponent(incidentId)}`, payload, { method: "PUT" });
@@ -491,6 +561,48 @@ export const api = {
     });
   },
 
+  clinicalAiProviders(role = "doctor"): Promise<{
+    default_provider: string;
+    configured_providers: string[];
+    disclaimer: string;
+  }> {
+    return getJson("/ai/clinical-assessment/providers", { headers: authHeaders(role) });
+  },
+
+  clinicalAiContext(
+    patientId: string,
+    params?: { scenario_assessment?: string; sickness_notes?: string },
+    role = "doctor",
+  ): Promise<{ patient_id: string; context: Record<string, unknown>; disclaimer: string }> {
+    const qs = new URLSearchParams();
+    if (params?.scenario_assessment) qs.set("scenario_assessment", params.scenario_assessment);
+    if (params?.sickness_notes) qs.set("sickness_notes", params.sickness_notes);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/ai/clinical-assessment/context/${encodeURIComponent(patientId)}${suffix}`, {
+      headers: authHeaders(role),
+    });
+  },
+
+  clinicalAiAssess(payload: {
+    patient_id: string;
+    scenario_assessment?: string;
+    sickness_notes?: string;
+    incident_ids?: string[];
+    provider?: string;
+  }, role = "doctor"): Promise<ClinicalAiAssessmentResult> {
+    return postJson("/ai/clinical-assessment", payload, { headers: authHeaders(role) });
+  },
+
+  clinicalAiHistory(patientId: string, limit = 10, role = "doctor"): Promise<{
+    patient_id: string;
+    assessments: Array<Record<string, unknown>>;
+  }> {
+    return getJson(
+      `/ai/clinical-assessment/history?patient_id=${encodeURIComponent(patientId)}&limit=${limit}`,
+      { headers: authHeaders(role) },
+    );
+  },
+
   aiAnomalyCheck(payload: {
     patient_id: string;
     vitals: Record<string, number>;
@@ -610,6 +722,141 @@ export const api = {
       { headers: authHeaders(role) },
     );
   },
+
+  legalTemplates(role: string, patientId?: string): Promise<{ templates: Array<Record<string, unknown>>; disclaimer: string }> {
+    return getJson(`${ESIGN}/templates`, { headers: legalAuthHeaders(role, patientId) });
+  },
+
+  legalDocuments(params?: {
+    patient_id?: string;
+    doc_type?: string;
+    status?: string;
+    limit?: number;
+  }, role = "doctor"): Promise<{ documents: LegalDocument[]; count: number }> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.patient_id) qs.set("patient_id", p.patient_id);
+    if (p.doc_type) qs.set("doc_type", p.doc_type);
+    if (p.status) qs.set("status", p.status);
+    if (p.limit) qs.set("limit", String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`${ESIGN}/documents${suffix}`, { headers: legalAuthHeaders(role, p.patient_id) });
+  },
+
+  legalDocumentCreate(payload: {
+    patient_id: string;
+    doc_type: string;
+    facility_id?: string;
+    encounter_id?: string;
+    context?: Record<string, unknown>;
+  }, role: string): Promise<{ document: LegalDocument }> {
+    return postJson(`${ESIGN}/documents`, payload, {
+      headers: legalAuthHeaders(role, payload.patient_id),
+    });
+  },
+
+  legalDocumentGet(documentId: string, role: string, patientId?: string): Promise<{ document: LegalDocument }> {
+    return getJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}`, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  legalDocumentSign(
+    documentId: string,
+    payload: {
+      signer_role: string;
+      signer_name: string;
+      attestation: string;
+      signature_method?: string;
+    },
+    role: string,
+    patientId?: string,
+  ): Promise<{ document: LegalDocument; verification?: LegalDocumentVerification }> {
+    return postJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/sign`, payload, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  legalDocumentVerify(documentId: string, role: string, patientId?: string): Promise<LegalDocumentVerification> {
+    return getJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/verify`, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  legalDocumentVoid(documentId: string, reason: string, role: string): Promise<{ document: LegalDocument }> {
+    return postJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/void`, { reason }, {
+      headers: legalAuthHeaders(role),
+    });
+  },
+
+  esignUploadDocument(
+    payload: {
+      patient_id: string;
+      filename: string;
+      mime_type: string;
+      content_text?: string;
+      content_data_url?: string;
+      facility_id?: string;
+    },
+    role: string,
+  ): Promise<{ document: LegalDocument }> {
+    return postJson(`${ESIGN}/documents/upload`, payload, {
+      headers: legalAuthHeaders(role, payload.patient_id),
+    });
+  },
+
+  esignAnalyzeDocument(documentId: string, role: string, patientId?: string): Promise<{ analysis: EsignAiAnalysis; document: LegalDocument }> {
+    return postJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/analyze`, {}, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  esignDocumentView(documentId: string, role: string, patientId?: string): Promise<EsignDocumentView> {
+    return getJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/view`, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  esignVerifyInitiate(documentId: string, role: string): Promise<{ process: EsignVerificationProcess; document: LegalDocument }> {
+    return postJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/verify/initiate`, {}, {
+      headers: legalAuthHeaders(role),
+    });
+  },
+
+  esignVerifyProcess(documentId: string, role: string, patientId?: string): Promise<{ status: string; process: EsignVerificationProcess | null }> {
+    return getJson(`${ESIGN}/documents/${encodeURIComponent(documentId)}/verify/process`, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  referralDepartments(role = "doctor"): Promise<{ departments: string[] }> {
+    return getJson("/referrals/departments", { headers: legalAuthHeaders(role) });
+  },
+
+  referralList(params?: { patient_id?: string; status?: string; limit?: number }, role = "doctor"): Promise<{ referrals: ReferralRecord[]; count: number }> {
+    const p = params ?? {};
+    const qs = new URLSearchParams();
+    if (p.patient_id) qs.set("patient_id", p.patient_id);
+    if (p.status) qs.set("status", p.status);
+    if (p.limit) qs.set("limit", String(p.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/referrals${suffix}`, { headers: legalAuthHeaders(role) });
+  },
+
+  referralCreate(
+    payload: {
+      patient_id: string;
+      patient_name?: string;
+      hospital_id?: string;
+      hospital_name: string;
+      department: string;
+      priority?: string;
+      clinical_summary?: string;
+    },
+    role = "doctor",
+  ): Promise<{ referral: ReferralRecord }> {
+    return postJson("/referrals", payload, { headers: legalAuthHeaders(role) });
+  },
 };
 
 export type AiWsAlertRole = "doctor" | "nurse" | "admin" | "lab" | "pharmacy";
@@ -617,9 +864,15 @@ export type AiWsAlertRole = "doctor" | "nurse" | "admin" | "lab" | "pharmacy";
 /** WebSocket URL for Phase 3 ``/ai/ws/alerts/{role}`` (Bearer token when signed in). */
 export function aiAlertsWebSocketUrl(role: AiWsAlertRole): string {
   const httpBase = apiBaseUrl();
-  const wsBase = httpBase
-    ? httpBase.replace(/^http/, "ws")
-    : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+  let wsBase: string;
+  if (httpBase) {
+    wsBase = httpBase.replace(/^http/, "ws");
+  } else if (import.meta.env.DEV) {
+    // Direct to gateway in dev — avoids Vite WS proxy EPIPE noise on close/HMR.
+    wsBase = devDirectApiBase().replace(/^http/, "ws");
+  } else {
+    wsBase = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+  }
   const qs = new URLSearchParams();
   const token = getStoredAccessToken();
   qs.set("token", token || "dev-token-1");

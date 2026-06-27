@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { aiAlertsWebSocketUrl, api } from "../../lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "../../lib/api";
+import { useAiAlertsWebSocket } from "../../hooks/useAiAlertsWebSocket";
 import { usePolling } from "../../hooks/usePolling";
 import { AiRiskScorePanel } from "../../components/ai/AiRiskScorePanel";
+import { ClinicalAiAssessmentPanel } from "../../components/ai/ClinicalAiAssessmentPanel";
+import { ESignModulePanel } from "../../components/legal/ESignModulePanel";
+import { ReferralFormPanel } from "../../components/referrals/ReferralFormPanel";
 import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 import { useAiRiskScore } from "../../hooks/useAiRiskScore";
@@ -16,6 +20,8 @@ type DocPage =
   | "prescriptions"
   | "imaging"
   | "notes"
+  | "incidents"
+  | "esign"
   | "referrals"
   | "procedures"
   | "claims"
@@ -33,6 +39,8 @@ const DOC_TITLES: Record<DocPage, string> = {
   prescriptions: "Prescriptions",
   imaging: "Imaging & Reports",
   notes: "Clinical Notes",
+  incidents: "Incident Reports",
+  esign: "E-Signatures",
   referrals: "Referrals",
   procedures: "Procedures",
   claims: "UniHealth Claims",
@@ -47,23 +55,43 @@ export function DoctorDashboard() {
   const toast = useDashboardToast();
   const [page, setPage] = useState<DocPage>("home");
   const [patientId, setPatientId] = useState("P001");
-  const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 5000 });
-  const obs = usePolling(() => api.observations(patientId, 10), { intervalMs: 5000 });
-  const meds = usePolling(() => api.medicationRequests(patientId, 10), { intervalMs: 7000 });
-  const auditLog = usePolling(() => api.uiActionsList(200), { intervalMs: 8000 });
-  const aiStatus = usePolling(() => api.aiStatus(), { intervalMs: 12000 });
+  const summary = usePolling(
+    useCallback(() => api.patientSummary(patientId, 5, "doctor"), [patientId]),
+    { intervalMs: 5000 },
+  );
+  const obs = usePolling(
+    useCallback(() => api.observations(patientId, 10, "doctor"), [patientId]),
+    { intervalMs: 5000 },
+  );
+  const meds = usePolling(
+    useCallback(() => api.medicationRequests(patientId, 10, "doctor"), [patientId]),
+    { intervalMs: 7000 },
+  );
+  const auditLog = usePolling(
+    useCallback(() => api.uiActionsList(200), []),
+    { intervalMs: 8000 },
+  );
+  const aiStatus = usePolling(
+    useCallback(() => api.aiStatus(), []),
+    { intervalMs: 12000 },
+  );
+  const onRiskError = useCallback((msg: string) => toast(`Risk score unavailable: ${msg}`), [toast]);
   const { riskScore, riskLoading, fetchRiskScore, vitalMap } = useAiRiskScore(patientId, obs.data, "doctor", {
-    onError: (msg) => toast(`Risk score unavailable: ${msg}`),
+    onError: onRiskError,
   });
 
-  const apiErr = summary.error ?? obs.error ?? meds.error;
+  const apiErr = !summary.data && !summary.loading ? (summary.error ?? obs.error ?? meds.error) : null;
 
   // ── Phase 3: AI Hints state ────────────────────────────────────────
   const [aiHints, setAiHints] = useState<any | null>(null);
   const [aiHintsLoading, setAiHintsLoading] = useState(false);
   const [aiHintsOpen, setAiHintsOpen] = useState(false);
   const [aiAlerts, setAiAlerts] = useState<any[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
+
+  useAiAlertsWebSocket("doctor", useCallback((data) => {
+    setAiAlerts((prev) => [data, ...prev].slice(0, 20));
+    toast(`🚨 Alert: ${String(data.msg ?? "Anomaly detected")}`);
+  }, [toast]));
 
   // Phase 3 — facility capacity on Ward / Beds (read-only; census entry is nurse/admin).
   const [docCapWards, setDocCapWards] = useState<any[]>([]);
@@ -71,27 +99,6 @@ export function DoctorDashboard() {
   const [docCapForecast, setDocCapForecast] = useState<any[]>([]);
   const [docCapHist, setDocCapHist] = useState<any[]>([]);
   const [docCapLoading, setDocCapLoading] = useState(false);
-
-  // WebSocket: receive real-time anomaly alerts
-  useEffect(() => {
-    const wsUrl = aiAlertsWebSocketUrl("doctor");
-    try {
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg.event === "anomaly_alert") {
-            setAiAlerts(prev => [msg.data, ...prev].slice(0, 20));
-            toast(`🚨 Alert: ${msg.data.msg}`);
-          }
-        } catch { /* ignore */ }
-      };
-      ws.onerror = () => { /* silent in dev */ };
-      return () => { ws.close(); };
-    } catch { return undefined; }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Poll active anomalies from REST (fallback when WS not connected)
   useEffect(() => {
@@ -184,12 +191,14 @@ export function DoctorDashboard() {
   };
 
   const riskScorePanel = (
-    <AiRiskScorePanel
-      riskScore={riskScore}
-      riskLoading={riskLoading}
-      onRefresh={() => void fetchRiskScore()}
-      variant="doctor"
-    />
+    <div className="doc-section">
+      <AiRiskScorePanel
+        riskScore={riskScore}
+        riskLoading={riskLoading}
+        onRefresh={() => void fetchRiskScore()}
+        variant="doctor"
+      />
+    </div>
   );
 
   // ── AI Hints Panel UI ─────────────────────────────────────────────
@@ -292,7 +301,7 @@ export function DoctorDashboard() {
 
   // ── Active Alerts Strip ───────────────────────────────────────────
   const alertsStrip = aiAlerts.length > 0 ? (
-    <div style={{ marginBottom: 14 }}>
+    <div className="doc-section">
       {aiAlerts.slice(0, 3).map((a: any) => (
         <div key={a.id} style={{
           display: "flex", alignItems: "center", gap: 12,
@@ -331,7 +340,6 @@ export function DoctorDashboard() {
   type LabOrderRow = { id: string; when: string; patientFhirId: string; panel: string; priority: string; notes: string };
   type ImagingOrderRow = { id: string; when: string; study: string; patientId: string; status: string };
   type RxDraftRow = { id: string; drug: string; dose: string; route: string; when: string };
-  type ReferralRowX = { to: string; patient: string; priority: string; status: string };
   type ProcRowX = { id: string; label: string; when: string };
 
   const [admitted, setAdmitted] = useState<AdmittedRow[]>(() => {
@@ -416,7 +424,7 @@ export function DoctorDashboard() {
   }, [rxDrafts]);
 
   const [rxForm, setRxForm] = useState({ drug: "", dose: "", route: "PO" });
-  const [referralAdds, setReferralAdds] = useState<ReferralRowX[]>([]);
+
   const [procedureAdds, setProcedureAdds] = useState<ProcRowX[]>([]);
   const [scheduleBlocks, setScheduleBlocks] = useState<{ t: string; label: string }[]>([]);
 
@@ -425,6 +433,13 @@ export function DoctorDashboard() {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [savedNotes, setSavedNotes] = useState<Array<{ id: string; type: string; text: string; patient: string; at: string }>>([]);
+  const [aiScenarioNotes, setAiScenarioNotes] = useState("");
+  const [aiSicknessNotes, setAiSicknessNotes] = useState("");
+
+  const incidentsPoll = usePolling(
+    useCallback(() => api.nurseIncidents(100, patientId), [patientId]),
+    { intervalMs: 8000, enabled: page === "patient" || page === "incidents" || page === "esign" || page === "health" },
+  );
 
   const saveNote = async () => {
     if (!noteText.trim()) { toast("Enter a note before saving."); return; }
@@ -544,6 +559,14 @@ export function DoctorDashboard() {
     []
   );
 
+  const referralPatientOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    map.set(patientId, patientId);
+    for (const q of queueRows) map.set(q.fhirId, `${q.name} (${q.fhirId})`);
+    for (const a of admitted) map.set(a.fhirId, `${a.name} (${a.fhirId})`);
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
+  }, [patientId, queueRows, admitted]);
+
   const beds = useMemo(
     () => [
       { cls: "occ" as const, id: "01", pt: "Wangui N." },
@@ -561,7 +584,7 @@ export function DoctorDashboard() {
   );
 
   const patientIdPanel = (
-    <div className="panel" style={{ marginBottom: 14 }}>
+    <div className="panel doc-patient-panel doc-section">
       <div className="pnl-hd">
         <div>
           <div className="pnl-ti">Selected Patient</div>
@@ -570,30 +593,21 @@ export function DoctorDashboard() {
         <span className="tag te dot">LIVE</span>
       </div>
       <div className="pnl-bd">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "end" }}>
+        <div className="doc-patient-grid">
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--t2)", marginBottom: 6 }}>Patient ID</div>
+            <div className="doc-patient-label">Patient ID</div>
             <input
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
               placeholder="e.g. P001"
               autoComplete="off"
-              className="mono"
-              style={{
-                width: "100%",
-                padding: "9px 12px",
-                borderRadius: 8,
-                border: "1.5px solid var(--bdr)",
-                background: "var(--bg)",
-                outline: "none",
-                fontFamily: "var(--mono)",
-              }}
+              className="mono doc-patient-input"
             />
-            <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 6 }}>
+            <div className="doc-patient-hint">
               Auto-refreshes every 5–7 seconds from the edge gateway.
             </div>
           </div>
-          <div className="g4" style={{ margin: 0 }}>
+          <div className="g4 doc-kpi-row">
             <div className="kpi">
               <div className="kpi-l">Encounters</div>
               <div className="kpi-v">{summary.data?.encounters.length ?? 0}</div>
@@ -622,7 +636,7 @@ export function DoctorDashboard() {
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 12 }}>
+        <div className="doc-patient-actions">
           <button
             className="btn-s btn-sm"
             type="button"
@@ -641,7 +655,7 @@ export function DoctorDashboard() {
   const liveChart = (
     <>
       {apiErr && (
-        <div className="errbanner is-visible" role="alert">
+        <div className="errbanner is-visible doc-section" role="alert">
           <span>⚠️</span>
           <span>
             API not reachable or patient missing. Start FastAPI and seed data, then try <code>P001</code>.
@@ -652,7 +666,7 @@ export function DoctorDashboard() {
       )}
 
       {summary.data && (
-        <div className="pt-banner">
+        <div className="pt-banner doc-section">
           <div className="pt-in">
             <div className="pt-av" aria-hidden>
               👤
@@ -695,7 +709,7 @@ export function DoctorDashboard() {
         </div>
       )}
 
-      <div className="gcol3">
+      <div className="gcol3 doc-section">
         <div className="panel">
           <div className="pnl-hd">
             <div>
@@ -704,7 +718,8 @@ export function DoctorDashboard() {
             </div>
             <span className="tag te dot">FHIR</span>
           </div>
-          <div className="pnl-bd">
+          <div className="pnl-bd pnl-bd--flush">
+            <div className="tbl-wrap">
             <table className="tbl">
               <thead>
                 <tr>
@@ -732,11 +747,12 @@ export function DoctorDashboard() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
-        <div>
-          <div className="panel" style={{ marginBottom: 14 }}>
+        <div className="doc-stack">
+          <div className="panel doc-section">
             <div className="pnl-hd">
               <div>
                 <div className="pnl-ti">Latest Observations</div>
@@ -852,6 +868,8 @@ export function DoctorDashboard() {
           label: "Workflow",
           items: [
             { id: "notes", icon: "📝", label: "Clinical Notes" },
+            { id: "incidents", icon: "⚠️", label: "Incident Reports" },
+            { id: "esign", icon: "✍️", label: "E-Signatures" },
             { id: "referrals", icon: "📋", label: "Referrals" },
             { id: "procedures", icon: "⚕️", label: "Procedures" },
             { id: "claims", icon: "🛡️", label: "UniHealth Claims" },
@@ -1160,6 +1178,23 @@ export function DoctorDashboard() {
           {alertsStrip}
           {riskScorePanel}
           {aiHintsPanel}
+          <ClinicalAiAssessmentPanel
+            patientId={patientId}
+            role="doctor"
+            scenarioAssessment={aiScenarioNotes}
+            onScenarioAssessmentChange={setAiScenarioNotes}
+            sicknessNotes={aiSicknessNotes}
+            onSicknessNotesChange={setAiSicknessNotes}
+            incidentIds={(incidentsPoll.data ?? []).map((r: { id?: string }) => String(r.id)).filter(Boolean)}
+            onToast={toast}
+          />
+          <ESignModulePanel
+            patientId={patientId}
+            role="doctor"
+            allowCreate={["surgical_consent", "emergency_consent"]}
+            active={page === "chart"}
+            onToast={toast}
+          />
           {liveChart}
           <div className="gcol3" style={{ marginTop: 14 }}>
             <div className="panel">
@@ -1930,6 +1965,16 @@ export function DoctorDashboard() {
             </button>
           </div>
           {patientIdPanel}
+          <ClinicalAiAssessmentPanel
+            patientId={patientId}
+            role="doctor"
+            scenarioAssessment={aiScenarioNotes}
+            onScenarioAssessmentChange={setAiScenarioNotes}
+            sicknessNotes={aiSicknessNotes}
+            onSicknessNotesChange={setAiSicknessNotes}
+            incidentIds={(incidentsPoll.data ?? []).map((r: { id?: string }) => String(r.id)).filter(Boolean)}
+            onToast={toast}
+          />
             <div className="panel" id="doc-note-composer">
             <div className="pnl-hd">
               <div className="pnl-ti">New Clinical Note</div>
@@ -1988,72 +2033,106 @@ export function DoctorDashboard() {
           )}
         </div>
 
+        <div className={`pg${page === "incidents" ? " on" : ""}`} id="pg-incidents">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Safety &amp; Triage Context</div>
+              <div className="ph-ti">Incident Reports</div>
+              <div className="ph-su">
+                Nurse-reported incidents for patient <span className="mono">{patientId}</span> — AI assessment uses these with triage symptoms.
+              </div>
+            </div>
+            <button className="btn-s btn-sm" type="button" onClick={() => setPage("patient")}>
+              🩺 Workup
+            </button>
+          </div>
+          {patientIdPanel}
+          <ClinicalAiAssessmentPanel
+            patientId={patientId}
+            role="doctor"
+            scenarioAssessment={aiScenarioNotes}
+            onScenarioAssessmentChange={setAiScenarioNotes}
+            sicknessNotes={aiSicknessNotes}
+            onSicknessNotesChange={setAiSicknessNotes}
+            incidentIds={(incidentsPoll.data ?? []).map((r: { id?: string }) => String(r.id)).filter(Boolean)}
+            onToast={toast}
+          />
+          <div className="panel">
+            <div className="pnl-hd">
+              <div className="pnl-ti">Incidents for active patient</div>
+              <div className="pnl-su">Filed by nursing staff — read-only for clinicians</div>
+            </div>
+            <div className="pnl-bd" style={{ padding: 0 }}>
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th className="mono">Patient</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {((incidentsPoll.data ?? []) as Array<Record<string, unknown>>).map((row) => (
+                    <tr key={String(row.id)}>
+                      <td>{String(row.type ?? "—")}</td>
+                      <td className="mono">{String(row.patient_id ?? "—")}</td>
+                      <td><span className="tag am">{String(row.severity ?? "—")}</span></td>
+                      <td><span className="tag b">{String(row.status ?? "Under Review")}</span></td>
+                      <td style={{ maxWidth: 280, fontSize: 11.5 }}>{String(row.notes ?? "—")}</td>
+                    </tr>
+                  ))}
+                  {!incidentsPoll.loading && (incidentsPoll.data ?? []).length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ padding: 14, color: "var(--t3)", fontSize: 11.5 }}>
+                        No incidents on file for this patient. Nurse triage symptoms from walk-ins and observations are still included in AI assessment.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div className={`pg${page === "esign" ? " on" : ""}`} id="pg-esign">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Legal &amp; Consent</div>
+              <div className="ph-ti">E-Signatures</div>
+              <div className="ph-su">
+                Power of attorney, surgical consent, and emergency authorisation for patient{" "}
+                <span className="mono">{patientId}</span>
+              </div>
+            </div>
+          </div>
+          {patientIdPanel}
+          <ESignModulePanel
+            patientId={patientId}
+            role="doctor"
+            allowCreate={["surgical_consent", "emergency_consent", "poa"]}
+            active={page === "esign"}
+            onToast={toast}
+          />
+        </div>
+
         <div className={`pg${page === "referrals" ? " on" : ""}`} id="pg-referrals">
           <div className="ph">
             <div>
               <div className="ph-ey">Referral Management</div>
               <div className="ph-ti">Referrals</div>
-            </div>
-            <button
-              className="btn-p"
-              type="button"
-              onClick={() => {
-                setReferralAdds((r) => [
-                  {
-                    to: "Specialty — draft",
-                    patient: patientId,
-                    priority: "Routine",
-                    status: "Draft",
-                  },
-                  ...r,
-                ]);
-                void uiAction("Referral draft added to the table.");
-              }}
-            >
-              + New Referral
-            </button>
-          </div>
-          <div className="panel">
-            <div className="pnl-hd">
-              <div className="pnl-ti">Active referrals</div>
-            </div>
-            <div className="pnl-bd">
-              <table className="tbl">
-                <thead>
-                  <tr>
-                    <th>To</th>
-                    <th>Patient</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {referralAdds.map((ref, idx) => (
-                    <tr key={`nr-${idx}`}>
-                      <td>{ref.to}</td>
-                      <td className="mono">{ref.patient}</td>
-                      <td>
-                        <span className="tag am">{ref.priority}</span>
-                      </td>
-                      <td>
-                        <span className="tag b">{ref.status}</span>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td>Cardiology — KNH</td>
-                    <td>Wangui Njoroge</td>
-                    <td>
-                      <span className="tag am">Routine</span>
-                    </td>
-                    <td>
-                      <span className="tag g">Sent</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div className="ph-su">Send patients to referral hospitals with specialty department routing</div>
             </div>
           </div>
+          <ReferralFormPanel
+            defaultPatientId={patientId}
+            extraPatients={referralPatientOptions}
+            role="doctor"
+            active={page === "referrals"}
+            onToast={toast}
+            onPatientSelect={setPatientId}
+          />
         </div>
 
         <div className={`pg${page === "procedures" ? " on" : ""}`} id="pg-procedures">
@@ -2077,6 +2156,13 @@ export function DoctorDashboard() {
               + Schedule Procedure
             </button>
           </div>
+          <ESignModulePanel
+            patientId={patientId}
+            role="doctor"
+            allowCreate={["surgical_consent"]}
+            active={page === "procedures"}
+            onToast={toast}
+          />
           <div className="panel">
             <div className="pnl-bd" style={{ fontSize: 12, color: "var(--t3)" }}>
               {procedureAdds.length > 0 && (

@@ -3,17 +3,7 @@ import { DashIcon } from "../components/brand/DashIcon";
 import { isBrandIcon } from "../components/brand/brandIcon";
 import type { RoleKey } from "../theme/tokens";
 import { ROLE_CONFIG } from "../lib/signInConfig";
-
-const ROLES: RoleKey[] = ["doctor", "nurse", "lab", "pharmacy", "admin", "patient"];
-
-const ROLE_LABELS: Record<RoleKey, { name: string; desc: string }> = {
-  doctor:   { name: "Doctor",        desc: "Physician · Specialist"   },
-  nurse:    { name: "Nurse / CO",    desc: "Nurse · Clinical Officer" },
-  lab:      { name: "Laboratory",    desc: "Diagnostics · Lab Staff"  },
-  pharmacy: { name: "Pharmacy",      desc: "Dispensing · Pharmacist"  },
-  admin:    { name: "Administrator", desc: "System · Facility Admin"  },
-  patient:  { name: "Patient",       desc: "Health records portal"    },
-};
+import { getPilotRole, PILOT_ROLE_ORDER } from "../lib/pilotRoles";
 
 type Props = {
   selected: RoleKey | null;
@@ -63,8 +53,8 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
           aria-label="Select your role"
           aria-activedescendant={selected ? `role-opt-${selected}` : undefined}
         >
-          {ROLES.map((r) => {
-            const lbl = ROLE_LABELS[r];
+          {PILOT_ROLE_ORDER.map((r) => {
+            const pilot = getPilotRole(r);
             const roleCfg = ROLE_CONFIG[r];
             const isSel = selected === r;
             return (
@@ -79,8 +69,8 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
               >
                 <div className="rchk" aria-hidden>✓</div>
                 <div className="remi" aria-hidden>{roleCfg.ico}</div>
-                <div className="rnm">{lbl.name}</div>
-                <div className="rds">{lbl.desc}</div>
+                <div className="rnm">{pilot.signInName}</div>
+                <div className="rds">{pilot.signInDesc}</div>
               </button>
             );
           })}

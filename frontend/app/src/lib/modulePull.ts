@@ -1,4 +1,5 @@
 import type { RoleKey } from "../theme/tokens";
+import { PILOT_MODULE_PULL_IDS } from "./pilotRoles";
 
 export type ModuleSection = "CLINICAL" | "OPERATIONS" | "MANAGEMENT" | "INTEGRATIONS" | "PLATFORM";
 
@@ -36,15 +37,8 @@ export const MASTER_INTEGRATED_MODULES: MasterModule[] = [
 
 const MODULE_BY_ID = Object.fromEntries(MASTER_INTEGRATED_MODULES.map((m) => [m.id, m])) as Record<string, MasterModule>;
 
-/** RBAC → Module Pull API (unihealth360-auth-portal-v2.html). */
-export const ROLE_MODULE_PULL_IDS: Record<RoleKey, string[]> = {
-  doctor: ["emr", "maternity", "lab", "pharmacy", "teleconsult", "ai_engine"],
-  nurse: ["ward", "maternity", "nicu", "medication", "vitals"],
-  lab: ["lab", "radiology", "maternal_panels", "nicu_labs", "results"],
-  pharmacy: ["pharmacy", "kemsa", "inventory", "maternity_meds", "prescriptions", "billing"],
-  admin: ["*"],
-  patient: ["patient_portal", "appointments", "lab_results", "maternity_records", "cic", "teleconsult"],
-};
+/** RBAC → Module Pull API (unihealth360-auth-portal-v2.html). Synced via shared/pilot-roles.json */
+export const ROLE_MODULE_PULL_IDS: Record<RoleKey, string[]> = PILOT_MODULE_PULL_IDS;
 
 const PULL_ALIASES: Record<string, MasterModule | undefined> = {
   ward: { id: "ward", label: "Ward Mgmt", path: "/dashboard/nurse", icon: "🛏️", section: "CLINICAL", desc: "Nurse station" },

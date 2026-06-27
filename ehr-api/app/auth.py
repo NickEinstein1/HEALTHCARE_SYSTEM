@@ -169,9 +169,20 @@ def resolve_ws_role(token: str, requested_role: str) -> str:
 def resolve_role(request: Request) -> str:
     """Resolve clinician role from Bearer JWT (if OIDC enabled) or ``X-UniHealth-Role``."""
     if settings.oidc_enabled:
+        # Staging/dev: trust role header when fallback is on (dashboard always sends both).
+        if settings.oidc_allow_header_fallback:
+            role_hdr = request.headers.get("X-UniHealth-Role", "").strip()
+            if role_hdr:
+                return _role_from_header(request)
+
         auth = request.headers.get("Authorization", "").strip()
         if auth.lower().startswith("bearer "):
-            return _role_from_bearer(auth.split(" ", 1)[1].strip())
+            try:
+                return _role_from_bearer(auth.split(" ", 1)[1].strip())
+            except HTTPException:
+                if settings.oidc_allow_header_fallback:
+                    return _role_from_header(request)
+                raise
         if settings.oidc_allow_header_fallback:
             return _role_from_header(request)
         raise HTTPException(status_code=401, detail="Authorization: Bearer token required")

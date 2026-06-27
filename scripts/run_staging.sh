@@ -74,7 +74,8 @@ cat <<EOF
 ║    cd frontend/app && npm run dev
 ║    → http://localhost:5173
 ║                                                                    ║
-║  Sign in (staff): doctor / nurse / admin  password Changeme1!      ║
+║  Sign in: doctor / nurse / admin / lab / pharmacy / patient        ║
+║           password Changeme1! (patient: see getting-started.md)    ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║  Other devices on your Wi‑Fi: see docs/runbook-staging.md          ║
 EOF

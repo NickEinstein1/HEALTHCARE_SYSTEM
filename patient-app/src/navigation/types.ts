@@ -30,4 +30,5 @@ export type MenuStackParamList = {
   Profile: undefined;
   Records: undefined;
   Documents: undefined;
+  LegalSign: undefined;
 };

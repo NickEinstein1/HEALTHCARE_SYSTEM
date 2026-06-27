@@ -152,3 +152,79 @@ CREATE TABLE IF NOT EXISTS ml_patient_outcome_labels (
 
 CREATE INDEX IF NOT EXISTS idx_ml_labels_patient_facility
     ON ml_patient_outcome_labels(patient_id, facility_id, effective_day DESC);
+
+-- Pilot staff accounts (Keycloak sync + registration pipeline)
+CREATE TABLE IF NOT EXISTS pilot_staff_accounts (
+    username        VARCHAR(64) PRIMARY KEY,
+    role            VARCHAR(32) NOT NULL,
+    email           VARCHAR(256) NOT NULL,
+    display_name    VARCHAR(256) NOT NULL,
+    facility_id     VARCHAR(64) NOT NULL DEFAULT 'FAC-A',
+    reg_identifier  VARCHAR(64),
+    enabled         BOOLEAN NOT NULL DEFAULT TRUE,
+    keycloak_synced BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_pilot_staff_role ON pilot_staff_accounts(role) WHERE enabled = TRUE;
+
+-- Clinical AI assessments (LLM / rules differential diagnosis support)
+CREATE TABLE IF NOT EXISTS clinical_ai_assessments (
+    assessment_id   VARCHAR(128) PRIMARY KEY,
+    patient_id      VARCHAR(64) NOT NULL,
+    role            VARCHAR(32) NOT NULL,
+    provider        VARCHAR(64) NOT NULL,
+    model_version   VARCHAR(64),
+    request_json    TEXT NOT NULL,
+    response_json   TEXT NOT NULL,
+    audit_id        VARCHAR(128),
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_clinical_ai_patient_ts
+    ON clinical_ai_assessments(patient_id, created_at DESC);
+
+-- Legal document e-signing (POA, surgical consent, emergency consent)
+CREATE TABLE IF NOT EXISTS legal_documents (
+    id                  VARCHAR(128) PRIMARY KEY,
+    patient_id          VARCHAR(64) NOT NULL REFERENCES patients(id),
+    encounter_id        VARCHAR(64),
+    facility_id         VARCHAR(64) NOT NULL DEFAULT 'FAC-A',
+    doc_type            VARCHAR(64) NOT NULL,
+    template_version    VARCHAR(32) NOT NULL,
+    title               VARCHAR(256) NOT NULL,
+    body                TEXT NOT NULL,
+    summary             TEXT,
+    required_signers    TEXT NOT NULL,
+    status              VARCHAR(32) NOT NULL DEFAULT 'pending_signatures',
+    context_json        TEXT,
+    verification_code   VARCHAR(32),
+    created_by_role     VARCHAR(32) NOT NULL,
+    created_by_subject  VARCHAR(128),
+    signatures_json     TEXT NOT NULL DEFAULT '[]',
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    completed_at        TIMESTAMPTZ,
+    expires_at          TIMESTAMPTZ,
+    voided_at           TIMESTAMPTZ,
+    void_reason         TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_legal_docs_patient
+    ON legal_documents(patient_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_legal_docs_status
+    ON legal_documents(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS legal_document_audit_log (
+    audit_id        VARCHAR(128) PRIMARY KEY,
+    document_id     VARCHAR(128) NOT NULL,
+    event           VARCHAR(64) NOT NULL,
+    role            VARCHAR(32) NOT NULL,
+    subject         VARCHAR(128),
+    payload_json    TEXT NOT NULL,
+    ts              TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_legal_audit_doc
+    ON legal_document_audit_log(document_id, ts DESC);

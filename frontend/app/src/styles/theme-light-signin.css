@@ -1,0 +1,671 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — Sign-in / register (readable UI + visible cinematic scene)
+   Loaded after signin.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Let MedicalBackground render — disable CSS-only duplicate layer */
+html[data-theme="light"] .sign-in-route::before,
+html[data-theme="light"] .sign-in-route::after {
+  display: none !important;
+}
+
+/* ── Cinematic scene layers (light palette) ─────────────────────── */
+html[data-theme="light"] .unihealth-med-scene-css {
+  background:
+    radial-gradient(ellipse 110% 70% at 50% -5%, rgba(90, 165, 210, 0.2) 0%, transparent 52%),
+    radial-gradient(ellipse 90% 55% at 95% 90%, rgba(109, 40, 217, 0.08) 0%, transparent 46%),
+    radial-gradient(ellipse 80% 55% at 5% 75%, rgba(4, 120, 87, 0.1) 0%, transparent 42%),
+    radial-gradient(circle at 62% 48%, rgba(90, 165, 210, 0.1) 0%, transparent 45%),
+    linear-gradient(168deg, #e8d9b0 0%, #d4bc82 42%, #c9ad6e 100%) !important;
+  animation: uniSceneMesh 20s ease-in-out infinite alternate !important;
+}
+
+html[data-theme="light"] .unihealth-med-scene-grid {
+  opacity: 0.48 !important;
+  background-image:
+    linear-gradient(rgba(90, 165, 210, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 165, 210, 0.12) 1px, transparent 1px) !important;
+  background-size: 44px 44px !important;
+}
+
+html[data-theme="light"] .unihealth-med-scene-scan {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(90, 165, 210, 0.06) 40%,
+    rgba(4, 120, 87, 0.12) 50%,
+    rgba(90, 165, 210, 0.08) 60%,
+    transparent 100%
+  ) !important;
+  opacity: 1 !important;
+  animation: uniSceneScan 11s cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+}
+
+html[data-theme="light"] .unihealth-med-scene-canvas.unihealth-medical-bg {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+@keyframes signInLightPulse {
+  0%,
+  100% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+html[data-theme="light"] body.unihealth-auth-bg,
+html[data-theme="light"] html.unihealth-auth-bg {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+}
+
+/* ── Left intelligence panel — glass over animated scene ───────── */
+html[data-theme="light"] .sign-in-root .lp {
+  background: transparent !important;
+}
+
+html[data-theme="light"] .sign-in-root .lp::before {
+  background:
+    radial-gradient(ellipse 100% 60% at 0% 100%, rgba(90, 165, 210, 0.16) 0%, transparent 58%),
+    radial-gradient(ellipse 72% 58% at 100% 0%, rgba(109, 40, 217, 0.08) 0%, transparent 54%),
+    linear-gradient(165deg, rgba(235, 224, 192, 0.82) 0%, rgba(220, 207, 168, 0.62) 48%, rgba(212, 188, 130, 0.48) 100%) !important;
+}
+
+html[data-theme="light"] .sign-in-root .lp::after {
+  background-image:
+    linear-gradient(rgba(90, 165, 210, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 165, 210, 0.1) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+  opacity: 1 !important;
+  animation: signInLightGrid 24s linear infinite;
+}
+
+@keyframes signInLightGrid {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 24px 24px, 24px 24px;
+  }
+}
+
+html[data-theme="light"] .sign-in-root .brand-nm,
+html[data-theme="light"] .sign-in-root .hl,
+html[data-theme="light"] .sign-in-root .master-hl {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .hl em,
+html[data-theme="light"] .sign-in-root .master-hl em {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-style: italic;
+}
+
+html[data-theme="light"] .sign-in-root .hd,
+html[data-theme="light"] .sign-in-root .master-dash .hd {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .eyebrow,
+html[data-theme="light"] .sign-in-root .master-badge {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .brand-tg,
+html[data-theme="light"] .sign-in-root .sys-pill,
+html[data-theme="light"] .sign-in-root .lfooter,
+html[data-theme="light"] .sign-in-root .sys-desc {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .sign-in-root .sys-name {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sys-card {
+  background: var(--card) !important;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* ── Right panel + card — glass over scene ──────────────────────── */
+html[data-theme="light"] .sign-in-root .rp {
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 50%, rgba(90, 165, 210, 0.07) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .sign-in-root .rp::before {
+  background:
+    linear-gradient(to right, rgba(246, 248, 251, 0.35) 0%, transparent 22%),
+    linear-gradient(to left, rgba(246, 248, 251, 0.35) 0%, transparent 22%),
+    linear-gradient(to bottom, rgba(235, 224, 192, 0.35) 0%, transparent 16%),
+    linear-gradient(to top, rgba(235, 224, 192, 0.35) 0%, transparent 16%) !important;
+}
+
+html[data-theme="light"] .sign-in-root .card {
+  background: color-mix(in srgb, var(--card) 92%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 2px solid var(--bdr) !important;
+  box-shadow: 0 12px 40px rgba(74, 58, 28, 0.14) !important;
+}
+
+html[data-theme="light"] .sign-in-root .card:hover {
+  border-color: var(--p) !important;
+  box-shadow: 0 16px 48px rgba(90, 165, 210, 0.22) !important;
+}
+
+html[data-theme="light"] .sign-in-root .cstripe {
+  background: linear-gradient(90deg, var(--pd), var(--p), var(--g), var(--p), var(--pd)) !important;
+  background-size: 300% 100% !important;
+  opacity: 1 !important;
+  animation: siStripe 6s linear infinite, signInStripeFlow 8s ease-in-out infinite !important;
+}
+
+@keyframes signInStripeFlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+html[data-theme="light"] .sign-in-root .master-sbar-dot,
+html[data-theme="light"] .sign-in-root .ai-pulse {
+  animation: signInLightPulse 2s ease-in-out infinite;
+}
+
+html[data-theme="light"] .sign-in-root .cfoot,
+html[data-theme="light"] .sign-in-root .cfoot span {
+  background: var(--surface-muted) !important;
+  border-color: #cbd5e1 !important;
+  color: var(--t2) !important;
+}
+
+/* Mobile / card brand */
+html[data-theme="light"] .sign-in-root .sign-in-mobile-brand-name,
+html[data-theme="light"] .sign-in-root .sign-in-card-brand-name {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sign-in-mobile-brand-tag,
+html[data-theme="light"] .sign-in-root .sign-in-card-brand-tag {
+  color: var(--t3) !important;
+}
+
+/* ── Stepper + headers ──────────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root .sdot {
+  background: var(--card) !important;
+  border-color: #64748b !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sdot.act {
+  background: var(--p) !important;
+  border-color: var(--p) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 96, 128, 0.25) !important;
+}
+
+html[data-theme="light"] .sign-in-root .sdot.done {
+  background: #d1fae5 !important;
+  border-color: #047857 !important;
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sline {
+  background: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sline.done {
+  background: #047857 !important;
+}
+
+html[data-theme="light"] .sign-in-root .sico {
+  background: #d4e8f4 !important;
+  border-color: var(--p) !important;
+}
+
+html[data-theme="light"] .sign-in-root .stitle {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ssub,
+html[data-theme="light"] .sign-in-root .rscroll-hint {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .rscroll-arrows {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 700 !important;
+}
+
+/* ── Role cards ─────────────────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root .rc {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc .rnm {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc .rds {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc:hover {
+  border-color: var(--p) !important;
+  background: #dce8f0 !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc.sel {
+  border-color: var(--p) !important;
+  background: #d4e8f4 !important;
+  box-shadow: 0 0 0 2px rgba(0, 96, 128, 0.2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc.sel .rnm {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .rc.sel .rchk {
+  background: #006080 !important;
+  color: #ffffff !important;
+}
+
+/* ── Form fields ────────────────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root label,
+html[data-theme="light"] .sign-in-root .lbl {
+  color: var(--t1) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .fw input,
+html[data-theme="light"] .sign-in-root .fw select,
+html[data-theme="light"] .sign-in-root .pin-box,
+html[data-theme="light"] .sign-in-root .obox {
+  background: var(--card) !important;
+  border: 2px solid #94a3b8 !important;
+  color: var(--t1) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .fw input::placeholder {
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .sign-in-root .fw input:focus,
+html[data-theme="light"] .sign-in-root .fw select:focus,
+html[data-theme="light"] .sign-in-root .pin-box:focus,
+html[data-theme="light"] .sign-in-root .obox:focus {
+  border-color: var(--p) !important;
+  box-shadow: 0 0 0 3px rgba(0, 96, 128, 0.2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .pin-box.f,
+html[data-theme="light"] .sign-in-root .obox.f {
+  border-color: #047857 !important;
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+  background: #ecfdf5 !important;
+}
+
+html[data-theme="light"] .sign-in-root .fw .fi {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+/* ── Hints & role notes ─────────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root .si-hint.grn,
+html[data-theme="light"] .sign-in-root .role-note.grn {
+  background: #ecfdf5 !important;
+  border-color: #047857 !important;
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .si-hint.blu,
+html[data-theme="light"] .sign-in-root .role-note.blu {
+  background: #eff6ff !important;
+  border-color: #1d4ed8 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .si-hint.amb,
+html[data-theme="light"] .sign-in-root .role-note.amb {
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+  color: var(--text-warning) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] .sign-in-root .role-note-head {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .role-note-body {
+  color: var(--t2) !important;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root .btn {
+  background: var(--pd) !important;
+  color: #ffffff !important;
+  font-weight: var(--fw-title) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 168, 0.22) !important;
+}
+
+html[data-theme="light"] .sign-in-root .btn:hover {
+  background: #1d4ed8 !important;
+}
+
+html[data-theme="light"] .sign-in-root .btn:disabled {
+  opacity: 0.5 !important;
+}
+
+html[data-theme="light"] .sign-in-root .bkbn,
+html[data-theme="light"] .sign-in-root .fgt,
+html[data-theme="light"] .sign-in-root .si-hint-link {
+  color: var(--text-link) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+/* ── Master dashboard panel ─────────────────────────────────────── */
+html[data-theme="light"] .sign-in-root .master-dash {
+  background: transparent !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-sbar {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t2) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-sbar-dot {
+  background: #047857 !important;
+  box-shadow: 0 0 6px rgba(4, 120, 87, 0.5) !important;
+  animation: signInLightPulse 2s ease-in-out infinite;
+}
+
+html[data-theme="light"] .sign-in-root .master-mc,
+html[data-theme="light"] .sign-in-root .master-dp,
+html[data-theme="light"] .sign-in-root .master-ss,
+html[data-theme="light"] .sign-in-root .master-mw,
+html[data-theme="light"] .sign-in-root .master-mods,
+html[data-theme="light"] .sign-in-root .master-af,
+html[data-theme="light"] .sign-in-root .ai-monitor {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1.5px solid var(--bdr) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mv {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-ml,
+html[data-theme="light"] .sign-in-root .master-bl,
+html[data-theme="light"] .sign-in-root .master-dp-ttl,
+html[data-theme="light"] .sign-in-root .master-shd {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-bl span:last-child {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-md {
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-bb {
+  background: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-bf {
+  background: linear-gradient(90deg, #004d66, #006080) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-dp-mod {
+  color: var(--t3) !important;
+  border-color: var(--bdr) !important;
+  background: var(--surface-muted) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-dp-mod.on {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  border-color: var(--p) !important;
+  background: #d4e8f4 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-si {
+  background: var(--surface-muted) !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-si-nm {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-si-st {
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mw-badge {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mod-nm {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-af-t {
+  color: var(--t3) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-fn-c {
+  background: var(--surface-muted) !important;
+  border: 1.5px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-fn-c.on {
+  border-color: var(--p) !important;
+  background: #d4e8f4 !important;
+  box-shadow: 0 0 10px rgba(0, 96, 128, 0.2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-fn-l {
+  color: var(--t3) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-fa {
+  background: #94a3b8 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mw-v {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mw-l {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mw-alert {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+/* AI security monitor */
+html[data-theme="light"] .sign-in-root .ai-title {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-lbl {
+  color: var(--t2) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-val.ok {
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+  background: #d1fae5 !important;
+  border-color: #047857 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-val.warn {
+  color: var(--text-warning) !important;
+  font-weight: var(--fw-label) !important;
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-bar-row {
+  border-top-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-bar-lbl {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-bar-lbl span {
+  color: var(--emerald) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-bar {
+  background: #e2e8f0 !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-bar-f {
+  background: linear-gradient(90deg, #047857, #059669) !important;
+}
+
+/* Audit ticker */
+html[data-theme="light"] .sign-in-root .audit-ticker {
+  background: var(--surface-muted) !important;
+  border: 1.5px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .sign-in-root .at-lbl {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .at-entry {
+  color: var(--t2) !important;
+  font-weight: 500 !important;
+}
+
+/* Module pull strip (success step) */
+html[data-theme="light"] .sign-in-root .module-pull-strip {
+  background: #d4e8f4 !important;
+  border: 2px solid #006080 !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-lbl {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-chip {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-chip.mat {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  background: #fff1f2 !important;
+  border-color: #be123c !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-chip:hover {
+  border-color: var(--p) !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  background: #dce8f0 !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-flow-step {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .sign-in-root .module-pull-flow-step.on {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 800 !important;
+}
+
+/* MFA / misc */
+html[data-theme="light"] .sign-in-root .mtab {
+  color: var(--t3) !important;
+  border-color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .sign-in-root .mtab.on {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  border-color: var(--p) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .sign-in-root .errbanner {
+  background: #fff1f2 !important;
+  border-color: #be123c !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  font-weight: 600 !important;
+}
+
+html[data-theme="light"] .sign-in-root .nbox-link {
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+  font-weight: 700 !important;
+}

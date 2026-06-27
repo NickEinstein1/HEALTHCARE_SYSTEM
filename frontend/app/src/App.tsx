@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import type { ReactNode } from "react";
 import { SignInPage } from "./pages/SignInPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ModuleDashboardPage } from "./pages/ModuleDashboardPage";
@@ -6,7 +7,20 @@ import { LandingPage } from "./pages/LandingPage";
 import { PortalPage } from "./pages/PortalPage";
 import { MedicalBackground } from "./components/MedicalBackground";
 import { CreateAccountPage } from "./pages/CreateAccountPage";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { V2_MODULE_SLUGS } from "./routes/dashboardRoutes";
+
+function AuthShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="sign-in-route">
+      <MedicalBackground />
+      <div className="theme-toggle-floating">
+        <ThemeToggle />
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export function App() {
   return (
@@ -16,19 +30,17 @@ export function App() {
         <Route
           path="/sign-in"
           element={
-            <div className="sign-in-route">
-              <MedicalBackground />
+            <AuthShell>
               <SignInPage />
-            </div>
+            </AuthShell>
           }
         />
         <Route
           path="/register"
           element={
-            <div className="sign-in-route">
-              <MedicalBackground />
+            <AuthShell>
               <CreateAccountPage />
-            </div>
+            </AuthShell>
           }
         />
         <Route path="/portal" element={<PortalPage />} />

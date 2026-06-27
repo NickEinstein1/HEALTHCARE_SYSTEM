@@ -111,7 +111,7 @@ cd frontend/app && npm run dev
 | API gateway | `http://localhost:8100` |
 | API docs | `http://localhost:8100/docs` |
 
-Example staging staff (Keycloak): `doctor` / `Changeme1!` — see [runbook-staging.md](../runbook-staging.md).
+Example staging accounts (Keycloak): all six roles use username = role name and password `Changeme1!` — see [runbook-staging.md](../runbook-staging.md).
 
 ## When something does not work
 

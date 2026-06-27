@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { RoleKey } from "../theme/tokens";
 import { BrandPanel } from "../components/sign-in/BrandPanel";
 import { SignInCardBrand } from "../components/sign-in/SignInCardBrand";
@@ -9,6 +10,7 @@ import { StepSelectRole } from "../steps/StepSelectRole";
 import { StepMFA } from "../steps/StepMFA";
 import { StepSuccess } from "../steps/StepSuccess";
 import { formatAuditMessage } from "../lib/audit";
+import { isPilotRole } from "../lib/pilotRoles";
 
 const HEARTBEAT_MSGS = [
   "AUTH SESSION_HEARTBEAT uid=system",
@@ -25,6 +27,7 @@ const INITIAL_AUDIT: [string, string, string] = [
 ];
 
 export function SignInPage() {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<RoleKey | null>(null);
   const [mfaContact, setMfaContact] = useState("");
@@ -45,6 +48,13 @@ export function SignInPage() {
     }, 4000);
     return () => clearInterval(id);
   }, [addAudit]);
+
+  useEffect(() => {
+    const q = searchParams.get("role");
+    if (!isPilotRole(q)) return;
+    setRole(q);
+    addAudit(`AUTH ROLE_PRESELECT role=${q}`);
+  }, [searchParams, addAudit]);
 
   function resetToRoleSelect() {
     setStep(1);

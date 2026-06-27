@@ -29,8 +29,15 @@ async def nurse_create_incident(payload: dict = Body(...)):
 
 
 @router.get("/incidents", status_code=200, summary="List nurse incident reports (Phase 1 UI).")
-async def nurse_list_incidents(limit: int = Query(default=50, ge=1, le=200)):
-    return nurse_incidents[:limit]
+async def nurse_list_incidents(
+    limit: int = Query(default=50, ge=1, le=200),
+    patient_id: str | None = Query(default=None),
+):
+    rows = nurse_incidents[:]
+    if patient_id:
+        pid = patient_id.strip()
+        rows = [r for r in rows if str(r.get("patient_id") or "").strip() == pid]
+    return rows[:limit]
 
 
 @router.post("/supplies", status_code=200, summary="Create a nurse supply request (Phase 1 UI).")

@@ -15,14 +15,24 @@ curl -sf "$GATEWAY/health" | grep -q '"status"' && echo "gateway OK"
 echo "=== Staging smoke: auth status ==="
 curl -sf "$GATEWAY/auth/status" | grep -q 'oidc_enabled' && echo "auth/status OK"
 
-echo "=== Staging smoke: OIDC token (doctor) ==="
+echo "=== Staging smoke: OIDC tokens (all pilot roles) ==="
 TOKEN=""
 if command -v jq >/dev/null 2>&1; then
-  TOKEN="$(curl -s -X POST "$KEYCLOAK/realms/$REALM/protocol/openid-connect/token" \
-    -d "grant_type=password" \
-    -d "client_id=$CLIENT" \
-    -d "username=doctor" \
-    -d "password=Changeme1!" | jq -r '.access_token // empty' 2>/dev/null || true)"
+  for user in doctor nurse admin lab pharmacy patient; do
+    tok="$(curl -s -X POST "$KEYCLOAK/realms/$REALM/protocol/openid-connect/token" \
+      -d "grant_type=password" \
+      -d "client_id=$CLIENT" \
+      -d "username=$user" \
+      -d "password=Changeme1!" | jq -r '.access_token // empty' 2>/dev/null || true)"
+    if [ -n "$tok" ] && [ "$tok" != "null" ]; then
+      echo "OIDC token OK: $user"
+      if [ "$user" = "doctor" ]; then
+        TOKEN="$tok"
+      fi
+    else
+      echo "WARN: Keycloak token failed for user=$user"
+    fi
+  done
 fi
 if [ -n "$TOKEN" ] && [ "$TOKEN" != "null" ]; then
   curl -sf -H "Authorization: Bearer $TOKEN" "$GATEWAY/auth/me" | grep -q '"role":"doctor"' && echo "OIDC /auth/me OK"

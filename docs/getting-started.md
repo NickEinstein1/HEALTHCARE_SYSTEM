@@ -174,13 +174,34 @@ Leave this terminal open while you use the app.
 2. Use **Sign in** (staff flow)
 3. Choose a role path or go directly to staff sign-in
 
-**Pilot staff accounts** (Keycloak):
+**Pilot accounts** (Keycloak — username = role name, password `Changeme1!`):
 
-| Username | Password    | Dashboard        |
-| -------- | ----------- | ---------------- |
-| doctor   | Changeme1!  | Doctor workstation |
-| nurse    | Changeme1!  | Nurse station      |
-| admin    | Changeme1!  | Admin console      |
+| Username | Password    | Dashboard            |
+| -------- | ----------- | -------------------- |
+| doctor   | Changeme1!  | Doctor workstation   |
+| nurse    | Changeme1!  | Nurse station        |
+| admin    | Changeme1!  | Admin console        |
+| lab      | Changeme1!  | Laboratory portal    |
+| pharmacy | Changeme1!  | Pharmacy portal      |
+| patient  | Changeme1!  | Patient health portal |
+
+**Staff sign-in form** (registration ID + email are validated in the UI; OIDC uses the role username above):
+
+| Role     | Staff ID example | Email example              |
+| -------- | ---------------- | -------------------------- |
+| Doctor   | `A4821`          | `doctor@hospital.go.ke`    |
+| Nurse    | `RN/12345`       | `nurse@hospital.go.ke`     |
+| Admin    | `ADMIN-KE-00441` | `admin@hospital.go.ke`     |
+| Lab      | `LAB-KE-00231`   | `lab@hospital.go.ke`       |
+| Pharmacy | `PHARM-00441`    | `pharmacy@hospital.go.ke`  |
+
+**Patient sign-in form** (OIDC still uses `patient` / `Changeme1!` behind the scenes):
+
+| Field        | Example        |
+| ------------ | -------------- |
+| National ID  | `12345678`     |
+| UniHealth PIN| `1234` (any 4 digits in pilot) |
+| Mobile       | `0712345678`   |
 
 After sign-in, the UI calls the gateway with a **Bearer token**; dashboards load FHIR and `/ai` data from **:8100**.
 
@@ -202,7 +223,38 @@ Suggested checks after sign-in:
 
 - **Doctor / Nurse:** patient summary, observations, medications, ward/AI panels
 - **Admin:** overview KPIs, facilities (uses live or demo data depending on screen)
+- **E-Signatures:** Doctor → **E-Signatures** tab, or Patient portal → **E-Signatures** (requires gateway `/legal/*` routes)
 - **API docs:** [localhost:8100/docs](http://localhost:8100/docs) — try `GET /fhir/r5/Patient/P001/summary` with `X-Facility-Id: FAC-A` or Bearer token from Keycloak
+
+### Legal document API (e-sign) — verify backend first
+
+The e-sign module talks to the **gateway** at `/legal/*` (not a separate service). Start staging **before** the frontend:
+
+```bash
+# Terminal 1 — backend (required)
+./scripts/run_staging.sh
+
+# Terminal 2 — frontend
+./scripts/setup_frontend_staging.sh
+cd frontend/app && npm run dev
+```
+
+Quick API checks (header auth — no Keycloak needed):
+
+```bash
+curl -s http://localhost:8100/health
+curl -s -H "X-UniHealth-Role: doctor" http://localhost:8100/legal/templates | jq .
+curl -s -H "X-UniHealth-Role: doctor" "http://localhost:8100/legal/documents?patient_id=P001"
+```
+
+With **OIDC enabled** (`VITE_OIDC_ENABLED=true` in `frontend/app/.env`), the UI sends `Authorization: Bearer …` from Keycloak. If the token is missing or invalid, `/legal/*` may return **401 Unauthorized** — sign in again via [localhost:5173/sign-in](http://localhost:5173/sign-in) using `doctor` / `Changeme1!`.
+
+| Endpoint | Method | Purpose |
+| -------- | ------ | ------- |
+| `/legal/templates` | GET | POA, surgical consent, emergency consent templates |
+| `/legal/documents` | GET / POST | List or create signing envelopes |
+| `/legal/documents/{id}/sign` | POST | Record a signature |
+| `/legal/documents/{id}/verify` | GET | Verify document hash and signatures |
 
 ---
 
@@ -272,6 +324,7 @@ Short version:
 | Sign-in: OIDC error | Keycloak not ready | Wait 1–2 min; open [localhost:8180](http://localhost:8180) |
 | “Account is not fully set up” | Keycloak user profile | Users in `infra/keycloak/realm-unihealth.json` need first + last name |
 | No patient `P001` | Data not seeded | `./scripts/smoke_staging.sh` or `./scripts/run_staging.sh` again |
+| **401** on `/legal/*` in browser | OIDC token missing/expired or wrong role | Sign in via Keycloak (`doctor` / `Changeme1!`); check `curl -H "X-UniHealth-Role: doctor" http://localhost:8100/legal/templates` works |
 | Port 8100 already in use | Another process | `lsof -i :8100` or change host port in `docker-compose.staging.yml` |
 
 ---

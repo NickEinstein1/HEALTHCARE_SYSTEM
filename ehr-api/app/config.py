@@ -45,6 +45,33 @@ class Settings(BaseSettings):
     ai_risk_score_model: str = "rules"
     ai_ml_model_path: str = ""
 
+    # Clinical AI assessment (LLM-assisted differential diagnosis).
+    # Provider: rules | openai | anthropic | azure_openai | google
+    # Falls back to rules when provider is unset, unknown, or API call fails.
+    clinical_ai_provider: str = "rules"
+    clinical_ai_max_input_chars: int = 12_000
+    clinical_ai_rate_limit_per_min: int = 20
+    clinical_ai_request_timeout_s: float = 45.0
+
+    # OpenAI-compatible (also works with many proxies when base URL is set).
+    openai_api_key: str = ""
+    openai_model: str = "gpt-4o-mini"
+    openai_base_url: str = "https://api.openai.com/v1"
+
+    # Anthropic Messages API
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-3-5-haiku-latest"
+
+    # Azure OpenAI
+    azure_openai_api_key: str = ""
+    azure_openai_endpoint: str = ""
+    azure_openai_deployment: str = ""
+    azure_openai_api_version: str = "2024-02-15-preview"
+
+    # Google Gemini
+    google_api_key: str = ""
+    google_model: str = "gemini-1.5-flash"
+
     @model_validator(mode="after")
     def _apply_deployment_profile(self) -> "Settings":
         env = (self.deployment_env or "development").strip().lower()

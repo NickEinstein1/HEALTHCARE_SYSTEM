@@ -23,6 +23,7 @@ import { ConsentScreen } from "../screens/ConsentScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { RecordsScreen } from "../screens/RecordsScreen";
 import { DocumentsScreen } from "../screens/DocumentsScreen";
+import { LegalSignScreen } from "../screens/LegalSignScreen";
 import { MessagesScreen } from "../screens/MessagesScreen";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
@@ -143,6 +144,11 @@ function MenuNavigator({ onSignOut }: { onSignOut: () => void }) {
         name="Documents"
         component={DocumentsScreen}
         options={portalHeader({ title: "Documents", crumb: "Account" })}
+      />
+      <MenuStack.Screen
+        name="LegalSign"
+        component={LegalSignScreen}
+        options={portalHeader({ title: "E-Signatures", crumb: "Account" })}
       />
     </MenuStack.Navigator>
   );

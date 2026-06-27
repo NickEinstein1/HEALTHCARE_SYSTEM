@@ -30,6 +30,9 @@ _psql < "$ROOT/ehr-api/schema.sql"
 echo "=== Seeding patients, encounters, P001 vitals/meds ==="
 _psql < "$ROOT/scripts/seed_staging_data.sql"
 
+echo "=== Seeding pilot staff accounts (6 roles) ==="
+_psql < "$ROOT/scripts/seed_pilot_staff.sql"
+
 echo "=== Clearing Redis cache keys for P001 (optional) ==="
 if "${DC[@]}" ps -q redis 2>/dev/null | grep -q .; then
   "${DC[@]}" exec -T redis redis-cli DEL \

@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { aiAlertsWebSocketUrl, api } from "../../lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "../../lib/api";
+import { useAiAlertsWebSocket } from "../../hooks/useAiAlertsWebSocket";
 import { usePolling } from "../../hooks/usePolling";
 import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 import { CrudRowActions } from "../../components/CrudRowActions";
@@ -7,6 +8,7 @@ import { FormModal } from "../../components/FormModal";
 import { AiRiskScorePanel } from "../../components/ai/AiRiskScorePanel";
 import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { ESignModulePanel } from "../../components/legal/ESignModulePanel";
 import { useAiRiskScore } from "../../hooks/useAiRiskScore";
 
 function formatRowTime(ts?: number | string): string {
@@ -34,6 +36,7 @@ type NursePage =
   | "wounds"
   | "handover"
   | "incidents"
+  | "esign"
   | "supplies";
 
 const NURSE_TITLES: Record<NursePage, string> = {
@@ -48,6 +51,7 @@ const NURSE_TITLES: Record<NursePage, string> = {
   wounds: "Wound Care",
   handover: "Shift Handover",
   incidents: "Incident Reports",
+  esign: "E-Signatures",
   supplies: "Supplies & Inventory",
 };
 
@@ -63,6 +67,7 @@ const NURSE_CRUMBS: Record<NursePage, string> = {
   wounds: "Nursing › Wounds",
   handover: "Docs › Handover",
   incidents: "Docs › Incidents",
+  esign: "Docs › E-Signatures",
   supplies: "Docs › Supplies",
 };
 
@@ -126,28 +131,11 @@ export function NurseDashboard() {
   const [forecastLoading, setForecastLoading] = useState(false);
   const [nurseCensusDraft, setNurseCensusDraft] = useState<Record<string, string>>({});
   const [_ewsResult, setEwsResult]    = useState<any | null>(null); void _ewsResult;
-  const wsRef = useRef<WebSocket | null>(null);
 
-  // WebSocket for live nurse alerts
-  useEffect(() => {
-    const wsUrl = aiAlertsWebSocketUrl("nurse");
-    try {
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
-      ws.onmessage = (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          if (msg.event === "anomaly_alert") {
-            setAiAlerts(prev => [msg.data, ...prev].slice(0, 20));
-            toast(`🚨 ${msg.data.severity}: ${msg.data.msg}`);
-          }
-        } catch { /* ignore */ }
-      };
-      ws.onerror = () => {};
-      return () => { ws.close(); };
-    } catch { return undefined; }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useAiAlertsWebSocket("nurse", useCallback((data) => {
+    setAiAlerts((prev) => [data, ...prev].slice(0, 20));
+    toast(`🚨 ${String(data.severity ?? "Alert")}: ${String(data.msg ?? "Anomaly detected")}`);
+  }, [toast]));
 
   const refreshWardStrip = useCallback(
     async (focusWardId?: string) => {
@@ -873,6 +861,7 @@ export function NurseDashboard() {
             { id: "fluids", icon: "💧", label: "Fluid Balance" },
             { id: "wounds", icon: "🩹", label: "Wound Care" },
             { id: "incidents", icon: "⚠️", label: "Incidents" },
+            { id: "esign", icon: "✍️", label: "E-Signatures" },
             { id: "supplies", icon: "📦", label: "Supplies" },
           ],
         },
@@ -3520,6 +3509,26 @@ export function NurseDashboard() {
               </table>
             </div>
           </div>
+        </div>
+
+        <div className={pgOn(page === "esign")} id="pg-esign">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Legal &amp; Consent</div>
+              <div className="ph-ti">E-Signatures</div>
+              <div className="ph-su">
+                Emergency consent, surgical witness signatures, and POA for patient{" "}
+                <span className="mono">{patientId}</span>
+              </div>
+            </div>
+          </div>
+          <ESignModulePanel
+            patientId={patientId}
+            role="nurse"
+            allowCreate={["emergency_consent", "surgical_consent"]}
+            active={page === "esign"}
+            onToast={toast}
+          />
         </div>
 
         <div className={pgOn(page === "supplies")} id="pg-supplies">

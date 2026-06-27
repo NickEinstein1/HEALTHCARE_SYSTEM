@@ -1,0 +1,196 @@
+/* ═══════════════════════════════════════════════════════════════════
+   UNIHEALTH — Theme tokens (light default · dark blue HUD)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Shared typography tokens (all themes) */
+:root {
+  --font-system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --font: var(--font-system);
+  --serif: var(--font-system);
+  --mono: var(--font-mono);
+  --fw-body: 500;
+  --fw-label: 600;
+  --fw-title: 700;
+  --fw-display: 800;
+  --lh-body: 1.55;
+  --lh-heading: 1.2;
+}
+
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+
+  /*
+   * Warm golden clinical light — professional semantic palette
+   * Surfaces: golden cream · Accents: steel blue · Status: deep readable hues
+   */
+  --bg: #d4bc82;
+  --card: #ebe0c0;
+  --w: #ebe0c0;
+  --surface-muted: #dccfa8;
+  --surface-subtle: #cfc08e;
+  --surface-raised: #f2ead4;
+
+  --bdr: #b8a468;
+  --bdr2: #9a8548;
+  --bdr-focus: #4a8fc4;
+
+  --p: #4a8fc4;
+  --pd: #2563a8;
+  --p-surface: #d4e8f4;
+
+  --t1: #000000;
+  --t2: #000000;
+  --t3: #000000;
+  --t4: #333333;
+
+  --fw-body: 600;
+  --fw-label: 700;
+  --fw-title: 800;
+  --fw-display: 900;
+
+  /* Semantic text — black for light-mode readability */
+  --text-success: #000000;
+  --text-danger: #000000;
+  --text-warning: #000000;
+  --text-info: #000000;
+  --text-link: #000000;
+  --emerald: #000000;
+  --emerald-dark: #000000;
+
+  /* Semantic surfaces */
+  --surface-success: #d1fae5;
+  --surface-success-bdr: #6ee7b7;
+  --surface-danger: #fce8ec;
+  --surface-danger-bdr: #f5b8c4;
+  --surface-warning: #fef3c7;
+  --surface-warning-bdr: #fcd34d;
+  --surface-info: #dbeafe;
+  --surface-info-bdr: #93c5fd;
+
+  --g: #047857;
+  --gd: #065f46;
+  --gl: #d1fae5;
+  --gm: #6ee7b7;
+
+  --r: #be123c;
+  --rl: #fce8ec;
+  --rm: #f5b8c4;
+
+  --am: #262626;
+  --al: #f5f0e4;
+  --amm: #d4c4a0;
+
+  --b: #4a8fc4;
+  --bl: #cce8f6;
+  --bm: #9dcef0;
+
+  --te: #0d9488;
+  --tel: #c5f0ea;
+  --tem: #5eead4;
+
+  --pu: #7c3aed;
+  --pul: #f0ebfc;
+  --pm: #ddd6fe;
+
+  --ro: #e11d48;
+  --rol: #fce8ec;
+  --rom: #f5b8c4;
+
+  --sh: 0 4px 24px rgba(74, 58, 28, 0.14);
+  --sh2: 0 8px 40px rgba(74, 58, 28, 0.18);
+  --shg: 0 4px 20px rgba(90, 165, 210, 0.22);
+  --sh-g: 0 0 18px rgba(90, 165, 210, 0.2);
+  --shadow-md: var(--sh);
+  --shadow-lg: var(--sh2);
+
+  --primary: var(--p);
+  --primary-dark: var(--pd);
+  --primary-light: var(--bl);
+  --text-primary: var(--t1);
+  --text-secondary: var(--t2);
+  --text-muted: var(--t3);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #05091a;
+  --card: rgba(8, 18, 42, 0.75);
+  --w: #05091a;
+
+  --bdr: rgba(0, 210, 255, 0.11);
+  --bdr2: rgba(0, 210, 255, 0.22);
+
+  --p: #00d4ff;
+  --pd: #0090b5;
+
+  --t1: #ddf0ff;
+  --t2: #7ab8d8;
+  --t3: #3e637a;
+  --t4: #1e3a4a;
+
+  --g: #00e5a0;
+  --gd: #009966;
+  --gl: rgba(0, 229, 160, 0.1);
+  --gm: rgba(0, 229, 160, 0.22);
+
+  --r: #ff3366;
+  --rl: rgba(255, 51, 102, 0.1);
+  --rm: rgba(255, 51, 102, 0.22);
+
+  --am: #ffb830;
+  --al: rgba(255, 184, 48, 0.1);
+  --amm: rgba(255, 184, 48, 0.22);
+
+  --b: #3d8ef8;
+  --bl: rgba(61, 142, 248, 0.1);
+  --bm: rgba(61, 142, 248, 0.22);
+
+  --te: #00ffe5;
+  --tel: rgba(0, 255, 229, 0.08);
+  --tem: #00c8b4;
+
+  --pu: #a855f7;
+  --pul: rgba(168, 85, 247, 0.1);
+  --pm: rgba(168, 85, 247, 0.25);
+
+  --ro: #ff4d85;
+  --rol: rgba(255, 77, 133, 0.09);
+  --rom: rgba(255, 77, 133, 0.22);
+
+  --sh: 0 4px 32px rgba(0, 0, 0, 0.55), 0 1px 0 rgba(0, 210, 255, 0.07);
+  --sh2: 0 8px 48px rgba(0, 0, 0, 0.7), 0 1px 0 rgba(0, 210, 255, 0.09);
+  --shg: 0 4px 20px rgba(0, 229, 160, 0.2);
+  --sh-g: 0 0 18px rgba(0, 229, 160, 0.22);
+  --shadow-md: var(--sh);
+  --shadow-lg: var(--sh2);
+
+  --primary: var(--p);
+  --primary-dark: var(--pd);
+  --primary-light: var(--gl);
+  --text-primary: var(--t1);
+  --text-secondary: var(--t2);
+  --text-muted: var(--t3);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--font-system);
+  font-weight: var(--fw-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Medical cinematic scene — visible in light & dark (palette adapts in MedicalBackground.tsx) */
+
+html[data-theme="light"] body.unihealth-auth-bg {
+  background: var(--bg) !important;
+}

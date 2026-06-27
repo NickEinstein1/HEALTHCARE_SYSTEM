@@ -33,6 +33,9 @@ Full laptop + LAN guide: **[runbook-staging.md](runbook-staging.md)**.
 | doctor   | Changeme1!  | doctor     |
 | nurse    | Changeme1!  | nurse      |
 | admin    | Changeme1!  | admin      |
+| lab      | Changeme1!  | lab        |
+| pharmacy | Changeme1!  | pharmacy   |
+| patient  | Changeme1!  | patient    |
 
 Realm import: `infra/keycloak/realm-unihealth.json`.
 
@@ -45,7 +48,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Staff sign-in (staging): use Keycloak username matching role (`doctor`, `nurse`, `admin`) and password `Changeme1!`. Users must have **first and last name** set (Keycloak 24 user profile).
+Staff sign-in (staging): use Keycloak username matching role (`doctor`, `nurse`, `admin`, `lab`, `pharmacy`, `patient`) and password `Changeme1!`. Users must have **first and last name** set (Keycloak 24 user profile).
 
 Gateway OIDC in Docker uses `EHR_OIDC_JWKS_URL` pointing at the internal Keycloak service while `EHR_OIDC_ISSUER_URL` stays `http://localhost:8180/realms/unihealth` to match browser-issued tokens.
 

@@ -12,7 +12,8 @@
       { "name": "nurse", "description": "Clinician — nurse" },
       { "name": "admin", "description": "Facility administrator" },
       { "name": "lab", "description": "Laboratory staff" },
-      { "name": "pharmacy", "description": "Pharmacy staff" }
+      { "name": "pharmacy", "description": "Pharmacy staff" },
+      { "name": "patient", "description": "Patient portal" }
     ]
   },
   "clients": [
@@ -66,6 +67,39 @@
       "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
       "requiredActions": [],
       "realmRoles": ["admin"]
+    },
+    {
+      "username": "lab",
+      "firstName": "Pilot",
+      "lastName": "Laboratory",
+      "enabled": true,
+      "email": "lab@hospital.go.ke",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
+      "requiredActions": [],
+      "realmRoles": ["lab"]
+    },
+    {
+      "username": "pharmacy",
+      "firstName": "Pilot",
+      "lastName": "Pharmacy",
+      "enabled": true,
+      "email": "pharmacy@hospital.go.ke",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
+      "requiredActions": [],
+      "realmRoles": ["pharmacy"]
+    },
+    {
+      "username": "patient",
+      "firstName": "Pilot",
+      "lastName": "Patient",
+      "enabled": true,
+      "email": "patient@hospital.go.ke",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
+      "requiredActions": [],
+      "realmRoles": ["patient"]
     }
   ]
 }

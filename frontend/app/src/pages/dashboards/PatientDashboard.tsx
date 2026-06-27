@@ -4,6 +4,7 @@ import { usePolling } from "../../hooks/usePolling";
 import { BRAND_ICON } from "../../components/brand/brandIcon";
 import { DashIcon } from "../../components/brand/DashIcon";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { ESignModulePanel } from "../../components/legal/ESignModulePanel";
 import { ExportMenu } from "../../components/ExportMenu";
 import { BodyVitalsFigure } from "../../components/BodyVitalsFigure";
 
@@ -188,6 +189,7 @@ type PatientPage =
   | "payments"
   | "records"
   | "documents"
+  | "esign"
   | "profile"
   | "consent";
 
@@ -204,6 +206,7 @@ const PATIENT_TITLES: Record<PatientPage, string> = {
   payments: "Make a Payment",
   records: "Health Records",
   documents: "Documents",
+  esign: "E-Signatures",
   profile: "My Profile",
   consent: "Privacy & Consent",
 };
@@ -221,6 +224,7 @@ const PATIENT_CRUMBS: Record<PatientPage, string> = {
   payments: "Payments › Pay Now",
   records: "Records › Health Records",
   documents: "Records › Documents",
+  esign: "Records › E-Signatures",
   profile: "Account › Profile",
   consent: "Privacy › Consent",
 };
@@ -232,9 +236,18 @@ function pgOn(active: boolean) {
 export function PatientDashboard() {
   const toast = useDashboardToast();
   const [patientId, setPatientId] = useState("P001");
-  const summary = usePolling(() => api.patientSummary(patientId, 5), { intervalMs: 7000 });
-  const meds = usePolling(() => api.medicationRequests(patientId, 20), { intervalMs: 10000 });
-  const obs = usePolling(() => api.observations(patientId, 30), { intervalMs: 6000 });
+  const summary = usePolling(
+    useCallback(() => api.patientSummary(patientId, 5, "patient"), [patientId]),
+    { intervalMs: 7000 },
+  );
+  const meds = usePolling(
+    useCallback(() => api.medicationRequests(patientId, 20, "patient"), [patientId]),
+    { intervalMs: 10000 },
+  );
+  const obs = usePolling(
+    useCallback(() => api.observations(patientId, 30, "patient"), [patientId]),
+    { intervalMs: 6000 },
+  );
 
   const [page, setPage] = useState<PatientPage>("home");
   const [topPanel, setTopPanel] = useState<"none" | "search" | "notifications">("none");
@@ -586,6 +599,7 @@ export function PatientDashboard() {
         { key: "payments", label: "Make a Payment", sub: "Payments · Methods and recent transactions", page: "payments" as PatientPage, icon: "📱" },
         { key: "records", label: "Health Records", sub: "Records · Longitudinal record", page: "records" as PatientPage, icon: "📂" },
         { key: "documents", label: "Documents", sub: "Records · Reports and files", page: "documents" as PatientPage, icon: "📋" },
+        { key: "esign", label: "E-Signatures", sub: "Legal · POA & consent forms", page: "esign" as PatientPage, icon: "✍️" },
         { key: "profile", label: "My Profile", sub: "Account · Personal details", page: "profile" as PatientPage, icon: "👤" },
         { key: "consent", label: "Privacy & Consent", sub: "Privacy · KDPA 2019 controls", page: "consent" as PatientPage, icon: "🔐" },
       ] as const,
@@ -667,6 +681,7 @@ export function PatientDashboard() {
           items: [
             { id: "records", icon: "📂", label: "Health Records" },
             { id: "documents", icon: "📋", label: "Documents" },
+            { id: "esign", icon: "✍️", label: "E-Signatures" },
             { id: "profile", icon: "👤", label: "My Profile" },
           ],
         },
@@ -2438,6 +2453,23 @@ export function PatientDashboard() {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className={pgOn(page === "esign")} id="pg-esign">
+          <div className="ph">
+            <div>
+              <div className="ph-ey">Legal &amp; Consent</div>
+              <div className="ph-ti">E-Signatures</div>
+              <div className="ph-su">Power of attorney, surgical consent, and emergency authorisation with verification</div>
+            </div>
+          </div>
+          <ESignModulePanel
+            patientId={patientId}
+            role="patient"
+            allowCreate={["poa"]}
+            active={page === "esign"}
+            onToast={toast}
+          />
         </div>
 
         <div className={pgOn(page === "profile")} id="pg-profile">

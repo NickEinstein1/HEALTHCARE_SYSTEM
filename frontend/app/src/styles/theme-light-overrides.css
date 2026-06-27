@@ -1,0 +1,148 @@
+/* Light-mode surface & layout — golden clinical theme (dark mode untouched) */
+
+html[data-theme="light"] {
+  --bg: #d4bc82;
+  --card: #ebe0c0;
+  --w: #ebe0c0;
+  --surface-muted: #dccfa8;
+  --surface-subtle: #cfc08e;
+  --surface-raised: #f2ead4;
+  --bdr: #b8a468;
+  --bdr2: #9a8548;
+  --p: #4a8fc4;
+  --pd: #2563a8;
+  --p-surface: #d4e8f4;
+  --bl: #dbeafe;
+  --bm: #93c5fd;
+}
+
+/* ── Dashboard shell ─────────────────────────────────────────────── */
+html[data-theme="light"] .sb::before {
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg) 100%) !important;
+}
+
+html[data-theme="light"] .sb::after {
+  background: radial-gradient(circle at 100% 0%, rgba(74, 143, 196, 0.12) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .sb {
+  border-right: 1.5px solid var(--bdr) !important;
+  background: var(--card) !important;
+}
+
+html[data-theme="light"] .sb-un {
+  font-weight: var(--fw-display) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .sb-role,
+html[data-theme="light"] .sb-nm,
+html[data-theme="light"] .sb-sub,
+html[data-theme="light"] .ni-lbl,
+html[data-theme="light"] .sb-sec-lbl {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .ni.on .ni-lbl {
+  color: var(--pd) !important;
+  font-weight: var(--fw-title) !important;
+}
+
+html[data-theme="light"] .dash-main,
+html[data-theme="light"] .content {
+  background: var(--bg) !important;
+}
+
+html[data-theme="light"] .dash-topbar,
+html[data-theme="light"] .topbar {
+  background: color-mix(in srgb, var(--card) 94%, var(--p-surface)) !important;
+  border-bottom: 1.5px solid var(--bdr) !important;
+  box-shadow: 0 1px 12px rgba(74, 58, 28, 0.08) !important;
+}
+
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .tb-page,
+html[data-theme="light"] .tb-crumb {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .tb-search {
+  background: var(--surface-raised) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .tb-search::placeholder {
+  color: var(--t4) !important;
+}
+
+html[data-theme="light"] .panel,
+html[data-theme="light"] .kpis .kpi {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .panel-title,
+html[data-theme="light"] .kpi-val,
+html[data-theme="light"] .ph-title {
+  color: var(--t1) !important;
+  font-weight: var(--fw-title) !important;
+}
+
+html[data-theme="light"] .panel-sub,
+html[data-theme="light"] .kpi-lbl,
+html[data-theme="light"] .ph-sub {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .tbl th {
+  background: var(--surface-muted) !important;
+  color: var(--t1) !important;
+  font-weight: var(--fw-label) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .tbl td {
+  border-color: var(--bdr) !important;
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .tbl tr:hover td {
+  background: color-mix(in srgb, var(--p-surface) 35%, transparent) !important;
+}
+
+/* ── Portal & modals ─────────────────────────────────────────────── */
+html[data-theme="light"] .portal-page {
+  background: var(--bg) !important;
+  color: var(--t1);
+}
+
+html[data-theme="light"] .portal-grid-bg {
+  opacity: 0.12 !important;
+}
+
+html[data-theme="light"] .auth-card,
+html[data-theme="light"] .portal-page .card {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .form-modal__panel {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  box-shadow: var(--sh2) !important;
+}
+
+html[data-theme="light"] .form-modal__backdrop {
+  background: rgba(26, 24, 20, 0.4) !important;
+}
+
+html[data-theme="light"] .form-modal__panel h2,
+html[data-theme="light"] .form-modal__panel h3,
+html[data-theme="light"] .portal-page h1,
+html[data-theme="light"] .portal-page h2 {
+  color: var(--t1) !important;
+  font-weight: var(--fw-display) !important;
+}

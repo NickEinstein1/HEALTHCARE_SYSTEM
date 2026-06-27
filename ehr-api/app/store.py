@@ -737,3 +737,332 @@ async def list_active_consents_for_patient(patient_id: str) -> list[dict]:
             patient_id,
         )
         return [dict(r) for r in rows]
+
+
+async def insert_clinical_ai_assessment(row: dict) -> bool:
+    """Persist a clinical AI assessment. Falls back to in-memory ring buffer."""
+    import app.state as st
+
+    if not row:
+        return False
+    if _pg_pool is None:
+        st.clinical_ai_assessments.insert(0, dict(row))
+        if len(st.clinical_ai_assessments) > 200:
+            st.clinical_ai_assessments[:] = st.clinical_ai_assessments[:200]
+        return True
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO clinical_ai_assessments (
+                  assessment_id, patient_id, role, provider, model_version,
+                  request_json, response_json, audit_id, created_at
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,COALESCE($9::timestamptz, NOW()))
+                ON CONFLICT (assessment_id) DO NOTHING
+                """,
+                str(row.get("assessment_id") or ""),
+                str(row.get("patient_id") or ""),
+                str(row.get("role") or ""),
+                str(row.get("provider") or ""),
+                row.get("model_version"),
+                json.dumps(row.get("request") or {}),
+                json.dumps(row.get("response") or {}),
+                row.get("audit_id"),
+                row.get("created_at"),
+            )
+        return True
+    except Exception:
+        st.clinical_ai_assessments.insert(0, dict(row))
+        if len(st.clinical_ai_assessments) > 200:
+            st.clinical_ai_assessments[:] = st.clinical_ai_assessments[:200]
+        return False
+
+
+async def list_clinical_ai_assessments(patient_id: str, limit: int = 20) -> list[dict]:
+    import app.state as st
+
+    limit = max(1, min(int(limit), 100))
+    if _pg_pool is None:
+        rows = [
+            r for r in st.clinical_ai_assessments
+            if str(r.get("patient_id") or "") == patient_id
+        ]
+        return rows[:limit]
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            db_rows = await conn.fetch(
+                """
+                SELECT assessment_id, patient_id, role, provider, model_version,
+                       request_json, response_json, audit_id, created_at
+                FROM clinical_ai_assessments
+                WHERE patient_id = $1
+                ORDER BY created_at DESC
+                LIMIT $2
+                """,
+                patient_id,
+                limit,
+            )
+        out: list[dict] = []
+        for r in db_rows:
+            try:
+                request = json.loads(r["request_json"]) if r["request_json"] else {}
+            except Exception:
+                request = {}
+            try:
+                response = json.loads(r["response_json"]) if r["response_json"] else {}
+            except Exception:
+                response = {}
+            out.append({
+                "assessment_id": r["assessment_id"],
+                "patient_id": r["patient_id"],
+                "role": r["role"],
+                "provider": r["provider"],
+                "model_version": r["model_version"],
+                "request": request,
+                "response": response,
+                "audit_id": r["audit_id"],
+                "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
+            })
+        return out
+    except Exception:
+        rows = [
+            r for r in st.clinical_ai_assessments
+            if str(r.get("patient_id") or "") == patient_id
+        ]
+        return rows[:limit]
+
+
+def _serialize_legal_doc(doc: dict) -> dict:
+    return dict(doc)
+
+
+async def insert_legal_document(doc: dict) -> bool:
+    import app.state as st
+    if not doc:
+        return False
+    st.legal_documents.insert(0, _serialize_legal_doc(doc))
+    if len(st.legal_documents) > 500:
+        st.legal_documents[:] = st.legal_documents[:500]
+    if _pg_pool is None:
+        return True
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO legal_documents (
+                  id, patient_id, encounter_id, facility_id, doc_type, template_version,
+                  title, body, summary, required_signers, status, context_json,
+                  verification_code, created_by_role, created_by_subject, signatures_json,
+                  created_at, completed_at, expires_at
+                ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
+                          COALESCE($17::timestamptz, NOW()), $18::timestamptz, $19::timestamptz)
+                ON CONFLICT (id) DO NOTHING
+                """,
+                str(doc.get("id") or ""),
+                str(doc.get("patient_id") or ""),
+                doc.get("encounter_id"),
+                str(doc.get("facility_id") or "FAC-A"),
+                str(doc.get("doc_type") or ""),
+                str(doc.get("template_version") or "1.0"),
+                str(doc.get("title") or ""),
+                str(doc.get("body") or ""),
+                doc.get("summary"),
+                json.dumps(doc.get("required_signers") or []),
+                str(doc.get("status") or "pending_signatures"),
+                json.dumps(doc.get("context") or {}),
+                doc.get("verification_code"),
+                str(doc.get("created_by_role") or ""),
+                doc.get("created_by_subject"),
+                json.dumps(doc.get("signatures") or []),
+                doc.get("created_at"),
+                doc.get("completed_at"),
+                doc.get("expires_at"),
+            )
+        return True
+    except Exception:
+        return False
+
+
+async def update_legal_document(doc: dict) -> bool:
+    import app.state as st
+    doc_id = str(doc.get("id") or "")
+    for i, row in enumerate(st.legal_documents):
+        if str(row.get("id")) == doc_id:
+            st.legal_documents[i] = _serialize_legal_doc(doc)
+            break
+    if _pg_pool is None:
+        return True
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE legal_documents SET
+                  status = $2,
+                  signatures_json = $3,
+                  verification_code = $4,
+                  completed_at = $5::timestamptz,
+                  voided_at = $6::timestamptz,
+                  void_reason = $7,
+                  context_json = $8
+                WHERE id = $1
+                """,
+                doc_id,
+                str(doc.get("status") or ""),
+                json.dumps(doc.get("signatures") or []),
+                doc.get("verification_code"),
+                doc.get("completed_at"),
+                doc.get("voided_at"),
+                doc.get("void_reason"),
+                json.dumps(doc.get("context") or {}),
+            )
+        return True
+    except Exception:
+        return False
+
+
+async def get_legal_document(document_id: str) -> dict | None:
+    import app.state as st
+    for row in st.legal_documents:
+        if str(row.get("id")) == document_id:
+            return dict(row)
+    if _pg_pool is None:
+        return None
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                SELECT id, patient_id, encounter_id, facility_id, doc_type, template_version,
+                       title, body, summary, required_signers, status, context_json,
+                       verification_code, created_by_role, created_by_subject, signatures_json,
+                       created_at, completed_at, expires_at, voided_at, void_reason
+                FROM legal_documents WHERE id = $1
+                """,
+                document_id,
+            )
+        if not row:
+            return None
+        try:
+            signatures = json.loads(row["signatures_json"]) if row["signatures_json"] else []
+        except Exception:
+            signatures = []
+        try:
+            required = json.loads(row["required_signers"]) if row["required_signers"] else []
+        except Exception:
+            required = []
+        try:
+            context = json.loads(row["context_json"]) if row["context_json"] else {}
+        except Exception:
+            context = {}
+        return {
+            "id": row["id"],
+            "patient_id": row["patient_id"],
+            "encounter_id": row["encounter_id"],
+            "facility_id": row["facility_id"],
+            "doc_type": row["doc_type"],
+            "template_version": row["template_version"],
+            "title": row["title"],
+            "body": row["body"],
+            "summary": row["summary"],
+            "required_signers": required,
+            "status": row["status"],
+            "context": context,
+            "verification_code": row["verification_code"],
+            "created_by_role": row["created_by_role"],
+            "created_by_subject": row["created_by_subject"],
+            "signatures": signatures,
+            "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+            "completed_at": row["completed_at"].isoformat() if row.get("completed_at") else None,
+            "expires_at": row["expires_at"].isoformat() if row.get("expires_at") else None,
+            "voided_at": row["voided_at"].isoformat() if row.get("voided_at") else None,
+            "void_reason": row.get("void_reason"),
+        }
+    except Exception:
+        return None
+
+
+async def list_legal_documents(
+    *,
+    patient_id: str | None = None,
+    doc_type: str | None = None,
+    status: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    import app.state as st
+    limit = max(1, min(int(limit), 200))
+    rows = st.legal_documents[:]
+    if patient_id:
+        rows = [r for r in rows if str(r.get("patient_id") or "") == patient_id]
+    if doc_type:
+        rows = [r for r in rows if str(r.get("doc_type") or "") == doc_type]
+    if status:
+        rows = [r for r in rows if str(r.get("status") or "") == status]
+    if rows:
+        return [dict(r) for r in rows[:limit]]
+    if _pg_pool is None:
+        return []
+    try:
+        pool = _require_pool()
+        args: list = []
+        where = "WHERE 1=1"
+        n = 0
+        if patient_id:
+            n += 1
+            where += f" AND patient_id = ${n}"
+            args.append(patient_id)
+        if doc_type:
+            n += 1
+            where += f" AND doc_type = ${n}"
+            args.append(doc_type)
+        if status:
+            n += 1
+            where += f" AND status = ${n}"
+            args.append(status)
+        n += 1
+        args.append(limit)
+        sql = f"""
+          SELECT id FROM legal_documents
+          {where}
+          ORDER BY created_at DESC NULLS LAST
+          LIMIT ${n}
+        """
+        async with pool.acquire() as conn:
+            db_rows = await conn.fetch(sql, *args)
+        out: list[dict] = []
+        for row in db_rows:
+            doc = await get_legal_document(str(row["id"]))
+            if doc:
+                out.append(doc)
+        return out
+    except Exception:
+        return []
+
+
+async def insert_legal_document_audit(entry: dict) -> bool:
+    if not entry or _pg_pool is None:
+        return False
+    try:
+        pool = _require_pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO legal_document_audit_log (
+                  audit_id, document_id, event, role, subject, payload_json, ts
+                ) VALUES ($1,$2,$3,$4,$5,$6,COALESCE($7::timestamptz, NOW()))
+                ON CONFLICT (audit_id) DO NOTHING
+                """,
+                str(entry.get("audit_id") or ""),
+                str(entry.get("document_id") or ""),
+                str(entry.get("event") or ""),
+                str(entry.get("role") or ""),
+                entry.get("subject"),
+                json.dumps(entry.get("payload") or {}),
+                entry.get("ts"),
+            )
+        return True
+    except Exception:
+        return False

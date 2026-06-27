@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { MASTER_PORTAL_SECTIONS } from "../lib/modulePull";
+import { PILOT_AUTH_PORTALS } from "../lib/pilotRoles";
+import { ThemeToggle } from "../components/ThemeToggle";
 import "./PortalPage.css";
 
 const PORTAL_MODULES = MASTER_PORTAL_SECTIONS.flatMap((section) =>
@@ -13,24 +15,9 @@ const PORTAL_MODULES = MASTER_PORTAL_SECTIONS.flatMap((section) =>
 );
 
 export const PortalPage: React.FC = () => {
-  const authPortals = [
-    {
-      icon: "👨‍⚕️",
-      title: "Clinician Portal",
-      desc: "Access EMR, patient data, orders, and clinical tools",
-      path: "/modules/emr",
-    },
-    {
-      icon: "🏥",
-      title: "Admin Portal",
-      desc: "System administration and facility management",
-      path: "/dashboard/admin",
-    },
-  ];
-
   const stats = [
     { value: String(PORTAL_MODULES.length), label: "Modules" },
-    { value: "5K+", label: "Users" },
+    { value: String(PILOT_AUTH_PORTALS.length), label: "Pilot Roles" },
     { value: "1.2M", label: "Patients" },
     { value: "99.9%", label: "Uptime" },
   ];
@@ -61,16 +48,17 @@ export const PortalPage: React.FC = () => {
             <div className="chip ch-g">ALL SYSTEMS LIVE</div>
             <div className="chip ch-g">{PORTAL_MODULES.length} Modules · Module Pull</div>
             <div className="chip ch-b">FHIR R5 · JWT · RBAC</div>
-            <div className="chip ch-pk">Maternity AI Active</div>
+            <div className="chip ch-pk">6 Pilot Roles · Keycloak</div>
           </div>
         </header>
 
         <div className="cta-box">
-          <Link to="/modules/emr" className="btn-main">
-            <span>🚀</span> Launch Clinician Portal
+          <ThemeToggle />
+          <Link to="/sign-in" className="btn-main">
+            <span>🔑</span> Sign In
           </Link>
-          <Link to="/dashboard/admin" className="btn-ghost">
-            ⚙️ Admin Console
+          <Link to="/register" className="btn-ghost">
+            Get Access
           </Link>
         </div>
 
@@ -83,24 +71,34 @@ export const PortalPage: React.FC = () => {
           ))}
         </div>
 
-        <div className="sec-label">Access Portals</div>
+        <div className="sec-label">Get Access — Pilot Roles</div>
         <div className="auth-grid">
-          {authPortals.map((portal) => (
-            <Link key={portal.path} to={portal.path} className="auth-card">
+          {PILOT_AUTH_PORTALS.map((portal) => (
+            <div key={portal.role} className="auth-card auth-card-split">
               <div className="auth-icon">{portal.icon}</div>
               <div>
                 <div className="auth-title">{portal.title}</div>
                 <div className="auth-desc">{portal.desc}</div>
-                <div className="auth-url">→ Enter Portal</div>
+                <div className="auth-actions">
+                  <Link to={portal.registerPath} className="auth-url">
+                    → Get access
+                  </Link>
+                  <Link to={portal.signInPath} className="auth-url auth-url-muted">
+                    Sign in
+                  </Link>
+                  <Link to={portal.path} className="auth-url auth-url-muted">
+                    Open dashboard
+                  </Link>
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 
         <div className="sec-label">All Modules</div>
         <div className="grid">
           {PORTAL_MODULES.map((module) => (
-            <Link key={module.path} to={module.path} className="card">
+            <Link key={`${module.path}-${module.label}`} to={module.path} className="card">
               <div className="card-icon">{module.icon}</div>
               <div className="card-name">{module.label}</div>
               <div className="card-desc">{module.desc ?? module.label}</div>
@@ -116,6 +114,7 @@ export const PortalPage: React.FC = () => {
             <Link to="/" className="footer-link">
               Marketing home
             </Link>{" "}
+            · <Link to="/register" className="footer-link">Get access</Link>{" "}
             · <Link to="/sign-in" className="footer-link">Sign in</Link>
           </div>
         </footer>

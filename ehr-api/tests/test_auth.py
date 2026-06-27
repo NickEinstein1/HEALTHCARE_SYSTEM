@@ -44,3 +44,28 @@ def test_oidc_requires_bearer_when_no_fallback(monkeypatch: pytest.MonkeyPatch) 
     with pytest.raises(HTTPException) as exc:
         resolve_role(_request({}))
     assert exc.value.status_code == 401
+
+
+def test_oidc_invalid_bearer_falls_back_to_header(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "oidc_enabled", True, raising=False)
+    monkeypatch.setattr(settings, "oidc_allow_header_fallback", True, raising=False)
+    monkeypatch.setattr(settings, "oidc_issuer_url", "http://keycloak/realms/unihealth", raising=False)
+
+    def _fail_bearer(_token: str) -> str:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token")
+
+    monkeypatch.setattr("app.auth._role_from_bearer", _fail_bearer)
+    role = resolve_role(_request({
+        "Authorization": "Bearer stale-token",
+        "X-UniHealth-Role": "doctor",
+    }))
+    assert role == "doctor"
+    # Header-first: JWT path must not run when role header is present.
+    def _should_not_run(_token: str) -> str:
+        raise AssertionError("bearer should be skipped")
+
+    monkeypatch.setattr("app.auth._role_from_bearer", _should_not_run)
+    assert resolve_role(_request({
+        "Authorization": "Bearer stale-token",
+        "X-UniHealth-Role": "nurse",
+    })) == "nurse"

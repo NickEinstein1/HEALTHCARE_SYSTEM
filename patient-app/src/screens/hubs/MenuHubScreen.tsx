@@ -20,7 +20,8 @@ export function MenuHubScreen() {
         <ServiceCard index={0} icon="👤" label="My Profile" subtitle="Identity & session" onPress={() => nav.navigate("Profile")} />
         <ServiceCard index={1} icon="📂" label="Health Records" subtitle="Diagnoses & allergies" onPress={() => nav.navigate("Records")} />
         <ServiceCard index={2} icon="📋" label="Documents" subtitle="PDFs & reports" onPress={() => nav.navigate("Documents")} />
-        <ServiceCard index={3} icon="🔐" label="Privacy & Consent" subtitle="KDPA controls" onPress={() => nav.navigate("Consent")} />
+        <ServiceCard index={3} icon="✍️" label="E-Signatures" subtitle="POA & consent forms" onPress={() => nav.navigate("LegalSign")} />
+        <ServiceCard index={4} icon="🔐" label="Privacy & Consent" subtitle="KDPA controls" onPress={() => nav.navigate("Consent")} />
       </View>
       <Text style={styles.foot}>Export · erasure · portability rights under KDPA 2019</Text>
     </AnimatedScrollScreen>

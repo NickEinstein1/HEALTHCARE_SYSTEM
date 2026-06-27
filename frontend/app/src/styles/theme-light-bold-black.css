@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — Global bold black text (all pages)
+   Loaded absolutely last · dark mode untouched
+   ═══════════════════════════════════════════════════════════════════ */
+
+html[data-theme="light"] {
+  --t1: #000000;
+  --t2: #000000;
+  --t3: #000000;
+  --t4: #333333;
+  --text-success: #000000;
+  --text-danger: #000000;
+  --text-warning: #000000;
+  --text-info: #000000;
+  --text-link: #000000;
+  --emerald: #000000;
+  --fw-body: 600;
+  --fw-label: 700;
+  --fw-title: 800;
+  --fw-display: 900;
+}
+
+/* ── All app surfaces ─────────────────────────────────────────────── */
+html[data-theme="light"],
+html[data-theme="light"] body,
+html[data-theme="light"] #root,
+html[data-theme="light"] .lp-root,
+html[data-theme="light"] .sign-in-root,
+html[data-theme="light"] .sign-in-route,
+html[data-theme="light"] .dash-shell,
+html[data-theme="light"] .dash-main,
+html[data-theme="light"] .content,
+html[data-theme="light"] .main,
+html[data-theme="light"] .portal-page {
+  color: #000000;
+  font-weight: 600;
+}
+
+/* ── Typography hierarchy — black bold ─────────────────────────────── */
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] h5,
+html[data-theme="light"] h6,
+html[data-theme="light"] .hl,
+html[data-theme="light"] .stitle,
+html[data-theme="light"] .ph-ti,
+html[data-theme="light"] .ph-title,
+html[data-theme="light"] .pnl-ti,
+html[data-theme="light"] .pnl-title,
+html[data-theme="light"] .panel-title,
+html[data-theme="light"] .kpi-v,
+html[data-theme="light"] .kpi-val,
+html[data-theme="light"] .tb-page,
+html[data-theme="light"] .sb-nm,
+html[data-theme="light"] .sb-un,
+html[data-theme="light"] .brand-nm,
+html[data-theme="light"] .master-hl,
+html[data-theme="light"] .master-mv {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] p,
+html[data-theme="light"] li,
+html[data-theme="light"] span,
+html[data-theme="light"] div,
+html[data-theme="light"] label,
+html[data-theme="light"] .lbl,
+html[data-theme="light"] .hd,
+html[data-theme="light"] .ph-su,
+html[data-theme="light"] .ph-sub,
+html[data-theme="light"] .pnl-su,
+html[data-theme="light"] .panel-sub,
+html[data-theme="light"] .tbl td,
+html[data-theme="light"] .tbl th,
+html[data-theme="light"] .kpi-l,
+html[data-theme="light"] .kpi-lbl,
+html[data-theme="light"] .ni-lbl,
+html[data-theme="light"] .sb-sub,
+html[data-theme="light"] .sb-role,
+html[data-theme="light"] .tb-crumb,
+html[data-theme="light"] .modal-su,
+html[data-theme="light"] .modal-sub {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .tbl th,
+html[data-theme="light"] .tb-crumb b,
+html[data-theme="light"] .ni.on .ni-lbl {
+  font-weight: 800 !important;
+}
+
+/* ── Links & actions — black bold ──────────────────────────────────── */
+html[data-theme="light"] a,
+html[data-theme="light"] .fgt,
+html[data-theme="light"] .resend-row button,
+html[data-theme="light"] .pnl-link,
+html[data-theme="light"] .pnl-lk,
+html[data-theme="light"] .lp-nav-link,
+html[data-theme="light"] .bkbn,
+html[data-theme="light"] .eyebn,
+html[data-theme="light"] .si-hint-link {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] a:hover,
+html[data-theme="light"] .lp-nav-link:hover,
+html[data-theme="light"] .fgt:hover,
+html[data-theme="light"] .bkbn:hover {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+/* ── Tags, badges, status — black bold text ──────────────────────── */
+html[data-theme="light"] .tag,
+html[data-theme="light"] .doc .tag,
+html[data-theme="light"] .nurse .tag,
+html[data-theme="light"] .patient .tag,
+html[data-theme="light"] .admin .tag,
+html[data-theme="light"] .ni-badge,
+html[data-theme="light"] .cbadge,
+html[data-theme="light"] .risk-lbl,
+html[data-theme="light"] .risk-score,
+html[data-theme="light"] .risk-sig,
+html[data-theme="light"] .ai-val,
+html[data-theme="light"] .ai-lbl,
+html[data-theme="light"] .ai-lbl span,
+html[data-theme="light"] .notice-tx,
+html[data-theme="light"] .nbox,
+html[data-theme="light"] .role-note,
+html[data-theme="light"] .si-hint,
+html[data-theme="light"] .kpi-meta,
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .lp-section-eyebrow,
+html[data-theme="light"] .lp-eyebrow--cyan,
+html[data-theme="light"] .lp-eyebrow--success,
+html[data-theme="light"] .lp-eyebrow--amber,
+html[data-theme="light"] .lp-eyebrow--blue,
+html[data-theme="light"] .lp-eyebrow--purple,
+html[data-theme="light"] .lp-problem-eyebrow,
+html[data-theme="light"] .lp-problem-col-head,
+html[data-theme="light"] .lp-problem-icon--bad,
+html[data-theme="light"] .lp-problem-icon--good,
+html[data-theme="light"] .lp-problem-text,
+html[data-theme="light"] .lp-faq-q,
+html[data-theme="light"] .lp-faq-a,
+html[data-theme="light"] .lp-metric-value,
+html[data-theme="light"] .lp-metric-label,
+html[data-theme="light"] .lp-trust-ticker-label,
+html[data-theme="light"] .lp-trust-ticker-item,
+html[data-theme="light"] .at-lbl,
+html[data-theme="light"] .at-entry,
+html[data-theme="light"] .ai-title,
+html[data-theme="light"] .master-md,
+html[data-theme="light"] .master-si-st,
+html[data-theme="light"] .sxrole,
+html[data-theme="light"] .req.met,
+html[data-theme="light"] .session-info .si-tx,
+html[data-theme="light"] .session-info .si-tx strong {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────── */
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea,
+html[data-theme="light"] .fw input,
+html[data-theme="light"] .pin-box,
+html[data-theme="light"] .obox {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] ::placeholder {
+  color: #444444 !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+/* ── Ghost / secondary controls ──────────────────────────────────── */
+html[data-theme="light"] .lp-btn-ghost,
+html[data-theme="light"] .theme-toggle,
+html[data-theme="light"] .btn-s,
+html[data-theme="light"] .altbn,
+html[data-theme="light"] .vtab {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .theme-toggle:hover,
+html[data-theme="light"] .lp-btn-ghost:hover {
+  color: #000000 !important;
+}
+
+/* ── Primary buttons — keep white text on blue fill ───────────────── */
+html[data-theme="light"] .btn,
+html[data-theme="light"] .btn-p,
+html[data-theme="light"] .btn-pg,
+html[data-theme="light"] .lp-btn-primary,
+html[data-theme="light"] .nurse .btn-p,
+html[data-theme="light"] .nurse .btn-pg,
+html[data-theme="light"] .patient .btn-p,
+html[data-theme="light"] .admin .btn-p,
+html[data-theme="light"] .doc .btn-p,
+html[data-theme="light"] .sign-in-root .btn,
+html[data-theme="light"] .rc .rchk,
+html[data-theme="light"] button.lp-btn-primary,
+html[data-theme="light"] button[style*="background: #00d4ff"],
+html[data-theme="light"] button[style*="background:#00d4ff"],
+html[data-theme="light"] button[style*="background: var(--pd)"],
+html[data-theme="light"] button[style*="background:var(--pd)"] {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* ── Inline hardcoded colors (all pages) ─────────────────────────── */
+html[data-theme="light"] [style*="color: #ddf0ff"],
+html[data-theme="light"] [style*="color:#ddf0ff"],
+html[data-theme="light"] [style*="color: #7ab8d8"],
+html[data-theme="light"] [style*="color:#7ab8d8"],
+html[data-theme="light"] [style*="color: #3e637a"],
+html[data-theme="light"] [style*="color:#3e637a"],
+html[data-theme="light"] [style*="color: #c8ddf5"],
+html[data-theme="light"] [style*="color:#c8ddf5"],
+html[data-theme="light"] [style*="color: #00d4ff"],
+html[data-theme="light"] [style*="color:#00d4ff"],
+html[data-theme="light"] [style*="color: #00e5a0"],
+html[data-theme="light"] [style*="color:#00e5a0"],
+html[data-theme="light"] [style*="color: #00e5d0"],
+html[data-theme="light"] [style*="color:#00e5d0"],
+html[data-theme="light"] [style*="color: #3d8ef8"],
+html[data-theme="light"] [style*="color:#3d8ef8"],
+html[data-theme="light"] [style*="color: #60b0ff"],
+html[data-theme="light"] [style*="color:#60b0ff"],
+html[data-theme="light"] [style*="color: #ffb830"],
+html[data-theme="light"] [style*="color:#ffb830"],
+html[data-theme="light"] [style*="color: #ffc84a"],
+html[data-theme="light"] [style*="color:#ffc84a"],
+html[data-theme="light"] [style*="color: #ff3366"],
+html[data-theme="light"] [style*="color:#ff3366"],
+html[data-theme="light"] [style*="color: #ff6699"],
+html[data-theme="light"] [style*="color:#ff6699"],
+html[data-theme="light"] [style*="color: #ff5e85"],
+html[data-theme="light"] [style*="color:#ff5e85"],
+html[data-theme="light"] [style*="color: #ff4d85"],
+html[data-theme="light"] [style*="color:#ff4d85"],
+html[data-theme="light"] [style*="color: #a855f7"],
+html[data-theme="light"] [style*="color:#a855f7"],
+html[data-theme="light"] [style*="color: #6d28d9"],
+html[data-theme="light"] [style*="color:#6d28d9"],
+html[data-theme="light"] [style*="color: #4c1d95"],
+html[data-theme="light"] [style*="color:#4c1d95"],
+html[data-theme="light"] [style*="color: #047857"],
+html[data-theme="light"] [style*="color:#047857"],
+html[data-theme="light"] [style*="color: #065f46"],
+html[data-theme="light"] [style*="color:#065f46"],
+html[data-theme="light"] [style*="color: #064e3b"],
+html[data-theme="light"] [style*="color:#064e3b"],
+html[data-theme="light"] [style*="color: #be123c"],
+html[data-theme="light"] [style*="color:#be123c"],
+html[data-theme="light"] [style*="color: #92400e"],
+html[data-theme="light"] [style*="color:#92400e"],
+html[data-theme="light"] [style*="color: #b45309"],
+html[data-theme="light"] [style*="color:#b45309"],
+html[data-theme="light"] [style*="color: var(--g)"],
+html[data-theme="light"] [style*="color:var(--g)"],
+html[data-theme="light"] [style*="color: var(--gd)"],
+html[data-theme="light"] [style*="color:var(--gd)"],
+html[data-theme="light"] [style*="color: var(--p)"],
+html[data-theme="light"] [style*="color:var(--p)"],
+html[data-theme="light"] [style*="color: var(--pd)"],
+html[data-theme="light"] [style*="color:var(--pd)"],
+html[data-theme="light"] [style*="color: var(--te)"],
+html[data-theme="light"] [style*="color:var(--te)"],
+html[data-theme="light"] [style*="color: rgba(255,255,255"],
+html[data-theme="light"] [style*="color:rgba(255,255,255"],
+html[data-theme="light"] [style*="color: rgba(0,210,255"],
+html[data-theme="light"] [style*="color:rgba(0,210,255"],
+html[data-theme="light"] [style*="color: rgba(255,184,48"],
+html[data-theme="light"] [style*="color:rgba(255,184,48"],
+html[data-theme="light"] [style*="color: rgba(255,77,133"],
+html[data-theme="light"] [style*="color:rgba(255,77,133"],
+html[data-theme="light"] [style*="color: rgba(0,229,160"],
+html[data-theme="light"] [style*="color:rgba(0,229,160"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Primary CTA inline dark text → white on filled buttons */
+html[data-theme="light"] button[style*="color: #05091a"],
+html[data-theme="light"] button[style*="color:#05091a"],
+html[data-theme="light"] .lp-btn-primary[style*="color: #05091a"],
+html[data-theme="light"] .lp-btn-primary[style*="color:#05091a"] {
+  color: #ffffff !important;
+}
+
+/* ── Dark inline card backgrounds → cream ────────────────────────── */
+html[data-theme="light"] [style*="background: rgba(8,18,42"],
+html[data-theme="light"] [style*="background:rgba(8,18,42"],
+html[data-theme="light"] [style*="background: rgba(5,9,26"],
+html[data-theme="light"] [style*="background:rgba(5,9,26"] {
+  background: var(--card) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] nav[style*="rgba(5,9,26"] {
+  background: color-mix(in srgb, var(--card) 96%, transparent) !important;
+  border-bottom-color: var(--bdr) !important;
+}
+
+/* ── Animations — text stays black at full opacity ───────────────── */
+html[data-theme="light"] [style*="lp-glow-text"] {
+  animation: lp-glow-readable 3.5s ease-in-out infinite !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .lp-fade-up,
+html[data-theme="light"] [class*="lp-fade-up"],
+html[data-theme="light"] .fade,
+html[data-theme="light"] .at-entry {
+  animation-fill-mode: both;
+}
+
+html[data-theme="light"] .sign-in-root .lp .brand-tg,
+html[data-theme="light"] .sign-in-root .lp .sys-pill,
+html[data-theme="light"] .sign-in-root .lp .sys-desc,
+html[data-theme="light"] .sign-in-root .lp .lfooter,
+html[data-theme="light"] .sign-in-root .ai-bar-lbl,
+html[data-theme="light"] .sign-in-root .master-ml,
+html[data-theme="light"] .sign-in-root .master-bl,
+html[data-theme="light"] .sign-in-root .master-shd,
+html[data-theme="light"] .sign-in-root .master-dp-mod,
+html[data-theme="light"] .sign-in-root .cfoot,
+html[data-theme="light"] .sign-in-root .cbadge {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .dash-shell .sb-role-online,
+html[data-theme="light"] .dash-shell .sb-ue,
+html[data-theme="light"] .dash-shell .tb-btn,
+html[data-theme="light"] .dash-shell .tb-btn:hover,
+html[data-theme="light"] .dash-shell .ds-toast-x,
+html[data-theme="light"] .dash-shell .tb-crumb,
+html[data-theme="light"] .dash-shell .tb-crumb b,
+html[data-theme="light"] .dash-shell .ni.on .ni-lbl,
+html[data-theme="light"] .ni.on .ni-lbl {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] *,
+html[data-theme="light"] .modal *,
+html[data-theme="light"] .modal-card * {
+  color: #000000;
+  font-weight: 700;
+}
+
+html[data-theme="light"] .main [role="dialog"] h2,
+html[data-theme="light"] .main [role="dialog"] h3,
+html[data-theme="light"] .modal-ti {
+  font-weight: 900 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="light"] [style*="lp-glow-text"],
+  html[data-theme="light"] .lp-fade-up,
+  html[data-theme="light"] .fade,
+  html[data-theme="light"] .at-entry {
+    animation: none !important;
+    opacity: 1 !important;
+    color: #000000 !important;
+  }
+}

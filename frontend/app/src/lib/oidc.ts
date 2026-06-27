@@ -14,9 +14,28 @@ export function oidcEnabled(): boolean {
   return envFlag("VITE_OIDC_ENABLED");
 }
 
+/** Client-side expiry check only — gateway still validates JWT. */
+export function isAccessTokenExpired(token: string, skewSec = 60): boolean {
+  try {
+    const part = token.split(".")[1];
+    if (!part) return true;
+    const payload = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
+    if (!payload.exp) return false;
+    return Date.now() / 1000 >= payload.exp - skewSec;
+  } catch {
+    return true;
+  }
+}
+
 export function getStoredAccessToken(): string | null {
   try {
-    return sessionStorage.getItem(TOKEN_KEY);
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) return null;
+    if (isAccessTokenExpired(token)) {
+      sessionStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
+    return token;
   } catch {
     return null;
   }

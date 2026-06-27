@@ -13,7 +13,10 @@ if [ ! -f "$EXAMPLE" ]; then
 fi
 
 cp "$EXAMPLE" "$TARGET"
-echo "Wrote $TARGET (staging: gateway :8100, Keycloak :8180, OIDC on)"
+# Dev uses Vite proxy — do not set VITE_API_BASE_URL (avoids cross-origin fetch to :8100).
+sed -i.bak '/^VITE_API_BASE_URL=/d' "$TARGET" 2>/dev/null || sed -i '' '/^VITE_API_BASE_URL=/d' "$TARGET"
+rm -f "$TARGET.bak"
+echo "Wrote $TARGET (Vite proxy → gateway :8100, Keycloak :8180)"
 
 if [ ! -d "$APP/node_modules" ]; then
   echo "Installing npm dependencies..."

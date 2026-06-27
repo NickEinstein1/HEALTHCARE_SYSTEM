@@ -1,0 +1,594 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — Professional design system (golden clinical theme)
+   Loaded last · dark mode untouched
+   ═══════════════════════════════════════════════════════════════════ */
+
+html[data-theme="light"] {
+  /* Re-assert full token set over legacy unihealth.css :root */
+  --bg: #d4bc82;
+  --card: #ebe0c0;
+  --w: #ebe0c0;
+  --surface-muted: #dccfa8;
+  --surface-subtle: #cfc08e;
+  --surface-raised: #f2ead4;
+  --bdr: #b8a468;
+  --bdr2: #9a8548;
+  --bdr-focus: #4a8fc4;
+  --p: #4a8fc4;
+  --pd: #2563a8;
+  --p-surface: #d4e8f4;
+  --t1: #1a1814;
+  --t2: #3d3830;
+  --t3: #5c5548;
+  --t4: #7a7264;
+  --text-success: #064e3b;
+  --text-danger: #9f1239;
+  --text-warning: #92400e;
+  --text-info: #1e4a7a;
+  --text-link: #2563a8;
+  --emerald: #064e3b;
+  --surface-success: #d1fae5;
+  --surface-success-bdr: #6ee7b7;
+  --surface-danger: #fce8ec;
+  --surface-danger-bdr: #f5b8c4;
+  --surface-warning: #fef3c7;
+  --surface-warning-bdr: #fcd34d;
+  --surface-info: #dbeafe;
+  --surface-info-bdr: #93c5fd;
+  --gl: #d1fae5;
+  --gm: #6ee7b7;
+  --bl: #dbeafe;
+  --bm: #93c5fd;
+  --al: #fef3c7;
+  --amm: #fcd34d;
+  --rl: #fce8ec;
+  --rm: #f5b8c4;
+  --sh: 0 4px 24px rgba(74, 58, 28, 0.12);
+  --sh2: 0 8px 32px rgba(74, 58, 28, 0.16);
+}
+
+/* ── Base typography ─────────────────────────────────────────────── */
+html[data-theme="light"],
+html[data-theme="light"] body,
+html[data-theme="light"] #root,
+html[data-theme="light"] .dash-shell,
+html[data-theme="light"] .content,
+html[data-theme="light"] .sign-in-root,
+html[data-theme="light"] .lp-root,
+html[data-theme="light"] .portal-page {
+  color: var(--t1);
+  font-weight: var(--fw-body);
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] h5,
+html[data-theme="light"] h6 {
+  color: var(--t1);
+  font-weight: var(--fw-display);
+  letter-spacing: -0.02em;
+}
+
+html[data-theme="light"] p,
+html[data-theme="light"] li,
+html[data-theme="light"] .ph-su,
+html[data-theme="light"] .ph-sub,
+html[data-theme="light"] .pnl-su,
+html[data-theme="light"] .panel-sub {
+  color: var(--t2);
+  font-weight: var(--fw-body);
+  line-height: 1.55;
+}
+
+html[data-theme="light"] label,
+html[data-theme="light"] .lbl,
+html[data-theme="light"] .tbl th,
+html[data-theme="light"] .kpi-l,
+html[data-theme="light"] .kpi-lbl {
+  color: var(--t1);
+  font-weight: var(--fw-label);
+}
+
+html[data-theme="light"] .hl,
+html[data-theme="light"] .stitle,
+html[data-theme="light"] .ph-ti,
+html[data-theme="light"] .ph-title,
+html[data-theme="light"] .pnl-ti,
+html[data-theme="light"] .kpi-v,
+html[data-theme="light"] .kpi-val,
+html[data-theme="light"] .tb-page {
+  color: var(--t1);
+  font-weight: var(--fw-display);
+}
+
+html[data-theme="light"] .tbl td {
+  color: var(--t2);
+  font-weight: var(--fw-body);
+}
+
+html[data-theme="light"] ::placeholder {
+  color: var(--t4);
+  opacity: 1;
+}
+
+/* ── Links & interactive text ────────────────────────────────────── */
+html[data-theme="light"] a:not(.btn):not(.btn-p):not(.btn-pg):not(.btn-s):not(.lp-btn-primary):not(.nurse .btn-p) {
+  color: var(--text-link);
+  font-weight: var(--fw-label);
+  text-decoration-color: color-mix(in srgb, var(--text-link) 40%, transparent);
+}
+
+html[data-theme="light"] a:not(.btn):hover {
+  color: var(--pd);
+}
+
+html[data-theme="light"] .fgt,
+html[data-theme="light"] .resend-row button,
+html[data-theme="light"] .pnl-link,
+html[data-theme="light"] .pnl-lk,
+html[data-theme="light"] .doc .pnl-lk,
+html[data-theme="light"] .nurse .pnl-lk,
+html[data-theme="light"] .patient .pnl-lk,
+html[data-theme="light"] .admin .pnl-link,
+html[data-theme="light"] .sign-in-root .bkbn:hover,
+html[data-theme="light"] .sign-in-root .eyebn:hover,
+html[data-theme="light"] .sign-in-root .si-hint-link {
+  color: var(--text-link);
+  font-weight: var(--fw-label);
+}
+
+html[data-theme="light"] .lp-nav-link {
+  color: var(--t2);
+  font-weight: var(--fw-label);
+}
+
+html[data-theme="light"] .lp-nav-link:hover {
+  color: var(--text-link);
+}
+
+/* ── Eyebrows & section labels ───────────────────────────────────── */
+html[data-theme="light"] .eyebrow,
+html[data-theme="light"] .ph-ey,
+html[data-theme="light"] .ph-eyebrow,
+html[data-theme="light"] .lp-section-eyebrow,
+html[data-theme="light"] .lp-cta-eyebrow,
+html[data-theme="light"] .lp-eyebrow--cyan,
+html[data-theme="light"] .lp-eyebrow--blue {
+  color: var(--text-info);
+  font-weight: var(--fw-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-theme="light"] .lp-eyebrow--success,
+html[data-theme="light"] .lp-root .lp-eyebrow--success {
+  color: var(--text-success);
+}
+
+html[data-theme="light"] .lp-eyebrow--amber,
+html[data-theme="light"] .lp-root .lp-eyebrow--amber {
+  color: var(--text-warning);
+}
+
+html[data-theme="light"] .lp-eyebrow--purple,
+html[data-theme="light"] .lp-root .lp-eyebrow--purple {
+  color: #5b21b6;
+}
+
+html[data-theme="light"] .lp-problem-eyebrow,
+html[data-theme="light"] .lp-root .lp-problem-eyebrow {
+  color: var(--text-danger);
+}
+
+/* ── Success / green semantic ────────────────────────────────────── */
+html[data-theme="light"] .req.met,
+html[data-theme="light"] .req.met::before,
+html[data-theme="light"] .cbadge.green,
+html[data-theme="light"] .sdot.done,
+html[data-theme="light"] .pin-box.f,
+html[data-theme="light"] .obox.f,
+html[data-theme="light"] .vtab.act,
+html[data-theme="light"] .rc.sel .rnm,
+html[data-theme="light"] .kpi-meta.up,
+html[data-theme="light"] .qa-item:hover .qa-t,
+html[data-theme="light"] .patient .res-val.norm,
+html[data-theme="light"] .patient .qa:hover .qa-l,
+html[data-theme="light"] .patient .cal-day.today,
+html[data-theme="light"] .patient .kdpa-badge,
+html[data-theme="light"] .nurse .sync-bar,
+html[data-theme="light"] .nurse .sync-bar button,
+html[data-theme="light"] .nurse .ews-0,
+html[data-theme="light"] .nurse .mar-time.given,
+html[data-theme="light"] .nurse .ho-bed-green,
+html[data-theme="light"] .nurse .ho-tag-green,
+html[data-theme="light"] .ni-badge.green,
+html[data-theme="light"] .ai-val.ok,
+html[data-theme="light"] .ai-lbl span,
+html[data-theme="light"] .notice.g .notice-tx,
+html[data-theme="light"] .risk-lbl.low,
+html[data-theme="light"] .risk-score.low,
+html[data-theme="light"] .session-info .si-tx,
+html[data-theme="light"] .session-info .si-tx strong,
+html[data-theme="light"] .sxrole,
+html[data-theme="light"] .sign-in-root .master-md,
+html[data-theme="light"] .sign-in-root .master-si-st,
+html[data-theme="light"] .sign-in-root .ai-bar-lbl span,
+html[data-theme="light"] .sign-in-root .ai-val.ok,
+html[data-theme="light"] .sign-in-root .sdot.done,
+html[data-theme="light"] .sign-in-root .pin-box.f,
+html[data-theme="light"] .sign-in-root .obox.f,
+html[data-theme="light"] .sign-in-root .si-hint.grn,
+html[data-theme="light"] .sign-in-root .role-note.grn,
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-col-head,
+html[data-theme="light"] .lp-root .lp-problem-after .lp-problem-icon--good,
+html[data-theme="light"] .lp-root .lp-cta-badge-text,
+html[data-theme="light"] .lp-root .lp-hero div[style*="lp-blink"] span:last-child,
+html[data-theme="light"] .cc.lo {
+  color: var(--text-success);
+  font-weight: var(--fw-label);
+}
+
+/* ── Warning / amber semantic ────────────────────────────────────── */
+html[data-theme="light"] .cbadge.amber,
+html[data-theme="light"] .tag.am,
+html[data-theme="light"] .notice.am .notice-tx,
+html[data-theme="light"] .ai-val.warn,
+html[data-theme="light"] .sign-in-root .ai-val.warn,
+html[data-theme="light"] .nurse .ews-med,
+html[data-theme="light"] .nurse .ai-pri.high,
+html[data-theme="light"] .nurse .ai-pri.med,
+html[data-theme="light"] .nurse .mar-time.due,
+html[data-theme="light"] .nurse .ho-bed-amber,
+html[data-theme="light"] .nurse .ho-tag-amber,
+html[data-theme="light"] .ni-badge.amber,
+html[data-theme="light"] .risk-lbl.med,
+html[data-theme="light"] .risk-score.med,
+html[data-theme="light"] .cc.med {
+  color: var(--text-warning);
+  font-weight: var(--fw-label);
+}
+
+/* ── Danger / red semantic ───────────────────────────────────────── */
+html[data-theme="light"] .tag.r,
+html[data-theme="light"] .notice.r .notice-tx,
+html[data-theme="light"] .alert-msg,
+html[data-theme="light"] .nurse .ews-high,
+html[data-theme="light"] .nurse .ai-pri.crit,
+html[data-theme="light"] .nurse .ho-bed-red,
+html[data-theme="light"] .nurse .ho-tag-red,
+html[data-theme="light"] .ni-badge.red,
+html[data-theme="light"] .patient .res-val.high,
+html[data-theme="light"] .risk-lbl.high,
+html[data-theme="light"] .risk-score.high,
+html[data-theme="light"] .sign-in-root .master-mw-alert,
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-col-head,
+html[data-theme="light"] .lp-root .lp-problem-before .lp-problem-icon--bad {
+  color: var(--text-danger);
+  font-weight: var(--fw-label);
+}
+
+/* ── Info / blue semantic ────────────────────────────────────────── */
+html[data-theme="light"] .tag.b,
+html[data-theme="light"] .tag.te,
+html[data-theme="light"] .nbox.blu,
+html[data-theme="light"] .sign-in-root .si-hint.blu,
+html[data-theme="light"] .sign-in-root .role-note.blu,
+html[data-theme="light"] .ai-val.live,
+html[data-theme="light"] .nurse .ho-bed-blue,
+html[data-theme="light"] .nurse .ho-tag-blue,
+html[data-theme="light"] .emr-mod .pat-av,
+html[data-theme="light"] .emr-mod .emr-vital-v,
+html[data-theme="light"] .emr-mod .emr-section-title,
+html[data-theme="light"] .emr-mod .emr-tab.on,
+html[data-theme="light"] .kpi-meta.down {
+  color: var(--text-info);
+  font-weight: var(--fw-label);
+}
+
+/* ── Tags — semantic surfaces + matching text ────────────────────── */
+html[data-theme="light"] .tag.g,
+html[data-theme="light"] .doc .tag.g,
+html[data-theme="light"] .nurse .tag.g,
+html[data-theme="light"] .patient .tag.g {
+  background: var(--surface-success) !important;
+  border-color: var(--surface-success-bdr) !important;
+  color: var(--text-success) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] .tag.r,
+html[data-theme="light"] .doc .tag.r,
+html[data-theme="light"] .nurse .tag.r,
+html[data-theme="light"] .patient .tag.r {
+  background: var(--surface-danger) !important;
+  border-color: var(--surface-danger-bdr) !important;
+  color: var(--text-danger) !important;
+}
+
+html[data-theme="light"] .tag.am,
+html[data-theme="light"] .doc .tag.am,
+html[data-theme="light"] .nurse .tag.am,
+html[data-theme="light"] .patient .tag.am {
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+  color: var(--text-warning) !important;
+}
+
+html[data-theme="light"] .tag.b,
+html[data-theme="light"] .tag.te,
+html[data-theme="light"] .doc .tag.b,
+html[data-theme="light"] .nurse .tag.b,
+html[data-theme="light"] .nurse .tag.te,
+html[data-theme="light"] .patient .tag.b,
+html[data-theme="light"] .patient .tag.te {
+  background: var(--surface-info) !important;
+  border-color: var(--surface-info-bdr) !important;
+  color: var(--text-info) !important;
+}
+
+html[data-theme="light"] .tag.pu,
+html[data-theme="light"] .nurse .tag.pu {
+  background: #f0ebfc !important;
+  border-color: #c4b5fd !important;
+  color: #5b21b6 !important;
+}
+
+html[data-theme="light"] .ni-badge.green {
+  background: var(--surface-success) !important;
+  border-color: var(--surface-success-bdr) !important;
+}
+
+html[data-theme="light"] .ni-badge.amber {
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+}
+
+html[data-theme="light"] .ni-badge.red {
+  background: var(--surface-danger) !important;
+  border-color: var(--surface-danger-bdr) !important;
+}
+
+/* ── Notice & hint boxes ─────────────────────────────────────────── */
+html[data-theme="light"] .nbox.grn,
+html[data-theme="light"] .sign-in-root .si-hint.grn,
+html[data-theme="light"] .sign-in-root .role-note.grn {
+  background: var(--surface-success) !important;
+  border-color: var(--surface-success-bdr) !important;
+}
+
+html[data-theme="light"] .nbox.amb,
+html[data-theme="light"] .sign-in-root .si-hint.amb,
+html[data-theme="light"] .sign-in-root .role-note.amb {
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+}
+
+html[data-theme="light"] .nbox.blu,
+html[data-theme="light"] .sign-in-root .si-hint.blu,
+html[data-theme="light"] .sign-in-root .role-note.blu {
+  background: var(--surface-info) !important;
+  border-color: var(--surface-info-bdr) !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-val.ok {
+  background: var(--surface-success) !important;
+  border-color: var(--surface-success-bdr) !important;
+}
+
+html[data-theme="light"] .sign-in-root .ai-val.warn {
+  background: var(--surface-warning) !important;
+  border-color: var(--surface-warning-bdr) !important;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+html[data-theme="light"] .btn,
+html[data-theme="light"] .btn-p,
+html[data-theme="light"] .btn-pg,
+html[data-theme="light"] .lp-btn-primary,
+html[data-theme="light"] .nurse .btn-p,
+html[data-theme="light"] .nurse .btn-pg,
+html[data-theme="light"] .patient .btn-p,
+html[data-theme="light"] .admin .btn-p,
+html[data-theme="light"] .doc .btn-p,
+html[data-theme="light"] .sign-in-root .btn,
+html[data-theme="light"] .lp-root .lp-btn-primary {
+  background: var(--pd) !important;
+  border-color: var(--pd) !important;
+  color: #ffffff !important;
+  font-weight: var(--fw-title) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 168, 0.22) !important;
+}
+
+html[data-theme="light"] .btn:hover,
+html[data-theme="light"] .btn-p:hover,
+html[data-theme="light"] .lp-btn-primary:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+html[data-theme="light"] .lp-btn-ghost,
+html[data-theme="light"] .theme-toggle {
+  color: var(--t1) !important;
+  border: 2px solid var(--bdr2) !important;
+  background: var(--card) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] .lp-btn-ghost:hover,
+html[data-theme="light"] .theme-toggle:hover {
+  border-color: var(--pd) !important;
+  color: var(--pd) !important;
+  background: var(--p-surface) !important;
+}
+
+html[data-theme="light"] .rc .rchk {
+  background: var(--text-success) !important;
+  color: #ffffff !important;
+}
+
+/* ── Dashboard shell polish ──────────────────────────────────────── */
+html[data-theme="light"] .ni.on {
+  background: color-mix(in srgb, var(--p-surface) 70%, var(--card)) !important;
+  border-color: color-mix(in srgb, var(--p) 40%, var(--bdr)) !important;
+}
+
+html[data-theme="light"] .ni.on .ni-lbl {
+  color: var(--pd) !important;
+  font-weight: var(--fw-title) !important;
+}
+
+html[data-theme="light"] .tb-crumb b {
+  color: var(--pd) !important;
+  font-weight: var(--fw-title) !important;
+}
+
+html[data-theme="light"] .panel,
+html[data-theme="light"] .kpis .kpi,
+html[data-theme="light"] .card {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .tbl th {
+  background: var(--surface-muted) !important;
+  color: var(--t1) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] input,
+html[data-theme="light"] select,
+html[data-theme="light"] textarea,
+html[data-theme="light"] .fw input,
+html[data-theme="light"] .pin-box,
+html[data-theme="light"] .obox {
+  background: var(--surface-raised) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] input:focus,
+html[data-theme="light"] select:focus,
+html[data-theme="light"] textarea:focus,
+html[data-theme="light"] .fw input:focus,
+html[data-theme="light"] .pin-box:focus,
+html[data-theme="light"] .obox:focus {
+  border-color: var(--bdr-focus) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--p) 22%, transparent) !important;
+}
+
+/* ── Inline style remapping (TSX hardcoded colors) ─────────────────── */
+html[data-theme="light"] [style*="color: #047857"],
+html[data-theme="light"] [style*="color:#047857"],
+html[data-theme="light"] [style*="color: #065f46"],
+html[data-theme="light"] [style*="color:#065f46"],
+html[data-theme="light"] [style*="color: #166534"],
+html[data-theme="light"] [style*="color:#166534"],
+html[data-theme="light"] [style*="color: #14532d"],
+html[data-theme="light"] [style*="color:#14532d"],
+html[data-theme="light"] [style*="color: #059669"],
+html[data-theme="light"] [style*="color:#059669"],
+html[data-theme="light"] [style*="color: #064e3b"],
+html[data-theme="light"] [style*="color:#064e3b"],
+html[data-theme="light"] [style*="color: #0f766e"],
+html[data-theme="light"] [style*="color:#0f766e"],
+html[data-theme="light"] [style*="color: #00e5a0"],
+html[data-theme="light"] [style*="color:#00e5a0"],
+html[data-theme="light"] [style*="color: #00e5d0"],
+html[data-theme="light"] [style*="color:#00e5d0"],
+html[data-theme="light"] [style*="color: #70ffc0"],
+html[data-theme="light"] [style*="color:#70ffc0"],
+html[data-theme="light"] [style*="color: var(--g)"],
+html[data-theme="light"] [style*="color:var(--g)"],
+html[data-theme="light"] [style*="color: var(--gd)"],
+html[data-theme="light"] [style*="color:var(--gd)"],
+html[data-theme="light"] [style*="color: var(--te)"],
+html[data-theme="light"] [style*="color:var(--te)"] {
+  color: var(--text-success) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] [style*="color: #1e40af"],
+html[data-theme="light"] [style*="color:#1e40af"],
+html[data-theme="light"] [style*="color: #1d4ed8"],
+html[data-theme="light"] [style*="color:#1d4ed8"],
+html[data-theme="light"] [style*="color: #1e3a8a"],
+html[data-theme="light"] [style*="color:#1e3a8a"],
+html[data-theme="light"] [style*="color: #3d8ef8"],
+html[data-theme="light"] [style*="color:#3d8ef8"],
+html[data-theme="light"] [style*="color: #60b0ff"],
+html[data-theme="light"] [style*="color:#60b0ff"],
+html[data-theme="light"] [style*="color: #00d4ff"],
+html[data-theme="light"] [style*="color:#00d4ff"],
+html[data-theme="light"] [style*="color: #7ab8d8"],
+html[data-theme="light"] [style*="color:#7ab8d8"],
+html[data-theme="light"] [style*="color: var(--p)"],
+html[data-theme="light"] [style*="color:var(--p)"],
+html[data-theme="light"] [style*="color: var(--pd)"],
+html[data-theme="light"] [style*="color:var(--pd)"] {
+  color: var(--text-info) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] [style*="color: #78350f"],
+html[data-theme="light"] [style*="color:#78350f"],
+html[data-theme="light"] [style*="color: #92400e"],
+html[data-theme="light"] [style*="color:#92400e"],
+html[data-theme="light"] [style*="color: #ffb830"],
+html[data-theme="light"] [style*="color:#ffb830"],
+html[data-theme="light"] [style*="color: #ffc84a"],
+html[data-theme="light"] [style*="color:#ffc84a"],
+html[data-theme="light"] [style*="color: #b45309"],
+html[data-theme="light"] [style*="color:#b45309"] {
+  color: var(--text-warning) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] [style*="color: #ff3366"],
+html[data-theme="light"] [style*="color:#ff3366"],
+html[data-theme="light"] [style*="color: #ff6699"],
+html[data-theme="light"] [style*="color:#ff6699"],
+html[data-theme="light"] [style*="color: #ff5e85"],
+html[data-theme="light"] [style*="color:#ff5e85"],
+html[data-theme="light"] [style*="color: #be123c"],
+html[data-theme="light"] [style*="color:#be123c"],
+html[data-theme="light"] [style*="color: #9f1239"],
+html[data-theme="light"] [style*="color:#9f1239"],
+html[data-theme="light"] [style*="color: #7f1d1d"],
+html[data-theme="light"] [style*="color:#7f1d1d"],
+html[data-theme="light"] [style*="color: #881337"],
+html[data-theme="light"] [style*="color:#881337"],
+html[data-theme="light"] [style*="color: #ff4d85"],
+html[data-theme="light"] [style*="color:#ff4d85"] {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] [style*="color: #4c1d95"],
+html[data-theme="light"] [style*="color:#4c1d95"],
+html[data-theme="light"] [style*="color: #6d28d9"],
+html[data-theme="light"] [style*="color:#6d28d9"],
+html[data-theme="light"] [style*="color: #a855f7"],
+html[data-theme="light"] [style*="color:#a855f7"] {
+  color: #5b21b6 !important;
+  font-weight: var(--fw-label) !important;
+}
+
+/* Dark-mode marketing leftovers on landing */
+html[data-theme="light"] .lp-root [style*="color: #3e637a"],
+html[data-theme="light"] .lp-root [style*="color:#3e637a"],
+html[data-theme="light"] .lp-root [style*="color: #ddf0ff"],
+html[data-theme="light"] .lp-root [style*="color:#ddf0ff"],
+html[data-theme="light"] .lp-root [style*="color: #c8ddf5"],
+html[data-theme="light"] .lp-root [style*="color:#c8ddf5"] {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-card > div:first-child,
+html[data-theme="light"] .lp-root .lp-top-stats > div > div:first-child {
+  color: var(--t1) !important;
+  font-weight: var(--fw-display) !important;
+}

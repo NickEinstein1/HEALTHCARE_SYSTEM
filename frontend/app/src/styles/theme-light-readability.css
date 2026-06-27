@@ -1,0 +1,670 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — Readability pass (text + animated UI)
+   Loaded last · ensures contrast on golden surfaces during animations
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Animation: keep text legible while animating ─────────────────── */
+@keyframes lp-glow-readable {
+  0%,
+  100% {
+    opacity: 1;
+    color: #000000;
+    text-shadow: none;
+  }
+  50% {
+    opacity: 1;
+    color: #000000;
+    text-shadow: none;
+  }
+}
+
+@keyframes lp-blink-light {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+
+@keyframes lp-fade-up-light {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes signInLightPulseDot {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+html[data-theme="light"] .lp-root .lp-fade-up,
+html[data-theme="light"] .lp-root [class*="lp-fade-up"] {
+  animation-name: lp-fade-up-light !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1 span[style*="lp-glow-text"],
+html[data-theme="light"] .lp-root [style*="lp-glow-text"] {
+  animation: lp-glow-readable 3.5s ease-in-out infinite !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+
+/* Status dots may pulse; adjacent text stays solid */
+html[data-theme="light"] .lp-root span[style*="lp-blink"] {
+  animation: lp-blink-light 1.8s ease-in-out infinite !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-a,
+html[data-theme="light"] .lp-root .lp-trust-ticker-track,
+html[data-theme="light"] .lp-root .lp-trust-ticker-track span {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-mw-badge {
+  color: var(--text-danger) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+/* ── Landing page — inline dark marketing styles ─────────────────── */
+html[data-theme="light"] .lp-root [style*="color: #ddf0ff"],
+html[data-theme="light"] .lp-root [style*="color:#ddf0ff"] {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .lp-root [style*="color: #7ab8d8"],
+html[data-theme="light"] .lp-root [style*="color:#7ab8d8"] {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .lp-root [style*="background: rgba(8,18,42"],
+html[data-theme="light"] .lp-root [style*="background:rgba(8,18,42"] {
+  background: var(--card) !important;
+  border-color: var(--bdr) !important;
+  box-shadow: var(--sh) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-card {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-metric-label {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1,
+html[data-theme="light"] .lp-root .lp-hero h1 span {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero p {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-problem-text[style*="color: #ddf0ff"],
+html[data-theme="light"] .lp-root .lp-problem-text[style*="color:#ddf0ff"] {
+  color: var(--t1) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+html[data-theme="light"] .lp-root button[style*="color: #7ab8d8"],
+html[data-theme="light"] .lp-root button[style*="color:#7ab8d8"],
+html[data-theme="light"] .lp-root a[style*="color: #7ab8d8"],
+html[data-theme="light"] .lp-root a[style*="color:#7ab8d8"] {
+  color: var(--text-link) !important;
+}
+
+html[data-theme="light"] .lp-root button[style*="background: #00d4ff"],
+html[data-theme="light"] .lp-root button[style*="background:#00d4ff"] {
+  background: var(--pd) !important;
+  border-color: var(--pd) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .lp-root button[style*="color: #05091a"],
+html[data-theme="light"] .lp-root button[style*="color:#05091a"] {
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .lp-root .lp-faq-q {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-cta-secondary[style*="color: #7ab8d8"],
+html[data-theme="light"] .lp-root .lp-cta-secondary[style*="color:#7ab8d8"] {
+  color: var(--text-link) !important;
+  border-color: var(--bdr2) !important;
+  background: var(--card) !important;
+}
+
+html[data-theme="light"] .lp-root nav span[style*="color: #ddf0ff"],
+html[data-theme="light"] .lp-root nav span[style*="color:#ddf0ff"] {
+  color: var(--t1) !important;
+}
+
+/* ── Homepage upper section — bold black text (nav · hero · ticker) ─ */
+html[data-theme="light"] .lp-root nav {
+  background: color-mix(in srgb, var(--card) 96%, transparent) !important;
+  border-bottom: 1.5px solid var(--bdr) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="light"] .lp-root nav span,
+html[data-theme="light"] .lp-root nav a,
+html[data-theme="light"] .lp-root nav .lp-nav-link,
+html[data-theme="light"] .lp-root nav button.lp-btn-ghost {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root nav .lp-nav-link:hover {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root nav span[style*="color: #00d4ff"],
+html[data-theme="light"] .lp-root nav span[style*="color:#00d4ff"],
+html[data-theme="light"] .lp-root nav button[style*="color: #00d4ff"],
+html[data-theme="light"] .lp-root nav button[style*="color:#00d4ff"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+  background: var(--surface-muted) !important;
+  border-color: var(--bdr2) !important;
+}
+
+html[data-theme="light"] .lp-root nav .lp-btn-primary,
+html[data-theme="light"] .lp-root nav button.lp-btn-primary {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Hero headline, subcopy, badge, stats */
+html[data-theme="light"] .lp-root .lp-hero h1,
+html[data-theme="light"] .lp-root .lp-hero h1 span,
+html[data-theme="light"] .lp-root .lp-hero p,
+html[data-theme="light"] .lp-root .lp-hero .lp-fade-up,
+html[data-theme="light"] .lp-root .lp-hero .lp-fade-up span,
+html[data-theme="light"] .lp-root .lp-hero .lp-top-stats,
+html[data-theme="light"] .lp-root .lp-hero .lp-top-stats div,
+html[data-theme="light"] .lp-root .lp-hero .lp-top-stats [style*="color"],
+html[data-theme="light"] .lp-root .lp-hero .lp-hide-mobile div,
+html[data-theme="light"] .lp-root .lp-hero a,
+html[data-theme="light"] .lp-root .lp-hero button:not(.lp-btn-primary) {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero h1,
+html[data-theme="light"] .lp-root .lp-hero h1 span {
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero .lp-top-stats > div > div:first-child {
+  color: #000000 !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero .lp-top-stats > div > div:last-child {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero .lp-fade-up[style*="rgba(0,229,160"] span {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero .lp-btn-primary,
+html[data-theme="light"] .lp-root .lp-hero button.lp-btn-primary {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  background: var(--pd) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero button[style*="color: #00d4ff"],
+html[data-theme="light"] .lp-root .lp-hero button[style*="color:#00d4ff"],
+html[data-theme="light"] .lp-root .lp-hero a[style*="color: #00d4ff"],
+html[data-theme="light"] .lp-root .lp-hero a[style*="color:#00d4ff"] {
+  color: #000000 !important;
+  border-color: var(--bdr2) !important;
+  background: var(--card) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hero [style*="color: #00e5a0"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color:#00e5a0"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color: #a855f7"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color:#a855f7"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color: #ffb830"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color:#ffb830"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color: #3e637a"],
+html[data-theme="light"] .lp-root .lp-hero [style*="color:#3e637a"] {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+/* Trust ticker (directly below hero) */
+html[data-theme="light"] .lp-root .lp-trust-ticker {
+  background: var(--surface-muted) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .lp-root .lp-trust-ticker-label,
+html[data-theme="light"] .lp-root .lp-trust-ticker-item,
+html[data-theme="light"] .lp-root .lp-trust-ticker-track,
+html[data-theme="light"] .lp-root .lp-trust-ticker-track span {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-trust-ticker-label {
+  font-weight: 800 !important;
+  letter-spacing: 0.1em !important;
+}
+
+/* Floating hero cards — all lines black bold */
+html[data-theme="light"] .lp-root .lp-hide-mobile[style*="rgba(8,18,42"] div,
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] div {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-root .lp-hide-mobile[style*="rgba(8,18,42"] div:first-child,
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] div:first-child {
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+html[data-theme="light"] .lp-root nav .theme-toggle {
+  color: #000000 !important;
+  border-color: var(--bdr2) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .sign-in-root .master-sbar-dot,
+html[data-theme="light"] .sign-in-root .ai-pulse,
+html[data-theme="light"] .sign-in-root .master-sipip {
+  animation: signInLightPulseDot 2s ease-in-out infinite !important;
+}
+
+/* Entry animations — never leave text below readable opacity */
+html[data-theme="light"] .sign-in-root .fade,
+html[data-theme="light"] .sign-in-root .at-entry,
+html[data-theme="light"] .sign-in-root .nbox,
+html[data-theme="light"] .sign-in-root .role-note,
+html[data-theme="light"] .sign-in-root .risk-panel {
+  animation-fill-mode: both;
+}
+
+html[data-theme="light"] .sign-in-root .at-entry {
+  color: var(--t2) !important;
+}
+
+/* ── Dashboard shell — replace dark HUD text ───────────────────────── */
+html[data-theme="light"] .dash-shell .sb-nm,
+html[data-theme="light"] .dash-shell .tb-page {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .dash-shell .sb-sub,
+html[data-theme="light"] .dash-shell .sb-sec-lbl,
+html[data-theme="light"] .dash-shell .ni-lbl,
+html[data-theme="light"] .dash-shell .sb-role-online,
+html[data-theme="light"] .dash-shell .sb-ue,
+html[data-theme="light"] .dash-shell .tb-crumb {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .dash-shell .ni:hover .ni-lbl {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-crumb b {
+  color: var(--pd) !important;
+}
+
+html[data-theme="light"] .dash-shell .topbar {
+  background: color-mix(in srgb, var(--card) 94%, var(--p-surface)) !important;
+  border-bottom-color: var(--bdr) !important;
+  box-shadow: 0 1px 12px rgba(74, 58, 28, 0.08) !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-search {
+  background: var(--surface-raised) !important;
+  border-color: var(--bdr) !important;
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-search input {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-search input::placeholder {
+  color: var(--t4) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-btn {
+  background: var(--surface-raised) !important;
+  border-color: var(--bdr) !important;
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .dash-shell .tb-btn:hover {
+  border-color: var(--pd) !important;
+  background: var(--p-surface) !important;
+  color: var(--pd) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] .dash-shell .sb-close {
+  border-color: var(--bdr) !important;
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .dash-shell .sb-close:hover {
+  color: var(--text-danger) !important;
+  border-color: var(--surface-danger-bdr) !important;
+  background: var(--surface-danger) !important;
+}
+
+html[data-theme="light"] .dash-shell .ds-toast {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+  box-shadow: var(--sh2) !important;
+}
+
+html[data-theme="light"] .dash-shell .ds-toast-tx {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .dash-shell .ds-toast-x {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .dash-shell .ds-toast-x:hover {
+  color: var(--t1) !important;
+  background: var(--surface-muted) !important;
+}
+
+/* Role accent chips — readable on gold */
+html[data-theme="light"] .dash-shell--admin .sb-role-online,
+html[data-theme="light"] .dash-shell--admin .sb-ue {
+  color: #5b21b6 !important;
+}
+
+html[data-theme="light"] .dash-shell--doctor .sb-role-online,
+html[data-theme="light"] .dash-shell--doctor .sb-ue {
+  color: var(--text-info) !important;
+}
+
+html[data-theme="light"] .dash-shell--nurse .sb-role-online,
+html[data-theme="light"] .dash-shell--nurse .sb-ue {
+  color: var(--text-danger) !important;
+}
+
+html[data-theme="light"] .dash-shell--patient .sb-role-online,
+html[data-theme="light"] .dash-shell--patient .sb-ue {
+  color: var(--text-success) !important;
+}
+
+/* ── Modals & dialogs (modal-forms.css is dark-first) ────────────── */
+html[data-theme="light"] .main [role="dialog"],
+html[data-theme="light"] .main .modal,
+html[data-theme="light"] .modal-card {
+  background: var(--card) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+  box-shadow: var(--sh2) !important;
+}
+
+html[data-theme="light"] .modal-su,
+html[data-theme="light"] .modal-sub,
+html[data-theme="light"] .main [role="dialog"] .modal-su,
+html[data-theme="light"] .main [role="dialog"] .modal-sub {
+  color: var(--t3) !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] .ff label,
+html[data-theme="light"] .modal .ff label,
+html[data-theme="light"] .modal-card .ff label,
+html[data-theme="light"] .panel-editor .ff label {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] input,
+html[data-theme="light"] .main [role="dialog"] textarea,
+html[data-theme="light"] .main [role="dialog"] select,
+html[data-theme="light"] .modal input,
+html[data-theme="light"] .modal textarea,
+html[data-theme="light"] .modal select,
+html[data-theme="light"] .modal-card input,
+html[data-theme="light"] .modal-card textarea,
+html[data-theme="light"] .modal-card select,
+html[data-theme="light"] .panel-editor input,
+html[data-theme="light"] .panel-editor textarea,
+html[data-theme="light"] .panel-editor select {
+  background: var(--surface-raised) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] input::placeholder,
+html[data-theme="light"] .main [role="dialog"] textarea::placeholder,
+html[data-theme="light"] .modal input::placeholder,
+html[data-theme="light"] .modal textarea::placeholder {
+  color: var(--t4) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] select option,
+html[data-theme="light"] .modal select option {
+  background: var(--card) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .main [role="dialog"] [style*="font-weight: 950"],
+html[data-theme="light"] .main [role="dialog"] [style*="font-weight: 800"],
+html[data-theme="light"] .main [role="dialog"] h2,
+html[data-theme="light"] .main [role="dialog"] h3,
+html[data-theme="light"] .modal-ti {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .panel-editor {
+  background: var(--surface-muted) !important;
+  border-color: var(--bdr) !important;
+}
+
+html[data-theme="light"] .panel-editor .pnl-title,
+html[data-theme="light"] .panel-editor .pnl-ti {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .panel-editor .pnl-sub,
+html[data-theme="light"] .panel-editor .pnl-su {
+  color: var(--t3) !important;
+}
+
+/* Handover / nurse modals — dark inline labels */
+html[data-theme="light"] .dash-shell [style*="color: #ddf0ff"],
+html[data-theme="light"] .dash-shell [style*="color:#ddf0ff"],
+html[data-theme="light"] .dash-shell [style*="color: rgba(255,255,255"],
+html[data-theme="light"] .dash-shell [style*="color:rgba(255,255,255"],
+html[data-theme="light"] .dash-shell [style*="color: rgba(0,210,255"],
+html[data-theme="light"] .dash-shell [style*="color:rgba(0,210,255"],
+html[data-theme="light"] .dash-shell [style*="color: rgba(255,184,48"],
+html[data-theme="light"] .dash-shell [style*="color:rgba(255,184,48"],
+html[data-theme="light"] .dash-shell [style*="color: rgba(255,77,133"],
+html[data-theme="light"] .dash-shell [style*="color:rgba(255,77,133"] {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .dash-shell [style*="letter-spacing: 2"][style*="font-size: 9"] {
+  color: var(--text-info) !important;
+  font-weight: var(--fw-label) !important;
+}
+
+/* ── Create account / register (dark inline styles in TSX) ───────── */
+html[data-theme="light"] .sign-in-root [style*="color: #ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="color:#ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="color: #7ab8d8"],
+html[data-theme="light"] .sign-in-root [style*="color:#7ab8d8"],
+html[data-theme="light"] .sign-in-root [style*="color: #3e637a"],
+html[data-theme="light"] .sign-in-root [style*="color:#3e637a"],
+html[data-theme="light"] .sign-in-root [style*="color: rgba(255,255,255"],
+html[data-theme="light"] .sign-in-root [style*="color:rgba(255,255,255"] {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .sign-in-root h2[style*="color: #ddf0ff"],
+html[data-theme="light"] .sign-in-root h2[style*="color:#ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="font-weight: 800"][style*="color: #ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="font-weight:800"][style*="color:#ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="font-weight: 900"][style*="color: #ddf0ff"],
+html[data-theme="light"] .sign-in-root [style*="font-weight:900"][style*="color:#ddf0ff"] {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .sign-in-root [style*="color: #00d4ff"],
+html[data-theme="light"] .sign-in-root [style*="color:#00d4ff"] {
+  color: var(--text-link) !important;
+}
+
+html[data-theme="light"] .sign-in-root [style*="color: #00e5a0"],
+html[data-theme="light"] .sign-in-root [style*="color:#00e5a0"] {
+  color: var(--text-success) !important;
+}
+
+html[data-theme="light"] .sign-in-root [style*="color: #ff3366"],
+html[data-theme="light"] .sign-in-root [style*="color:#ff3366"] {
+  color: var(--text-danger) !important;
+}
+
+html[data-theme="light"] .sign-in-root select[style*="color: #ddf0ff"],
+html[data-theme="light"] .sign-in-root input[style*="color: #ddf0ff"] {
+  color: var(--t1) !important;
+  background: var(--surface-raised) !important;
+  border-color: var(--bdr) !important;
+}
+
+/* ── Doctor dashboard patient card (light mode — white banner) ───── */
+html[data-theme="light"] .doc .pt-banner {
+  background: #ffffff !important;
+  border: 1.5px solid var(--bdr) !important;
+  box-shadow: 0 1px 10px rgba(74, 58, 28, 0.06) !important;
+}
+
+html[data-theme="light"] .doc .pt-banner::before {
+  display: none !important;
+}
+
+html[data-theme="light"] .doc .pt-name,
+html[data-theme="light"] .doc .pt-sv {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .doc .pt-meta,
+html[data-theme="light"] .doc .pt-sl {
+  color: var(--t2) !important;
+}
+
+html[data-theme="light"] .doc .pt-id-pill {
+  background: var(--surface-muted) !important;
+  border: 1px solid var(--bdr) !important;
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .doc .pt-stats {
+  background: var(--surface-muted) !important;
+  border: 1px solid var(--bdr) !important;
+  border-radius: 9px !important;
+}
+
+html[data-theme="light"] .doc .pt-stat {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] .doc .pt-av {
+  background: linear-gradient(135deg, var(--p-surface) 0%, #ffffff 100%) !important;
+  border: 1.5px solid var(--bdr) !important;
+  color: var(--t1) !important;
+  box-shadow: 0 1px 4px rgba(74, 58, 28, 0.05) !important;
+}
+
+html[data-theme="light"] .doc .doc-patient-panel {
+  background: #ffffff !important;
+}
+
+html[data-theme="light"] .doc .doc-patient-input {
+  background: #ffffff !important;
+  border-color: var(--bdr) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .doc .tbl th {
+  background: var(--surface-muted) !important;
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .doc .tbl td {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .doc .kpi {
+  background: #ffffff !important;
+}
+
+/* ── Nurse handover hero ─────────────────────────────────────────── */
+html[data-theme="light"] .nurse .handover-hero {
+  background: linear-gradient(135deg, var(--surface-muted) 0%, var(--card) 55%, var(--p-surface) 100%) !important;
+  color: var(--t1) !important;
+  border: 1.5px solid var(--bdr) !important;
+}
+
+html[data-theme="light"] .nurse .handover-hero * {
+  color: inherit;
+}
+
+html[data-theme="light"] .nurse .handover-hero h2,
+html[data-theme="light"] .nurse .handover-hero h3,
+html[data-theme="light"] .nurse .handover-hero strong {
+  color: var(--t1) !important;
+}
+
+html[data-theme="light"] .nurse .handover-hero p,
+html[data-theme="light"] .nurse .handover-hero span {
+  color: var(--t2) !important;
+}
+
+/* ── Reduced motion: skip opacity fades on text ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme="light"] .lp-root .lp-fade-up,
+  html[data-theme="light"] .lp-root [class*="lp-fade-up"],
+  html[data-theme="light"] .lp-root [style*="lp-glow-text"],
+  html[data-theme="light"] .lp-root span[style*="lp-blink"],
+  html[data-theme="light"] .sign-in-root .fade,
+  html[data-theme="light"] .sign-in-root .at-entry {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -434,6 +434,36 @@ h1 em {
 }
 
 .auth-url {
+  font-size: 0.78rem;
+  color: var(--neon);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.auth-card-split {
+  cursor: default;
+}
+
+.auth-card-split:hover {
+  transform: none;
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 10px;
+}
+
+.auth-url-muted {
+  color: var(--t3) !important;
+}
+
+.auth-url-muted:hover {
+  color: var(--t2) !important;
+}
+
+.auth-card .auth-url {
   font-family: var(--fm);
   font-size: 0.65rem;
   color: var(--neon);

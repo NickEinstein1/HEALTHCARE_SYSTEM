@@ -1,19 +1,20 @@
 import { config } from "./config";
-import { getAccessToken } from "./storage";
+import { getPatientId } from "./storage";
 
-async function authHeaders(): Promise<Record<string, string>> {
-  const token = await getAccessToken();
+async function authHeaders(patientId?: string): Promise<Record<string, string>> {
+  const pid = patientId ?? (await getPatientId());
   const h: Record<string, string> = {
     Accept: "application/json",
     "X-UniHealth-Role": "patient",
     "X-Facility-Id": "FAC-A",
+    "X-Patient-Id": pid,
   };
-  if (token) h.Authorization = `Bearer ${token}`;
+  // Staging pilot: role header satisfies gateway; skip Bearer to avoid stale-token 401s.
   return h;
 }
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${config.apiBaseUrl}${path}`, { headers: await authHeaders() });
+async function getJson<T>(path: string, patientId?: string): Promise<T> {
+  const res = await fetch(`${config.apiBaseUrl}${path}`, { headers: await authHeaders(patientId) });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
     throw new Error(`${res.status}${t ? ` — ${t}` : ""}`);
@@ -21,10 +22,10 @@ async function getJson<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-async function postJson<T>(path: string, body: unknown, method = "POST"): Promise<T> {
+async function postJson<T>(path: string, body: unknown, method = "POST", patientId?: string): Promise<T> {
   const res = await fetch(`${config.apiBaseUrl}${path}`, {
     method,
-    headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+    headers: { "Content-Type": "application/json", ...(await authHeaders(patientId)) },
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -175,4 +176,61 @@ export const api = {
   uiAction(payload: Record<string, unknown>): Promise<{ id?: string }> {
     return postJson("/ui/actions", payload);
   },
+
+  legalDocuments(patientId: string): Promise<{ documents: LegalDocument[]; count: number }> {
+    return getJson(`/esign/documents?patient_id=${encodeURIComponent(patientId)}&limit=50`, patientId);
+  },
+
+  legalDocumentCreate(
+    patientId: string,
+    docType: string,
+    context?: Record<string, unknown>,
+  ): Promise<{ document: LegalDocument }> {
+    return postJson("/esign/documents", {
+      patient_id: patientId,
+      doc_type: docType,
+      context,
+    }, "POST", patientId);
+  },
+
+  legalDocumentSign(
+    documentId: string,
+    payload: { signer_role: string; signer_name: string; attestation: string },
+    patientId: string,
+  ): Promise<{ document: LegalDocument }> {
+    return postJson(`/esign/documents/${encodeURIComponent(documentId)}/sign`, {
+      ...payload,
+      signature_method: "typed",
+    }, "POST", patientId);
+  },
+
+  legalDocumentVerify(documentId: string, patientId: string): Promise<LegalDocumentVerification> {
+    return getJson(`/esign/documents/${encodeURIComponent(documentId)}/verify`, patientId);
+  },
+};
+
+export type LegalDocumentSignature = {
+  id: string;
+  signer_role: string;
+  signer_name: string;
+  signed_at: string;
+  signature_hash: string;
+};
+
+export type LegalDocument = {
+  id: string;
+  patient_id: string;
+  doc_type: string;
+  title: string;
+  body: string;
+  status: string;
+  required_signers: string[];
+  signatures: LegalDocumentSignature[];
+  verification_code?: string | null;
+};
+
+export type LegalDocumentVerification = {
+  valid: boolean;
+  verification_code?: string | null;
+  disclaimer: string;
 };

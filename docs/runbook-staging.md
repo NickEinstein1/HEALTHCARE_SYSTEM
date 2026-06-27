@@ -38,13 +38,18 @@ cd frontend/app && npm run dev
 
 Open [localhost:5173](http://localhost:5173) → **Sign in** → role dashboards.
 
-**Staff pilot users** (Keycloak):
+**Pilot users** (Keycloak — username = role name, password `Changeme1!`):
 
-| User   | Password    | Role   |
-| ------ | ----------- | ------ |
-| doctor | Changeme1!  | doctor |
-| nurse  | Changeme1!  | nurse  |
-| admin  | Changeme1!  | admin  |
+| User     | Password    | Role     |
+| -------- | ----------- | -------- |
+| doctor   | Changeme1!  | doctor   |
+| nurse    | Changeme1!  | nurse    |
+| admin    | Changeme1!  | admin    |
+| lab      | Changeme1!  | lab      |
+| pharmacy | Changeme1!  | pharmacy |
+| patient  | Changeme1!  | patient  |
+
+Patient sign-in UI still uses National ID + PIN + phone; OIDC uses `patient` / `Changeme1!` — form examples in [getting-started.md](getting-started.md).
 
 ### 3. Quick checks
 
@@ -118,7 +123,7 @@ Use this order when you need the system **done and running everywhere** you care
 | Step | Place | Action |
 | ---- | ----- | ------ |
 | 1 | This laptop | `./scripts/run_staging.sh` + `setup_frontend_staging.sh` + `npm run dev` |
-| 2 | This laptop browser | Sign in as doctor/nurse/admin; open dashboards |
+| 2 | This laptop browser | Sign in as any pilot role; open dashboards |
 | 3 | Same Wi‑Fi | LAN overlay + `npm run dev -- --host` or `.env.staging.lan` |
 | 4 | CI / GitHub | Workflows already lint, test, build; optional `K6_BASE_URL` secret |
 | 5 | Cloud VM / hospital edge | Copy repo, install Docker, run same `run_staging.sh` (change passwords in `.env.staging`) |

@@ -1085,88 +1085,16 @@ body{display:flex;height:100vh;overflow:hidden;will-change:transform}
     <input class="rd-srch" id="rd-search" type="text" placeholder="Search roles…" autocomplete="off" aria-label="Search roles">
   </div>
   <div class="rd-list" id="rd-list">
+<!-- PILOT_RD_LIST_START -->
     <div class="rd-grp">Clinical Staff</div>
-    <button class="rd-it" data-role="doctor" data-icon="stethoscope" data-name="Doctor" data-desc="Physician · Specialist · Full clinical access" type="button" role="option">
-      <div class="rd-ic"><i data-feather="stethoscope"></i></div>
-      <div class="rd-info"><div class="rd-nm">Doctor</div><div class="rd-ds">Physician · Specialist</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="nurse" data-icon="heart" data-name="Nurse / CO" type="button" role="option">
-      <div class="rd-ic"><i data-feather="heart"></i></div>
-      <div class="rd-info"><div class="rd-nm">Nurse / CO</div><div class="rd-ds">Nurse · Clinical Officer · Ward access</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="surgeon" data-icon="scissors" data-name="Surgeon" type="button" role="option">
-      <div class="rd-ic"><i data-feather="scissors"></i></div>
-      <div class="rd-info"><div class="rd-nm">Surgeon</div><div class="rd-ds">Theatre · Surgical suite</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="radiologist" data-icon="aperture" data-name="Radiologist" type="button" role="option">
-      <div class="rd-ic"><i data-feather="aperture"></i></div>
-      <div class="rd-info"><div class="rd-nm">Radiologist</div><div class="rd-ds">Imaging · PACS · DICOM</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-
-    <div class="rd-grp">Maternity &amp; Women's Health</div>
-    <button class="rd-it" data-role="maternity_staff" data-icon="heart" data-name="Maternity Staff" type="button" role="option">
-      <div class="rd-ic" style="background:rgba(236,72,153,.09);border-color:rgba(236,72,153,.18);color:#ec4899"><i data-feather="heart"></i></div>
-      <div class="rd-info"><div class="rd-nm" style="color:#ec4899">Maternity Staff</div><div class="rd-ds">ANC · Labor · Postnatal · Fetal Monitor</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="nicu_specialist" data-icon="activity" data-name="NICU Specialist" type="button" role="option">
-      <div class="rd-ic" style="background:rgba(236,72,153,.09);border-color:rgba(236,72,153,.18);color:#ec4899"><i data-feather="activity"></i></div>
-      <div class="rd-info"><div class="rd-nm" style="color:#ec4899">NICU Specialist</div><div class="rd-ds">Neonatal ICU · Infant monitoring</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-
-    <div class="rd-grp">Allied Health &amp; Support</div>
-    <button class="rd-it" data-role="pharmacy" data-icon="package" data-name="Pharmacist" type="button" role="option">
-      <div class="rd-ic"><i data-feather="package"></i></div>
-      <div class="rd-info"><div class="rd-nm">Pharmacist</div><div class="rd-ds">Dispensing · KEMSA · Stock</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="lab" data-icon="droplet" data-name="Lab Technician" type="button" role="option">
-      <div class="rd-ic"><i data-feather="droplet"></i></div>
-      <div class="rd-info"><div class="rd-nm">Lab Technician</div><div class="rd-ds">Samples · Results · LIMS</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="icu_staff" data-icon="zap" data-name="ICU Staff" type="button" role="option">
-      <div class="rd-ic"><i data-feather="zap"></i></div>
-      <div class="rd-info"><div class="rd-nm">ICU Staff</div><div class="rd-ds">Intensive care · Critical monitoring</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="teleconsult" data-icon="video" data-name="Telemedicine Staff" type="button" role="option">
-      <div class="rd-ic"><i data-feather="video"></i></div>
-      <div class="rd-info"><div class="rd-nm">Telemedicine Staff</div><div class="rd-ds">Virtual consultations · Remote monitoring</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-
-    <div class="rd-grp">Insurance &amp; Administration</div>
-    <button class="rd-it" data-role="insurance" data-icon="briefcase" data-name="Insurance Officer" type="button" role="option">
-      <div class="rd-ic"><i data-feather="briefcase"></i></div>
-      <div class="rd-info"><div class="rd-nm">Insurance Officer</div><div class="rd-ds">CIC Insurance · Old Mutual · Claims</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="admin" data-icon="shield" data-name="Administrator" type="button" role="option">
-      <div class="rd-ic"><i data-feather="shield"></i></div>
-      <div class="rd-info"><div class="rd-nm">Administrator</div><div class="rd-ds">Hospital management · HR · Finance</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="patient" data-icon="user" data-name="Patient" type="button" role="option">
-      <div class="rd-ic"><i data-feather="user"></i></div>
-      <div class="rd-info"><div class="rd-nm">Patient</div><div class="rd-ds">Health records · Appointments · Insurance</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="it_admin" data-icon="server" data-name="IT Administrator" type="button" role="option">
-      <div class="rd-ic"><i data-feather="server"></i></div>
-      <div class="rd-info"><div class="rd-nm">IT Administrator</div><div class="rd-ds">Systems · DevOps · API Gateway</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
-    <button class="rd-it" data-role="super_admin" data-icon="star" data-name="Super Admin" type="button" role="option">
-      <div class="rd-ic" style="background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.18);color:#f59e0b"><i data-feather="star"></i></div>
-      <div class="rd-info"><div class="rd-nm" style="color:#f59e0b">Super Admin</div><div class="rd-ds">Full access · National oversight</div></div>
-      <div class="rd-chk"><i data-feather="check"></i></div>
-    </button>
+    <button class="rd-it" data-role="doctor" data-icon="stethoscope" data-name="Doctor" type="button" role="option"><div class="rd-ic"><i data-feather="stethoscope"></i></div><div class="rd-info"><div class="rd-nm">Doctor</div><div class="rd-ds">Physician · Specialist</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+    <button class="rd-it" data-role="nurse" data-icon="heart" data-name="Nurse" type="button" role="option"><div class="rd-ic"><i data-feather="heart"></i></div><div class="rd-info"><div class="rd-nm">Nurse</div><div class="rd-ds">Nurse · Clinical Officer</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+    <button class="rd-it" data-role="lab" data-icon="droplet" data-name="Laboratory" type="button" role="option"><div class="rd-ic"><i data-feather="droplet"></i></div><div class="rd-info"><div class="rd-nm">Laboratory</div><div class="rd-ds">Diagnostics · Lab Staff</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+    <button class="rd-it" data-role="pharmacy" data-icon="package" data-name="Pharmacy" type="button" role="option"><div class="rd-ic"><i data-feather="package"></i></div><div class="rd-info"><div class="rd-nm">Pharmacy</div><div class="rd-ds">Dispensing · Pharmacist</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+    <div class="rd-grp">Administration & Patients</div>
+    <button class="rd-it" data-role="admin" data-icon="shield" data-name="Admin" type="button" role="option"><div class="rd-ic"><i data-feather="shield"></i></div><div class="rd-info"><div class="rd-nm">Admin</div><div class="rd-ds">System · Facility Admin</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+    <button class="rd-it" data-role="patient" data-icon="user" data-name="Patient" type="button" role="option"><div class="rd-ic"><i data-feather="user"></i></div><div class="rd-info"><div class="rd-nm">Patient</div><div class="rd-ds">Health records portal</div></div><div class="rd-chk"><i data-feather="check"></i></div></button>
+<!-- PILOT_RD_LIST_END -->
     <div class="rd-none hidden" id="rd-none">No roles match your search</div>
   </div>
 </div>
@@ -1479,7 +1407,9 @@ function success(){
 
 function launch(){
   const btn=document.getElementById('launchBtn');btn.textContent='✓ Loading UniHealth 360…';btn.disabled=true;
-  const d={doctor:'unihealth-doctor.html',nurse:'unihealth-nurse.html',maternity_staff:'unihealth-maternity.html',nicu_specialist:'unihealth-nicu.html',surgeon:'unihealth-surgery.html',radiologist:'unihealth-radiology.html',pharmacy:'unihealth-pharmacy.html',lab:'unihealth-lab.html',icu_staff:'unihealth-icu.html',teleconsult:'unihealth-teleconsult.html',insurance:'unihealth-insurance.html',admin:'unihealth-admin.html',patient:'unihealth-patient.html',it_admin:'unihealth-it.html',super_admin:'unihealth-superadmin.html'};
+  /* PILOT_REDIRECT_MAP_START */
+const d={doctor:'unihealth-emr.html',nurse:'unihealth-nurse.html',lab:'unihealth-lab.html',pharmacy:'unihealth-pharmacy.html',admin:'unihealth-admin.html',patient:'unihealth-patient.html'};
+/* PILOT_REDIRECT_MAP_END */
   audit('AUTH DASHBOARD_LAUNCH role='+S.role);setTimeout(()=>{window.location.href=d[S.role]||'unihealth-admin.html';},900);
 }
 

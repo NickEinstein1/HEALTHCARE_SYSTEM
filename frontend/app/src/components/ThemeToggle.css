@@ -1,0 +1,67 @@
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--bdr2);
+  background: var(--card);
+  color: var(--t2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.theme-toggle:hover {
+  border-color: var(--p);
+  color: var(--p);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--p) 25%, transparent);
+}
+
+.theme-toggle--compact {
+  padding: 7px 9px;
+}
+
+.theme-toggle__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+html[data-theme="light"] .theme-toggle {
+  background: var(--card);
+  border: 1.5px solid var(--bdr2);
+  color: var(--t1);
+  font-weight: var(--fw-label);
+  box-shadow: var(--sh);
+}
+
+html[data-theme="light"] .theme-toggle:hover {
+  border-color: var(--pd);
+  color: var(--pd);
+  background: var(--p-surface);
+}
+
+html[data-theme="dark"] .theme-toggle {
+  background: rgba(8, 18, 42, 0.75);
+  border-color: rgba(0, 212, 255, 0.22);
+  color: var(--t2);
+}
+
+html[data-theme="dark"] .theme-toggle:hover {
+  border-color: #00d4ff;
+  color: #00d4ff;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -9,19 +9,19 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { UniHealthLogo } from "../components/brand/UniHealthLogo";
 import type { RoleKey } from "../theme/tokens";
+import { getRegisterRoleCards, isPilotRole } from "../lib/pilotRoles";
 
-// ── Colour tokens (mirrors the sign-in dark theme) ──────────────────
-const R: Record<RoleKey, { color: string; bg: string; border: string; label: string; icon: string; tagline: string }> = {
-  patient:  { color: "#3d8ef8", bg: "rgba(61,142,248,0.08)",  border: "rgba(61,142,248,0.30)",  label: "Patient",      icon: "🙋", tagline: "Book appointments, view results, manage your health." },
-  doctor:   { color: "#00d4ff", bg: "rgba(0,212,255,0.08)",   border: "rgba(0,212,255,0.30)",   label: "Doctor",       icon: "🩺", tagline: "Clinical notes, e-prescriptions, lab orders & AI hints." },
-  nurse:    { color: "#00e5a0", bg: "rgba(0,229,160,0.08)",   border: "rgba(0,229,160,0.30)",   label: "Nurse / CO",   icon: "💉", tagline: "Triage, vitals, SBAR handover, ward management." },
-  admin:    { color: "#a855f7", bg: "rgba(168,85,247,0.08)",  border: "rgba(168,85,247,0.30)",  label: "Admin",        icon: "⚙",  tagline: "Facility control, user provisioning, analytics." },
-  lab:      { color: "#ffb830", bg: "rgba(255,184,48,0.08)",  border: "rgba(255,184,48,0.30)",  label: "Lab Technician", icon: "🔬", tagline: "Lab orders, specimen tracking, critical-value alerts." },
-  pharmacy: { color: "#ff3366", bg: "rgba(255,51,102,0.08)",  border: "rgba(255,51,102,0.30)",  label: "Pharmacist",   icon: "💊", tagline: "Prescriptions, dispensing, drug interactions, stock." },
-};
+function roleRegisterUi(role: RoleKey) {
+  const card = getRegisterRoleCards().find((c) => c.role === role);
+  if (!card) throw new Error(`Unknown role: ${role}`);
+  return card;
+}
+
+// ── Colour tokens (from shared pilot-roles.json) ─────────────────────
+const REGISTER_ROLES = getRegisterRoleCards();
 
 const FACILITIES = [
   "Kenyatta National Hospital",
@@ -118,8 +118,8 @@ function StepPickRole({ onSelect }: { onSelect: (r: RoleKey) => void }) {
         </p>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {(Object.keys(R) as RoleKey[]).map(role => {
-          const cfg = R[role];
+        {(REGISTER_ROLES).map((cfg) => {
+          const role = cfg.role;
           const isHov = hovered === role;
           return (
             <div key={role} className="reg-role-card"
@@ -170,7 +170,7 @@ function StepFillForm({ role, onBack, onSubmit }: {
   onBack: () => void;
   onSubmit: (f: FormState) => void;
 }) {
-  const cfg = R[role];
+  const cfg = roleRegisterUi(role);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [showPwd, setShowPwd] = useState(false);
@@ -493,7 +493,7 @@ function StepFillForm({ role, onBack, onSubmit }: {
 function StepOtp({ role, email, onBack, onVerify }: {
   role: RoleKey; email: string; onBack: () => void; onVerify: () => void;
 }) {
-  const cfg = R[role];
+  const cfg = roleRegisterUi(role);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [resent, setResent] = useState(false);
@@ -619,7 +619,7 @@ function StepOtp({ role, email, onBack, onVerify }: {
 // ── Step 4: Account created ──────────────────────────────────────────
 function StepSuccess({ role, name }: { role: RoleKey; name: string }) {
   const navigate = useNavigate();
-  const cfg = R[role];
+  const cfg = roleRegisterUi(role);
 
   useEffect(() => {
     const t = setTimeout(() => navigate("/sign-in"), 5000);
@@ -765,6 +765,7 @@ function RegisterBrandPanel({ step }: { step: number }) {
 
 // ── Main page ─────────────────────────────────────────────────────────
 export function CreateAccountPage() {
+  const [searchParams] = useSearchParams();
   const [step, setStep]       = useState(1);
   const [role, setRole]       = useState<RoleKey | null>(null);
   const [form, setForm]       = useState<FormState | null>(null);
@@ -773,6 +774,14 @@ export function CreateAccountPage() {
     setRole(r);
     setStep(2);
   };
+
+  useEffect(() => {
+    const q = searchParams.get("role");
+    if (isPilotRole(q) && step === 1 && !role) {
+      setRole(q);
+      setStep(2);
+    }
+  }, [searchParams, step, role]);
 
   const handleFormSubmit = (f: FormState) => {
     setForm(f);

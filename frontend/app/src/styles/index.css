@@ -1,3 +1,4 @@
+@import "./theme.css";
 @import "./unihealth.css";
 @import "./brand-icon.css";
 @import "./dashboard-shell.css";
@@ -12,6 +13,13 @@
 @import "./responsive.css";
 /* ── Sign-in page — loaded LAST, wins over every other stylesheet ── */
 @import "./signin.css";
+@import "./theme-light-signin.css";
+@import "./theme-light-overrides.css";
+@import "./landing-theme.css";
+@import "./theme-typography.css";
+@import "./theme-light-system.css";
+@import "./theme-light-readability.css";
+@import "./theme-light-bold-black.css";
 
 #root {
   display: flex;
@@ -19,8 +27,10 @@
   min-height: 100vh;
 }
 
-/* Landing page — full-bleed dark wrapper; no light body bleed-through */
+/* Landing page — full-bleed wrapper */
 .lp-root {
   width: 100%;
   min-height: 100vh;
+  background: var(--bg);
+  color: var(--t1);
 }

@@ -53,6 +53,7 @@ export const SEARCH_ITEMS: SearchItem[] = [
   { key: "payments", label: "Make a Payment", sub: "M-PESA, M-TIBA", icon: "📱", tab: "Wallet", screen: "Pay" },
   { key: "records", label: "Health Records", sub: "Diagnoses, allergies, immunisations", icon: "📂", tab: "Menu", screen: "Records" },
   { key: "documents", label: "Documents", sub: "Reports and uploads", icon: "📋", tab: "Menu", screen: "Documents" },
+  { key: "esign", label: "E-Signatures", sub: "POA & consent forms", icon: "✍️", tab: "Menu", screen: "LegalSign" },
   { key: "consent", label: "Privacy & Consent", sub: "KDPA 2019 controls", icon: "🔐", tab: "Menu", screen: "Consent" },
   { key: "profile", label: "My Profile", sub: "Personal details", icon: "👤", tab: "Menu", screen: "Profile" },
 ];
