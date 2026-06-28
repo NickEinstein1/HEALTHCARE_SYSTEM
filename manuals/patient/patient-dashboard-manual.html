@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Patient Portal Manual</title>
+  <link rel="stylesheet" href="../shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap">
+    <nav class="manual-toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#signin">Sign-in (Patient)</a></li>
+        <li><a href="#layout">Dashboard layout</a></li>
+        <li><a href="#health">My Health tabs</a></li>
+        <li><a href="#payments">Payments tabs</a></li>
+        <li><a href="#records">Records &amp; privacy tabs</a></li>
+        <li><a href="#tips">Tips &amp; troubleshooting</a></li>
+      </ol>
+    </nav>
+
+    <main class="manual-main">
+      <header class="manual-header" id="intro">
+        <h1>Patient Portal Manual</h1>
+        <p class="subtitle">Self-service health records, appointments, results, payments, and privacy controls.</p>
+        <div class="manual-meta">
+          <span><strong>Audience:</strong> Patients &amp; caregivers</span>
+          <span><strong>URL:</strong> /dashboard/patient</span>
+          <span><strong>Version:</strong> Pilot 2026</span>
+        </div>
+      </header>
+
+      <section class="manual-section" id="signin">
+        <h2>1. Sign-in — Patient</h2>
+        <p>Patients sign in with national ID (or passport), UniHealth PIN, and mobile number — then SMS MFA.</p>
+
+        <h3>Step 1 — Select role</h3>
+        <p>The Patient tile opens the self-service health records portal. Scroll the carousel if needed.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/01-signin-role-selected.png" alt="Sign-in with Patient selected" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 1</span>
+              <strong>Role selection — Patient</strong>
+              <p>The Patient tile opens the self-service health records portal. Scroll the carousel if needed.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 2 — Enter credentials</h3>
+        <p>Enter your ID type and number, 4-digit UniHealth PIN, and registered mobile number (+254 format).</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/02-signin-credentials.png" alt="Patient credentials form" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 2</span>
+              <strong>Patient credentials</strong>
+              <p>Enter your ID type and number, 4-digit UniHealth PIN, and registered mobile number (+254 format).</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 3 — Verify MFA</h3>
+        <p>Verify via SMS OTP sent to your registered phone. Demo: Practice 360 or OTP 123456.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/03-signin-mfa.png" alt="MFA verification step" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 3</span>
+              <strong>MFA verification</strong>
+              <p>Verify via SMS OTP sent to your registered phone. Demo: Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 4 — Launch dashboard</h3>
+        <p>Success confirms Patient — UniHealth Self-Service. Launch opens My Dashboard at /dashboard/patient.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/04-signin-launch.png" alt="Launch dashboard success screen" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 4</span>
+              <strong>Ready to launch</strong>
+              <p>Success confirms Patient — UniHealth Self-Service. Launch opens My Dashboard at /dashboard/patient.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+      </section>
+
+      <section class="manual-section" id="layout">
+        <h2>2. Dashboard layout</h2>
+        <p>The Patient Portal groups health, payments, privacy, and records in the sidebar.</p>
+        <table class="manual-table">
+          <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>My Health</td><td>Dashboard, appointments, visits, results, medications, vitals</td></tr>
+            <tr><td>Payments</td><td>Cover, contributions, bills, make a payment</td></tr>
+            <tr><td>Privacy &amp; Security</td><td>KDPA consent controls</td></tr>
+            <tr><td>My Records</td><td>Health records, documents, e-sign, profile</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Data rights:</strong> Privacy & Consent lets you control sharing under KDPA 2019.</div>
+      </section>
+
+      <section class="manual-section" id="health">
+        <h2>3. My Health tabs</h2>
+        <h3 id="tab-my-dashboard">My Dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/05-tab-my-dashboard.png" alt="My Dashboard" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 5</span>
+              <strong>My Dashboard</strong>
+              <p>Personal health summary, quick links, and notifications.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-appointments">Appointments</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/06-tab-appointments.png" alt="Appointments" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 6</span>
+              <strong>Appointments</strong>
+              <p>Book, view, and manage upcoming appointments.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-visit-history">Visit History</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/07-tab-visit-history.png" alt="Visit History" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 7</span>
+              <strong>Visit History</strong>
+              <p>Past encounters and facility visits.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-test-results">Test Results</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/08-tab-test-results.png" alt="Test Results" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 8</span>
+              <strong>Test Results</strong>
+              <p>Laboratory and diagnostic results as they are released.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-medications">Medications</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/09-tab-medications.png" alt="Medications" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 9</span>
+              <strong>Medications</strong>
+              <p>Active prescriptions with refill request options.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-vitals-trends">Vitals &amp; Trends</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/10-tab-vitals-trends.png" alt="Vitals &amp; Trends" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 10</span>
+              <strong>Vitals &amp; Trends</strong>
+              <p>Latest vitals and trend charts from your care team.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="payments">
+        <h2>4. Payments tabs</h2>
+        <h3 id="tab-coverage">My UniHealth Cover</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/11-tab-coverage.png" alt="My UniHealth Cover" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 11</span>
+              <strong>My UniHealth Cover</strong>
+              <p>Benefits, claims status, and account linkage.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-contributions">Contributions</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/12-tab-contributions.png" alt="Contributions" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 12</span>
+              <strong>Contributions</strong>
+              <p>Monthly contribution payment history.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-bills">Bills &amp; Invoices</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/13-tab-bills.png" alt="Bills &amp; Invoices" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 13</span>
+              <strong>Bills &amp; Invoices</strong>
+              <p>Statements and downloadable invoices.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-payments">Make a Payment</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/14-tab-payments.png" alt="Make a Payment" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 14</span>
+              <strong>Make a Payment</strong>
+              <p>M-PESA, M-TIBA, and other payment methods.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="records">
+        <h2>5. Records &amp; privacy tabs</h2>
+        <h3 id="tab-consent">Privacy &amp; Consent</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/15-tab-consent.png" alt="Privacy &amp; Consent" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 15</span>
+              <strong>Privacy &amp; Consent</strong>
+              <p>Granular consent toggles for data sharing.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-records">Health Records</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/16-tab-records.png" alt="Health Records" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 16</span>
+              <strong>Health Records</strong>
+              <p>Longitudinal health record summary.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-documents">Documents</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/17-tab-documents.png" alt="Documents" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 17</span>
+              <strong>Documents</strong>
+              <p>Upload and view reports and files.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-esign">E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/18-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 18</span>
+              <strong>E-Signatures</strong>
+              <p>Sign consent forms and power-of-attorney documents.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-profile">My Profile</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/19-tab-profile.png" alt="My Profile" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 19</span>
+              <strong>My Profile</strong>
+              <p>Update contact details and account settings.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="tips">
+        <h2>6. Tips &amp; troubleshooting</h2>
+        <h3>Recommended workflow</h3><ol class="steps"><li>Sign in with ID, PIN, and phone OTP.</li><li>Check My Dashboard for new results or messages.</li><li>Book appointments and review medications.</li><li>Manage Privacy &amp; Consent before sharing records.</li></ol>
+        <h3>Common issues</h3>
+        <table class="manual-table">
+          <thead><tr><th>Issue</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>PIN rejected</td><td>Use 4-digit PIN from registration; contact facility if forgotten</td></tr>
+            <tr><td>Results not visible</td><td>Lab may not have released results; check Test Results after 24h</td></tr>
+            <tr><td>Payment failed</td><td>Confirm M-PESA number matches registered phone</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Not for emergencies:</strong> Call emergency services or visit A&E — this portal is not monitored 24/7.</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

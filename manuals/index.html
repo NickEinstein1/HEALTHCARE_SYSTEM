@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth Manuals</title>
+  <link rel="stylesheet" href="shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap" style="grid-template-columns:1fr;max-width:720px;">
+    <main class="manual-main">
+      <header class="manual-header">
+        <h1>UniHealth User Manuals</h1>
+        <p class="subtitle">Role-based guides with annotated screenshots for every dashboard tab.</p>
+      </header>
+      <section class="manual-section">
+        <h2>Comprehensive manual (all roles)</h2>
+        <p>Single document covering sign-in and every tab for Doctor, Nurse, Patient, Admin, Lab, and Pharmacy — 116 annotated figures.</p>
+        <p><a href="comprehensive-dashboard-manual.html"><strong>Open Comprehensive Dashboard Manual (HTML) →</strong></a></p>
+        <p><a href="UniHealth-Comprehensive-Dashboard-Manual.docx"><strong>Download Comprehensive Manual (Word .docx) →</strong></a></p>
+      </section>
+      <section class="manual-section">
+        <h2>Individual role manuals</h2>
+        <ol><li><a href="doctor/doctor-dashboard-manual.html">Doctor Dashboard Manual</a> — Physicians &amp; specialists</li>
+        <li><a href="nurse/nurse-dashboard-manual.html">Nurse Dashboard Manual</a> — Nurses &amp; clinical officers</li>
+        <li><a href="patient/patient-dashboard-manual.html">Patient Portal Manual</a> — Patients &amp; caregivers</li>
+        <li><a href="admin/admin-dashboard-manual.html">Administrator Dashboard Manual</a> — System &amp; facility administrators</li>
+        <li><a href="lab/lab-dashboard-manual.html">Laboratory Dashboard Manual</a> — Laboratory &amp; diagnostic imaging staff</li>
+        <li><a href="pharmacy/pharmacy-dashboard-manual.html">Pharmacy Dashboard Manual</a> — Pharmacists &amp; dispensing staff</li></ol>
+        <p style="margin-top:1.5rem;font-size:0.9375rem;color:var(--manual-muted);">
+          Regenerate: <code>node scripts/generate_role_manuals.mjs</code> ·
+          Screenshots: <code>node scripts/capture_all_manual_screenshots.mjs</code>
+        </p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

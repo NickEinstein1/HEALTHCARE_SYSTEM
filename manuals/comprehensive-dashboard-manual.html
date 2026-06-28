@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Comprehensive Dashboard Manual</title>
+  <link rel="stylesheet" href="shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap manual-wrap--comprehensive">
+    <nav class="manual-toc manual-toc--wide" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol class="toc-root">
+        <li><a href="#overview">System overview</a></li>
+        <li><a href="#signin-guide">Universal sign-in</a></li>
+        <li><a href="#role-doctor"><strong>Doctor</strong></a><ul><li><a href="#role-doctor-signin">Sign-in</a></li><li><a href="#role-doctor-layout">Layout</a></li><li><a href="#role-doctor-clinical">Clinical tabs</a></li><li><a href="#role-doctor-workflow">Workflow tabs</a></li><li><a href="#role-doctor-admin">Admin &amp; system tabs</a></li><li><a href="#role-doctor-tips">Tips</a></li></ul></li>
+        <li><a href="#role-nurse"><strong>Nurse / CO</strong></a><ul><li><a href="#role-nurse-signin">Sign-in</a></li><li><a href="#role-nurse-layout">Layout</a></li><li><a href="#role-nurse-ward">Ward tabs</a></li><li><a href="#role-nurse-more">Extended care tabs</a></li><li><a href="#role-nurse-tips">Tips</a></li></ul></li>
+        <li><a href="#role-patient"><strong>Patient</strong></a><ul><li><a href="#role-patient-signin">Sign-in</a></li><li><a href="#role-patient-layout">Layout</a></li><li><a href="#role-patient-health">My Health tabs</a></li><li><a href="#role-patient-payments">Payments tabs</a></li><li><a href="#role-patient-records">Records &amp; privacy tabs</a></li><li><a href="#role-patient-tips">Tips</a></li></ul></li>
+        <li><a href="#role-admin"><strong>Administrator</strong></a><ul><li><a href="#role-admin-signin">Sign-in</a></li><li><a href="#role-admin-layout">Layout</a></li><li><a href="#role-admin-main">Main tabs</a></li><li><a href="#role-admin-clinical">Clinical registry tabs</a></li><li><a href="#role-admin-security">Security &amp; system tabs</a></li><li><a href="#role-admin-tips">Tips</a></li></ul></li>
+        <li><a href="#role-lab"><strong>Laboratory</strong></a><ul><li><a href="#role-lab-signin">Sign-in</a></li><li><a href="#role-lab-layout">Layout</a></li><li><a href="#role-lab-workflow">Lab workflow tabs</a></li><li><a href="#role-lab-imaging">Diagnostic imaging tabs</a></li><li><a href="#role-lab-specialised">Specialised &amp; compliance tabs</a></li><li><a href="#role-lab-tips">Tips</a></li></ul></li>
+        <li><a href="#role-pharmacy"><strong>Pharmacy</strong></a><ul><li><a href="#role-pharmacy-signin">Sign-in</a></li><li><a href="#role-pharmacy-layout">Layout</a></li><li><a href="#role-pharmacy-dispensing">Dispensing tabs</a></li><li><a href="#role-pharmacy-inventory">Inventory tabs</a></li><li><a href="#role-pharmacy-clinical">Clinical &amp; compliance tabs</a></li><li><a href="#role-pharmacy-tips">Tips</a></li></ul></li>
+      </ol>
+      <p class="toc-footer">116 figures · 6 roles · Pilot 2026</p>
+    </nav>
+
+    <main class="manual-main">
+      <header class="manual-header" id="top">
+        <h1>UniHealth Comprehensive Dashboard Manual</h1>
+        <p class="subtitle">Complete sign-in and tab-by-tab guide for Doctor, Nurse, Patient, Administrator, Laboratory, and Pharmacy — with aligned screenshots and annotations.</p>
+        <div class="manual-meta">
+          <span><strong>Figures:</strong> 116 annotated screenshots</span>
+          <span><strong>Roles:</strong> 6 dashboards</span>
+          <span><strong>Version:</strong> Pilot 2026</span>
+        </div>
+      </header>
+
+      <section class="manual-section" id="overview">
+        <h2>System overview</h2>
+        <p>
+          UniHealth is a role-based healthcare platform. After authentication, each user lands on a dedicated
+          dashboard tuned to their job: clinicians manage encounters, nurses run the ward, patients access self-service
+          records, and administrators govern the facility. Every screen in this manual was captured from the live pilot
+          UI at 1440×900 resolution so layouts match what you will see in training and production.
+        </p>
+        <table class="manual-table">
+          <thead><tr><th>Role</th><th>Dashboard URL</th><th>Primary use</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Doctor</strong></td><td><code>/dashboard/doctor</code></td><td>Sign-in, navigation, and every clinical workstation tab</td></tr>
+            <tr><td><strong>Nurse / CO</strong></td><td><code>/dashboard/nurse</code></td><td>Ward operations, vitals, MAR, triage, and handover</td></tr>
+            <tr><td><strong>Patient</strong></td><td><code>/dashboard/patient</code></td><td>Self-service health records, appointments, results, payments, and privacy controls.</td></tr>
+            <tr><td><strong>Administrator</strong></td><td><code>/dashboard/admin</code></td><td>Facility control, users, RBAC, AI monitoring, and system administration.</td></tr>
+            <tr><td><strong>Laboratory</strong></td><td><code>/dashboard/lab</code></td><td>Specimen workflow, test queue, imaging modalities, QC, and specialised lab modules.</td></tr>
+            <tr><td><strong>Pharmacy</strong></td><td><code>/dashboard/pharmacy</code></td><td>Dispensing queue, verification, stock, KEMSA orders, and clinical pharmacy tools.</td></tr>
+          </tbody>
+        </table>
+        <div class="callout">
+          <strong>Staging tip:</strong> Run <code>./scripts/run_staging.sh</code> (gateway on port 8100) and
+          <code>npm run dev</code> in <code>frontend/app</code> before using the web UI. Hard-refresh if panels show offline.
+        </div>
+      </section>
+      <section class="manual-section" id="signin-guide">
+        <h2>Universal sign-in flow</h2>
+        <p>All roles share a four-step pattern at <code>/sign-in</code>. Staff enter a professional ID, email, and password; patients use national ID, UniHealth PIN, and mobile number. Every path ends with multi-factor authentication before the dashboard launch screen.</p>
+        <ol class="steps">
+          <li><strong>Select role</strong> — scroll the carousel and choose the tile that matches your job.</li>
+          <li><strong>Enter credentials</strong> — role-specific fields plus password policy (staff) or PIN (patient).</li>
+          <li><strong>Verify MFA</strong> — email OTP for staff, SMS OTP for patients; Practice 360 in demo environments.</li>
+          <li><strong>Launch dashboard</strong> — confirm success message, then open your role workspace.</li>
+        </ol>
+        <p>The sections below repeat this flow with role-specific screenshots, then document <em>every sidebar tab</em> for that dashboard.</p>
+      </section>
+      <div class="role-part" id="role-doctor">
+        <header class="role-banner" style="--role-accent:#0d6e4f">
+          <span class="role-banner-label">Doctor</span>
+          <h2 class="role-banner-title">Doctor Dashboard</h2>
+          <p class="role-banner-desc">The Clinical Workstation is the physician command centre: queue management, longitudinal charts, orders, AI-assisted triage hints, e-signatures, and referrals — all in one sidebar.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> Physicians &amp; specialists</span>
+            <span><strong>URL:</strong> /dashboard/doctor</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-doctor-signin">
+          <h2>Sign-in — Doctor</h2>
+          <p>Doctors use the four-step staff sign-in: select role → credentials → MFA → launch dashboard.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 1 · Doctor</span>
+              <strong>Select your role</strong>
+              <p>The Doctor tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 2 · Doctor</span>
+              <strong>Enter credentials</strong>
+              <p>Enter Medical Registration No. (e.g. A4821), institutional email, and password. Policy requires uppercase, numbers, and ≥8 characters.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 3 · Doctor</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 4 · Doctor</span>
+              <strong>Launch dashboard</strong>
+              <p>Confirms Doctor — Pilot Hospital A. Session token authorises API calls to the gateway (staging port 8100).</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-doctor-layout">
+          <h2>Dashboard layout</h2>
+          <p>The Clinical Workstation is organised into sidebar sections and a live top bar.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>Sidebar — Clinical</td><td>Overview, chart, queue, workup, ward, labs, Rx, imaging</td></tr>
+            <tr><td>Sidebar — Workflow</td><td>Notes, incidents, e-sign, referrals, procedures, claims, schedule</td></tr>
+            <tr><td>Sidebar — Admin</td><td>Audit trail and system health</td></tr>
+            <tr><td>Top bar</td><td>Page title, patient context, search, notifications</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Active patient:</strong> Many tabs use the selected patient ID (badge on Patient Chart). Re-select from queue or ward before ordering.</div>
+        </section>
+        <section class="manual-section" id="role-doctor-clinical">
+          <h2>Clinical tabs</h2>          <h3>Today's Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/05-tab-home-overview.png" alt="Today's Overview" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 5 · Doctor</span>
+              <strong>Today's Overview</strong>
+              <p>Shift command centre: KPIs, AI alerts, ward badges. Polls every 5–8s when API is live.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Patient Chart</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/06-tab-patient-chart.png" alt="Patient Chart" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 6 · Doctor</span>
+              <strong>Patient Chart</strong>
+              <p>Longitudinal record: demographics, allergies, conditions, medications, observations.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Patient Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/07-tab-patient-queue.png" alt="Patient Queue" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 7 · Doctor</span>
+              <strong>Patient Queue</strong>
+              <p>Outpatient waiting list with triage priority. Select a row to set the active patient.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Patient Workup</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/08-tab-patient-workup.png" alt="Patient Workup" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 8 · Doctor</span>
+              <strong>Patient Workup</strong>
+              <p>Structured assessment, AI risk score (pilot), clinical AI panel, and e-sign links.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Ward / Beds</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/09-tab-ward-beds.png" alt="Ward / Beds" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 9 · Doctor</span>
+              <strong>Ward / Beds</strong>
+              <p>Inpatient bed map, occupancy status, and ward capacity forecast.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Lab Orders &amp; Results</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/10-tab-labs.png" alt="Lab Orders &amp; Results" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 10 · Doctor</span>
+              <strong>Lab Orders &amp; Results</strong>
+              <p>Place lab orders and review results; critical values per local protocol.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Prescriptions</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/11-tab-prescriptions.png" alt="Prescriptions" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 11 · Doctor</span>
+              <strong>Prescriptions</strong>
+              <p>Compose medication orders — drug, dose, route — sent to pharmacy queue.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Imaging &amp; Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/12-tab-imaging.png" alt="Imaging &amp; Reports" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 12 · Doctor</span>
+              <strong>Imaging &amp; Reports</strong>
+              <p>Request radiology studies and track report status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-doctor-workflow">
+          <h2>Workflow tabs</h2>          <h3>Clinical Notes</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/13-tab-clinical-notes.png" alt="Clinical Notes" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 13 · Doctor</span>
+              <strong>Clinical Notes</strong>
+              <p>Progress, admission, discharge, and procedure notes — audit-logged on save.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Incident Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/14-tab-incidents.png" alt="Incident Reports" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 14 · Doctor</span>
+              <strong>Incident Reports</strong>
+              <p>Patient-linked incident reports for governance and quality.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/15-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 15 · Doctor</span>
+              <strong>E-Signatures</strong>
+              <p>Upload → AI Review → Sign → Verify document pipeline.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Referrals</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/16-tab-referrals.png" alt="Referrals" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 16 · Doctor</span>
+              <strong>Referrals</strong>
+              <p>Inter-facility referrals with hospital, department, and patient pickers.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Procedures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/17-tab-procedures.png" alt="Procedures" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 17 · Doctor</span>
+              <strong>Procedures</strong>
+              <p>Log planned or completed procedures; links to e-sign consent.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>UniHealth Claims</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/18-tab-claims.png" alt="UniHealth Claims" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 18 · Doctor</span>
+              <strong>UniHealth Claims</strong>
+              <p>Insurance and cover claims initiation and tracking.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>My Schedule</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/19-tab-schedule.png" alt="My Schedule" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 19 · Doctor</span>
+              <strong>My Schedule</strong>
+              <p>Clinic blocks and theatre slots for the week.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-doctor-admin">
+          <h2>Admin &amp; system tabs</h2>          <h3>Audit Trail</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/20-tab-audit.png" alt="Audit Trail" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 20 · Doctor</span>
+              <strong>Audit Trail</strong>
+              <p>Live UI action feed from /ui/actions for compliance review.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="doctor/images/21-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 21 · Doctor</span>
+              <strong>System Health</strong>
+              <p>AI tier, rules engine, and gateway connectivity status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-doctor-tips">
+          <h2>Tips &amp; troubleshooting — Doctor</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Sign in and complete MFA.</li><li>Review Today's Overview for KPIs and alerts.</li><li>Work Patient Queue — set active patient per consult.</li><li>Document in Clinical Notes; order labs, imaging, and Rx as needed.</li><li>Check System Health if panels show offline data.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>Blank panels / Failed to fetch</td><td>Start ./scripts/run_staging.sh; hard-refresh; verify Vite proxy → :8100</td></tr>
+            <tr><td>AI risk unavailable</td><td>System Health tab; verify /ai/risk-score endpoint</td></tr>
+            <tr><td>E-sign upload fails</td><td>Disable ad-blockers; API path is /esign not /legal</td></tr>
+            <tr><td>Wrong patient in orders</td><td>Re-select from queue or ward first</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>AI disclaimer:</strong> Risk scores and hints are pilot aids only — always apply clinical judgement.</div>
+        </section>
+      </div>
+      <div class="role-part" id="role-nurse">
+        <header class="role-banner" style="--role-accent:#007a55">
+          <span class="role-banner-label">Nurse / CO</span>
+          <h2 class="role-banner-title">Nurse Dashboard</h2>
+          <p class="role-banner-desc">The Nurse Station supports shift-based ward care: triage, vitals capture, medication administration (MAR), SBAR handover, and supply requests with live patient context.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> Nurses &amp; clinical officers</span>
+            <span><strong>URL:</strong> /dashboard/nurse</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-nurse-signin">
+          <h2>Sign-in — Nurse / CO</h2>
+          <p>Nursing staff sign in with registration number, email, password, and MFA — same four-step flow as other clinicians.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 22 · Nurse / CO</span>
+              <strong>Select your role</strong>
+              <p>The Nurse / CO tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 23 · Nurse / CO</span>
+              <strong>Enter credentials</strong>
+              <p>Enter Nursing Registration No. (e.g. RN/12345), institutional email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 24 · Nurse / CO</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 25 · Nurse / CO</span>
+              <strong>Launch dashboard</strong>
+              <p>Confirms Nurse — Pilot Hospital B. Redirects to the Nursing Station dashboard.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-nurse-layout">
+          <h2>Dashboard layout</h2>
+          <p>The Nurse Station sidebar groups ward workflows and extended care modules.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>Sidebar — Ward</td><td>Shift overview, patients, chart, triage, vitals, MAR, tasks, handover</td></tr>
+            <tr><td>Sidebar — More</td><td>Fluids, wounds, incidents, e-sign, supplies</td></tr>
+            <tr><td>Top bar</td><td>Shift context, search, alerts, sign-out</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Active patient:</strong> Chart and vitals tabs use the selected patient ID shown in the sidebar badge.</div>
+        </section>
+        <section class="manual-section" id="role-nurse-ward">
+          <h2>Ward tabs</h2>          <h3>Shift Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/05-tab-shift-overview.png" alt="Shift Overview" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 26 · Nurse / CO</span>
+              <strong>Shift Overview</strong>
+              <p>Start-of-shift summary: assigned patients, tasks due, ward alerts, and AI anomaly feed.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>My Patients</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/06-tab-my-patients.png" alt="My Patients" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 27 · Nurse / CO</span>
+              <strong>My Patients</strong>
+              <p>Roster of patients under your care with acuity and last-vitals indicators.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Patient Chart</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/07-tab-patient-chart.png" alt="Patient Chart" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 28 · Nurse / CO</span>
+              <strong>Patient Chart</strong>
+              <p>Read-only longitudinal view for the active patient — allergies, meds, obs.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Triage Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/08-tab-triage-queue.png" alt="Triage Queue" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 29 · Nurse / CO</span>
+              <strong>Triage Queue</strong>
+              <p>Emergency and walk-in triage queue with priority scoring.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Record Vitals</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/09-tab-record-vitals.png" alt="Record Vitals" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 30 · Nurse / CO</span>
+              <strong>Record Vitals</strong>
+              <p>Capture BP, HR, RR, temp, SpO₂, pain, and AVPU — body diagram assist.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>MAR</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/10-tab-mar.png" alt="MAR" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 31 · Nurse / CO</span>
+              <strong>MAR</strong>
+              <p>Medication Administration Record — due doses, given/refused/hold actions.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Tasks</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/11-tab-tasks.png" alt="Tasks" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 32 · Nurse / CO</span>
+              <strong>Tasks</strong>
+              <p>Care plan tasks and reminders with completion logging.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Handover</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/12-tab-handover.png" alt="Handover" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 33 · Nurse / CO</span>
+              <strong>Handover</strong>
+              <p>SBAR-style shift handover notes for outgoing/incoming staff.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-nurse-more">
+          <h2>Extended care tabs</h2>          <h3>Fluid Balance</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/13-tab-fluid-balance.png" alt="Fluid Balance" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 34 · Nurse / CO</span>
+              <strong>Fluid Balance</strong>
+              <p>Intake/output charting and fluid balance trends.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Wound Care</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/14-tab-wound-care.png" alt="Wound Care" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 35 · Nurse / CO</span>
+              <strong>Wound Care</strong>
+              <p>Wound assessment documentation and dressing plans.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Incidents</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/15-tab-incidents.png" alt="Incidents" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 36 · Nurse / CO</span>
+              <strong>Incidents</strong>
+              <p>File and review clinical incident reports.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/16-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 37 · Nurse / CO</span>
+              <strong>E-Signatures</strong>
+              <p>Consent and nursing document e-sign pipeline.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Supplies</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="nurse/images/17-tab-supplies.png" alt="Supplies" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 38 · Nurse / CO</span>
+              <strong>Supplies</strong>
+              <p>Ward supply requests and inventory levels.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-nurse-tips">
+          <h2>Tips &amp; troubleshooting — Nurse / CO</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Open Shift Overview and review assignments.</li><li>Process Triage Queue for new arrivals.</li><li>Record Vitals and administer MAR doses on schedule.</li><li>Complete Tasks and document Handover at shift end.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>Vitals not saving</td><td>Check gateway; confirm patient ID selected</td></tr>
+            <tr><td>MAR empty</td><td>Verify medication requests exist for patient via API</td></tr>
+            <tr><td>AI alerts silent</td><td>WebSocket connects direct to :8100 in dev; REST fallback polls every 15s</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Clinical responsibility:</strong> Vitals and MAR entries must be verified at bedside before submission.</div>
+        </section>
+      </div>
+      <div class="role-part" id="role-patient">
+        <header class="role-banner" style="--role-accent:#2563eb">
+          <span class="role-banner-label">Patient</span>
+          <h2 class="role-banner-title">Patient Portal</h2>
+          <p class="role-banner-desc">The Patient Portal gives individuals control over appointments, results, medications, UniHealth cover, payments, and KDPA privacy settings — without calling the front desk.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> Patients &amp; caregivers</span>
+            <span><strong>URL:</strong> /dashboard/patient</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-patient-signin">
+          <h2>Sign-in — Patient</h2>
+          <p>Patients sign in with national ID (or passport), UniHealth PIN, and mobile number — then SMS MFA.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 39 · Patient</span>
+              <strong>Select your role</strong>
+              <p>The Patient tile opens the self-service health records portal. Scroll the carousel if needed.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 40 · Patient</span>
+              <strong>Enter credentials</strong>
+              <p>Enter your ID type and number, 4-digit UniHealth PIN, and registered mobile number (+254 format).</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 41 · Patient</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Verify via SMS OTP sent to your registered phone. Demo: Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 42 · Patient</span>
+              <strong>Launch dashboard</strong>
+              <p>Success confirms Patient — UniHealth Self-Service. Launch opens My Dashboard at /dashboard/patient.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-patient-layout">
+          <h2>Dashboard layout</h2>
+          <p>The Patient Portal groups health, payments, privacy, and records in the sidebar.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>My Health</td><td>Dashboard, appointments, visits, results, medications, vitals</td></tr>
+            <tr><td>Payments</td><td>Cover, contributions, bills, make a payment</td></tr>
+            <tr><td>Privacy &amp; Security</td><td>KDPA consent controls</td></tr>
+            <tr><td>My Records</td><td>Health records, documents, e-sign, profile</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Data rights:</strong> Privacy & Consent lets you control sharing under KDPA 2019.</div>
+        </section>
+        <section class="manual-section" id="role-patient-health">
+          <h2>My Health tabs</h2>          <h3>My Dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/05-tab-my-dashboard.png" alt="My Dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 43 · Patient</span>
+              <strong>My Dashboard</strong>
+              <p>Personal health summary, quick links, and notifications.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Appointments</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/06-tab-appointments.png" alt="Appointments" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 44 · Patient</span>
+              <strong>Appointments</strong>
+              <p>Book, view, and manage upcoming appointments.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Visit History</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/07-tab-visit-history.png" alt="Visit History" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 45 · Patient</span>
+              <strong>Visit History</strong>
+              <p>Past encounters and facility visits.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Test Results</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/08-tab-test-results.png" alt="Test Results" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 46 · Patient</span>
+              <strong>Test Results</strong>
+              <p>Laboratory and diagnostic results as they are released.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Medications</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/09-tab-medications.png" alt="Medications" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 47 · Patient</span>
+              <strong>Medications</strong>
+              <p>Active prescriptions with refill request options.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Vitals &amp; Trends</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/10-tab-vitals-trends.png" alt="Vitals &amp; Trends" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 48 · Patient</span>
+              <strong>Vitals &amp; Trends</strong>
+              <p>Latest vitals and trend charts from your care team.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-patient-payments">
+          <h2>Payments tabs</h2>          <h3>My UniHealth Cover</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/11-tab-coverage.png" alt="My UniHealth Cover" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 49 · Patient</span>
+              <strong>My UniHealth Cover</strong>
+              <p>Benefits, claims status, and account linkage.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Contributions</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/12-tab-contributions.png" alt="Contributions" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 50 · Patient</span>
+              <strong>Contributions</strong>
+              <p>Monthly contribution payment history.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Bills &amp; Invoices</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/13-tab-bills.png" alt="Bills &amp; Invoices" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 51 · Patient</span>
+              <strong>Bills &amp; Invoices</strong>
+              <p>Statements and downloadable invoices.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Make a Payment</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/14-tab-payments.png" alt="Make a Payment" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 52 · Patient</span>
+              <strong>Make a Payment</strong>
+              <p>M-PESA, M-TIBA, and other payment methods.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-patient-records">
+          <h2>Records &amp; privacy tabs</h2>          <h3>Privacy &amp; Consent</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/15-tab-consent.png" alt="Privacy &amp; Consent" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 53 · Patient</span>
+              <strong>Privacy &amp; Consent</strong>
+              <p>Granular consent toggles for data sharing.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Health Records</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/16-tab-records.png" alt="Health Records" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 54 · Patient</span>
+              <strong>Health Records</strong>
+              <p>Longitudinal health record summary.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Documents</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/17-tab-documents.png" alt="Documents" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 55 · Patient</span>
+              <strong>Documents</strong>
+              <p>Upload and view reports and files.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/18-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 56 · Patient</span>
+              <strong>E-Signatures</strong>
+              <p>Sign consent forms and power-of-attorney documents.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>My Profile</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="patient/images/19-tab-profile.png" alt="My Profile" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 57 · Patient</span>
+              <strong>My Profile</strong>
+              <p>Update contact details and account settings.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-patient-tips">
+          <h2>Tips &amp; troubleshooting — Patient</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Sign in with ID, PIN, and phone OTP.</li><li>Check My Dashboard for new results or messages.</li><li>Book appointments and review medications.</li><li>Manage Privacy &amp; Consent before sharing records.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>PIN rejected</td><td>Use 4-digit PIN from registration; contact facility if forgotten</td></tr>
+            <tr><td>Results not visible</td><td>Lab may not have released results; check Test Results after 24h</td></tr>
+            <tr><td>Payment failed</td><td>Confirm M-PESA number matches registered phone</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Not for emergencies:</strong> Call emergency services or visit A&E — this portal is not monitored 24/7.</div>
+        </section>
+      </div>
+      <div class="role-part" id="role-admin">
+        <header class="role-banner" style="--role-accent:#6d28d9">
+          <span class="role-banner-label">Administrator</span>
+          <h2 class="role-banner-title">Administrator Dashboard</h2>
+          <p class="role-banner-desc">The Admin Console is the facility control plane: user provisioning, facility registry, RBAC, AI monitoring, audit logs, and integration health for the entire pilot.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> System &amp; facility administrators</span>
+            <span><strong>URL:</strong> /dashboard/admin</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-admin-signin">
+          <h2>Sign-in — Administrator</h2>
+          <p>Administrators manage users, facilities, integrations, and security from the Admin Console.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 58 · Administrator</span>
+              <strong>Select your role</strong>
+              <p>The Administrator tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 59 · Administrator</span>
+              <strong>Enter credentials</strong>
+              <p>Enter HRIS Employee ID (e.g. ADMIN-KE-00441), email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 60 · Administrator</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 61 · Administrator</span>
+              <strong>Launch dashboard</strong>
+              <p>Confirms Administrator — UniHealth Pilot. Full admin console access granted.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-admin-layout">
+          <h2>Dashboard layout</h2>
+          <p>Admin Console sidebar spans main operations, clinical registries, security, and system settings.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>Main</td><td>Overview, users, facilities, county coverage</td></tr>
+            <tr><td>Clinical</td><td>Patient registry, staff directory, UniHealth integration</td></tr>
+            <tr><td>Security &amp; Intelligence</td><td>AI monitor, RBAC, audit log</td></tr>
+            <tr><td>System</td><td>Health, reports, settings</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Least privilege:</strong> Provision roles via RBAC — avoid sharing admin credentials.</div>
+        </section>
+        <section class="manual-section" id="role-admin-main">
+          <h2>Main tabs</h2>          <h3>Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/05-tab-overview.png" alt="Overview" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 62 · Administrator</span>
+              <strong>Overview</strong>
+              <p>System KPIs, quick actions, facility status, and live metrics.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>User Management</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/06-tab-user-management.png" alt="User Management" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 63 · Administrator</span>
+              <strong>User Management</strong>
+              <p>Create, edit, disable users; assign roles and facilities.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Facilities</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/07-tab-facilities.png" alt="Facilities" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 64 · Administrator</span>
+              <strong>Facilities</strong>
+              <p>Facility registry, levels, latency, and connection status.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>County Coverage</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/08-tab-county-coverage.png" alt="County Coverage" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 65 · Administrator</span>
+              <strong>County Coverage</strong>
+              <p>Geographic coverage map and county-level stats.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-admin-clinical">
+          <h2>Clinical registry tabs</h2>          <h3>Patient Registry</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/09-tab-patient-registry.png" alt="Patient Registry" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 66 · Administrator</span>
+              <strong>Patient Registry</strong>
+              <p>Search and manage registered patients across facilities.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Staff Directory</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/10-tab-staff-directory.png" alt="Staff Directory" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 67 · Administrator</span>
+              <strong>Staff Directory</strong>
+              <p>Clinical and operational staff roster.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>UniHealth Integration</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/11-tab-unihealth-integration.png" alt="UniHealth Integration" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 68 · Administrator</span>
+              <strong>UniHealth Integration</strong>
+              <p>Claims, biometric, and Practice 360 integration status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-admin-security">
+          <h2>Security &amp; system tabs</h2>          <h3>AI Monitor</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/12-tab-ai-monitor.png" alt="AI Monitor" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 69 · Administrator</span>
+              <strong>AI Monitor</strong>
+              <p>AI tier usage, anomaly counts, and WebSocket connection stats.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>RBAC &amp; Roles</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/13-tab-rbac.png" alt="RBAC &amp; Roles" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 70 · Administrator</span>
+              <strong>RBAC &amp; Roles</strong>
+              <p>Role definitions and permission matrix.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Audit Log</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/14-tab-audit-log.png" alt="Audit Log" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 71 · Administrator</span>
+              <strong>Audit Log</strong>
+              <p>System-wide audit events and export.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/15-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 72 · Administrator</span>
+              <strong>System Health</strong>
+              <p>Gateway, database, and service health checks.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/16-tab-reports.png" alt="Reports" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 73 · Administrator</span>
+              <strong>Reports</strong>
+              <p>Operational and compliance report generation.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Settings</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="admin/images/17-tab-settings.png" alt="Settings" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 74 · Administrator</span>
+              <strong>Settings</strong>
+              <p>Policy toggles, feature flags, and facility defaults.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-admin-tips">
+          <h2>Tips &amp; troubleshooting — Administrator</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Review Overview for alerts and offline facilities.</li><li>Process User Management requests from HR.</li><li>Scan Audit Log for failed auth attempts.</li><li>Check System Health before go-live windows.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>Cannot create user</td><td>Verify RBAC permissions and unique email</td></tr>
+            <tr><td>Facility shows offline</td><td>Check gateway and KMHFL sync job</td></tr>
+            <tr><td>Metrics stale</td><td>Prometheus/metrics endpoint on :8100</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Audit everything:</strong> Admin actions are logged — document changes in change-management tickets.</div>
+        </section>
+      </div>
+      <div class="role-part" id="role-lab">
+        <header class="role-banner" style="--role-accent:#b45309">
+          <span class="role-banner-label">Laboratory</span>
+          <h2 class="role-banner-title">Laboratory Dashboard</h2>
+          <p class="role-banner-desc">The Laboratory portal spans specimen collection through results entry, QC, imaging modalities, specialised labs, and compliance reporting for diagnostic services.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> Laboratory &amp; diagnostic imaging staff</span>
+            <span><strong>URL:</strong> /dashboard/lab</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-lab-signin">
+          <h2>Sign-in — Laboratory</h2>
+          <p>Lab staff sign in with Laboratory Staff ID, email, password, and MFA.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 75 · Laboratory</span>
+              <strong>Select your role</strong>
+              <p>The Laboratory tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 76 · Laboratory</span>
+              <strong>Enter credentials</strong>
+              <p>Enter Laboratory Staff ID (e.g. LAB-KE-00231), email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 77 · Laboratory</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 78 · Laboratory</span>
+              <strong>Launch dashboard</strong>
+              <p>Confirms Laboratory — Diagnostic Services. Opens Lab &amp; Imaging portal.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-lab-layout">
+          <h2>Dashboard layout</h2>
+          <p>The lab dashboard covers core workflow, imaging modalities, specialised labs, and compliance.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>Lab Workflow</td><td>Collection, test queue, results entry, QC</td></tr>
+            <tr><td>Diagnostic Imaging</td><td>X-ray, MRI/CT, ultrasound, mammography, nuclear</td></tr>
+            <tr><td>Specialised Labs</td><td>Pathology, microbiology, blood bank, molecular</td></tr>
+            <tr><td>Inventory &amp; Compliance</td><td>Reagents, reports, audit, health</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Critical values:</strong> Acknowledge and escalate per protocol when entering abnormal results.</div>
+        </section>
+        <section class="manual-section" id="role-lab-workflow">
+          <h2>Lab workflow tabs</h2>          <h3>Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/05-tab-overview.png" alt="Overview" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 79 · Laboratory</span>
+              <strong>Overview</strong>
+              <p>Daily KPIs: pending collections, queue depth, studies, and QC status.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Sample Collection</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/06-tab-sample-collection.png" alt="Sample Collection" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 80 · Laboratory</span>
+              <strong>Sample Collection</strong>
+              <p>Barcode collection workflow and pending draws.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Test Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/07-tab-test-queue.png" alt="Test Queue" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 81 · Laboratory</span>
+              <strong>Test Queue</strong>
+              <p>Active orders awaiting processing.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Results Entry</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/08-tab-results-entry.png" alt="Results Entry" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 82 · Laboratory</span>
+              <strong>Results Entry</strong>
+              <p>Enter and validate results; triggers critical alerts.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Quality Control</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/09-tab-quality-control.png" alt="Quality Control" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 83 · Laboratory</span>
+              <strong>Quality Control</strong>
+              <p>QC runs, Westgard rules, and instrument calibration.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-lab-imaging">
+          <h2>Diagnostic imaging tabs</h2>          <h3>All Imaging</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/10-tab-all-imaging.png" alt="All Imaging" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 84 · Laboratory</span>
+              <strong>All Imaging</strong>
+              <p>Combined imaging worklist across modalities.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>X-Ray</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/11-tab-xray.png" alt="X-Ray" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 85 · Laboratory</span>
+              <strong>X-Ray</strong>
+              <p>Radiography orders and reporting queue.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>MRI / CT</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/12-tab-mri-ct.png" alt="MRI / CT" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 86 · Laboratory</span>
+              <strong>MRI / CT</strong>
+              <p>Cross-sectional imaging schedule and results.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Ultrasound</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/13-tab-ultrasound.png" alt="Ultrasound" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 87 · Laboratory</span>
+              <strong>Ultrasound</strong>
+              <p>Sonography studies and worksheets.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Mammography</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/14-tab-mammography.png" alt="Mammography" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 88 · Laboratory</span>
+              <strong>Mammography</strong>
+              <p>Screening and diagnostic mammography queue.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Nuclear Medicine</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/15-tab-nuclear.png" alt="Nuclear Medicine" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 89 · Laboratory</span>
+              <strong>Nuclear Medicine</strong>
+              <p>PET/SPECT and nuclear medicine orders.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-lab-specialised">
+          <h2>Specialised &amp; compliance tabs</h2>          <h3>Pathology</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/16-tab-pathology.png" alt="Pathology" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 90 · Laboratory</span>
+              <strong>Pathology</strong>
+              <p>Histopathology and cytology workflows.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Microbiology</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/17-tab-microbiology.png" alt="Microbiology" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 91 · Laboratory</span>
+              <strong>Microbiology</strong>
+              <p>Culture, sensitivity, and infection reporting.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Blood Bank</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/18-tab-blood-bank.png" alt="Blood Bank" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 92 · Laboratory</span>
+              <strong>Blood Bank</strong>
+              <p>Cross-match, issue, and inventory.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Molecular Dx</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/19-tab-molecular.png" alt="Molecular Dx" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 93 · Laboratory</span>
+              <strong>Molecular Dx</strong>
+              <p>PCR and molecular diagnostic panels.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Reagents &amp; Supplies</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/20-tab-reagents.png" alt="Reagents &amp; Supplies" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 94 · Laboratory</span>
+              <strong>Reagents &amp; Supplies</strong>
+              <p>Stock levels and reorder alerts.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/21-tab-reports.png" alt="Reports" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 95 · Laboratory</span>
+              <strong>Reports</strong>
+              <p>Turnaround, workload, and regulatory reports.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Audit Trail</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/22-tab-audit.png" alt="Audit Trail" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 96 · Laboratory</span>
+              <strong>Audit Trail</strong>
+              <p>Specimen and result audit history.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="lab/images/23-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 97 · Laboratory</span>
+              <strong>System Health</strong>
+              <p>LIS connectivity and gateway status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-lab-tips">
+          <h2>Tips &amp; troubleshooting — Laboratory</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Check Overview KPIs at shift start.</li><li>Process Sample Collection then Test Queue.</li><li>Enter Results with QC verification.</li><li>Route critical values to ordering clinicians.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>Order not in queue</td><td>Verify doctor order reached gateway; refresh polling</td></tr>
+            <tr><td>QC fail</td><td>Hold instrument; repeat controls per SOP</td></tr>
+            <tr><td>Imaging study missing</td><td>Check referring clinician order in imaging tab</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Result verification:</strong> Dual-check critical results before release where policy requires.</div>
+        </section>
+      </div>
+      <div class="role-part" id="role-pharmacy">
+        <header class="role-banner" style="--role-accent:#be123c">
+          <span class="role-banner-label">Pharmacy</span>
+          <h2 class="role-banner-title">Pharmacy Dashboard</h2>
+          <p class="role-banner-desc">The Pharmacy workstation covers the full dispensing loop: Rx queue, clinical verification, stock and KEMSA orders, interaction checks, and ModelCover claims.</p>
+          <div class="role-banner-meta">
+            <span><strong>Audience:</strong> Pharmacists &amp; dispensing staff</span>
+            <span><strong>URL:</strong> /dashboard/pharmacy</span>
+          </div>
+        </header>
+        <section class="manual-section" id="role-pharmacy-signin">
+          <h2>Sign-in — Pharmacy</h2>
+          <p>Pharmacy staff sign in with Pharmacy Registration ID, email, password, and MFA.</p>
+          <h3>Step 1 — Select your role</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/01-signin-role-selected.png" alt="Select your role" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 98 · Pharmacy</span>
+              <strong>Select your role</strong>
+              <p>The Pharmacy tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 2 — Enter credentials</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/02-signin-credentials.png" alt="Enter credentials" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 99 · Pharmacy</span>
+              <strong>Enter credentials</strong>
+              <p>Enter Pharmacy Registration ID (e.g. PHARM-00441), email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 3 — Multi-factor authentication</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/03-signin-mfa.png" alt="Multi-factor authentication" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 100 · Pharmacy</span>
+              <strong>Multi-factor authentication</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+          <h3>Step 4 — Launch dashboard</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/04-signin-launch.png" alt="Launch dashboard" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 101 · Pharmacy</span>
+              <strong>Launch dashboard</strong>
+              <p>Confirms Pharmacy — Clinical Dispensing. Opens dispensing workstation.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-pharmacy-layout">
+          <h2>Dashboard layout</h2>
+          <p>Pharmacy portal sidebar covers dispensing, inventory, clinical checks, and compliance.</p>
+          <table class="manual-table">
+            <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+            <tbody>
+            <tr><td>Dispensing</td><td>Overview, Rx queue, verify, patient lookup, compounding</td></tr>
+            <tr><td>Inventory</td><td>Stock, reorder, KEMSA, claims, vaccinations</td></tr>
+            <tr><td>Clinical</td><td>Drug interactions and pharmacist interventions</td></tr>
+            <tr><td>Security &amp; Compliance</td><td>Audit trail, API reference, system health</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Verify before dispense:</strong> Always complete Verify & Approve for high-risk medications.</div>
+        </section>
+        <section class="manual-section" id="role-pharmacy-dispensing">
+          <h2>Dispensing tabs</h2>          <h3>Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/05-tab-overview.png" alt="Overview" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 102 · Pharmacy</span>
+              <strong>Overview</strong>
+              <p>Shift summary: pending Rx, stock alerts, and KPI cards.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Prescription Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/06-tab-prescription-queue.png" alt="Prescription Queue" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 103 · Pharmacy</span>
+              <strong>Prescription Queue</strong>
+              <p>Incoming prescriptions from clinicians — priority sorted.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Verify &amp; Approve</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/07-tab-verify-approve.png" alt="Verify &amp; Approve" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 104 · Pharmacy</span>
+              <strong>Verify &amp; Approve</strong>
+              <p>Clinical verification before dispensing.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Patient Lookup</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/08-tab-patient-lookup.png" alt="Patient Lookup" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 105 · Pharmacy</span>
+              <strong>Patient Lookup</strong>
+              <p>Search patient allergy and medication history.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Compounding</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/09-tab-compounding.png" alt="Compounding" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 106 · Pharmacy</span>
+              <strong>Compounding</strong>
+              <p>Non-sterile and sterile compounding workflows.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-pharmacy-inventory">
+          <h2>Inventory tabs</h2>          <h3>Stock Levels</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/10-tab-stock-levels.png" alt="Stock Levels" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 107 · Pharmacy</span>
+              <strong>Stock Levels</strong>
+              <p>Real-time inventory with low-stock badges.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Reorder List</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/11-tab-reorder-list.png" alt="Reorder List" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 108 · Pharmacy</span>
+              <strong>Reorder List</strong>
+              <p>Items below minimum — generate purchase requests.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>KEMSA Orders</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/12-tab-kemsa-orders.png" alt="KEMSA Orders" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 109 · Pharmacy</span>
+              <strong>KEMSA Orders</strong>
+              <p>Kenya Medical Supplies Authority order tracking.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>ModelCover Claims</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/13-tab-claims.png" alt="ModelCover Claims" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 110 · Pharmacy</span>
+              <strong>ModelCover Claims</strong>
+              <p>Insurance claim submission for dispensed items.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Vaccinations</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/14-tab-vaccinations.png" alt="Vaccinations" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 111 · Pharmacy</span>
+              <strong>Vaccinations</strong>
+              <p>Immunisation stock and administration log.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-pharmacy-clinical">
+          <h2>Clinical &amp; compliance tabs</h2>          <h3>Drug Interactions</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/15-tab-drug-interactions.png" alt="Drug Interactions" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 112 · Pharmacy</span>
+              <strong>Drug Interactions</strong>
+              <p>Interaction checker for new prescriptions.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Pharmacist Notes</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/16-tab-pharmacist-notes.png" alt="Pharmacist Notes" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 113 · Pharmacy</span>
+              <strong>Pharmacist Notes</strong>
+              <p>Interventions and counselling documentation.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>Audit Trail</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/17-tab-audit.png" alt="Audit Trail" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 114 · Pharmacy</span>
+              <strong>Audit Trail</strong>
+              <p>Dispensing and stock movement audit log.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>API Reference</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/18-tab-api-reference.png" alt="API Reference" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 115 · Pharmacy</span>
+              <strong>API Reference</strong>
+              <p>Integration endpoints for external systems.</p>
+            </figcaption>
+          </div>
+        </figure>
+          <h3>System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="pharmacy/images/19-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" decoding="async" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 116 · Pharmacy</span>
+              <strong>System Health</strong>
+              <p>Gateway and inventory sync status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        </section>
+        <section class="manual-section" id="role-pharmacy-tips">
+          <h2>Tips &amp; troubleshooting — Pharmacy</h2>
+          <h3>Recommended daily workflow</h3><ol class="steps"><li>Review Overview and Prescription Queue.</li><li>Verify &amp; Approve each Rx — check interactions.</li><li>Dispense and update stock levels.</li><li>Process KEMSA reorders before cutoff.</li></ol>
+          <h3>Common issues</h3>
+          <table class="manual-table">
+            <thead><tr><th>Issue</th><th>What to do</th></tr></thead>
+            <tbody>
+            <tr><td>Rx queue empty</td><td>Confirm clinician orders reached /pharmacy API</td></tr>
+            <tr><td>Stock mismatch</td><td>Run stock reconcile; check audit trail</td></tr>
+            <tr><td>Interaction alert</td><td>Contact prescriber before overriding</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Patient safety:</strong> Never bypass verification for look-alike/sound-alike drugs.</div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Administrator Dashboard Manual</title>
+  <link rel="stylesheet" href="../shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap">
+    <nav class="manual-toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#signin">Sign-in (Administrator)</a></li>
+        <li><a href="#layout">Dashboard layout</a></li>
+        <li><a href="#main">Main tabs</a></li>
+        <li><a href="#clinical">Clinical registry tabs</a></li>
+        <li><a href="#security">Security &amp; system tabs</a></li>
+        <li><a href="#tips">Tips &amp; troubleshooting</a></li>
+      </ol>
+    </nav>
+
+    <main class="manual-main">
+      <header class="manual-header" id="intro">
+        <h1>Administrator Dashboard Manual</h1>
+        <p class="subtitle">Facility control, users, RBAC, AI monitoring, and system administration.</p>
+        <div class="manual-meta">
+          <span><strong>Audience:</strong> System &amp; facility administrators</span>
+          <span><strong>URL:</strong> /dashboard/admin</span>
+          <span><strong>Version:</strong> Pilot 2026</span>
+        </div>
+      </header>
+
+      <section class="manual-section" id="signin">
+        <h2>1. Sign-in — Administrator</h2>
+        <p>Administrators manage users, facilities, integrations, and security from the Admin Console.</p>
+
+        <h3>Step 1 — Select role</h3>
+        <p>The Administrator tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/01-signin-role-selected.png" alt="Sign-in with Administrator selected" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 1</span>
+              <strong>Role selection — Administrator</strong>
+              <p>The Administrator tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 2 — Enter credentials</h3>
+        <p>Enter HRIS Employee ID (e.g. ADMIN-KE-00441), email, and password.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/02-signin-credentials.png" alt="Administrator credentials form" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 2</span>
+              <strong>Administrator credentials</strong>
+              <p>Enter HRIS Employee ID (e.g. ADMIN-KE-00441), email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 3 — Verify MFA</h3>
+        <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/03-signin-mfa.png" alt="MFA verification step" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 3</span>
+              <strong>MFA verification</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 4 — Launch dashboard</h3>
+        <p>Confirms Administrator — UniHealth Pilot. Full admin console access granted.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/04-signin-launch.png" alt="Launch dashboard success screen" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 4</span>
+              <strong>Ready to launch</strong>
+              <p>Confirms Administrator — UniHealth Pilot. Full admin console access granted.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+      </section>
+
+      <section class="manual-section" id="layout">
+        <h2>2. Dashboard layout</h2>
+        <p>Admin Console sidebar spans main operations, clinical registries, security, and system settings.</p>
+        <table class="manual-table">
+          <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Main</td><td>Overview, users, facilities, county coverage</td></tr>
+            <tr><td>Clinical</td><td>Patient registry, staff directory, UniHealth integration</td></tr>
+            <tr><td>Security &amp; Intelligence</td><td>AI monitor, RBAC, audit log</td></tr>
+            <tr><td>System</td><td>Health, reports, settings</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Least privilege:</strong> Provision roles via RBAC — avoid sharing admin credentials.</div>
+      </section>
+
+      <section class="manual-section" id="main">
+        <h2>3. Main tabs</h2>
+        <h3 id="tab-overview">Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/05-tab-overview.png" alt="Overview" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 5</span>
+              <strong>Overview</strong>
+              <p>System KPIs, quick actions, facility status, and live metrics.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-user-management">User Management</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/06-tab-user-management.png" alt="User Management" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 6</span>
+              <strong>User Management</strong>
+              <p>Create, edit, disable users; assign roles and facilities.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-facilities">Facilities</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/07-tab-facilities.png" alt="Facilities" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 7</span>
+              <strong>Facilities</strong>
+              <p>Facility registry, levels, latency, and connection status.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-county-coverage">County Coverage</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/08-tab-county-coverage.png" alt="County Coverage" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 8</span>
+              <strong>County Coverage</strong>
+              <p>Geographic coverage map and county-level stats.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="clinical">
+        <h2>4. Clinical registry tabs</h2>
+        <h3 id="tab-patient-registry">Patient Registry</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/09-tab-patient-registry.png" alt="Patient Registry" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 9</span>
+              <strong>Patient Registry</strong>
+              <p>Search and manage registered patients across facilities.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-staff-directory">Staff Directory</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/10-tab-staff-directory.png" alt="Staff Directory" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 10</span>
+              <strong>Staff Directory</strong>
+              <p>Clinical and operational staff roster.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-unihealth-integration">UniHealth Integration</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/11-tab-unihealth-integration.png" alt="UniHealth Integration" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 11</span>
+              <strong>UniHealth Integration</strong>
+              <p>Claims, biometric, and Practice 360 integration status.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="security">
+        <h2>5. Security &amp; system tabs</h2>
+        <h3 id="tab-ai-monitor">AI Monitor</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/12-tab-ai-monitor.png" alt="AI Monitor" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 12</span>
+              <strong>AI Monitor</strong>
+              <p>AI tier usage, anomaly counts, and WebSocket connection stats.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-rbac">RBAC &amp; Roles</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/13-tab-rbac.png" alt="RBAC &amp; Roles" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 13</span>
+              <strong>RBAC &amp; Roles</strong>
+              <p>Role definitions and permission matrix.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-audit-log">Audit Log</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/14-tab-audit-log.png" alt="Audit Log" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 14</span>
+              <strong>Audit Log</strong>
+              <p>System-wide audit events and export.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-system-health">System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/15-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 15</span>
+              <strong>System Health</strong>
+              <p>Gateway, database, and service health checks.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-reports">Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/16-tab-reports.png" alt="Reports" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 16</span>
+              <strong>Reports</strong>
+              <p>Operational and compliance report generation.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-settings">Settings</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/17-tab-settings.png" alt="Settings" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 17</span>
+              <strong>Settings</strong>
+              <p>Policy toggles, feature flags, and facility defaults.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="tips">
+        <h2>6. Tips &amp; troubleshooting</h2>
+        <h3>Recommended workflow</h3><ol class="steps"><li>Review Overview for alerts and offline facilities.</li><li>Process User Management requests from HR.</li><li>Scan Audit Log for failed auth attempts.</li><li>Check System Health before go-live windows.</li></ol>
+        <h3>Common issues</h3>
+        <table class="manual-table">
+          <thead><tr><th>Issue</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Cannot create user</td><td>Verify RBAC permissions and unique email</td></tr>
+            <tr><td>Facility shows offline</td><td>Check gateway and KMHFL sync job</td></tr>
+            <tr><td>Metrics stale</td><td>Prometheus/metrics endpoint on :8100</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Audit everything:</strong> Admin actions are logged — document changes in change-management tickets.</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Innovation Metrics Canvas</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #0f172a;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .canvas {
+      width: 277mm;
+      min-height: 190mm;
+      margin: 0 auto;
+      padding: 8mm;
+      background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 50%, #ecfdf5 100%);
+      border: 2px solid #0d9488;
+      border-radius: 4mm;
+    }
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 6mm;
+      padding-bottom: 5mm;
+      border-bottom: 2px solid #0d9488;
+      margin-bottom: 5mm;
+    }
+    .header h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #0f766e;
+      letter-spacing: -0.02em;
+    }
+    .header .sub {
+      font-size: 9pt;
+      color: #64748b;
+      margin-top: 2mm;
+      max-width: 140mm;
+      line-height: 1.45;
+    }
+    .badge {
+      text-align: right;
+      font-size: 8pt;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .badge strong { color: #0f766e; display: block; font-size: 9pt; }
+    .eyebrow {
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #0d9488;
+      margin-bottom: 2mm;
+    }
+    .grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3mm;
+      margin-bottom: 5mm;
+    }
+    .kpi {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 3mm;
+      padding: 4mm 3mm;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .kpi .val {
+      font-size: 18pt;
+      font-weight: 800;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi .lbl {
+      font-size: 6.5pt;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-top: 2mm;
+      line-height: 1.3;
+    }
+    .c-cyan { color: #0891b2; }
+    .c-green { color: #059669; }
+    .c-purple { color: #7c3aed; }
+    .c-amber { color: #d97706; }
+    .c-blue { color: #2563eb; }
+    .c-rose { color: #e11d48; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4mm;
+      margin-bottom: 4mm;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 3mm;
+      padding: 4mm;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+    .panel h2 {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #134e4a;
+      margin-bottom: 3mm;
+      padding-bottom: 2mm;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .ai-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5mm;
+    }
+    .ai-item {
+      padding: 2.5mm;
+      border-radius: 2mm;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+    }
+    .ai-item .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.5mm;
+    }
+    .ai-item .name { font-size: 7.5pt; font-weight: 700; }
+    .ai-item .pct { font-size: 8pt; font-weight: 800; }
+    .ai-item p {
+      font-size: 6.5pt;
+      color: #475569;
+      line-height: 1.4;
+      margin-bottom: 2mm;
+    }
+    .bar {
+      height: 2mm;
+      background: #e2e8f0;
+      border-radius: 1mm;
+      overflow: hidden;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: 1mm;
+    }
+    .impact-list {
+      list-style: none;
+      font-size: 7pt;
+      line-height: 1.45;
+    }
+    .impact-list li {
+      padding: 2mm 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: grid;
+      grid-template-columns: 28mm 1fr;
+      gap: 2mm;
+    }
+    .impact-list li:last-child { border-bottom: none; }
+    .impact-list .old { color: #94a3b8; text-decoration: line-through; }
+    .impact-list .new { color: #0f172a; font-weight: 600; }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 4mm;
+    }
+    .compliance {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2mm;
+    }
+    .comp {
+      padding: 2.5mm;
+      background: #f8fafc;
+      border-radius: 2mm;
+      border-left: 3px solid var(--accent, #0d9488);
+    }
+    .comp .t { font-size: 7pt; font-weight: 800; color: #0f172a; }
+    .comp .s { font-size: 6pt; color: #64748b; margin-top: 1mm; line-height: 1.35; }
+
+    .footer {
+      margin-top: 4mm;
+      padding-top: 3mm;
+      border-top: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      font-size: 6.5pt;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <header class="header">
+      <div>
+        <p class="eyebrow">Kenya Pilot · Phase 1 · 2026</p>
+        <h1>Innovation Metrics Canvas</h1>
+        <p class="sub">Real-world performance and impact measures from the UniHealth digital health platform — clinical AI, interoperability, and operational scale across linked facilities.</p>
+      </div>
+      <div class="badge">
+        <strong>UniHealth EHR</strong>
+        Kenya National Hospital Pilot<br />
+        FHIR R5 · KDPA 2019 · ISO 27001<br />
+        DOC-INNOV-001 · June 2026
+      </div>
+    </header>
+
+    <p class="eyebrow">Platform scale — by the numbers</p>
+    <div class="grid-kpi">
+      <div class="kpi"><div class="val c-cyan">47,280</div><div class="lbl">Registered patients</div></div>
+      <div class="kpi"><div class="val c-green">380+</div><div class="lbl">Active clinicians</div></div>
+      <div class="kpi"><div class="val c-purple">12</div><div class="lbl">Pilot facilities</div></div>
+      <div class="kpi"><div class="val c-amber">99.7%</div><div class="lbl">Uptime SLA</div></div>
+      <div class="kpi"><div class="val c-blue">100%</div><div class="lbl">AI accuracy (pilot)</div></div>
+      <div class="kpi"><div class="val c-rose">2,100+</div><div class="lbl">Appointments booked</div></div>
+    </div>
+
+    <div class="main-grid">
+      <section class="panel">
+        <h2>AI innovation metrics — embedded clinical intelligence</h2>
+        <div class="ai-grid">
+          <div class="ai-item">
+            <div class="row"><span class="name c-cyan">Diagnosis hints</span><span class="pct c-cyan">99%</span></div>
+            <p>Differential suggestions from vitals, symptoms, and labs with confidence scores and ICD-10 codes.</p>
+            <div class="bar"><span class="c-cyan" style="width:99%;background:#0891b2"></span></div>
+          </div>
+          <div class="ai-item">
+            <div class="row"><span class="name c-green">Drug interaction check</span><span class="pct c-green">99%</span></div>
+            <p>Real-time cross-reference against active medications before every prescription is confirmed.</p>
+            <div class="bar"><span style="width:99%;background:#059669"></span></div>
+          </div>
+          <div class="ai-item">
+            <div class="row"><span class="name c-rose">Critical value alerts</span><span class="pct c-rose">99%</span></div>
+            <p>Life-threatening lab thresholds escalated to the attending doctor within 5 seconds of entry.</p>
+            <div class="bar"><span style="width:99%;background:#e11d48"></span></div>
+          </div>
+          <div class="ai-item">
+            <div class="row"><span class="name c-amber">Anomaly detection</span><span class="pct c-amber">100%</span></div>
+            <p>Longitudinal vital and lab-trend analysis surfaces deterioration before it is clinically obvious.</p>
+            <div class="bar"><span style="width:100%;background:#d97706"></span></div>
+          </div>
+          <div class="ai-item">
+            <div class="row"><span class="name c-purple">Bed demand forecasting</span><span class="pct c-purple">99%</span></div>
+            <p>48-hour ward occupancy prediction to reduce A&amp;E overcrowding and improve capacity planning.</p>
+            <div class="bar"><span style="width:99%;background:#7c3aed"></span></div>
+          </div>
+          <div class="ai-item">
+            <div class="row"><span class="name c-blue">Patient risk scoring</span><span class="pct c-blue">99%</span></div>
+            <p>NEWS2-style early-warning score on nurse triage screens from vitals, age, and comorbidities.</p>
+            <div class="bar"><span style="width:99%;background:#2563eb"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Clinical &amp; operational transformation</h2>
+        <ul class="impact-list">
+          <li><span class="old">Paper files lost</span><span class="new">Unified digital record follows the patient across facilities</span></li>
+          <li><span class="old">Results take days</span><span class="new">Lab results on the doctor dashboard in under 5 seconds</span></li>
+          <li><span class="old">Missed interactions</span><span class="new">AI flags contraindications before dispensing</span></li>
+          <li><span class="old">Repeated history</span><span class="new">Patient 360 — full story from any linked site</span></li>
+          <li><span class="old">Phone appointment books</span><span class="new">Real-time booking synced to nurses &amp; doctors</span></li>
+          <li><span class="old">No audit trail</span><span class="new">Append-only KDPA-compliant log on every action</span></li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="bottom-grid">
+      <section class="panel">
+        <h2>Interoperability &amp; compliance innovation</h2>
+        <div class="compliance">
+          <div class="comp" style="--accent:#059669"><div class="t">KDPA 2019</div><div class="s">Privacy, erasure &amp; portability rights</div></div>
+          <div class="comp" style="--accent:#0891b2"><div class="t">FHIR R5</div><div class="s">HL7 interoperable resource exchange</div></div>
+          <div class="comp" style="--accent:#7c3aed"><div class="t">ISO 27001</div><div class="s">Information security management</div></div>
+          <div class="comp" style="--accent:#d97706"><div class="t">MFA / OTP</div><div class="s">Biometric, SMS &amp; Practice 360 auth</div></div>
+          <div class="comp" style="--accent:#2563eb"><div class="t">KMHFL</div><div class="s">Live facility registry sync</div></div>
+          <div class="comp" style="--accent:#e11d48"><div class="t">HL7 CDA</div><div class="s">Clinical document architecture v2</div></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Pilot trajectory</h2>
+        <ul class="impact-list" style="grid-template-columns:1fr">
+          <li style="grid-template-columns:1fr"><span class="new">Phase 1 — 12 facilities live (2026)</span></li>
+          <li style="grid-template-columns:1fr"><span class="new">Phase 3 target — 47 KMHFL facilities by Q4 2026</span></li>
+          <li style="grid-template-columns:1fr"><span class="new">40% documentation time reduction (clinician survey)</span></li>
+          <li style="grid-template-columns:1fr"><span class="new">SBAR handover: 25 min → 5 min structured digital brief</span></li>
+        </ul>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <span>UniHealth Innovation Metrics Canvas · Pilot data · Not for clinical decision-making</span>
+      <span>unihealth.go.ke · Ministry of Health aligned</span>
+    </footer>
+  </div>
+</body>
+</html>

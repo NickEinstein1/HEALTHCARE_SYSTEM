@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Nurse Dashboard Manual</title>
+  <link rel="stylesheet" href="../shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap">
+    <nav class="manual-toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#signin">Sign-in (Nurse / CO)</a></li>
+        <li><a href="#layout">Dashboard layout</a></li>
+        <li><a href="#ward">Ward tabs</a></li>
+        <li><a href="#more">Extended care tabs</a></li>
+        <li><a href="#tips">Tips &amp; troubleshooting</a></li>
+      </ol>
+    </nav>
+
+    <main class="manual-main">
+      <header class="manual-header" id="intro">
+        <h1>Nurse Dashboard Manual</h1>
+        <p class="subtitle">Ward operations, vitals, MAR, triage, and handover — every nurse station tab documented.</p>
+        <div class="manual-meta">
+          <span><strong>Audience:</strong> Nurses &amp; clinical officers</span>
+          <span><strong>URL:</strong> /dashboard/nurse</span>
+          <span><strong>Version:</strong> Pilot 2026</span>
+        </div>
+      </header>
+
+      <section class="manual-section" id="signin">
+        <h2>1. Sign-in — Nurse / CO</h2>
+        <p>Nursing staff sign in with registration number, email, password, and MFA — same four-step flow as other clinicians.</p>
+
+        <h3>Step 1 — Select role</h3>
+        <p>The Nurse / CO tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/01-signin-role-selected.png" alt="Sign-in with Nurse / CO selected" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 1</span>
+              <strong>Role selection — Nurse / CO</strong>
+              <p>The Nurse / CO tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 2 — Enter credentials</h3>
+        <p>Enter Nursing Registration No. (e.g. RN/12345), institutional email, and password.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/02-signin-credentials.png" alt="Nurse / CO credentials form" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 2</span>
+              <strong>Nurse / CO credentials</strong>
+              <p>Enter Nursing Registration No. (e.g. RN/12345), institutional email, and password.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 3 — Verify MFA</h3>
+        <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/03-signin-mfa.png" alt="MFA verification step" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 3</span>
+              <strong>MFA verification</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 4 — Launch dashboard</h3>
+        <p>Confirms Nurse — Pilot Hospital B. Redirects to the Nursing Station dashboard.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/04-signin-launch.png" alt="Launch dashboard success screen" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 4</span>
+              <strong>Ready to launch</strong>
+              <p>Confirms Nurse — Pilot Hospital B. Redirects to the Nursing Station dashboard.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+      </section>
+
+      <section class="manual-section" id="layout">
+        <h2>2. Dashboard layout</h2>
+        <p>The Nurse Station sidebar groups ward workflows and extended care modules.</p>
+        <table class="manual-table">
+          <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Sidebar — Ward</td><td>Shift overview, patients, chart, triage, vitals, MAR, tasks, handover</td></tr>
+            <tr><td>Sidebar — More</td><td>Fluids, wounds, incidents, e-sign, supplies</td></tr>
+            <tr><td>Top bar</td><td>Shift context, search, alerts, sign-out</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Active patient:</strong> Chart and vitals tabs use the selected patient ID shown in the sidebar badge.</div>
+      </section>
+
+      <section class="manual-section" id="ward">
+        <h2>3. Ward tabs</h2>
+        <h3 id="tab-shift-overview">Shift Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/05-tab-shift-overview.png" alt="Shift Overview" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 5</span>
+              <strong>Shift Overview</strong>
+              <p>Start-of-shift summary: assigned patients, tasks due, ward alerts, and AI anomaly feed.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-my-patients">My Patients</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/06-tab-my-patients.png" alt="My Patients" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 6</span>
+              <strong>My Patients</strong>
+              <p>Roster of patients under your care with acuity and last-vitals indicators.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-patient-chart">Patient Chart</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/07-tab-patient-chart.png" alt="Patient Chart" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 7</span>
+              <strong>Patient Chart</strong>
+              <p>Read-only longitudinal view for the active patient — allergies, meds, obs.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-triage-queue">Triage Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/08-tab-triage-queue.png" alt="Triage Queue" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 8</span>
+              <strong>Triage Queue</strong>
+              <p>Emergency and walk-in triage queue with priority scoring.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-record-vitals">Record Vitals</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/09-tab-record-vitals.png" alt="Record Vitals" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 9</span>
+              <strong>Record Vitals</strong>
+              <p>Capture BP, HR, RR, temp, SpO₂, pain, and AVPU — body diagram assist.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-mar">MAR</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/10-tab-mar.png" alt="MAR" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 10</span>
+              <strong>MAR</strong>
+              <p>Medication Administration Record — due doses, given/refused/hold actions.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-tasks">Tasks</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/11-tab-tasks.png" alt="Tasks" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 11</span>
+              <strong>Tasks</strong>
+              <p>Care plan tasks and reminders with completion logging.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-handover">Handover</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/12-tab-handover.png" alt="Handover" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 12</span>
+              <strong>Handover</strong>
+              <p>SBAR-style shift handover notes for outgoing/incoming staff.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="more">
+        <h2>4. Extended care tabs</h2>
+        <h3 id="tab-fluid-balance">Fluid Balance</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/13-tab-fluid-balance.png" alt="Fluid Balance" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 13</span>
+              <strong>Fluid Balance</strong>
+              <p>Intake/output charting and fluid balance trends.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-wound-care">Wound Care</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/14-tab-wound-care.png" alt="Wound Care" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 14</span>
+              <strong>Wound Care</strong>
+              <p>Wound assessment documentation and dressing plans.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-incidents">Incidents</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/15-tab-incidents.png" alt="Incidents" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 15</span>
+              <strong>Incidents</strong>
+              <p>File and review clinical incident reports.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-esign">E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/16-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 16</span>
+              <strong>E-Signatures</strong>
+              <p>Consent and nursing document e-sign pipeline.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-supplies">Supplies</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/17-tab-supplies.png" alt="Supplies" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 17</span>
+              <strong>Supplies</strong>
+              <p>Ward supply requests and inventory levels.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="tips">
+        <h2>5. Tips &amp; troubleshooting</h2>
+        <h3>Recommended workflow</h3><ol class="steps"><li>Open Shift Overview and review assignments.</li><li>Process Triage Queue for new arrivals.</li><li>Record Vitals and administer MAR doses on schedule.</li><li>Complete Tasks and document Handover at shift end.</li></ol>
+        <h3>Common issues</h3>
+        <table class="manual-table">
+          <thead><tr><th>Issue</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Vitals not saving</td><td>Check gateway; confirm patient ID selected</td></tr>
+            <tr><td>MAR empty</td><td>Verify medication requests exist for patient via API</td></tr>
+            <tr><td>AI alerts silent</td><td>WebSocket connects direct to :8100 in dev; REST fallback polls every 15s</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Clinical responsibility:</strong> Vitals and MAR entries must be verified at bedside before submission.</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

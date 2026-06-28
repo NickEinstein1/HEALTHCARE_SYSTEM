@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UniHealth — Doctor Dashboard Manual</title>
+  <link rel="stylesheet" href="../shared/styles/manual.css" />
+</head>
+<body>
+  <div class="manual-wrap">
+    <nav class="manual-toc" aria-label="Table of contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#signin">Sign-in (Doctor)</a></li>
+        <li><a href="#layout">Dashboard layout</a></li>
+        <li><a href="#clinical">Clinical tabs</a></li>
+        <li><a href="#workflow">Workflow tabs</a></li>
+        <li><a href="#admin">Admin &amp; system tabs</a></li>
+        <li><a href="#tips">Tips &amp; troubleshooting</a></li>
+      </ol>
+    </nav>
+
+    <main class="manual-main">
+      <header class="manual-header" id="intro">
+        <h1>Doctor Dashboard Manual</h1>
+        <p class="subtitle">Sign-in, navigation, and every clinical workstation tab — with annotated screenshots.</p>
+        <div class="manual-meta">
+          <span><strong>Audience:</strong> Physicians &amp; specialists</span>
+          <span><strong>URL:</strong> /dashboard/doctor</span>
+          <span><strong>Version:</strong> Pilot 2026</span>
+        </div>
+      </header>
+
+      <section class="manual-section" id="signin">
+        <h2>1. Sign-in — Doctor</h2>
+        <p>Doctors use the four-step staff sign-in: select role → credentials → MFA → launch dashboard.</p>
+
+        <h3>Step 1 — Select role</h3>
+        <p>The Doctor tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/01-signin-role-selected.png" alt="Sign-in with Doctor selected" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 1</span>
+              <strong>Role selection — Doctor</strong>
+              <p>The Doctor tile is highlighted in the role carousel. The audit panel logs authentication events for compliance.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 2 — Enter credentials</h3>
+        <p>Enter Medical Registration No. (e.g. A4821), institutional email, and password. Policy requires uppercase, numbers, and ≥8 characters.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/02-signin-credentials.png" alt="Doctor credentials form" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 2</span>
+              <strong>Doctor credentials</strong>
+              <p>Enter Medical Registration No. (e.g. A4821), institutional email, and password. Policy requires uppercase, numbers, and ≥8 characters.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 3 — Verify MFA</h3>
+        <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/03-signin-mfa.png" alt="MFA verification step" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 3</span>
+              <strong>MFA verification</strong>
+              <p>Enter the six-digit OTP sent to your institutional email. In staging/demo, use Practice 360 or OTP 123456.</p>
+            </figcaption>
+          </div>
+        </figure>
+
+        <h3>Step 4 — Launch dashboard</h3>
+        <p>Confirms Doctor — Pilot Hospital A. Session token authorises API calls to the gateway (staging port 8100).</p>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/04-signin-launch.png" alt="Launch dashboard success screen" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 4</span>
+              <strong>Ready to launch</strong>
+              <p>Confirms Doctor — Pilot Hospital A. Session token authorises API calls to the gateway (staging port 8100).</p>
+            </figcaption>
+          </div>
+        </figure>
+
+      </section>
+
+      <section class="manual-section" id="layout">
+        <h2>2. Dashboard layout</h2>
+        <p>The Clinical Workstation is organised into sidebar sections and a live top bar.</p>
+        <table class="manual-table">
+          <thead><tr><th>Zone</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Sidebar — Clinical</td><td>Overview, chart, queue, workup, ward, labs, Rx, imaging</td></tr>
+            <tr><td>Sidebar — Workflow</td><td>Notes, incidents, e-sign, referrals, procedures, claims, schedule</td></tr>
+            <tr><td>Sidebar — Admin</td><td>Audit trail and system health</td></tr>
+            <tr><td>Top bar</td><td>Page title, patient context, search, notifications</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>Active patient:</strong> Many tabs use the selected patient ID (badge on Patient Chart). Re-select from queue or ward before ordering.</div>
+      </section>
+
+      <section class="manual-section" id="clinical">
+        <h2>3. Clinical tabs</h2>
+        <h3 id="tab-home-overview">Today's Overview</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/05-tab-home-overview.png" alt="Today's Overview" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 5</span>
+              <strong>Today's Overview</strong>
+              <p>Shift command centre: KPIs, AI alerts, ward badges. Polls every 5–8s when API is live.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-patient-chart">Patient Chart</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/06-tab-patient-chart.png" alt="Patient Chart" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 6</span>
+              <strong>Patient Chart</strong>
+              <p>Longitudinal record: demographics, allergies, conditions, medications, observations.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-patient-queue">Patient Queue</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/07-tab-patient-queue.png" alt="Patient Queue" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 7</span>
+              <strong>Patient Queue</strong>
+              <p>Outpatient waiting list with triage priority. Select a row to set the active patient.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-patient-workup">Patient Workup</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/08-tab-patient-workup.png" alt="Patient Workup" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 8</span>
+              <strong>Patient Workup</strong>
+              <p>Structured assessment, AI risk score (pilot), clinical AI panel, and e-sign links.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-ward-beds">Ward / Beds</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/09-tab-ward-beds.png" alt="Ward / Beds" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 9</span>
+              <strong>Ward / Beds</strong>
+              <p>Inpatient bed map, occupancy status, and ward capacity forecast.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-labs">Lab Orders &amp; Results</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/10-tab-labs.png" alt="Lab Orders &amp; Results" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 10</span>
+              <strong>Lab Orders &amp; Results</strong>
+              <p>Place lab orders and review results; critical values per local protocol.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-prescriptions">Prescriptions</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/11-tab-prescriptions.png" alt="Prescriptions" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 11</span>
+              <strong>Prescriptions</strong>
+              <p>Compose medication orders — drug, dose, route — sent to pharmacy queue.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-imaging">Imaging &amp; Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/12-tab-imaging.png" alt="Imaging &amp; Reports" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 12</span>
+              <strong>Imaging &amp; Reports</strong>
+              <p>Request radiology studies and track report status.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="workflow">
+        <h2>4. Workflow tabs</h2>
+        <h3 id="tab-clinical-notes">Clinical Notes</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/13-tab-clinical-notes.png" alt="Clinical Notes" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 13</span>
+              <strong>Clinical Notes</strong>
+              <p>Progress, admission, discharge, and procedure notes — audit-logged on save.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-incidents">Incident Reports</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/14-tab-incidents.png" alt="Incident Reports" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 14</span>
+              <strong>Incident Reports</strong>
+              <p>Patient-linked incident reports for governance and quality.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-esign">E-Signatures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/15-tab-esign.png" alt="E-Signatures" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 15</span>
+              <strong>E-Signatures</strong>
+              <p>Upload → AI Review → Sign → Verify document pipeline.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-referrals">Referrals</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/16-tab-referrals.png" alt="Referrals" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 16</span>
+              <strong>Referrals</strong>
+              <p>Inter-facility referrals with hospital, department, and patient pickers.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-procedures">Procedures</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/17-tab-procedures.png" alt="Procedures" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 17</span>
+              <strong>Procedures</strong>
+              <p>Log planned or completed procedures; links to e-sign consent.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-claims">UniHealth Claims</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/18-tab-claims.png" alt="UniHealth Claims" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 18</span>
+              <strong>UniHealth Claims</strong>
+              <p>Insurance and cover claims initiation and tracking.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-schedule">My Schedule</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/19-tab-schedule.png" alt="My Schedule" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 19</span>
+              <strong>My Schedule</strong>
+              <p>Clinic blocks and theatre slots for the week.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="admin">
+        <h2>5. Admin &amp; system tabs</h2>
+        <h3 id="tab-audit">Audit Trail</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/20-tab-audit.png" alt="Audit Trail" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 20</span>
+              <strong>Audit Trail</strong>
+              <p>Live UI action feed from /ui/actions for compliance review.</p>
+            </figcaption>
+          </div>
+        </figure>
+        <h3 id="tab-system-health">System Health</h3>
+        <figure class="figure">
+          <div class="figure-inner">
+            <img src="images/21-tab-system-health.png" alt="System Health" width="1440" height="900" loading="lazy" />
+            <figcaption class="figure-caption">
+              <span class="figure-num">Figure 21</span>
+              <strong>System Health</strong>
+              <p>AI tier, rules engine, and gateway connectivity status.</p>
+            </figcaption>
+          </div>
+        </figure>
+      </section>
+
+      <section class="manual-section" id="tips">
+        <h2>6. Tips &amp; troubleshooting</h2>
+        <h3>Recommended workflow</h3><ol class="steps"><li>Sign in and complete MFA.</li><li>Review Today's Overview for KPIs and alerts.</li><li>Work Patient Queue — set active patient per consult.</li><li>Document in Clinical Notes; order labs, imaging, and Rx as needed.</li><li>Check System Health if panels show offline data.</li></ol>
+        <h3>Common issues</h3>
+        <table class="manual-table">
+          <thead><tr><th>Issue</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Blank panels / Failed to fetch</td><td>Start ./scripts/run_staging.sh; hard-refresh; verify Vite proxy → :8100</td></tr>
+            <tr><td>AI risk unavailable</td><td>System Health tab; verify /ai/risk-score endpoint</td></tr>
+            <tr><td>E-sign upload fails</td><td>Disable ad-blockers; API path is /esign not /legal</td></tr>
+            <tr><td>Wrong patient in orders</td><td>Re-select from queue or ward first</td></tr>
+          </tbody>
+        </table>
+        <div class="callout"><strong>AI disclaimer:</strong> Risk scores and hints are pilot aids only — always apply clinical judgement.</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
