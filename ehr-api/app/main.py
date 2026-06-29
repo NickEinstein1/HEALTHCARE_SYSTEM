@@ -600,7 +600,9 @@ async def on_startup() -> None:
     await init_redis_client()
     # Phase 3: seed AI simulation data
     from app.state import bootstrap_ai_state
+    from app.billing_service import bootstrap_billing_state
     bootstrap_ai_state()
+    bootstrap_billing_state()
 
 
 @app.on_event("shutdown")

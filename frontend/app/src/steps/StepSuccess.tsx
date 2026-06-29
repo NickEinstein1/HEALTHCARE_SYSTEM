@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { RoleKey } from "../theme/tokens";
 import { ROLE_CONFIG } from "../lib/signInConfig";
 import { getModulesForRole } from "../lib/modulePull";
+import { getPilotRole } from "../lib/pilotRoles";
 
 type Props = {
   role: RoleKey;
@@ -19,7 +20,7 @@ export function StepSuccess({ role, addAudit }: Props) {
     setLaunching(true);
     addAudit("AUTH DASHBOARD_LAUNCH role=" + role + " modules=" + pulledModules.map((m) => m.id).join(","));
     window.setTimeout(() => {
-      navigate(`/dashboard/${role}`);
+      navigate(getPilotRole(role).dashboardPath);
     }, 900);
   }
 

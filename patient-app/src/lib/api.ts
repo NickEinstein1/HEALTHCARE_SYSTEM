@@ -207,6 +207,24 @@ export const api = {
   legalDocumentVerify(documentId: string, patientId: string): Promise<LegalDocumentVerification> {
     return getJson(`/esign/documents/${encodeURIComponent(documentId)}/verify`, patientId);
   },
+
+  billingPatientSummary(patientId: string): Promise<BillingPatientSummary> {
+    return getJson(`/billing/patient/summary?patient_id=${encodeURIComponent(patientId)}`, patientId);
+  },
+
+  patientPayment(
+    payload: { patient_id: string; amount_kes?: number; purpose?: string; invoice_id?: string; phone?: string },
+    patientId?: string,
+  ): Promise<MpesaStkResult> {
+    return postJson("/patient/payment", payload, "POST", patientId ?? payload.patient_id);
+  },
+
+  mpesaStkPush(
+    payload: { patient_id: string; amount_kes?: number; purpose?: string; invoice_id?: string; phone?: string },
+    patientId?: string,
+  ): Promise<MpesaStkResult> {
+    return postJson("/payments/mpesa/stk-push", payload, "POST", patientId ?? payload.patient_id);
+  },
 };
 
 export type LegalDocumentSignature = {
@@ -233,4 +251,51 @@ export type LegalDocumentVerification = {
   valid: boolean;
   verification_code?: string | null;
   disclaimer: string;
+};
+
+export type BillingPatientSummary = {
+  patient_id: string;
+  paybill: string;
+  account_ref: string;
+  currency: string;
+  contribution_amount_kes: number;
+  total_contributions_kes: number;
+  outstanding_total_kes: number;
+  next_payment_kes: number;
+  membership_status: string;
+  mtiba_balance_kes: number;
+  contributions: Array<{
+    date: string;
+    method: string;
+    amount: string;
+    amount_kes: number;
+    status: string;
+    mpesa_receipt?: string | null;
+  }>;
+  transactions: Array<{
+    date: string;
+    type: string;
+    amount: string;
+    amount_kes: number;
+    method?: string;
+    status?: string;
+  }>;
+  bills: Array<{
+    date: string;
+    desc: string;
+    amount: string;
+    amount_kes: number;
+    status: string;
+    invoice_id?: string;
+    balance_kes?: number;
+  }>;
+};
+
+export type MpesaStkResult = {
+  status: string;
+  message: string;
+  mpesa_receipt?: string | null;
+  amount_kes: number;
+  paybill: string;
+  account_ref: string;
 };

@@ -223,6 +223,11 @@ clinical_ai_assessments: list[dict] = []
 legal_documents: list[dict] = []
 legal_document_audit: list[dict] = []
 
+# Billing & M-Pesa payments (in-memory; Postgres tables optional)
+billing_invoices: list[dict] = []
+billing_payments: list[dict] = []
+mpesa_transactions: list[dict] = []
+
 # Inter-facility referrals (doctor workflow)
 referrals: list[dict] = []
 

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.routers import (
-    admin, appointments, auth_status, clinical_ai, fhir, integrations,
+    admin, appointments, auth_status, billing, clinical_ai, fhir, integrations,
     lab, legal_documents, metrics, nurse, patient_profile, pharmacy, referrals, ui, walkins,
 )
 from app.api.routers import ai as ai_router_module
@@ -40,7 +40,10 @@ api_router.include_router(appointments.router, tags=["appointments"])
 # Patient portal profile + security
 api_router.include_router(patient_profile.router)
 
-# Phase 3 — AI Assist (diagnosis hints, anomaly detection, bed forecasting, WebSocket alerts)
+# Billing, invoices, and M-Pesa payments
+api_router.include_router(billing.router)
+
+# Phase 3 — AI Assist
 api_router.include_router(ai_router_module.router, tags=["ai"])
 api_router.include_router(clinical_ai.router)
 api_router.include_router(legal_documents.router)

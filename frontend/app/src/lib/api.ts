@@ -1,11 +1,15 @@
 import type {
   AllergyIntolerance,
+  BillingInvoice,
+  BillingPatientSummary,
+  BillingPayment,
   ClinicalAiAssessmentResult,
   LegalDocument,
   LegalDocumentVerification,
   EsignAiAnalysis,
   EsignDocumentView,
   EsignVerificationProcess,
+  MpesaStkResult,
   ReferralRecord,
   MedicationRequest,
   MetricsJson,
@@ -856,6 +860,57 @@ export const api = {
     role = "doctor",
   ): Promise<{ referral: ReferralRecord }> {
     return postJson("/referrals", payload, { headers: legalAuthHeaders(role) });
+  },
+
+  billingPatientSummary(patientId: string, role = "patient"): Promise<BillingPatientSummary> {
+    return getJson(`/billing/patient/summary?patient_id=${encodeURIComponent(patientId)}`, {
+      headers: legalAuthHeaders(role, patientId),
+    });
+  },
+
+  billingInvoices(params?: { patient_id?: string; status?: string }, role = "billing"): Promise<{ invoices: BillingInvoice[]; count: number }> {
+    const qs = new URLSearchParams();
+    if (params?.patient_id) qs.set("patient_id", params.patient_id);
+    if (params?.status) qs.set("status", params.status);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/billing/invoices${suffix}`, { headers: legalAuthHeaders(role, params?.patient_id) });
+  },
+
+  billingInvoiceCreate(payload: Record<string, unknown>, role = "billing"): Promise<{ status: string; invoice: BillingInvoice }> {
+    return postJson("/billing/invoices", payload, { headers: legalAuthHeaders(role) });
+  },
+
+  billingRecordPayment(payload: Record<string, unknown>, role = "billing"): Promise<{ status: string; payment: BillingPayment }> {
+    return postJson("/billing/payment", payload, { headers: legalAuthHeaders(role) });
+  },
+
+  billingPayments(params?: { patient_id?: string; invoice_id?: string }, role = "billing"): Promise<{ payments: BillingPayment[]; count: number }> {
+    const qs = new URLSearchParams();
+    if (params?.patient_id) qs.set("patient_id", params.patient_id);
+    if (params?.invoice_id) qs.set("invoice_id", params.invoice_id);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/billing/payments${suffix}`, { headers: legalAuthHeaders(role) });
+  },
+
+  mpesaTransactions(params?: { patient_id?: string; limit?: number }, role = "billing"): Promise<{ transactions: Record<string, unknown>[]; count: number }> {
+    const qs = new URLSearchParams();
+    if (params?.patient_id) qs.set("patient_id", params.patient_id);
+    if (params?.limit) qs.set("limit", String(params.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return getJson(`/payments/mpesa/transactions${suffix}`, { headers: legalAuthHeaders(role, params?.patient_id) });
+  },
+
+  mpesaStkPush(
+    payload: { patient_id: string; amount_kes?: number; purpose?: string; invoice_id?: string; phone?: string },
+    role = "patient",
+  ): Promise<MpesaStkResult> {
+    return postJson("/payments/mpesa/stk-push", payload, { headers: legalAuthHeaders(role, payload.patient_id) });
+  },
+
+  patientPayment(
+    payload: { patient_id: string; amount_kes?: number; purpose?: string; invoice_id?: string; phone?: string },
+  ): Promise<MpesaStkResult> {
+    return postJson("/patient/payment", payload, { headers: legalAuthHeaders("patient", payload.patient_id) });
   },
 };
 

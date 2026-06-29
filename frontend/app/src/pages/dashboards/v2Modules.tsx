@@ -165,25 +165,8 @@ export const NutritionDashboard: React.FC = () => (
   />
 );
 
-// Billing Dashboard
-export const BillingDashboard: React.FC = () => (
-  <ModuleDashboard
-    config={{
-      name: 'Billing',
-      title: 'Financial Management',
-      icon: '💰',
-      description: 'Billing, invoicing, and financial tracking',
-      role: 'Billing Officer',
-      stats: [
-        { label: 'Invoices Today', value: '156' },
-        { label: 'Amount Billed', value: 'KES 2.3M' },
-        { label: 'Unpaid Invoices', value: '34' },
-        { label: 'Collection Rate', value: '94%' },
-      ],
-      widgets: [],
-    }}
-  />
-);
+// Billing Dashboard — live invoices, payments, M-Pesa (see dashboards/BillingDashboard.tsx)
+export { BillingDashboard } from "./BillingDashboard";
 
 // Insurance Dashboard
 export const InsuranceDashboard: React.FC = () => (

@@ -7,28 +7,42 @@ import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { StatCard } from "../components/ui/StatCard";
 import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
-import { CONTRIBUTIONS } from "../lib/patientPortalData";
+import { useBillingSummary } from "../hooks/useBillingSummary";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 
 export function ContributionsScreen() {
-  const { toast } = usePatient();
+  const { patientId, toast } = usePatient();
+  const { billing, loading, payBusy, payWithMpesa } = useBillingSummary(patientId);
+  const contrib = billing?.contribution_amount_kes ?? 500;
 
   return (
     <AnimatedScrollScreen>
       <ScreenIntro text="Monthly UniHealth health cover payment history." />
       <View style={styles.actions}>
         <SecondaryButton label="📥 Statement" onPress={() => toast("Downloading contribution statement…")} />
-        <PrimaryButton label="+ Pay Ksh 500" onPress={() => toast("M-PESA STK push: Paybill 400100 · UniHealth Health")} />
+        <PrimaryButton
+          label={`+ Pay Ksh ${contrib.toLocaleString()}`}
+          onPress={async () => {
+            const res = await payWithMpesa("contribution", contrib);
+            toast(res?.message ?? "M-PESA payment request failed.");
+          }}
+          disabled={payBusy}
+        />
       </View>
       <View style={styles.stats}>
-        <StatCard icon="📊" value="Ksh 5,500" label="Total FY 25/26" />
-        <StatCard icon="✅" value="Up to date" label="Next 31 Mar" accent={colors.gd} />
-        <StatCard icon="📅" value="3 years" label="Member since 2023" />
+        <StatCard icon="📊" value={`Ksh ${Math.round(billing?.total_contributions_kes ?? 0).toLocaleString()}`} label="Total contributions" />
+        <StatCard
+          icon="✅"
+          value={billing?.membership_status === "up_to_date" ? "Up to date" : "Payment due"}
+          label={`Next Ksh ${Math.round(billing?.next_payment_kes ?? contrib).toLocaleString()}`}
+          accent={colors.gd}
+        />
+        <StatCard icon="📅" value={billing?.paybill ?? "400100"} label="M-PESA Paybill" />
       </View>
       <Panel title="Contribution history" subtitle="M-PESA · Payroll · Bank">
-        {CONTRIBUTIONS.map((c) => (
-          <View key={c.date} style={styles.row}>
+        {(billing?.contributions ?? []).map((c) => (
+          <View key={c.date + c.method} style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.date}>{c.date}</Text>
               <Text style={styles.method}>{c.method}</Text>
@@ -37,14 +51,19 @@ export function ContributionsScreen() {
             <Tag label={c.status} tone="green" />
           </View>
         ))}
+        {loading && <Text style={styles.date}>Loading…</Text>}
       </Panel>
-      <Panel title="Pay contribution" subtitle="Ksh 500 due by 31 March 2026">
+      <Panel title="Pay contribution" subtitle={`Ksh ${contrib.toLocaleString()} · Paybill ${billing?.paybill ?? "400100"}`}>
         <PayMethodRow
           icon="💚"
           logoBg="#00b300"
           name="M-PESA Paybill"
-          desc="400100 · Account UniHealth Health"
-          onPress={() => toast("M-PESA STK push sent to registered phone.")}
+          desc={`${billing?.paybill ?? "400100"} · Account ${billing?.account_ref ?? "UniHealth Health"}`}
+          onPress={async () => {
+            const res = await payWithMpesa("contribution", contrib);
+            toast(res?.message ?? "M-PESA STK push failed.");
+          }}
+          disabled={payBusy}
         />
         <PayMethodRow
           icon="🏦"

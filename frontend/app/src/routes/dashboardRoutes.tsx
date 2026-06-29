@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import type { RoleKey } from "../theme/tokens";
 import { EMRDashboard } from "../pages/EMRDashboard";
 import { AdminDashboard } from "../pages/dashboards/AdminDashboard";
+import { BillingDashboard } from "../pages/dashboards/BillingDashboard";
 import { DoctorDashboard } from "../pages/dashboards/DoctorDashboard";
 import { LabDashboard } from "../pages/dashboards/LabDashboard";
 import { NurseDashboard } from "../pages/dashboards/NurseDashboard";
@@ -10,7 +11,6 @@ import { PharmacyDashboard } from "../pages/dashboards/PharmacyDashboard";
 import {
   AnalyticsDashboard,
   AdministrationDashboard,
-  BillingDashboard,
   FleetDashboard,
   HRDashboard,
   ICUDashboard,
@@ -48,6 +48,7 @@ const LEGACY_COMPONENTS: Record<RoleKey, ComponentType> = {
   admin: AdminDashboard,
   lab: LabDashboard,
   pharmacy: PharmacyDashboard,
+  billing: BillingDashboard,
 };
 
 export function resolveLegacyDashboard(role: string | undefined): ComponentType {

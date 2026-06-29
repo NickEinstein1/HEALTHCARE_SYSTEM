@@ -19,13 +19,15 @@ from app.config import settings
 
 _log = logging.getLogger(__name__)
 
-VALID_ROLES = frozenset({"doctor", "nurse", "admin", "patient", "lab", "pharmacy"})
+VALID_ROLES = frozenset({"doctor", "nurse", "admin", "patient", "lab", "pharmacy", "billing"})
 # Roles allowed on /ai/ws/alerts/{role} (patients use REST polling, not WS).
 WS_ALERT_ROLES = frozenset({"doctor", "nurse", "admin", "lab", "pharmacy"})
 _ROLE_ALIASES = {
     "clinical_officer": "nurse",
     "pharmacist": "pharmacy",
     "laboratory": "lab",
+    "finance_admin": "billing",
+    "accounts_clerk": "billing",
 }
 
 _jwk_client: PyJWKClient | None = None

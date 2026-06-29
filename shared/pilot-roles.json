@@ -1,13 +1,14 @@
 {
   "version": 1,
   "pilotPassword": "Changeme1!",
-  "signInOrder": ["doctor", "nurse", "lab", "pharmacy", "admin", "patient"],
-  "landingOrder": ["admin", "doctor", "nurse", "patient", "lab", "pharmacy"],
+  "signInOrder": ["doctor", "nurse", "lab", "pharmacy", "billing", "admin", "patient"],
+  "landingOrder": ["admin", "doctor", "nurse", "billing", "patient", "lab", "pharmacy"],
   "modulePullIds": {
     "doctor": ["emr", "maternity", "lab", "pharmacy", "teleconsult", "ai_engine"],
     "nurse": ["ward", "maternity", "nicu", "medication", "vitals"],
     "lab": ["lab", "radiology", "maternal_panels", "nicu_labs", "results"],
     "pharmacy": ["pharmacy", "kemsa", "inventory", "maternity_meds", "prescriptions", "billing"],
+    "billing": ["billing", "insurance", "inventory"],
     "admin": ["*"],
     "patient": ["patient_portal", "appointments", "lab_results", "maternity_records", "cic", "teleconsult"]
   },
@@ -99,6 +100,28 @@
       "emailExample": "pharmacy@hospital.go.ke",
       "regExample": "PHARM-00441",
       "displayName": "Pilot Pharmacy"
+    },
+    {
+      "id": "billing",
+      "keycloakUsername": "billing",
+      "label": "Billing",
+      "signInName": "Billing Officer",
+      "signInDesc": "Finance · Accounts",
+      "registerLabel": "Billing Officer",
+      "registerTagline": "Invoices, M-Pesa payments, and financial reconciliation.",
+      "icon": "💰",
+      "color": "#ffb830",
+      "bg": "rgba(255,184,48,0.07)",
+      "border": "rgba(255,184,48,0.28)",
+      "landingDesc": "Issue invoices, record M-Pesa and cash payments, reconcile transactions, and run financial reports.",
+      "dashboardPath": "/modules/billing",
+      "portalPath": "/modules/billing",
+      "v2HtmlPath": "unihealth-billing.html",
+      "portalTitle": "Billing & Finance",
+      "portalDesc": "Invoices, M-Pesa payments, and reconciliation",
+      "emailExample": "billing@hospital.go.ke",
+      "regExample": "FIN-00441",
+      "displayName": "Pilot Billing Officer"
     },
     {
       "id": "admin",

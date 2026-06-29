@@ -116,6 +116,23 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successRole: "Pharmacy — Clinical Dispensing",
     successMsg: "Identity verified.\nRedirecting to pharmacy portal…",
   },
+  billing: {
+    ico: "💰",
+    title: "Sign in to Billing & Finance",
+    sub: "Finance Staff ID · Institutional Email · Password",
+    noteHead: "Finance Staff ID · email · password",
+    noteBody: "Confirm identity via email OTP after sign-in.",
+    noteClass: "amb",
+    noteIco: "💳",
+    regLbl: "Finance Staff ID",
+    regHint: "e.g. FIN-00441 — as issued by your facility finance office",
+    regPH: "e.g. FIN-00441",
+    regRx: /^[A-Za-z0-9\-]{5,20}$/,
+    regErr: "Enter your finance staff ID (e.g. FIN-00441).",
+    staffNote: "Staff ID · Email · Password → OTP",
+    successRole: "Billing — Financial Management",
+    successMsg: "Identity verified.\nRedirecting to billing dashboard…",
+  },
 };
 
 export type IdTypeKey = "national" | "passport" | "alien" | "refugee" | "mandate" | "temp";
