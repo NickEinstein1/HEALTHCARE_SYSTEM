@@ -27,4 +27,4 @@ export const cssVar = {
   shG: "--sh-g",
 } as const;
 
-export type RoleKey = "doctor" | "nurse" | "admin" | "patient" | "lab" | "pharmacy";
+export type RoleKey = "doctor" | "nurse" | "admin" | "patient" | "lab" | "pharmacy" | "billing";

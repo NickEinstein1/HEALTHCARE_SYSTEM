@@ -8,15 +8,17 @@ export function PayMethodRow({
   name,
   desc,
   onPress,
+  disabled,
 }: {
   icon: string;
   logoBg: string;
   name: string;
   desc: string;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   return (
-    <Pressable style={styles.row} onPress={onPress}>
+    <Pressable style={[styles.row, disabled && styles.disabled]} onPress={onPress} disabled={disabled}>
       <View style={[styles.logo, { backgroundColor: logoBg }]}>
         <Text style={styles.logoTxt}>{icon}</Text>
       </View>
@@ -43,4 +45,5 @@ const styles = StyleSheet.create({
   name: { fontFamily: fonts.sansExtra, fontSize: 13, color: colors.t1 },
   desc: { fontFamily: fonts.sans, fontSize: 11, color: colors.t3, marginTop: 2 },
   arr: { fontSize: 20, color: colors.t4 },
+  disabled: { opacity: 0.5 },
 });

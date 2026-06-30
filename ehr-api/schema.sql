@@ -228,3 +228,65 @@ CREATE TABLE IF NOT EXISTS legal_document_audit_log (
 
 CREATE INDEX IF NOT EXISTS idx_legal_audit_doc
     ON legal_document_audit_log(document_id, ts DESC);
+
+-- Billing & M-Pesa payments (Phase 2 pilot)
+CREATE TABLE IF NOT EXISTS billing_invoices (
+    id              VARCHAR(64) PRIMARY KEY,
+    patient_id      VARCHAR(64) NOT NULL REFERENCES patients(id),
+    patient_name    VARCHAR(256),
+    facility_id     VARCHAR(64) NOT NULL DEFAULT 'FAC-A',
+    description     VARCHAR(512) NOT NULL,
+    amount_kes      NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    balance_kes     NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    status          VARCHAR(32) NOT NULL DEFAULT 'issued',
+    issued_at       TIMESTAMPTZ DEFAULT NOW(),
+    due_at          TIMESTAMPTZ,
+    paid_at         TIMESTAMPTZ,
+    created_by_role VARCHAR(32) NOT NULL DEFAULT 'billing',
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_billing_invoices_patient
+    ON billing_invoices(patient_id, issued_at DESC);
+
+CREATE TABLE IF NOT EXISTS billing_payments (
+    id              VARCHAR(64) PRIMARY KEY,
+    invoice_id      VARCHAR(64) REFERENCES billing_invoices(id),
+    patient_id      VARCHAR(64) NOT NULL REFERENCES patients(id),
+    patient_name    VARCHAR(256),
+    method          VARCHAR(32) NOT NULL,
+    purpose         VARCHAR(32) NOT NULL,
+    amount_kes      NUMERIC(12, 2) NOT NULL,
+    status          VARCHAR(32) NOT NULL DEFAULT 'pending',
+    mpesa_receipt   VARCHAR(64),
+    phone           VARCHAR(32),
+    recorded_by_role VARCHAR(32) NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    completed_at    TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_billing_payments_patient
+    ON billing_payments(patient_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS mpesa_transactions (
+    id                  VARCHAR(64) PRIMARY KEY,
+    checkout_request_id VARCHAR(128),
+    merchant_request_id VARCHAR(128),
+    payment_id          VARCHAR(64) REFERENCES billing_payments(id),
+    patient_id          VARCHAR(64) NOT NULL REFERENCES patients(id),
+    invoice_id          VARCHAR(64) REFERENCES billing_invoices(id),
+    purpose             VARCHAR(32) NOT NULL,
+    amount_kes          NUMERIC(12, 2) NOT NULL,
+    phone               VARCHAR(32),
+    status              VARCHAR(32) NOT NULL DEFAULT 'pending',
+    mpesa_receipt       VARCHAR(64),
+    initiated_by_role   VARCHAR(32) NOT NULL,
+    result_desc         VARCHAR(512),
+    raw_json            TEXT,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    completed_at        TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_mpesa_tx_patient
+    ON mpesa_transactions(patient_id, created_at DESC);

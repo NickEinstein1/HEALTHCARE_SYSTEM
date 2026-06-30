@@ -13,6 +13,7 @@
       { "name": "admin", "description": "Facility administrator" },
       { "name": "lab", "description": "Laboratory staff" },
       { "name": "pharmacy", "description": "Pharmacy staff" },
+      { "name": "billing", "description": "Billing and finance officer" },
       { "name": "patient", "description": "Patient portal" }
     ]
   },
@@ -89,6 +90,17 @@
       "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
       "requiredActions": [],
       "realmRoles": ["pharmacy"]
+    },
+    {
+      "username": "billing",
+      "firstName": "Pilot",
+      "lastName": "Billing",
+      "enabled": true,
+      "email": "billing@hospital.go.ke",
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "Changeme1!", "temporary": false }],
+      "requiredActions": [],
+      "realmRoles": ["billing"]
     },
     {
       "username": "patient",

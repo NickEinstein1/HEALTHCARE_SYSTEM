@@ -117,6 +117,15 @@ export const ROLE_DASHBOARD_PREVIEW: Record<RoleKey, DashboardPreview> = {
     ],
     modLabels: ["Dispensing", "Drug Stock", "KEMSA Orders", "Prescriptions", "Maternity Meds", "Reports"],
   },
+  billing: {
+    sessionLabel: "Billing Officer — Central Health Authority",
+    bars: [
+      { label: "Invoices Today", value: "156", pct: 72 },
+      { label: "M-Pesa Collections", value: "KES 84K", pct: 84 },
+      { label: "Unpaid Invoices", value: "34", pct: 34 },
+    ],
+    modLabels: ["Invoices", "M-Pesa", "Insurance", "Inventory", "Reports", "Reconciliation"],
+  },
   admin: {
     sessionLabel: "Administrator — Central Health Authority",
     bars: [

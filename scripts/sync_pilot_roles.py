@@ -46,6 +46,7 @@ def js_roles_array(cfg: dict) -> str:
         "nurse": ("Core", "tag-g"),
         "lab": ("Core", "tag-g"),
         "pharmacy": ("Core", "tag-g"),
+        "billing": ("Finance", "tag-y"),
         "admin": ("Admin", "tag-r"),
         "patient": ("Patient", "tag-b"),
     }

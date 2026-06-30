@@ -136,6 +136,7 @@ export const PILOT_V2_AUTH_TAG: Record<RoleKey, { tag: string; tagClass: string 
   nurse: { tag: "Core", tagClass: "tag-g" },
   lab: { tag: "Core", tagClass: "tag-g" },
   pharmacy: { tag: "Core", tagClass: "tag-g" },
+  billing: { tag: "Finance", tagClass: "tag-y" },
   admin: { tag: "Admin", tagClass: "tag-r" },
   patient: { tag: "Patient", tagClass: "tag-b" },
 };
@@ -145,6 +146,7 @@ export const PILOT_V2_SECTION: Record<RoleKey, ModuleSection | "PATIENT"> = {
   nurse: "CLINICAL",
   lab: "CLINICAL",
   pharmacy: "CLINICAL",
+  billing: "OPERATIONS",
   admin: "MANAGEMENT",
   patient: "PATIENT",
 };

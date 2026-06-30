@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "../../lib/api";
+import type { BillingPatientSummary } from "../../lib/apiTypes";
 import { usePolling } from "../../hooks/usePolling";
 import { BRAND_ICON } from "../../components/brand/brandIcon";
 import { DashIcon } from "../../components/brand/DashIcon";
@@ -264,6 +265,47 @@ export function PatientDashboard() {
   const [bookingSlots, setBookingSlots] = useState<string[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+
+  const [billing, setBilling] = useState<BillingPatientSummary | null>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+  const [payBusy, setPayBusy] = useState(false);
+
+  const refreshBilling = useCallback(async () => {
+    setBillingLoading(true);
+    try {
+      const data = await api.billingPatientSummary(patientId, "patient");
+      setBilling(data);
+    } catch {
+      setBilling(null);
+    } finally {
+      setBillingLoading(false);
+    }
+  }, [patientId]);
+
+  useEffect(() => {
+    if (page === "contributions" || page === "bills" || page === "payments") {
+      void refreshBilling();
+    }
+  }, [page, refreshBilling]);
+
+  const payWithMpesa = useCallback(async (purpose: string, amountKes?: number, invoiceId?: string) => {
+    if (payBusy) return;
+    setPayBusy(true);
+    try {
+      const res = await api.patientPayment({
+        patient_id: patientId,
+        purpose,
+        amount_kes: amountKes,
+        invoice_id: invoiceId,
+      });
+      toast(res.message);
+      await refreshBilling();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Payment request failed.");
+    } finally {
+      setPayBusy(false);
+    }
+  }, [patientId, payBusy, refreshBilling, toast]);
 
   const departments = useMemo(() => [
     "Cardiology", "Oncology", "Neurology", "Orthopaedics",
@@ -1989,8 +2031,9 @@ export function PatientDashboard() {
               <button
                 className="btn-p"
                 type="button"
+                disabled={payBusy || billingLoading}
                 onClick={() => {
-                  void uiAction("Contribution payment started.");
+                  void payWithMpesa("contribution", billing?.contribution_amount_kes ?? 500);
                 }}
               >
                 + Make Contribution
@@ -2001,7 +2044,9 @@ export function PatientDashboard() {
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: "18px 12px" }}>
                 <div style={{ fontSize: 24, marginBottom: 6 }}>📊</div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--t1)" }}>Ksh 5,500</div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--t1)" }}>
+                  Ksh {Math.round(billing?.total_contributions_kes ?? 0).toLocaleString()}
+                </div>
                 <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Total contributions · FY 2025/26</div>
                 <div style={{ marginTop: 8 }}>
                   <span className="tag g">11 months paid</span>
@@ -2011,10 +2056,16 @@ export function PatientDashboard() {
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: "18px 12px" }}>
                 <div style={{ fontSize: 24, marginBottom: 6 }}>✅</div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>Up to Date</div>
-                <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Next payment: 31 March 2026</div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>
+                  {billing?.membership_status === "up_to_date" ? "Up to Date" : "Payment Due"}
+                </div>
+                <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>
+                  Next payment: Ksh {Math.round(billing?.next_payment_kes ?? 500).toLocaleString()}
+                </div>
                 <div style={{ marginTop: 8 }}>
-                  <span className="tag g dot">Ksh 500 due</span>
+                  <span className={`tag ${billing?.membership_status === "up_to_date" ? "g" : "a"} dot`}>
+                    Ksh {Math.round(billing?.contribution_amount_kes ?? 500).toLocaleString()} due
+                  </span>
                 </div>
               </div>
             </div>
@@ -2047,22 +2098,21 @@ export function PatientDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="mono">28 Feb 2026</td>
-                    <td>M-PESA</td>
-                    <td>Ksh 500</td>
-                    <td>
-                      <span className="tag g">Cleared</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="mono">28 Jan 2026</td>
-                    <td>Payroll</td>
-                    <td>Ksh 500</td>
-                    <td>
-                      <span className="tag g">Cleared</span>
-                    </td>
-                  </tr>
+                  {(billing?.contributions?.length ? billing.contributions : []).map((row) => (
+                    <tr key={`${row.date}-${row.method}`}>
+                      <td className="mono">{row.date}</td>
+                      <td>{row.method}</td>
+                      <td>{row.amount}</td>
+                      <td>
+                        <span className="tag g">{row.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {billingLoading && (
+                    <tr>
+                      <td colSpan={4}>Loading contribution history…</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -2071,7 +2121,10 @@ export function PatientDashboard() {
             <div className="pnl-hd">
               <div>
                 <div className="pnl-ti">Pay Your Contribution</div>
-                <div className="pnl-su">Ksh 500 due by 31 March 2026</div>
+                <div className="pnl-su">
+                  Ksh {Math.round(billing?.contribution_amount_kes ?? 500).toLocaleString()} due
+                  {billing?.paybill ? ` · Paybill ${billing.paybill}` : ""}
+                </div>
               </div>
             </div>
             <div className="pnl-bd">
@@ -2080,14 +2133,16 @@ export function PatientDashboard() {
                 className="pay-m"
                 style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
                 onClick={() => {
-                  void uiAction("M-PESA payment initiated.");
-                  toast("M-PESA Paybill: 400100 · Account: UniHealth Health · Amount: Ksh 500. You will receive an M-PESA STK push confirmation shortly.");
+                  void payWithMpesa("contribution", billing?.contribution_amount_kes ?? 500);
                 }}
+                disabled={payBusy}
               >
                 <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
                 <div>
                   <div className="pay-name">M-PESA Paybill</div>
-                  <div className="pay-desc">Paybill: 400100 · Account: UniHealth Health</div>
+                  <div className="pay-desc">
+                    Paybill: {billing?.paybill ?? "400100"} · Account: {billing?.account_ref ?? "UniHealth Health"}
+                  </div>
                 </div>
                 <span className="pay-arr">›</span>
               </button>
@@ -2128,10 +2183,19 @@ export function PatientDashboard() {
               onExported={(fmt) => toast(`Billing statement exported as ${fmt.toUpperCase()}.`)}
             />
           </div>
-          <div className="notice g">
-            <span className="notice-ico">✅</span>
+          <div className={`notice ${(billing?.outstanding_total_kes ?? 0) > 0 ? "a" : "g"}`}>
+            <span className="notice-ico">{(billing?.outstanding_total_kes ?? 0) > 0 ? "⚠️" : "✅"}</span>
             <div className="notice-txt">
-              <strong>All clear!</strong> You have no outstanding bills. Your UniHealth cover has settled all recent charges.
+              {(billing?.outstanding_total_kes ?? 0) > 0 ? (
+                <>
+                  <strong>Outstanding balance:</strong> Ksh {Math.round(billing?.outstanding_total_kes ?? 0).toLocaleString()}.
+                  Use Make a Payment to settle via M-PESA.
+                </>
+              ) : (
+                <>
+                  <strong>All clear!</strong> You have no outstanding bills. Your UniHealth cover has settled all recent charges.
+                </>
+              )}
             </div>
           </div>
           <div className="panel">
@@ -2151,25 +2215,47 @@ export function PatientDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="mono">04 Mar 2026</td>
-                      <td>Cardiology consult</td>
-                      <td>Ksh 0</td>
-                      <td><span className="tag te">Covered</span></td>
-                      <td>
-                        <button
-                          type="button"
-                          className="btn-s btn-sm"
-                          style={{ fontSize: 10.5, padding: "3px 10px" }}
-                          onClick={() => {
-                            void api.uiAction({ role: "patient", patient_id: patientId, label: "Invoice downloaded: Cardiology consult 04 Mar 2026", type: "invoice_download" }).catch(() => {});
-                            toast("Invoice for Cardiology consult (04 Mar 2026) downloading… In production this opens a signed PDF receipt.");
-                          }}
-                        >
-                          📥 Invoice
-                        </button>
-                      </td>
-                    </tr>
+                    {(billing?.bills?.length ? billing.bills : []).map((bill) => (
+                      <tr key={bill.invoice_id ?? `${bill.date}-${bill.desc}`}>
+                        <td className="mono">{bill.date}</td>
+                        <td>{bill.desc}</td>
+                        <td>{bill.amount}</td>
+                        <td>
+                          <span className={`tag ${bill.status === "Outstanding" ? "a" : "te"}`}>{bill.status}</span>
+                        </td>
+                        <td>
+                          {bill.status === "Outstanding" && bill.invoice_id ? (
+                            <button
+                              type="button"
+                              className="btn-p btn-sm"
+                              style={{ fontSize: 10.5, padding: "3px 10px", marginRight: 6 }}
+                              disabled={payBusy}
+                              onClick={() => {
+                                void payWithMpesa("invoice", bill.balance_kes ?? bill.amount_kes, bill.invoice_id);
+                              }}
+                            >
+                              Pay
+                            </button>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="btn-s btn-sm"
+                            style={{ fontSize: 10.5, padding: "3px 10px" }}
+                            onClick={() => {
+                              void api.uiAction({ role: "patient", patient_id: patientId, label: `Invoice downloaded: ${bill.desc} ${bill.date}`, type: "invoice_download" }).catch(() => {});
+                              toast(`Invoice for ${bill.desc} (${bill.date}) downloading…`);
+                            }}
+                          >
+                            📥 Invoice
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {billingLoading && (
+                      <tr>
+                        <td colSpan={5}>Loading billing history…</td>
+                      </tr>
+                    )}
                   </tbody>
               </table>
             </div>
@@ -2195,14 +2281,16 @@ export function PatientDashboard() {
                   className="pay-m"
                   style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer" }}
                   onClick={() => {
-                    void api.uiAction({ role: "patient", patient_id: patientId, label: "M-PESA STK push initiated", type: "payment" }).catch(() => {});
-                    toast("M-PESA STK Push sent to your registered phone. Enter your M-PESA PIN to complete the payment. Paybill: 400100 · Amount: Ksh 500");
+                    void payWithMpesa("contribution", billing?.contribution_amount_kes ?? 500);
                   }}
+                  disabled={payBusy}
                 >
                   <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
                   <div>
                     <div className="pay-name">M-PESA</div>
-                    <div className="pay-desc">Safaricom M-PESA paybill or STK push</div>
+                    <div className="pay-desc">
+                      Safaricom M-PESA paybill {billing?.paybill ?? "400100"} or STK push
+                    </div>
                   </div>
                   <span className="pay-arr">›</span>
                 </button>
@@ -2218,7 +2306,9 @@ export function PatientDashboard() {
                   <div className="pay-logo" style={{ background: "#e8490a" }}>🟠</div>
                   <div>
                     <div className="pay-name">M-TIBA Health Wallet</div>
-                    <div className="pay-desc">Balance: Ksh 3,200 available</div>
+                    <div className="pay-desc">
+                      Balance: Ksh {Math.round(billing?.mtiba_balance_kes ?? 0).toLocaleString()} available
+                    </div>
                   </div>
                   <span className="pay-arr">›</span>
                 </button>
@@ -2238,11 +2328,18 @@ export function PatientDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="mono">01 Mar 2026</td>
-                      <td>Contribution</td>
-                      <td>Ksh 500</td>
-                    </tr>
+                    {(billing?.transactions?.length ? billing.transactions : []).map((txn) => (
+                      <tr key={`${txn.date}-${txn.type}-${txn.amount}`}>
+                        <td className="mono">{txn.date}</td>
+                        <td>{txn.type}</td>
+                        <td>{txn.amount}</td>
+                      </tr>
+                    ))}
+                    {billingLoading && (
+                      <tr>
+                        <td colSpan={3}>Loading transactions…</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

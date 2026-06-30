@@ -5,19 +5,21 @@ import { Panel } from "../components/ui/Panel";
 import { PayMethodRow } from "../components/PayMethodRow";
 import { PrimaryButton } from "../components/ui/Buttons";
 import { usePatient } from "../context/PatientContext";
-import { MTIBA_BALANCE, TRANSACTIONS } from "../lib/patientPortalData";
+import { useBillingSummary } from "../hooks/useBillingSummary";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 
 export function PayScreen() {
-  const { toast } = usePatient();
+  const { patientId, toast } = usePatient();
+  const { billing, loading, payBusy, payWithMpesa } = useBillingSummary(patientId);
+  const mtibaBalance = billing?.mtiba_balance_kes ?? 0;
 
   return (
     <AnimatedScrollScreen>
       <ScreenIntro text="Bills, contributions, or M-TIBA wallet top-up." />
       <View style={styles.wallet}>
         <Text style={styles.walletLbl}>M-TIBA Health Wallet</Text>
-        <Text style={styles.walletAmt}>Ksh {MTIBA_BALANCE.toLocaleString()}</Text>
+        <Text style={styles.walletAmt}>Ksh {mtibaBalance.toLocaleString()}</Text>
         <Text style={styles.walletSub}>Linked to UniHealth Cover</Text>
         <PrimaryButton label="Top Up" onPress={() => toast("M-TIBA top-up via *253# or M-TIBA app")} style={{ marginTop: 12, alignSelf: "flex-start" }} />
       </View>
@@ -26,19 +28,23 @@ export function PayScreen() {
           icon="💚"
           logoBg="#00b300"
           name="M-PESA"
-          desc="Paybill or STK push"
-          onPress={() => toast("M-PESA STK push sent.")}
+          desc={`Paybill ${billing?.paybill ?? "400100"} or STK push`}
+          onPress={async () => {
+            const res = await payWithMpesa("contribution", billing?.contribution_amount_kes ?? 500);
+            toast(res?.message ?? (loading ? "Loading…" : "M-PESA request failed."));
+          }}
+          disabled={payBusy}
         />
         <PayMethodRow
           icon="🟠"
           logoBg="#e8490a"
           name="M-TIBA Wallet"
-          desc={`Balance Ksh ${MTIBA_BALANCE.toLocaleString()}`}
+          desc={`Balance Ksh ${mtibaBalance.toLocaleString()}`}
           onPress={() => toast("Opening M-TIBA payment flow…")}
         />
       </Panel>
       <Panel title="Recent transactions">
-        {TRANSACTIONS.map((t) => (
+        {(billing?.transactions ?? []).map((t) => (
           <View key={t.date + t.type} style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.type}>{t.type}</Text>
@@ -47,6 +53,7 @@ export function PayScreen() {
             <Text style={styles.amt}>{t.amount}</Text>
           </View>
         ))}
+        {loading && <Text style={styles.date}>Loading transactions…</Text>}
       </Panel>
     </AnimatedScrollScreen>
   );

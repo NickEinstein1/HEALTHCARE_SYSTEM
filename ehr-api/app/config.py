@@ -72,6 +72,17 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     google_model: str = "gemini-1.5-flash"
 
+    # M-Pesa (Safaricom Daraja) — simulate STK/C2B in pilot when true.
+    mpesa_simulate: bool = True
+    mpesa_paybill: str = "400100"
+    mpesa_account_ref: str = "UniHealth Health"
+    mpesa_shortcode: str = ""
+    mpesa_consumer_key: str = ""
+    mpesa_consumer_secret: str = ""
+    mpesa_passkey: str = ""
+    mpesa_c2b_passkey: str = ""
+    mpesa_callback_base_url: str = ""
+
     @model_validator(mode="after")
     def _apply_deployment_profile(self) -> "Settings":
         env = (self.deployment_env or "development").strip().lower()

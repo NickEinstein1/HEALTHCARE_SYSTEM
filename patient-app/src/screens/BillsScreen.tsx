@@ -3,29 +3,51 @@ import { AnimatedScrollScreen } from "../components/animated/AnimatedScrollScree
 import { ScreenIntro } from "../components/ScreenIntro";
 import { Panel } from "../components/ui/Panel";
 import { Notice } from "../components/ui/Notice";
-import { SecondaryButton } from "../components/ui/Buttons";
+import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { Tag } from "../components/ui/Tag";
 import { usePatient } from "../context/PatientContext";
-import { BILLS } from "../lib/patientPortalData";
+import { useBillingSummary } from "../hooks/useBillingSummary";
 import { colors } from "../theme/colors";
 import { fonts } from "../theme/typography";
 
 export function BillsScreen() {
-  const { toast } = usePatient();
+  const { patientId, toast } = usePatient();
+  const { billing, loading, payBusy, payWithMpesa } = useBillingSummary(patientId);
+  const outstanding = billing?.outstanding_total_kes ?? 0;
 
   return (
     <AnimatedScrollScreen>
       <ScreenIntro text="Charges, cover settlements, and downloadable invoices." />
-      <Notice icon="✅" title="All clear" body="No outstanding bills. UniHealth cover settled recent charges." tone="green" />
+      <Notice
+        icon={outstanding > 0 ? "⚠️" : "✅"}
+        title={outstanding > 0 ? "Payment due" : "All clear"}
+        body={
+          outstanding > 0
+            ? `Outstanding Ksh ${Math.round(outstanding).toLocaleString()}. Pay via M-PESA from the Pay screen.`
+            : "No outstanding bills. UniHealth cover settled recent charges."
+        }
+        tone={outstanding > 0 ? "amber" : "green"}
+      />
       <Panel title="Billing history" subtitle="Covered and out-of-pocket" noPadding>
-        {BILLS.map((b) => (
-          <View key={b.date + b.desc} style={styles.row}>
+        {(billing?.bills ?? []).map((b) => (
+          <View key={(b.invoice_id ?? b.date) + b.desc} style={styles.row}>
             <View style={{ flex: 1 }}>
               <Text style={styles.desc}>{b.desc}</Text>
               <Text style={styles.date}>{b.date}</Text>
             </View>
             <Text style={styles.amt}>{b.amount}</Text>
-            <Tag label={b.status} tone="green" />
+            <Tag label={b.status} tone={b.status === "Outstanding" ? "amber" : "green"} />
+            {b.status === "Outstanding" && b.invoice_id ? (
+              <PrimaryButton
+                label="Pay"
+                onPress={async () => {
+                  const res = await payWithMpesa("invoice", b.balance_kes ?? b.amount_kes, b.invoice_id);
+                  toast(res?.message ?? "Payment failed.");
+                }}
+                disabled={payBusy}
+                style={{ marginLeft: 6 }}
+              />
+            ) : null}
             <SecondaryButton
               label="Invoice"
               onPress={() => toast(`Invoice: ${b.desc} (${b.date})`)}
@@ -33,6 +55,7 @@ export function BillsScreen() {
             />
           </View>
         ))}
+        {loading && <Text style={[styles.date, { padding: 14 }]}>Loading billing history…</Text>}
       </Panel>
     </AnimatedScrollScreen>
   );

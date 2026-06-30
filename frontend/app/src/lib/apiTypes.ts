@@ -184,3 +184,92 @@ export type ReferralRecord = {
   created_at?: string;
 };
 
+export type BillingInvoice = {
+  id: string;
+  patient_id: string;
+  patient_name?: string;
+  description: string;
+  amount_kes: number;
+  balance_kes: number;
+  status: string;
+  issued_at?: string;
+  due_at?: string | null;
+  paid_at?: string | null;
+};
+
+export type BillingPayment = {
+  id: string;
+  invoice_id?: string | null;
+  patient_id: string;
+  method: string;
+  purpose: string;
+  amount_kes: number;
+  status: string;
+  mpesa_receipt?: string | null;
+  phone?: string | null;
+  created_at?: string;
+  completed_at?: string | null;
+};
+
+export type BillingContributionRow = {
+  date: string;
+  method: string;
+  amount: string;
+  amount_kes: number;
+  status: string;
+  mpesa_receipt?: string | null;
+};
+
+export type BillingBillRow = {
+  date: string;
+  desc: string;
+  amount: string;
+  amount_kes: number;
+  status: string;
+  invoice_id?: string;
+  balance_kes?: number;
+};
+
+export type BillingTransactionRow = {
+  date: string;
+  type: string;
+  amount: string;
+  amount_kes: number;
+  method?: string;
+  status?: string;
+};
+
+export type BillingPatientSummary = {
+  patient_id: string;
+  paybill: string;
+  account_ref: string;
+  currency: string;
+  contribution_amount_kes: number;
+  total_contributions_kes: number;
+  outstanding_total_kes: number;
+  next_payment_kes: number;
+  membership_status: string;
+  mtiba_balance_kes: number;
+  invoices: BillingInvoice[];
+  payments: BillingPayment[];
+  contributions: BillingContributionRow[];
+  transactions: BillingTransactionRow[];
+  bills: BillingBillRow[];
+};
+
+export type MpesaStkResult = {
+  status: string;
+  checkout_request_id: string;
+  merchant_request_id: string;
+  amount_kes: number;
+  phone: string;
+  paybill: string;
+  account_ref: string;
+  purpose: string;
+  invoice_id?: string | null;
+  mpesa_receipt?: string | null;
+  payment_id?: string;
+  message: string;
+  simulated?: boolean;
+};
+
