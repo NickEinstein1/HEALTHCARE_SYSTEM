@@ -5,6 +5,7 @@ import { UniHealthLogo } from "../components/brand/UniHealthLogo";
 import { getLandingRoleCards, pilotRegisterPath, pilotSignInPath } from "../lib/pilotRoles";
 import type { RoleKey } from "../theme/tokens";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { MedicalBackground } from "../components/MedicalBackground";
 
 function LandingBrandMark({ size, idPrefix }: { size: number; idPrefix: string }) {
   const radius = size <= 28 ? 7 : 8;
@@ -134,10 +135,24 @@ const COMPLIANCE = [
 ];
 
 const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
-  left: `${(i * 4.1 + 1.5) % 100}%`, size: 2 + (i % 4),
-  delay: (i * 0.38) % 9, duration: 9 + (i % 5),
-  color: i % 3 === 0 ? "#00d4ff" : i % 3 === 1 ? "#00e5a0" : "#a855f7",
+  left: `${(i * 4.1 + 1.5) % 100}%`,
+  size: 3 + (i % 3),
+  delay: (i * 0.38) % 9,
+  duration: 9 + (i % 5),
+  tone: (i % 3 === 0 ? "cyan" : i % 3 === 1 ? "green" : "violet") as "cyan" | "green" | "violet",
 }));
+
+function lpAccent(hex: string): "cyan" | "green" | "violet" | "amber" | "blue" | "pink" {
+  const map: Record<string, "cyan" | "green" | "violet" | "amber" | "blue" | "pink"> = {
+    "#00d4ff": "cyan",
+    "#00e5a0": "green",
+    "#a855f7": "violet",
+    "#ffb830": "amber",
+    "#3d8ef8": "blue",
+    "#ff3366": "pink",
+  };
+  return map[hex.toLowerCase()] ?? "cyan";
+}
 
 /* ─── CSS animations ────────────────────────────────────────────────── */
 const KEYFRAMES = `
@@ -197,12 +212,12 @@ const KEYFRAMES = `
 `;
 
 /* ─── sub-components ─────────────────────────────────────────────────── */
-interface MetricCardProps { value: number; suffix: string; label: string; color: string; start: boolean; duration?: number }
-function MetricCard({ value, suffix, label, color, start, duration }: MetricCardProps) {
+interface MetricCardProps { value: number; suffix: string; label: string; color: string; accent: string; start: boolean; duration?: number }
+function MetricCard({ value, suffix, label, color, accent, start, duration }: MetricCardProps) {
   const count = useCounter(value, duration ?? 2000, start);
   return (
     <div className="lp-metric-card" style={{ textAlign: "center", padding: "28px 16px", background: "rgba(8,18,42,0.65)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 16 }}>
-      <div className="lp-metric-value" style={{ fontSize: "clamp(32px,4vw,50px)", fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", animation: start ? "lp-count-pop 0.6s ease both" : "none" }}>
+      <div className="lp-metric-value" data-accent={accent} style={{ fontSize: "clamp(32px,4vw,50px)", fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", animation: start ? "lp-count-pop 0.6s ease both" : "none" }}>
         {count.toLocaleString()}{suffix}
       </div>
       <div className="lp-metric-label" style={{ marginTop: 8, fontSize: 12, color: "#7ab8d8", textTransform: "uppercase", letterSpacing: "0.09em" }}>{label}</div>
@@ -238,7 +253,7 @@ export function LandingPage() {
 
   /* ── TOPBAR ──────────────────────────────────────────────────────── */
   const Topbar = (
-    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 clamp(16px,4vw,48px)", height: 62, background: "rgba(5,9,26,0.88)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,212,255,0.09)" }}>
+    <nav className="lp-topnav" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 clamp(16px,4vw,48px)", height: 62, backdropFilter: "blur(20px)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <LandingBrandMark size={32} idPrefix="lp-nav" />
         <span style={{ fontWeight: 800, fontSize: 16, color: "#ddf0ff", letterSpacing: "-0.01em" }}>UniHealth</span>
@@ -259,75 +274,85 @@ export function LandingPage() {
 
   /* ── HERO ────────────────────────────────────────────────────────── */
   const Hero = (
-    <section className="lp-hero" style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", paddingTop: 62 }}>
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+    <section className="lp-hero">
+      <div className="lp-hero-bg" aria-hidden>
         {PARTICLES.map((p, i) => (
-          <div key={i} style={{ position: "absolute", bottom: 0, left: p.left, width: p.size, height: p.size, borderRadius: "50%", background: p.color, opacity: 0.65, animation: `lp-particle ${p.duration}s ${p.delay}s infinite linear` }} />
+          <div
+            key={i}
+            className={`lp-hero-particle lp-hero-particle--${p.tone}`}
+            style={{
+              left: p.left,
+              width: p.size,
+              height: p.size,
+              ["--lp-dur" as string]: `${p.duration}s`,
+              ["--lp-delay" as string]: `${p.delay}s`,
+            }}
+          />
         ))}
-        <div style={{ position: "absolute", left: 0, right: 0, height: 2, background: "linear-gradient(90deg,transparent,rgba(0,212,255,0.13),transparent)", animation: "lp-scan 7s linear infinite" }} />
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(0,212,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.025) 1px,transparent 1px)", backgroundSize: "58px 58px" }} />
-        <div style={{ position: "absolute", top: "28%", left: "50%", transform: "translate(-50%,-50%)", width: "min(700px,90vw)", height: "min(700px,90vw)", borderRadius: "50%", background: "radial-gradient(ellipse,rgba(0,212,255,0.07) 0%,transparent 70%)" }} />
-        {/* Floating UI mock elements */}
-        <div className="lp-hide-mobile" style={{ position: "absolute", right: "7%", top: "22%", padding: "14px 18px", background: "rgba(8,18,42,0.80)", border: "1px solid rgba(0,229,160,0.25)", borderRadius: 12, backdropFilter: "blur(12px)", animation: "lp-fade-up 1s 0.6s both" }}>
-          <div style={{ fontSize: 10, color: "#00e5a0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Critical Lab Alert</div>
-          <div style={{ fontSize: 13, color: "#ddf0ff", fontWeight: 600 }}>K⁺: 6.8 mEq/L — Hyperkalaemia</div>
-          <div style={{ fontSize: 11, color: "#7ab8d8", marginTop: 3 }}>Routed to Dr. Kamau · 2s ago</div>
+        <div className="lp-hero-scan" />
+        <div className="lp-hero-grid" />
+        <div className="lp-hero-glow lp-hero-glow--left" />
+        <div className="lp-hero-glow lp-hero-glow--right" />
+        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--cyan">
+          <div data-accent="cyan">Appointment Booked</div>
+          <div>Grace M. · Thu 09:30 · Cardiology</div>
+          <div>Synced to Dr. Njoroge · Confirmed</div>
         </div>
-        <div className="lp-hide-mobile" style={{ position: "absolute", left: "6%", top: "30%", padding: "14px 18px", background: "rgba(8,18,42,0.80)", border: "1px solid rgba(0,212,255,0.22)", borderRadius: 12, backdropFilter: "blur(12px)", animation: "lp-fade-up 1s 0.8s both" }}>
-          <div style={{ fontSize: 10, color: "#00d4ff", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Appointment Booked</div>
-          <div style={{ fontSize: 13, color: "#ddf0ff", fontWeight: 600 }}>Grace M. · Thu 09:30 · Cardiology</div>
-          <div style={{ fontSize: 11, color: "#7ab8d8", marginTop: 3 }}>Synced to Dr. Njoroge · Confirmed</div>
+        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--green">
+          <div data-accent="green">Critical Lab Alert</div>
+          <div>K⁺: 6.8 mEq/L — Hyperkalaemia</div>
+          <div>Routed to Dr. Kamau · 2s ago</div>
         </div>
-        <div className="lp-hide-mobile" style={{ position: "absolute", right: "8%", bottom: "24%", padding: "14px 18px", background: "rgba(8,18,42,0.80)", border: "1px solid rgba(168,85,247,0.22)", borderRadius: 12, backdropFilter: "blur(12px)", animation: "lp-fade-up 1s 1.0s both" }}>
-          <div style={{ fontSize: 10, color: "#a855f7", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>AI Diagnosis Hint</div>
-          <div style={{ fontSize: 13, color: "#ddf0ff", fontWeight: 600 }}>Acute Pyelonephritis — 87%</div>
-          <div style={{ fontSize: 11, color: "#7ab8d8", marginTop: 3 }}>ICD-10 N10 · Urine C&S suggested</div>
+        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--violet">
+          <div data-accent="violet">AI Diagnosis Hint</div>
+          <div>Acute Pyelonephritis — 87%</div>
+          <div>ICD-10 N10 · Urine C&amp;S suggested</div>
         </div>
       </div>
 
-      <div style={{ position: "relative", textAlign: "center", maxWidth: 820, padding: "0 clamp(16px,4vw,32px)" }}>
-        <div className="lp-fade-up" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(0,229,160,0.08)", border: "1px solid rgba(0,229,160,0.22)", borderRadius: 20, padding: "5px 14px", marginBottom: 26 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#00e5a0", display: "inline-block", animation: "lp-blink 1.8s infinite" }} />
-          <span style={{ fontSize: 11, color: "#00e5a0", fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase" }}>Live across 12 Kenya facilities</span>
+      <div className="lp-hero-head">
+        <div className="lp-fade-up lp-hero-live-badge">
+          <span className="lp-hero-live-dot" />
+          <span data-accent="green">Live across 12 Kenya facilities</span>
         </div>
-
-        <h1 className="lp-fade-up lp-d1" style={{ fontSize: "clamp(34px,6.5vw,74px)", fontWeight: 900, lineHeight: 1.04, color: "#ddf0ff", margin: "0 0 20px", letterSpacing: "-0.03em" }}>
+        <h1 className="lp-fade-up lp-d1 lp-hero-title">
           Healthcare that<br />
-          <span style={{ color: "#00d4ff", animation: "lp-glow-text 3.5s ease-in-out infinite" }}>knows you</span>
-          <span style={{ color: "#7ab8d8" }}>, everywhere.</span>
+          <span className="lp-hero-glow-word" data-accent="cyan">knows you</span>
+          <span className="lp-hero-title-muted">, everywhere.</span>
         </h1>
-
-        <p className="lp-fade-up lp-d2" style={{ fontSize: "clamp(15px,2vw,19px)", color: "#7ab8d8", lineHeight: 1.68, margin: "0 auto 38px", maxWidth: 620 }}>
+        <p className="lp-fade-up lp-d2 lp-hero-sub">
           UniHealth connects patients, doctors, nurses, labs and pharmacies on one FHIR-native platform — with AI-assisted diagnostics, real-time alerts, and Kenya-first compliance built in from day one.
         </p>
+      </div>
 
-        <div className="lp-fade-up lp-d3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 56 }}>
-          <button className="lp-btn-primary" onClick={() => goRegister()} style={{ padding: "14px 34px", borderRadius: 10, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-            Create Your Account
-          </button>
-          <button onClick={() => goSignIn()} style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
-            Sign In →
-          </button>
-          <a href="#features" style={{ padding: "14px 28px", borderRadius: 10, background: "transparent", border: "1px solid rgba(0,212,255,0.32)", color: "#00d4ff", fontSize: 14, fontWeight: 600, cursor: "pointer", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
-            See How It Works →
-          </a>
-        </div>
+      <div className="lp-hero-stage" aria-hidden />
 
-        <div className="lp-fade-up lp-d4 lp-top-stats" style={{ display: "flex", borderTop: "1px solid rgba(0,212,255,0.09)", paddingTop: 36 }}>
-          {[
-            { v: "47K+", l: "Active Patients",       c: "#00d4ff" },
-            { v: "380+", l: "Clinicians Onboarded",  c: "#00e5a0" },
-            { v: "12",   l: "Pilot Facilities",       c: "#a855f7" },
-            { v: "99.7%",l: "Platform Uptime",        c: "#ffb830" },
-          ].map(s => (
-            <div key={s.l} style={{ flex: "1 1 140px", padding: "14px 20px", borderRight: "1px solid rgba(0,212,255,0.07)" }}>
-              <div style={{ fontSize: "clamp(20px,3vw,30px)", fontWeight: 800, color: s.c }}>{s.v}</div>
-              <div style={{ fontSize: 11, color: "#3e637a", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.07em" }}>{s.l}</div>
-            </div>
-          ))}
+      <div className="lp-hero-foot">
+        <div className="lp-fade-up lp-d3 lp-hero-actions">
+          <button className="lp-btn-primary" type="button" onClick={() => goRegister()}>Create Your Account</button>
+          <button type="button" onClick={() => goSignIn()}>Sign In →</button>
+          <a href="#features">See How It Works →</a>
         </div>
       </div>
     </section>
+  );
+
+  const HeroMetrics = (
+    <div className="lp-hero-metrics">
+      <div className="lp-top-stats">
+        {[
+          { v: "47K+", l: "Active Patients",       c: "#00d4ff", a: "cyan" },
+          { v: "380+", l: "Clinicians Onboarded",  c: "#00e5a0", a: "green" },
+          { v: "12",   l: "Pilot Facilities",       c: "#a855f7", a: "violet" },
+          { v: "99.7%",l: "Platform Uptime",        c: "#ffb830", a: "amber" },
+        ].map(s => (
+          <div key={s.l}>
+            <div className="lp-metric-value" data-accent={s.a} style={{ color: s.c }}>{s.v}</div>
+            <div className="lp-metric-label">{s.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 
   /* ── TRUST TICKER ────────────────────────────────────────────────── */
@@ -350,7 +375,7 @@ export function LandingPage() {
     <section className="lp-problem-section" style={{ padding: "100px clamp(16px,5vw,60px)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="lp-problem-head" style={{ textAlign: "center", marginBottom: 56 }}>
-          <p className="lp-problem-eyebrow" style={{ fontSize: 11, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>The Problem We Solve</p>
+          <p className="lp-problem-eyebrow" data-accent="pink" style={{ fontSize: 11, color: "#ff3366", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>The Problem We Solve</p>
           <h2 className="lp-problem-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Healthcare fragmented no more.</h2>
           <p className="lp-problem-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 520, margin: "12px auto 0" }}>Paper records, siloed databases, and verbal handovers cost lives. UniHealth eliminates each failure point.</p>
         </div>
@@ -405,13 +430,13 @@ export function LandingPage() {
                   <DashIcon icon={r.icon} idPrefix={`lp-role-${r.id}`} />
                 </div>
                 <div>
-                  <div className="lp-role-label" style={{ fontWeight: 700, fontSize: 16, color: r.color }}>{r.label}</div>
+                  <div className="lp-role-label" data-accent={lpAccent(r.color)} style={{ fontWeight: 700, fontSize: 16, color: r.color }}>{r.label}</div>
                   <div className="lp-role-portal-tag" style={{ fontSize: 10, color: "#3e637a", textTransform: "uppercase", letterSpacing: "0.07em" }}>Portal</div>
                 </div>
               </div>
               <p className="lp-role-desc" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.62, margin: "0 0 16px" }}>{r.desc}</p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button type="button" className="lp-role-cta" onClick={() => goRegister(r.id)} style={{ fontSize: 12, color: r.color, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                <button type="button" className="lp-role-cta" data-accent={lpAccent(r.color)} onClick={() => goRegister(r.id)} style={{ fontSize: 12, color: r.color, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                   Get access →
                 </button>
                 <button type="button" className="lp-role-cta-secondary" onClick={() => goSignIn(r.id)} style={{ fontSize: 12, color: "#7ab8d8", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
@@ -445,13 +470,14 @@ export function LandingPage() {
         <div className="lp-steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
           {(journeyTab === "patient" ? PATIENT_STEPS : CLINICIAN_STEPS).map((s, i) => (
             <div key={s.n} className="lp-step-card"
+              data-accent={lpAccent(s.color)}
               style={{ padding: "26px 22px", background: "rgba(8,18,42,0.65)", border: `1px solid ${s.color}22`, borderRadius: 16, position: "relative",
                 opacity: 1, animation: `lp-fade-up 0.5s ${i * 0.08}s both` }}>
               <div className="lp-step-num" style={{ position: "absolute", top: 18, right: 20, fontSize: 28, fontWeight: 900, color: `${s.color}18`, letterSpacing: "-0.02em" }}>{s.n}</div>
               <div className="lp-step-icon-wrap" style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}18`, border: `1px solid ${s.color}44`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-                <div style={{ width: 10, height: 10, borderRadius: "50%", background: s.color }} />
+                <div data-accent-dot={lpAccent(s.color)} style={{ width: 10, height: 10, borderRadius: "50%", background: s.color }} />
               </div>
-              <div className="lp-step-title" style={{ fontWeight: 700, fontSize: 15, color: s.color, marginBottom: 8 }}>{s.title}</div>
+              <div className="lp-step-title" data-accent={lpAccent(s.color)} style={{ fontWeight: 700, fontSize: 15, color: s.color, marginBottom: 8 }}>{s.title}</div>
               <p className="lp-step-body" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: 0 }}>{s.body}</p>
               {i < 3 && <div className="lp-step-arrow lp-hide-mobile" style={{ position: "absolute", right: -14, top: "50%", transform: "translateY(-50%)", fontSize: 16, color: `${s.color}55`, zIndex: 2 }}>›</div>}
             </div>
@@ -472,12 +498,12 @@ export function LandingPage() {
           <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Real-world performance from the Kenya pilot, measuring clinical and operational impact.</p>
         </div>
         <div ref={metricsRef} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginBottom: 50 }}>
-          <MetricCard value={47280} suffix=""    label="Registered Patients"    color="#00d4ff"  start={metricsVisible} duration={2200} />
-          <MetricCard value={380}   suffix="+"   label="Active Clinicians"      color="#00e5a0"  start={metricsVisible} />
-          <MetricCard value={12}    suffix=""    label="Pilot Facilities"       color="#a855f7"  start={metricsVisible} duration={1200} />
-          <MetricCard value={99}    suffix=".7%" label="Uptime SLA"             color="#ffb830"  start={metricsVisible} duration={1400} />
-          <MetricCard value={100}   suffix="%"   label="AI Accuracy"            color="#3d8ef8"  start={metricsVisible} duration={1800} />
-          <MetricCard value={2100}  suffix="+"   label="Appointments Booked"    color="#ff3366"  start={metricsVisible} duration={2000} />
+          <MetricCard value={47280} suffix=""    label="Registered Patients"    color="#00d4ff"  accent="cyan"   start={metricsVisible} duration={2200} />
+          <MetricCard value={380}   suffix="+"   label="Active Clinicians"      color="#00e5a0"  accent="green"  start={metricsVisible} />
+          <MetricCard value={12}    suffix=""    label="Pilot Facilities"       color="#a855f7"  accent="violet" start={metricsVisible} duration={1200} />
+          <MetricCard value={99}    suffix=".7%" label="Uptime SLA"             color="#ffb830"  accent="amber"  start={metricsVisible} duration={1400} />
+          <MetricCard value={100}   suffix="%"   label="AI Accuracy"            color="#3d8ef8"  accent="blue"   start={metricsVisible} duration={1800} />
+          <MetricCard value={2100}  suffix="+"   label="Appointments Booked"    color="#ff3366"  accent="pink"   start={metricsVisible} duration={2000} />
         </div>
       </div>
     </section>
@@ -494,17 +520,17 @@ export function LandingPage() {
         </div>
         <div ref={aiRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
           {AI_CAPABILITIES.map((a, i) => (
-            <div key={a.title} className="lp-ai-card"
+            <div key={a.title} className="lp-ai-card" data-accent={lpAccent(a.color)}
               style={{ padding: "24px 22px", background: "rgba(8,18,42,0.65)", border: `1px solid rgba(0,212,255,0.10)`, borderRadius: 16,
                 opacity: aiVisible ? 1 : 0, transform: aiVisible ? "translateY(0)" : "translateY(24px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div className="lp-ai-title" style={{ fontWeight: 700, fontSize: 15, color: a.color }}>{a.title}</div>
-                <div className="lp-ai-pct" style={{ fontSize: 13, fontWeight: 800, color: a.color }}>{a.pct}%</div>
+                <div className="lp-ai-title" data-accent={lpAccent(a.color)} style={{ fontWeight: 700, fontSize: 15, color: a.color }}>{a.title}</div>
+                <div className="lp-ai-pct" data-accent={lpAccent(a.color)} style={{ fontSize: 13, fontWeight: 800, color: a.color }}>{a.pct}%</div>
               </div>
               <p className="lp-ai-body" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.6, margin: "0 0 16px" }}>{a.body}</p>
               <div className="lp-ai-bar-track" style={{ height: 4, background: "rgba(255,255,255,0.05)", borderRadius: 2, overflow: "hidden" }}>
-                <div className={aiVisible ? "lp-ai-bar" : ""} style={{ "--w": `${a.pct}%`, height: "100%", borderRadius: 2, background: a.color, width: aiVisible ? `${a.pct}%` : 0, transition: `width 1.5s ${i * 0.1 + 0.3}s cubic-bezier(0.23,1,0.32,1)` } as React.CSSProperties} />
+                <div className={aiVisible ? "lp-ai-bar" : ""} data-accent-bar={lpAccent(a.color)} style={{ "--w": `${a.pct}%`, height: "100%", borderRadius: 2, background: a.color, width: aiVisible ? `${a.pct}%` : 0, transition: `width 1.5s ${i * 0.1 + 0.3}s cubic-bezier(0.23,1,0.32,1)` } as React.CSSProperties} />
               </div>
             </div>
           ))}
@@ -530,7 +556,7 @@ export function LandingPage() {
               <div className="lp-testi-quote-mark" style={{ fontSize: 48, lineHeight: 1, color: `${t.color}30`, fontFamily: "Georgia,serif", marginBottom: 4 }}>"</div>
               <p className="lp-testi-quote" style={{ fontSize: 14, color: "#c8ddf5", lineHeight: 1.72, margin: "0 0 24px", fontStyle: "italic" }}>{t.quote}</p>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div className="lp-testi-avatar" style={{ width: 40, height: 40, borderRadius: "50%", background: `${t.color}22`, border: `2px solid ${t.color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: t.color, flexShrink: 0 }}>{t.initials}</div>
+                <div className="lp-testi-avatar" data-accent={lpAccent(t.color)} style={{ width: 40, height: 40, borderRadius: "50%", background: `${t.color}22`, border: `2px solid ${t.color}55`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: t.color, flexShrink: 0 }}>{t.initials}</div>
                 <div>
                   <div className="lp-testi-name" style={{ fontSize: 13, fontWeight: 700, color: "#ddf0ff" }}>{t.name}</div>
                   <div className="lp-testi-role" style={{ fontSize: 11, color: "#3e637a", marginTop: 2 }}>{t.role}</div>
@@ -559,8 +585,8 @@ export function LandingPage() {
                 opacity: compVisible ? 1 : 0, transform: compVisible ? "translateY(0)" : "translateY(20px)",
                 transition: `opacity 0.5s ${i * 0.06}s, transform 0.5s ${i * 0.06}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
-                <div className="lp-comp-dot" style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
-                <span className="lp-comp-label" style={{ fontWeight: 700, fontSize: 15, color: c.color }}>{c.label}</span>
+                <div className="lp-comp-dot" data-accent-dot={lpAccent(c.color)} style={{ width: 8, height: 8, borderRadius: "50%", background: c.color, flexShrink: 0 }} />
+                <span className="lp-comp-label" data-accent={lpAccent(c.color)} style={{ fontWeight: 700, fontSize: 15, color: c.color }}>{c.label}</span>
               </div>
               <p className="lp-comp-body" style={{ fontSize: 13, color: "#7ab8d8", margin: 0, lineHeight: 1.55 }}>{c.sub}</p>
             </div>
@@ -651,7 +677,7 @@ export function LandingPage() {
           <span className="lp-footer-brand" style={{ fontWeight: 700, fontSize: 14, color: "#ddf0ff" }}>UniHealth</span>
         </div>
         <div className="lp-footer-badges" style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-          {["KDPA Compliant", "FHIR R5", "ISO 27001", "MoH Approved"].map(b => (
+          {["KDPA Compliant", "HIPAA Compliant", "FHIR R5", "ISO 27001", "MoH Approved"].map(b => (
             <span key={b} className="lp-footer-badge" style={{ fontSize: 11, color: "#3e637a" }}>{b}</span>
           ))}
         </div>
@@ -661,10 +687,13 @@ export function LandingPage() {
   );
 
   return (
-    <div className="lp-root" style={{ minHeight: "100vh", width: "100%", fontFamily: "var(--font-system)", overflowX: "hidden" }}>
+    <div className="lp-landing-route">
+      <MedicalBackground layout="landing" />
+      <div className="lp-root" style={{ minHeight: "100vh", width: "100%", fontFamily: "var(--font-system)", overflowX: "hidden" }}>
       <style>{KEYFRAMES}</style>
       {Topbar}
       {Hero}
+      {HeroMetrics}
       {TrustTicker}
       {ProblemSolution}
       {PortalRoles}
@@ -677,6 +706,7 @@ export function LandingPage() {
       {Faq}
       {Cta}
       {Footer}
+      </div>
     </div>
   );
 }

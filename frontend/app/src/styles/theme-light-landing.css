@@ -1,0 +1,406 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHT MODE — Homepage (landing) cinematic scene + bold accents
+   Loaded after theme-light-bold-black.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Root must stay glass — landing-theme sets opaque --bg on .lp-root */
+html[data-theme="light"] .lp-landing-route > .lp-root {
+  background: transparent !important;
+}
+
+/* ── Bold accent palette (overrides global black flattening) ───── */
+html[data-theme="light"] .lp-landing-route [data-accent="cyan"] {
+  color: #0082b4 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent="green"] {
+  color: #047857 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent="violet"] {
+  color: #6d28d9 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent="amber"] {
+  color: #b45309 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent="blue"] {
+  color: #2563a8 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent="pink"] {
+  color: #be123c !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="cyan"] {
+  background: #0082b4 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="green"] {
+  background: #047857 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="violet"] {
+  background: #6d28d9 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="amber"] {
+  background: #b45309 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="blue"] {
+  background: #2563a8 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-dot="pink"] {
+  background: #be123c !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="cyan"] {
+  background: #0082b4 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="green"] {
+  background: #047857 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="violet"] {
+  background: #6d28d9 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="amber"] {
+  background: #b45309 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="blue"] {
+  background: #2563a8 !important;
+}
+
+html[data-theme="light"] .lp-landing-route [data-accent-bar="pink"] {
+  background: #be123c !important;
+}
+
+/* Eyebrows & section labels — keep semantic color */
+html[data-theme="light"] .lp-landing-route .lp-eyebrow--cyan,
+html[data-theme="light"] .lp-landing-route .lp-cta-eyebrow {
+  color: #0082b4 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-eyebrow--success {
+  color: #047857 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-eyebrow--purple {
+  color: #6d28d9 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-eyebrow--amber {
+  color: #b45309 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-eyebrow--blue {
+  color: #2563a8 !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-problem-eyebrow[data-accent="pink"] {
+  color: #be123c !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-problem-before .lp-problem-col-head,
+html[data-theme="light"] .lp-landing-route .lp-problem-before .lp-problem-icon--bad {
+  color: #be123c !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-problem-after .lp-problem-col-head,
+html[data-theme="light"] .lp-landing-route .lp-problem-after .lp-problem-icon--good {
+  color: #047857 !important;
+}
+
+/* ── Nav glass over scene ───────────────────────────────────────── */
+html[data-theme="light"] .lp-landing-route .lp-topnav {
+  background: color-mix(in srgb, var(--card) 82%, transparent) !important;
+  border-bottom: 1px solid var(--bdr) !important;
+  box-shadow: 0 4px 24px rgba(26, 35, 50, 0.08) !important;
+}
+
+/* ── Full-page MedicalBackground scene (homepage) ───────────────── */
+html[data-theme="light"] body:has(.lp-landing-route).unihealth-auth-bg {
+  background: transparent !important;
+}
+
+html[data-theme="light"] body:has(.lp-landing-route) .unihealth-med-scene-css {
+  background:
+    radial-gradient(ellipse 110% 70% at 50% -5%, rgba(0, 130, 180, 0.38) 0%, transparent 52%),
+    radial-gradient(ellipse 90% 55% at 95% 90%, rgba(109, 40, 217, 0.18) 0%, transparent 46%),
+    radial-gradient(ellipse 80% 55% at 5% 75%, rgba(4, 120, 87, 0.2) 0%, transparent 42%),
+    radial-gradient(circle at 62% 48%, rgba(0, 130, 180, 0.2) 0%, transparent 45%),
+    linear-gradient(168deg, #e8d9b0 0%, #d4bc82 42%, #c9ad6e 100%) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body:has(.lp-landing-route) .unihealth-med-scene-grid {
+  opacity: 0.92 !important;
+  background-image:
+    linear-gradient(rgba(0, 130, 180, 0.32) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 130, 180, 0.26) 1px, transparent 1px) !important;
+}
+
+html[data-theme="light"] body:has(.lp-landing-route) .unihealth-med-scene-scan {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 130, 180, 0.16) 40%,
+    rgba(4, 120, 87, 0.32) 50%,
+    rgba(0, 130, 180, 0.2) 60%,
+    transparent 100%
+  ) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body:has(.lp-landing-route) .unihealth-med-scene-canvas.unihealth-medical-bg {
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: saturate(1.28) contrast(1.1);
+}
+
+/* ── Hero: glass over MedicalBackground (must stay translucent) ─── */
+html[data-theme="light"] .lp-landing-route .lp-root section.lp-hero {
+  background: linear-gradient(
+    180deg,
+    rgba(232, 217, 176, 0.06) 0%,
+    rgba(246, 248, 251, 0.03) 38%,
+    transparent 100%
+  ) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-head,
+html[data-theme="light"] .lp-landing-route .lp-hero-foot {
+  position: relative;
+  z-index: 2;
+}
+
+/* Particle animation — dark mode fades to 0; light needs a visible floor */
+@keyframes lp-particle-light {
+  0% {
+    opacity: 0.55;
+    transform: translateY(0) scale(0.75);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(-8vh) scale(1);
+  }
+  88% {
+    opacity: 0.92;
+    transform: translateY(-82vh) scale(1.15);
+  }
+  100% {
+    opacity: 0.5;
+    transform: translateY(-90vh) scale(1.25);
+  }
+}
+
+@keyframes lp-scan-light {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0.85;
+  }
+}
+
+/* Hero animations — bold & visible (class-based; wins over inline overrides) */
+html[data-theme="light"] .lp-landing-route .lp-hero-particle {
+  width: 5px !important;
+  height: 5px !important;
+  min-width: 5px !important;
+  min-height: 5px !important;
+  animation-name: lp-particle-light !important;
+  filter: saturate(1.45);
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-particle--cyan {
+  background-color: #0082b4 !important;
+  box-shadow: 0 0 12px rgba(0, 130, 180, 0.65) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-particle--green {
+  background-color: #047857 !important;
+  box-shadow: 0 0 12px rgba(4, 120, 87, 0.6) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-particle--violet {
+  background-color: #6d28d9 !important;
+  box-shadow: 0 0 12px rgba(109, 40, 217, 0.58) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-grid {
+  background-image:
+    linear-gradient(rgba(0, 130, 180, 0.34) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 130, 180, 0.28) 1px, transparent 1px) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-scan {
+  height: 4px !important;
+  background: linear-gradient(90deg, transparent, rgba(0, 130, 180, 0.78), transparent) !important;
+  animation-name: lp-scan-light !important;
+  box-shadow: 0 0 18px rgba(0, 130, 180, 0.45) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-glow--left {
+  background: radial-gradient(ellipse, rgba(0, 130, 180, 0.28) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-glow--right {
+  background: radial-gradient(ellipse, rgba(4, 120, 87, 0.22) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-metrics {
+  background: color-mix(in srgb, var(--card) 78%, transparent) !important;
+  border-top-color: var(--bdr) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+@keyframes lp-hero-glow-word-light {
+  0%,
+  100% {
+    color: #0082b4;
+    text-shadow: 0 0 20px rgba(0, 130, 180, 0.45);
+  }
+  50% {
+    color: #005f82;
+    text-shadow: 0 0 10px rgba(0, 130, 180, 0.28);
+  }
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-glow-word {
+  animation: lp-hero-glow-word-light 3.5s ease-in-out infinite !important;
+  color: #0082b4 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-live-dot {
+  background: #047857 !important;
+  box-shadow: 0 0 10px rgba(4, 120, 87, 0.65);
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-live-badge {
+  background: rgba(4, 120, 87, 0.12) !important;
+  border: 1.5px solid rgba(4, 120, 87, 0.42) !important;
+}
+
+/* Floating hero mock cards */
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card {
+  background: color-mix(in srgb, var(--card) 86%, transparent) !important;
+  border-width: 2px !important;
+  box-shadow:
+    0 12px 36px rgba(26, 35, 50, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.55) inset !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card--green {
+  border-color: rgba(4, 120, 87, 0.62) !important;
+  border-left: 4px solid #047857 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card--cyan {
+  border-color: rgba(0, 130, 180, 0.62) !important;
+  border-left: 4px solid #0082b4 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card--violet {
+  border-color: rgba(109, 40, 217, 0.62) !important;
+  border-left: 4px solid #6d28d9 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(1) {
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(2) {
+  color: var(--t1) !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(3) {
+  color: var(--t2) !important;
+  font-weight: 600 !important;
+}
+
+/* Top stats — vivid accent numbers */
+html[data-theme="light"] .lp-landing-route .lp-top-stats > div > div[data-accent],
+html[data-theme="light"] .lp-landing-route .lp-metric-value[data-accent] {
+  font-weight: 900 !important;
+}
+
+/* Metrics / AI animated grids */
+html[data-theme="light"] .lp-landing-route .lp-metrics-grid-bg {
+  background-image:
+    linear-gradient(rgba(0, 130, 180, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 130, 180, 0.18) 1px, transparent 1px) !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-metrics-section {
+  background: color-mix(in srgb, var(--surface-muted) 88%, transparent) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-cta-glow {
+  background: radial-gradient(ellipse, rgba(0, 130, 180, 0.32) 0%, transparent 70%) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-trust-ticker-dot {
+  background: #0082b4 !important;
+  opacity: 1 !important;
+  box-shadow: 0 0 8px rgba(0, 130, 180, 0.55);
+}
+
+/* Step cards — accent borders */
+html[data-theme="light"] .lp-landing-route .lp-step-card[data-accent="cyan"] {
+  border-color: rgba(0, 130, 180, 0.45) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-step-card[data-accent="green"] {
+  border-color: rgba(4, 120, 87, 0.45) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-step-card[data-accent="violet"] {
+  border-color: rgba(109, 40, 217, 0.45) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-step-card[data-accent="amber"] {
+  border-color: rgba(180, 83, 9, 0.45) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-step-card[data-accent="blue"] {
+  border-color: rgba(37, 99, 168, 0.45) !important;
+}
+
+/* Trust ticker animation */
+html[data-theme="light"] .lp-landing-route .lp-trust-ticker-track {
+  animation: lp-ticker 28s linear infinite !important;
+}
+
+/* AI progress bars — keep vivid during grow animation */
+html[data-theme="light"] .lp-landing-route .lp-ai-bar {
+  opacity: 1 !important;
+  filter: saturate(1.25);
+}

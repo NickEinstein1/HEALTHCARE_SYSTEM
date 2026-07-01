@@ -5,6 +5,11 @@ html[data-theme="light"] .lp-root {
   color: var(--t1) !important;
 }
 
+/* Cinematic homepage: keep root transparent so MedicalBackground shows through hero */
+html[data-theme="light"] .lp-landing-route > .lp-root {
+  background: transparent !important;
+}
+
 /* ── Nav ─────────────────────────────────────────────────────────── */
 html[data-theme="light"] .lp-root nav {
   background: color-mix(in srgb, var(--card) 94%, transparent) !important;
@@ -48,9 +53,7 @@ html[data-theme="light"] .lp-root .lp-btn-primary {
 }
 
 /* ── Hero ────────────────────────────────────────────────────────── */
-html[data-theme="light"] .lp-root section.lp-hero {
-  background: linear-gradient(180deg, var(--surface-muted) 0%, var(--bg) 50%, color-mix(in srgb, var(--bl) 55%, var(--bg)) 100%) !important;
-}
+/* Homepage hero glass + animations: theme-light-landing.css + landing-hero.css */
 
 html[data-theme="light"] .lp-root .lp-hero h1,
 html[data-theme="light"] .lp-root .lp-hero h1 span {
@@ -78,8 +81,10 @@ html[data-theme="light"] .lp-root .lp-hero a {
   font-weight: 800 !important;
 }
 
-/* Hero floating mock cards — light surfaces */
-html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[class],
+/* Hero background animations — see landing-hero.css + theme-light-landing.css */
+
+/* Hero floating mock cards — light surfaces (float cards only; not particles/grid) */
+html[data-theme="light"] .lp-root .lp-hero > div:first-child > div.lp-hero-float-card,
 html[data-theme="light"] .lp-root .lp-hero > div:first-child > div[style*="rgba(8,18,42"] {
   background: var(--card) !important;
   border: 2px solid var(--bdr) !important;
@@ -116,7 +121,7 @@ html[data-theme="light"] .lp-root .lp-top-stats > div > div:last-child {
 }
 
 /* ── Sections ────────────────────────────────────────────────────── */
-html[data-theme="light"] .lp-root section {
+html[data-theme="light"] .lp-root section:not(.lp-hero) {
   background: var(--bg) !important;
 }
 
@@ -198,30 +203,13 @@ html[data-theme="light"] .lp-root .lp-hero h1 span[style*="lp-glow-text"] {
   text-shadow: none !important;
 }
 
-/* Particles — softer, still visible */
-html[data-theme="light"] .lp-root .lp-hero div[style*="lp-particle"] {
-  opacity: 0.45 !important;
-  filter: saturate(1.2);
-}
-
-/* Scan line — visible on pearl background */
-html[data-theme="light"] .lp-root .lp-hero div[style*="lp-scan"] {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(90, 165, 210, 0.22),
-    transparent
-  ) !important;
-  height: 3px !important;
-}
-
 /* Status badge pulse */
 html[data-theme="light"] .lp-root .lp-hero span[style*="lp-blink"] {
   opacity: 1 !important;
 }
 
 html[data-theme="light"] .lp-root .lp-hero div[style*="lp-blink"] span:last-child {
-  color: #000000 !important;
+  color: var(--t1) !important;
   font-weight: 800 !important;
 }
 
@@ -378,7 +366,23 @@ html[data-theme="light"] .lp-root .lp-eyebrow--amber { color: var(--text-warning
 
 html[data-theme="light"] .lp-root .lp-eyebrow--blue { color: var(--text-info) !important; font-weight: var(--fw-label) !important; }
 
-/* Alternating section backgrounds */
+/* Alternating section backgrounds — skip hero (cinematic canvas shows through) */
+html[data-theme="light"] .lp-landing-route .lp-features-section,
+html[data-theme="light"] .lp-landing-route .lp-testimonials-section,
+html[data-theme="light"] .lp-landing-route .lp-metrics-section,
+html[data-theme="light"] .lp-landing-route .lp-awards-section,
+html[data-theme="light"] .lp-landing-route .lp-cta-section {
+  background: var(--surface-muted) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-journey-section,
+html[data-theme="light"] .lp-landing-route .lp-ai-section,
+html[data-theme="light"] .lp-landing-route .lp-compliance-section,
+html[data-theme="light"] .lp-landing-route .lp-faq-section,
+html[data-theme="light"] .lp-landing-route .lp-problem-section {
+  background: var(--bg) !important;
+}
+
 html[data-theme="light"] .lp-root .lp-features-section,
 html[data-theme="light"] .lp-root .lp-testimonials-section,
 html[data-theme="light"] .lp-root .lp-metrics-section,
@@ -497,8 +501,9 @@ html[data-theme="light"] .lp-root .lp-step-arrow {
 /* ── Metrics ───────────────────────────────────────────────────── */
 html[data-theme="light"] .lp-root .lp-metrics-grid-bg {
   background-image:
-    linear-gradient(rgba(90, 165, 210, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 165, 210, 0.06) 1px, transparent 1px) !important;
+    linear-gradient(rgba(0, 130, 180, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 130, 180, 0.12) 1px, transparent 1px) !important;
+  opacity: 1 !important;
 }
 
 html[data-theme="light"] .lp-root .lp-metric-card {
@@ -527,16 +532,18 @@ html[data-theme="light"] .lp-root .lp-ai-card {
 html[data-theme="light"] .lp-root .lp-ai-title,
 html[data-theme="light"] .lp-root .lp-ai-pct {
   font-weight: 800 !important;
+  filter: saturate(1.2);
+}
+
+html[data-theme="light"] .lp-root .lp-ai-bar-track {
+  background: var(--surface-muted) !important;
+  border: 1px solid var(--bdr) !important;
 }
 
 html[data-theme="light"] .lp-root .lp-ai-body {
   color: var(--t2) !important;
   font-size: 14px !important;
   font-weight: 500 !important;
-}
-
-html[data-theme="light"] .lp-root .lp-ai-bar-track {
-  background: var(--surface-muted) !important;
 }
 
 /* ── Testimonials ──────────────────────────────────────────────── */
@@ -631,10 +638,6 @@ html[data-theme="light"] .lp-root .lp-faq-toggle--open {
 }
 
 /* ── CTA ───────────────────────────────────────────────────────── */
-html[data-theme="light"] .lp-root .lp-cta-glow {
-  background: radial-gradient(ellipse, rgba(90, 165, 210, 0.08) 0%, transparent 70%) !important;
-}
-
 html[data-theme="light"] .lp-root .lp-cta-title {
   color: var(--t1) !important;
   font-weight: 900 !important;

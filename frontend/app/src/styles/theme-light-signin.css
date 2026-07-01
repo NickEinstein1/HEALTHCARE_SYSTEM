@@ -12,19 +12,19 @@ html[data-theme="light"] .sign-in-route::after {
 /* ── Cinematic scene layers (light palette) ─────────────────────── */
 html[data-theme="light"] .unihealth-med-scene-css {
   background:
-    radial-gradient(ellipse 110% 70% at 50% -5%, rgba(90, 165, 210, 0.2) 0%, transparent 52%),
-    radial-gradient(ellipse 90% 55% at 95% 90%, rgba(109, 40, 217, 0.08) 0%, transparent 46%),
-    radial-gradient(ellipse 80% 55% at 5% 75%, rgba(4, 120, 87, 0.1) 0%, transparent 42%),
-    radial-gradient(circle at 62% 48%, rgba(90, 165, 210, 0.1) 0%, transparent 45%),
+    radial-gradient(ellipse 110% 70% at 50% -5%, rgba(0, 130, 180, 0.28) 0%, transparent 52%),
+    radial-gradient(ellipse 90% 55% at 95% 90%, rgba(109, 40, 217, 0.14) 0%, transparent 46%),
+    radial-gradient(ellipse 80% 55% at 5% 75%, rgba(4, 120, 87, 0.16) 0%, transparent 42%),
+    radial-gradient(circle at 62% 48%, rgba(0, 130, 180, 0.16) 0%, transparent 45%),
     linear-gradient(168deg, #e8d9b0 0%, #d4bc82 42%, #c9ad6e 100%) !important;
   animation: uniSceneMesh 20s ease-in-out infinite alternate !important;
 }
 
 html[data-theme="light"] .unihealth-med-scene-grid {
-  opacity: 0.48 !important;
+  opacity: 0.72 !important;
   background-image:
-    linear-gradient(rgba(90, 165, 210, 0.14) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(90, 165, 210, 0.12) 1px, transparent 1px) !important;
+    linear-gradient(rgba(0, 130, 180, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 130, 180, 0.18) 1px, transparent 1px) !important;
   background-size: 44px 44px !important;
 }
 
@@ -32,9 +32,9 @@ html[data-theme="light"] .unihealth-med-scene-scan {
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(90, 165, 210, 0.06) 40%,
-    rgba(4, 120, 87, 0.12) 50%,
-    rgba(90, 165, 210, 0.08) 60%,
+    rgba(0, 130, 180, 0.10) 40%,
+    rgba(4, 120, 87, 0.22) 50%,
+    rgba(0, 130, 180, 0.14) 60%,
     transparent 100%
   ) !important;
   opacity: 1 !important;

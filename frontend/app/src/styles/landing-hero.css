@@ -1,0 +1,345 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Landing hero — structural animations + text/animation separation
+   ═══════════════════════════════════════════════════════════════════ */
+
+.lp-landing-route .lp-topnav {
+  background: rgba(5, 9, 26, 0.88);
+  border-bottom: 1px solid rgba(0, 212, 255, 0.09);
+}
+
+/* ── Hero shell: top headline / open stage / bottom CTAs ─────────── */
+.lp-landing-route section.lp-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: 62px;
+  padding-bottom: clamp(20px, 3vh, 36px);
+  overflow: hidden;
+}
+
+.lp-landing-route .lp-hero-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Open corridor — no text; medical canvas shows through */
+.lp-landing-route .lp-hero-stage {
+  flex: 1 1 auto;
+  min-height: clamp(140px, 26vh, 320px);
+  pointer-events: none;
+}
+
+.lp-landing-route .lp-hero-head,
+.lp-landing-route .lp-hero-foot {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  width: min(100%, 680px);
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 32px);
+}
+
+.lp-landing-route .lp-hero-head {
+  padding-top: clamp(20px, 4vh, 40px);
+  max-width: 720px;
+}
+
+.lp-landing-route .lp-hero-foot {
+  padding-bottom: clamp(12vh, 14vh, 120px);
+}
+
+/* Narrow text column — keeps side margins clear for silhouettes */
+@media (min-width: 900px) {
+  .lp-landing-route .lp-hero-head,
+  .lp-landing-route .lp-hero-foot {
+    width: min(52vw, 640px);
+  }
+}
+
+/* ── Typography & controls ───────────────────────────────────────── */
+.lp-landing-route .lp-hero-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 160, 0.08);
+  border: 1px solid rgba(0, 229, 160, 0.22);
+  border-radius: 20px;
+  padding: 5px 14px;
+  margin-bottom: clamp(16px, 2.5vh, 26px);
+}
+
+.lp-landing-route .lp-hero-live-badge span:last-child {
+  font-size: 11px;
+  color: #00e5a0;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.lp-landing-route .lp-hero-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00e5a0;
+  display: inline-block;
+  animation: lp-blink 1.8s infinite;
+}
+
+.lp-landing-route .lp-hero-title {
+  font-size: clamp(28px, 5.2vw, 58px);
+  font-weight: 900;
+  line-height: 1.06;
+  color: #ddf0ff;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.lp-landing-route .lp-hero-glow-word {
+  color: #00d4ff;
+  animation: lp-glow-text 3.5s ease-in-out infinite;
+}
+
+.lp-landing-route .lp-hero-title-muted {
+  color: #7ab8d8;
+}
+
+.lp-landing-route .lp-hero-sub {
+  font-size: clamp(13px, 1.6vw, 16px);
+  color: #7ab8d8;
+  line-height: 1.6;
+  margin: clamp(12px, 2vh, 20px) auto 0;
+  max-width: 520px;
+}
+
+.lp-landing-route .lp-hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lp-landing-route .lp-hero-actions .lp-btn-primary {
+  padding: 14px 34px;
+  border-radius: 10px;
+  background: #00d4ff;
+  border: none;
+  color: #05091a;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lp-landing-route .lp-hero-actions button:not(.lp-btn-primary),
+.lp-landing-route .lp-hero-actions a {
+  padding: 14px 28px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(0, 212, 255, 0.32);
+  color: #00d4ff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Metrics strip — below hero, clear of ECG animation */
+.lp-landing-route .lp-hero-metrics {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid rgba(0, 212, 255, 0.09);
+  background: color-mix(in srgb, rgba(5, 9, 26, 0.72) 55%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.lp-landing-route .lp-hero-metrics .lp-top-stats {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(16px, 2.5vh, 28px) clamp(16px, 4vw, 32px);
+}
+
+.lp-landing-route .lp-hero-metrics .lp-top-stats > div {
+  flex: 1 1 140px;
+  padding: 10px 20px;
+  border-right: 1px solid rgba(0, 212, 255, 0.07);
+  text-align: center;
+}
+
+.lp-landing-route .lp-hero-metrics .lp-top-stats > div:last-child {
+  border-right: none;
+}
+
+.lp-landing-route .lp-metric-value {
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 800;
+}
+
+.lp-landing-route .lp-metric-label {
+  font-size: 11px;
+  color: #3e637a;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Background particles ────────────────────────────────────────── */
+.lp-landing-route .lp-hero-particle {
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  width: 4px;
+  height: 4px;
+  min-width: 4px;
+  min-height: 4px;
+  opacity: 0.7;
+  animation: lp-particle var(--lp-dur, 10s) var(--lp-delay, 0s) infinite linear;
+  will-change: transform, opacity;
+}
+
+.lp-landing-route .lp-hero-particle--cyan {
+  background-color: #00d4ff;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.55);
+}
+
+.lp-landing-route .lp-hero-particle--green {
+  background-color: #00e5a0;
+  box-shadow: 0 0 8px rgba(0, 229, 160, 0.5);
+}
+
+.lp-landing-route .lp-hero-particle--violet {
+  background-color: #a855f7;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+/* Fade grid in centre — canvas grid remains visible */
+.lp-landing-route .lp-hero-grid {
+  position: absolute;
+  inset: 0;
+  background-size: 58px 58px;
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.06) 1px, transparent 1px);
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 88% 72% at 50% 48%, transparent 8%, rgba(0, 0, 0, 0.85) 62%);
+}
+
+.lp-landing-route .lp-hero-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.35), transparent);
+  animation: lp-scan 7s linear infinite;
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.25);
+  pointer-events: none;
+}
+
+/* Side glows — not centred over hub animation */
+.lp-landing-route .lp-hero-glow {
+  position: absolute;
+  width: min(420px, 42vw);
+  height: min(420px, 42vw);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.lp-landing-route .lp-hero-glow--left {
+  top: 38%;
+  left: 4%;
+  transform: translateY(-50%);
+  background: radial-gradient(ellipse, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+}
+
+.lp-landing-route .lp-hero-glow--right {
+  top: 42%;
+  right: 3%;
+  transform: translateY(-50%);
+  background: radial-gradient(ellipse, rgba(0, 229, 160, 0.08) 0%, transparent 70%);
+}
+
+/* Float cards — top corners only; clear of patient/doctor figures */
+.lp-landing-route .lp-hero-float-card {
+  position: absolute;
+  max-width: 220px;
+  padding: 12px 16px;
+  background: rgba(8, 18, 42, 0.8);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  animation: lp-fade-up 1s both;
+}
+
+.lp-landing-route .lp-hero-float-card > div:nth-child(1) {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.lp-landing-route .lp-hero-float-card > div:nth-child(2) {
+  font-size: 13px;
+  color: #ddf0ff;
+  font-weight: 600;
+}
+
+.lp-landing-route .lp-hero-float-card > div:nth-child(3) {
+  font-size: 11px;
+  color: #7ab8d8;
+  margin-top: 3px;
+}
+
+.lp-landing-route .lp-hero-float-card--cyan {
+  left: max(2%, 12px);
+  top: 7%;
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  animation-delay: 0.8s;
+}
+
+.lp-landing-route .lp-hero-float-card--green {
+  right: max(2%, 12px);
+  top: 6%;
+  border: 1px solid rgba(0, 229, 160, 0.25);
+  animation-delay: 0.6s;
+}
+
+.lp-landing-route .lp-hero-float-card--violet {
+  right: max(2%, 12px);
+  top: 16%;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  animation-delay: 1s;
+}
+
+html[data-theme="dark"] .lp-landing-route section.lp-hero {
+  background: linear-gradient(
+    180deg,
+    rgba(5, 9, 26, 0.42) 0%,
+    transparent 22%,
+    transparent 72%,
+    rgba(5, 9, 26, 0.28) 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .lp-landing-route .lp-hero-float-card--violet {
+    display: none;
+  }
+
+  .lp-landing-route .lp-hero-stage {
+    min-height: clamp(80px, 14vh, 160px);
+  }
+
+  .lp-landing-route .lp-hero-head,
+  .lp-landing-route .lp-hero-foot {
+    width: 100%;
+  }
+}
