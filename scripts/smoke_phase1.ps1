@@ -3,10 +3,10 @@
 #   .\scripts\smoke_phase1.ps1
 #   $env:EHR_GATEWAY_URL="http://localhost:8100"; .\scripts\smoke_phase1.ps1
 
-$BASE = $env:EHR_GATEWAY_URL -or "http://localhost:8000"
+$BASE = if ($env:EHR_GATEWAY_URL) { $env:EHR_GATEWAY_URL } else { "http://localhost:8000" }
 $BASE = $BASE.TrimEnd('/')
-$PATIENT = $env:SMOKE_PATIENT_ID -or "P001"
-$FACILITY = $env:SMOKE_FACILITY_ID -or "FAC-A"
+$PATIENT = if ($env:SMOKE_PATIENT_ID) { $env:SMOKE_PATIENT_ID } else { "P001" }
+$FACILITY = if ($env:SMOKE_FACILITY_ID) { $env:SMOKE_FACILITY_ID } else { "FAC-A" }
 
 function chk {
     param(
@@ -14,7 +14,7 @@ function chk {
         [string]$uri,
         [hashtable]$headers = @{},
         [string]$method = "GET",
-        [string]$body = $null
+        [string]$body
     )
     
     $params = @{
