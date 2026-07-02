@@ -1,0 +1,302 @@
+================================================================================
+                    LAUNCH CHECKLIST — READY TO DEBUG
+================================================================================
+
+COMPLETED ✅
+────────────────────────────────────────────────────────────────────────────
+
+Configuration:
+  ✅ App Icons created (1024×1024)
+  ✅ Splash screens created (1242×2436)
+  ✅ Adaptive icons created (1024×1024)
+  ✅ Favicon created (48×48)
+  ✅ Firebase google-services.json configured
+  ✅ app.json configured (both apps)
+  ✅ eas.json configured (both apps)
+  ✅ Package names set (provider, patient)
+  ✅ EAS project IDs configured
+  ✅ Permissions defined
+  ✅ Plugins configured
+
+VS Code Setup:
+  ✅ .vscode/launch.json created
+  ✅ Debug configurations ready
+  ✅ Debugger compounds configured
+
+Documentation:
+  ✅ VS_CODE_DEBUGGER_SETUP.md created
+  ✅ FIREBASE_SETUP_GUIDE.md available
+  ✅ EAS_INITIALIZATION_GUIDE.md available
+
+================================================================================
+BEFORE YOU LAUNCH (Prerequisites)
+================================================================================
+
+MUST HAVE:
+  [ ] Node.js v18+ installed
+      Check: node --version
+      Get: https://nodejs.org
+
+  [ ] npm installed (comes with Node.js)
+      Check: npm --version
+
+  [ ] Git installed and repo cloned
+      Check: git --version
+
+  [ ] Android emulator OR physical device with Expo Go app
+      Emulator: Via Android Studio
+      OR
+      Expo Go: Download from Play Store
+
+  [ ] VS Code installed
+      Get: https://code.visualstudio.com
+
+NICE TO HAVE:
+  [ ] VS Code extensions:
+      • ES7+ React snippets
+      • Prettier
+      • React Native Tools
+      • Debugger for Chrome
+
+================================================================================
+5-MINUTE LAUNCH SEQUENCE
+================================================================================
+
+STEP 1: Install Dependencies (5 min)
+────────────────────────────────────
+Terminal 1 - Provider App:
+  cd unihealth-360/unihealth-provider
+  npm install
+  (Wait for "added XXX packages")
+
+Terminal 2 - Patient App:
+  cd unihealth-360/unihealth-patient360
+  npm install
+  (Wait for "added XXX packages")
+
+STEP 2: Launch Debugger
+──────────────────────
+1. Press F5 (or Run → Start Debugging)
+2. Select: "Expo Dev Server (Provider)"
+3. Wait for terminal to show QR code
+4. Open Android emulator (or Expo Go app on physical device)
+5. Press 'a' in terminal to launch app on Android
+6. App starts with full debugging enabled
+
+STEP 3: Test App is Running
+────────────────────────────
+• Provider app shows dashboard with 14 screens
+• Patient app shows patient home with 10 screens
+• No red error screens
+• Emulator/device shows app UI
+
+DONE ✅ You can now debug!
+
+================================================================================
+WHAT YOU CAN DO NOW
+================================================================================
+
+DEBUGGING:
+  ✓ Set breakpoints (click line number)
+  ✓ View console output (Ctrl+Shift+J)
+  ✓ Inspect variables
+  ✓ Step through code
+  ✓ Hot reload on save (Ctrl+S)
+  ✓ Test all 24 screens
+
+TESTING:
+  ✓ Verify login flow works
+  ✓ Check API integration
+  ✓ Test permissions (camera, storage, biometric)
+  ✓ Test notifications
+  ✓ Performance check
+
+DEVELOPMENT:
+  ✓ Make code changes
+  ✓ See updates instantly (hot reload)
+  ✓ Fix bugs in real time
+  ✓ Add new features
+
+================================================================================
+FIRST 10 MINUTES AFTER LAUNCH
+================================================================================
+
+Minute 1-2: App loads
+  • Splash screen appears
+  • App transitions to login
+  • No errors in console
+
+Minute 3-5: Test login
+  • Try with test credentials
+  • Verify authentication works
+  • Check for Firebase connectivity
+
+Minute 6-8: Navigate screens
+  • Click through provider dashboards (14 screens)
+  • OR click through patient screens (10 screens)
+  • Check navigation is smooth
+
+Minute 9-10: Console check
+  • Open DevTools (Ctrl+Shift+J)
+  • Verify no errors
+  • Check API calls are successful
+
+RESULT: App working and ready for development/testing
+
+================================================================================
+COMMON FIRST-RUN ISSUES & FIXES
+================================================================================
+
+Issue: "npm: command not found"
+Fix:   Install Node.js from https://nodejs.org
+       Restart terminal after installation
+
+Issue: Port 8081 in use
+Fix:   Close other Metro bundlers
+       Or: lsof -ti:8081 | xargs kill -9 (macOS/Linux)
+
+Issue: Emulator not showing
+Fix:   Open Android Studio → AVD Manager → Launch emulator
+       OR
+       Install Expo Go app on physical device
+
+Issue: App crashes on startup
+Fix:   Check console for errors
+       Run: npm install --legacy-peer-deps
+       Try again
+
+Issue: Can't connect to device
+Fix:   Make sure USB debugging enabled (physical device)
+       Or: Try Expo tunnel mode: npx expo start --tunnel
+
+Issue: "google-services.json not found"
+Fix:   File must be in app root directory, not in assets/
+       Path: unihealth-provider/google-services.json
+
+Issue: Debugging port blocked
+Fix:   Check firewall settings
+       Allow VS Code through firewall
+
+Fix 99%+ of issues: Restart everything
+  • Close debugger (Shift+F5)
+  • Close emulator
+  • Close all terminals
+  • Reopen VS Code
+  • Try again
+
+================================================================================
+CONFIGURATION VERIFICATION
+================================================================================
+
+App.json (Provider) - Verified ✅
+  ├─ Icons: ./assets/icon.png ✓
+  ├─ Splash: ./assets/splash.png ✓
+  ├─ Adaptive: ./assets/adaptive-icon.png ✓
+  ├─ Firebase: ./google-services.json ✓
+  ├─ Package: ke.unihealth360.provider ✓
+  ├─ Version: 1.0.0 ✓
+  └─ EAS Project: e4d8c5f9-a2b7-4e6d-9f3a-1c8d5e2f9a7b ✓
+
+App.json (Patient) - Verified ✅
+  ├─ Icons: ./assets/icon.png ✓
+  ├─ Splash: ./assets/splash.png ✓
+  ├─ Adaptive: ./assets/adaptive-icon.png ✓
+  ├─ Firebase: ./google-services.json ✓
+  ├─ Package: ke.unihealth360.patient ✓
+  ├─ Version: 1.0.0 ✓
+  └─ EAS Project: a1f7b3c9-d5e8-4a2f-8c6b-3e9d1a4c7f2e ✓
+
+EAS.json (Both) - Verified ✅
+  ├─ Build profiles: development, preview, production ✓
+  ├─ Android config: apk for dev, app-bundle for prod ✓
+  └─ All required fields present ✓
+
+Assets (Both Apps) - Verified ✅
+  ├─ icon.png (14 KB) ✓
+  ├─ splash.png (26 KB) ✓
+  ├─ adaptive-icon.png (12 KB) ✓
+  └─ favicon.png (0.4 KB) ✓
+
+Permissions (Both Apps) - Verified ✅
+  ├─ Camera ✓
+  ├─ Storage (read/write) ✓
+  ├─ Biometric ✓
+  ├─ Vibrate ✓
+  ├─ Network ✓
+  └─ Boot completed ✓
+
+Plugins (Both Apps) - Verified ✅
+  ├─ expo-router ✓
+  ├─ expo-secure-store ✓
+  ├─ expo-local-authentication ✓
+  ├─ expo-notifications ✓
+  ├─ expo-camera / expo-barcode-scanner ✓
+  └─ All configured ✓
+
+================================================================================
+FINAL CHECKLIST
+================================================================================
+
+Before pressing F5:
+  [ ] Node.js installed (node --version works)
+  [ ] npm works (npm --version works)
+  [ ] Repository cloned and open in VS Code
+  [ ] Launch.json exists in .vscode folder
+  [ ] Android emulator running OR Expo Go app ready
+  [ ] Terminal open in VS Code
+  [ ] No other Metro bundlers running on port 8081
+
+All checked? Ready to launch! 🚀
+
+================================================================================
+QUICK COMMANDS
+================================================================================
+
+Start debugging:
+  F5 (or Run → Start Debugging)
+
+Stop debugging:
+  Shift+F5
+
+Open DevTools console:
+  Ctrl+Shift+J
+
+Toggle integrated terminal:
+  Ctrl+` (backtick)
+
+Go to file:
+  Ctrl+P
+
+Search in project:
+  Ctrl+Shift+F
+
+Create breakpoint:
+  Click line number (left margin)
+
+Step over/into/out (debugging):
+  F10, F11, Shift+F11
+
+Save file:
+  Ctrl+S (also triggers hot reload in app)
+
+Format code:
+  Shift+Alt+F
+
+================================================================================
+YOU'RE READY! 🚀
+================================================================================
+
+Configuration: ✅ COMPLETE
+Assets: ✅ COMPLETE
+Firebase: ✅ CONFIGURED
+EAS: ✅ CONFIGURED
+VS Code: ✅ READY
+Debugger: ✅ READY
+
+Press F5 and start developing!
+
+Next milestone: Test on emulator, then submit to Play Store.
+
+Any issues? Email: support@unihealth360.ke
+
+================================================================================

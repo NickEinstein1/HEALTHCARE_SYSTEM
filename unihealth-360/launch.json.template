@@ -1,0 +1,61 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Expo Dev Server (Provider)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/unihealth-360/unihealth-provider/node_modules/.bin/expo",
+      "args": ["start", "--clear"],
+      "cwd": "${workspaceFolder}/unihealth-360/unihealth-provider",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "EXPO_DEBUG": "true"
+      }
+    },
+    {
+      "name": "Expo Dev Server (Patient)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/unihealth-360/unihealth-patient360/node_modules/.bin/expo",
+      "args": ["start", "--clear"],
+      "cwd": "${workspaceFolder}/unihealth-360/unihealth-patient360",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "EXPO_DEBUG": "true"
+      }
+    },
+    {
+      "name": "Attach React Native (Provider)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 8081,
+      "pathMapping": {
+        "/": "${workspaceFolder}/unihealth-360/unihealth-provider/",
+        "/debugger-ui/": "http://localhost:8081/debugger-ui/"
+      }
+    },
+    {
+      "name": "Attach React Native (Patient)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 8081,
+      "pathMapping": {
+        "/": "${workspaceFolder}/unihealth-360/unihealth-patient360/",
+        "/debugger-ui/": "http://localhost:8081/debugger-ui/"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Provider App (Dev Server + Debugger)",
+      "configurations": ["Expo Dev Server (Provider)", "Attach React Native (Provider)"]
+    },
+    {
+      "name": "Patient App (Dev Server + Debugger)",
+      "configurations": ["Expo Dev Server (Patient)", "Attach React Native (Patient)"]
+    }
+  ]
+}
