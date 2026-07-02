@@ -298,15 +298,17 @@ export function LandingPage() {
           <div>Grace M. · Thu 09:30 · Cardiology</div>
           <div>Synced to Dr. Njoroge · Confirmed</div>
         </div>
-        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--green">
-          <div data-accent="green">Critical Lab Alert</div>
-          <div>K⁺: 6.8 mEq/L — Hyperkalaemia</div>
-          <div>Routed to Dr. Kamau · 2s ago</div>
-        </div>
-        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--violet">
-          <div data-accent="violet">AI Diagnosis Hint</div>
-          <div>Acute Pyelonephritis — 87%</div>
-          <div>ICD-10 N10 · Urine C&amp;S suggested</div>
+        <div className="lp-hide-mobile lp-hero-float-stack lp-hero-float-stack--right">
+          <div className="lp-hero-float-card lp-hero-float-card--green">
+            <div data-accent="green">Critical Lab Alert</div>
+            <div>K⁺: 6.8 mEq/L — Hyperkalaemia</div>
+            <div>Routed to Dr. Kamau · 2s ago</div>
+          </div>
+          <div className="lp-hero-float-card lp-hero-float-card--violet">
+            <div data-accent="violet">AI Diagnosis Hint</div>
+            <div>Acute Pyelonephritis — 87%</div>
+            <div>ICD-10 N10 · Urine C&amp;S suggested</div>
+          </div>
         </div>
       </div>
 

@@ -267,9 +267,25 @@
   background: radial-gradient(ellipse, rgba(0, 229, 160, 0.08) 0%, transparent 70%);
 }
 
-/* Float cards — top corners only; clear of patient/doctor figures */
-.lp-landing-route .lp-hero-float-card {
+/* Float cards — corners; right pair stacked to prevent overlap */
+.lp-landing-route .lp-hero-float-stack {
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 220px;
+  pointer-events: none;
+}
+
+.lp-landing-route .lp-hero-float-stack--right {
+  right: max(2%, 12px);
+  top: 6%;
+  align-items: stretch;
+}
+
+.lp-landing-route .lp-hero-float-card {
+  position: relative;
+  width: 100%;
   max-width: 220px;
   padding: 12px 16px;
   background: rgba(8, 18, 42, 0.8);
@@ -299,22 +315,19 @@
 }
 
 .lp-landing-route .lp-hero-float-card--cyan {
+  position: absolute;
   left: max(2%, 12px);
   top: 7%;
   border: 1px solid rgba(0, 212, 255, 0.22);
   animation-delay: 0.8s;
 }
 
-.lp-landing-route .lp-hero-float-card--green {
-  right: max(2%, 12px);
-  top: 6%;
+.lp-landing-route .lp-hero-float-stack--right .lp-hero-float-card--green {
   border: 1px solid rgba(0, 229, 160, 0.25);
   animation-delay: 0.6s;
 }
 
-.lp-landing-route .lp-hero-float-card--violet {
-  right: max(2%, 12px);
-  top: 16%;
+.lp-landing-route .lp-hero-float-stack--right .lp-hero-float-card--violet {
   border: 1px solid rgba(168, 85, 247, 0.22);
   animation-delay: 1s;
 }
@@ -330,7 +343,7 @@ html[data-theme="dark"] .lp-landing-route section.lp-hero {
 }
 
 @media (max-width: 768px) {
-  .lp-landing-route .lp-hero-float-card--violet {
+  .lp-landing-route .lp-hero-float-stack--right .lp-hero-float-card--violet {
     display: none;
   }
 
