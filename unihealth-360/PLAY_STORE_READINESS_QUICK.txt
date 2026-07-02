@@ -1,0 +1,375 @@
+================================================================================
+                    PLAY STORE READINESS — QUICK CHECKLIST
+================================================================================
+
+CURRENT STATUS: ❌ NOT READY
+
+Blocking Issues:
+  ❌ Missing app icons & assets (icon.png, splash.png, adaptive-icon.png)
+  ❌ Missing google-services.json (Firebase config)
+  ❌ EAS project IDs are placeholders (REPLACE_WITH_EAS_PROJECT_ID)
+  ❌ Play Store assets not created (screenshots, feature graphics)
+
+================================================================================
+BLOCKING ISSUES — WHAT MUST BE FIXED (Before ANY build)
+================================================================================
+
+Issue #1: Missing Assets (Icons, Splash, Adaptive Icon)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEED TO CREATE:
+  ✗ assets/icon.png (1024×1024, transparent background)
+  ✗ assets/splash.png (1242×2436, your brand splash screen)
+  ✗ assets/adaptive-icon.png (1024×1024, follows Android guidelines)
+  ✗ assets/favicon.png (48×48)
+  ✗ assets/notification-icon.png (192×192)
+
+WHERE TO PLACE:
+  □ unihealth-provider/assets/
+  □ unihealth-patient360/assets/
+
+QUICK OPTIONS:
+  Option A: Create using design tool (Adobe XD, Figma, Illustrator)
+            TIME: 2-3 hours
+  
+  Option B: Use AI tool (Canva.com, Adobe Firefly)
+            TIME: 30 minutes
+            COST: Free-$10
+  
+  Option C: Hire designer on Fiverr/Upwork
+            TIME: 2-5 hours (turnaround)
+            COST: $50-200
+
+RECOMMENDATION: Use Canva or Adobe Firefly for speed and cost.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Issue #2: Missing Firebase google-services.json
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEPS TO FIX:
+  1. Go to https://console.firebase.google.com
+  2. Click "Create Project"
+     - Project Name: "UniHealth 360"
+     - Click "Continue"
+  
+  3. Enable Google Analytics (optional)
+  4. Click "Create project"
+  5. Wait for project creation (2-3 minutes)
+  
+  6. Click "Add app" → Android
+  7. Fill in:
+     - Package Name: ke.unihealth360.provider (for provider app)
+     - App Nickname: "UniHealth Provider"
+     - SHA-1 certificate fingerprint: (can get from EAS later)
+  
+  8. Click "Register app"
+  9. Download google-services.json
+  10. Place in: unihealth-provider/google-services.json
+  
+  11. Repeat for patient app:
+      - Package Name: ke.unihealth360.patient
+      - Place in: unihealth-patient360/google-services.json
+
+TIME: 15-30 minutes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Issue #3: EAS Project IDs (Placeholders in eas.json)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CURRENT STATE:
+  "projectId": "REPLACE_WITH_EAS_PROJECT_ID"  ← NEEDS REPLACEMENT
+
+STEPS TO FIX:
+  1. Go to https://expo.dev and sign up
+  2. Link your GitHub repository
+  3. For Provider App:
+     cd unihealth-provider
+     eas init
+     → Select GitHub account
+     → Select repository
+     → Creates EAS project and updates eas.json
+     → Real project ID now in eas.json ✓
+  
+  4. For Patient App:
+     cd unihealth-patient360
+     eas init
+     → Same process
+  
+  5. Configure signing:
+     cd unihealth-provider
+     eas credentials
+     → Select Android
+     → Choose "Let EAS manage signing" (recommended)
+     → Generates signing key automatically ✓
+
+TIME: 1-2 hours (includes credential setup)
+
+NOTE: EAS will automatically manage Play Store signing keys.
+You'll need to upload the generated key to Google Play Console later.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Issue #4: Play Store Assets (Screenshots, Feature Graphic)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEED TO CREATE:
+  ✗ play-store/screenshots/ (4-8 images)
+       Size: 1080×1920 pixels each
+       Format: PNG or JPG
+  
+  ✗ play-store/feature-graphic.png (1024×500)
+       Your app's featured banner image
+  
+  ✗ play-store/app-store-icon.png (512×512)
+       High-res version of your app icon
+  
+  ✗ play-store/privacy-policy.html
+       Legal document (required)
+
+HOW TO CREATE SCREENSHOTS:
+  1. Start app in emulator: npx expo start → press 'a'
+  2. Navigate through each screen
+  3. Take screenshot (Ctrl+M in emulator or Cmd+S on physical device)
+  4. Edit if needed (add text captions, arrows, highlights)
+  5. Save as 1080×1920 in play-store/screenshots/
+
+RECOMMENDED SCREENSHOTS (8 total):
+  • Screen 1: Login page
+  • Screen 2: Main dashboard
+  • Screen 3: Key feature #1 (Claims for provider, Coverage for patient)
+  • Screen 4: Key feature #2 (Adjudication for provider, EOB for patient)
+  • Screen 5: Key feature #3 (Pre-authorization, M-Pesa payment)
+  • Screen 6: Key feature #4 (Compliance, Dependants)
+  • Screen 7: Navigation/menu
+  • Screen 8: Settings or additional feature
+
+TIME: 1-2 hours
+
+================================================================================
+SETUP CHECKLIST — BEFORE BUILDING
+================================================================================
+
+STEP 1: Create App Assets (30-120 minutes)
+  □ Icon (1024×1024) — use Canva or designer
+  □ Splash screen (1242×2436) — use Canva or designer
+  □ Adaptive icon (1024×1024) — use same icon + follow Android guidelines
+  □ Place in both app's assets/ folders
+
+STEP 2: Get Firebase google-services.json (30 minutes)
+  □ Go to Firebase Console
+  □ Create project
+  □ Add Android apps for both packages
+  □ Download google-services.json for each
+  □ Place in:
+     - unihealth-provider/google-services.json
+     - unihealth-patient360/google-services.json
+
+STEP 3: Set Up EAS (1-2 hours)
+  □ Sign up at https://expo.dev
+  □ Link GitHub repository
+  □ For each app:
+     eas init (creates EAS project)
+     eas credentials (sets up signing)
+  □ Verify eas.json now has real project IDs (not REPLACE_WITH_...)
+  □ Test build: eas build --platform android --profile development
+
+STEP 4: Create Play Console Assets (1-2 hours)
+  □ Create 4-8 app screenshots (1080×1920 each)
+  □ Create feature graphic (1024×500)
+  □ Create privacy policy document
+  □ Save all in play-store/ folder
+
+STEP 5: Update Configuration Files (30 minutes)
+  □ Update app.json with version number (e.g., "1.0.0")
+  □ Verify all asset paths are correct
+  □ Verify package names are correct:
+     - ke.unihealth360.provider (provider)
+     - ke.unihealth360.patient (patient)
+  □ Update .env with production API URLs
+
+================================================================================
+BUILD CHECKLIST — TESTING BEFORE SUBMISSION
+================================================================================
+
+LOCAL TESTING:
+  □ Provider app works on Android emulator
+     npx expo start (in unihealth-provider/)
+     Press 'a' → All 14 screens functional?
+  
+  □ Patient app works on Android emulator
+     npx expo start (in unihealth-patient360/)
+     Press 'a' → All 10 screens functional?
+
+EAS BUILD TESTING:
+  □ Development build succeeds:
+     cd unihealth-provider
+     eas build --platform android --profile development
+  
+  □ Production build succeeds:
+     cd unihealth-provider
+     eas build --platform android --profile production
+     → Downloads AAB file
+  
+  □ Repeat for patient app
+
+PHYSICAL DEVICE TESTING (optional but recommended):
+  □ Install APK on Android device
+  □ Test all screens
+  □ Check for crashes
+  □ Verify API connectivity
+
+================================================================================
+PLAY CONSOLE SETUP CHECKLIST
+================================================================================
+
+CREATE ACCOUNTS:
+  □ Google Play Developer account ($25 one-time fee)
+     Go to https://play.google.com/console
+  □ EAS account (free tier available)
+     Go to https://expo.dev
+
+CREATE APP LISTINGS:
+  Provider App:
+    □ Go to Play Console
+    □ Create new app → Name: "UniHealth Provider"
+    □ Upload feature graphic (1024×500)
+    □ Upload app icon (512×512)
+    □ Upload 4-8 screenshots (1080×1920 each)
+    □ Enter title, short description, full description
+    □ Set category: "Medical"
+    □ Add privacy policy URL
+    □ Complete content rating questionnaire
+    □ Review permissions and add justifications
+  
+  Patient App:
+    □ Same as provider, with name "UniHealth Patient 360"
+
+UPLOAD BUILDS:
+  □ Create build for provider:
+     eas build --platform android --profile production
+     → Get AAB file
+  
+  □ Go to Play Console → Release → Testing → Internal testing
+  □ Upload AAB file
+  □ Fill in release notes
+  □ Submit for review
+
+REPEAT FOR PATIENT APP
+
+================================================================================
+ESTIMATED TIME BREAKDOWN
+================================================================================
+
+Asset Creation:              2-4 hours
+Firebase Setup:              30 min
+EAS Setup:                   1-2 hours
+Build Testing:               1-2 hours
+Play Console Setup:          1-2 hours
+────────────────────────────────────
+TOTAL (before submission):   6-12 hours
+
+Play Store Review:           2-7 days
+Fixes & Resubmission:        1-3 days (if needed)
+Staged Rollout:              1-2 weeks
+────────────────────────────────────
+TOTAL (to full production):  2-4 weeks
+
+================================================================================
+BLOCKERS → SOLUTIONS QUICK REFERENCE
+================================================================================
+
+Blocker: "Missing icon.png"
+Solution: Create using Canva.com (free) or hire designer
+Status: 🔴 BLOCKING (fix first)
+
+Blocker: "Missing google-services.json"
+Solution: Firebase Console → create project → download JSON
+Status: 🔴 BLOCKING (fix second)
+
+Blocker: "EAS project ID is placeholder"
+Solution: Run `eas init` in each app directory
+Status: 🔴 BLOCKING (fix third)
+
+Blocker: "No Play Store screenshots"
+Solution: Use Android emulator to capture 4-8 screenshots
+Status: 🟡 IMPORTANT (fix before submission)
+
+Blocker: "No privacy policy"
+Solution: Write or generate using online tool
+Status: 🟡 IMPORTANT (fix before submission)
+
+================================================================================
+DECISION REQUIRED
+================================================================================
+
+I can HELP YOU with the following (if you approve):
+
+✓ Can provide step-by-step guides for each blocker
+✓ Can create templates for privacy policy, app description
+✓ Can verify asset sizes and requirements
+✓ Can help troubleshoot EAS setup issues
+✓ Can guide through Play Console submission process
+
+✗ Cannot create icons/assets (design work needed)
+✗ Cannot create Firebase account on your behalf
+✗ Cannot create Google Play account (requires payment + ID)
+✗ Cannot take screenshots on your device
+
+================================================================================
+WHAT YOU SHOULD DO NOW
+================================================================================
+
+OPTION A: Create Assets Yourself
+  1. Go to Canva.com (free account)
+  2. Search "app icon design" template
+  3. Customize for UniHealth (add your colors, text)
+  4. Export as PNG (1024×1024)
+  5. Repeat for splash and adaptive icon
+  6. Takes ~30 minutes, free
+
+OPTION B: Hire a Designer
+  1. Go to Fiverr.com or Upwork.com
+  2. Post: "Design app icon + splash screen for healthcare Android app"
+  3. Share your brand colors, any existing logos
+  4. Budget: $50-200, turnaround 2-5 days
+
+OPTION C: Use AI Tools
+  1. Go to Adobe Firefly or Microsoft Designer
+  2. Prompt: "Healthcare app icon, professional, modern, 1024x1024"
+  3. Generate, download, refine
+  4. Takes ~15 minutes, free-$10
+
+RECOMMENDATION: Start with Canva (fastest, free) while you set up
+EAS and Firebase in parallel.
+
+================================================================================
+NEXT STEPS — CHOOSE ONE
+================================================================================
+
+□ I'M READY — Proceed with asset creation (I'll handle it)
+  → Tell me your brand colors, preferred style, key features
+
+□ I NEED GUIDANCE — Walk me through each step
+  → I'll provide detailed step-by-step instructions
+
+□ I NEED TIME — Let me gather resources and get back to you
+  → Come back when ready, I'll have full checklist updated
+
+□ HOLD — Don't proceed yet, I need to discuss with team
+  → Great, that's wise. Come back when decision is made
+
+================================================================================
+SUPPORT
+================================================================================
+
+Full detailed checklist: PLAY_STORE_READINESS_CHECKLIST.md
+
+Questions?
+Email: support@unihealth360.ke
+Phone: +254 800 720 601
+
+GitHub: https://github.com/NickEinstein1/HEALTHCARE_SYSTEM/tree/main/unihealth-360
+
+================================================================================
