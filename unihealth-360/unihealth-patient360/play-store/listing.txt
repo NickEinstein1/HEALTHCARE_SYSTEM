@@ -1,0 +1,78 @@
+# UniHealth 360 Patient App — Play Store Listing Metadata
+
+SHORT_DESCRIPTION="Your SHA/SHIF coverage, claims, and health benefits — all in one place"
+
+FULL_DESCRIPTION="""
+UniHealth 360 is the official patient and member app for the UniHealth national 
+health platform. Manage your Social Health Authority (SHA) coverage, track claims, 
+pay your SHIF premium via M-Pesa, and stay on top of your family's health benefits 
+— all from your phone.
+
+WHAT YOU CAN DO:
+
+Coverage & Benefits
+• View your active SHIF, PHF, and ECCIF coverage status in real time
+• See exactly how much of each fund you have used this year
+• Check your monthly premium due date and amount
+• View all registered dependants (spouse, children, parents)
+
+Claims
+• See every claim filed at any hospital on your behalf
+• Track claim status: submitted, approved, paid, or rejected
+• Understand exactly what was covered and what you owe
+• Download and share your Explanation of Benefits (EOB) as a PDF
+• Raise a dispute directly from the app if a claim is rejected
+
+Premium Payments
+• Pay your monthly SHIF contribution via M-Pesa STK Push
+• Real-time payment confirmation within 30 seconds
+• Full payment history with receipts
+
+Dependants
+• Add or remove household dependants
+• SHA verification status shown per dependant
+• Up to 5 dependants supported per household
+
+Documents
+• Upload supporting documents for claims (PDF, JPG, PNG)
+• Store your National ID, disability certificates, and referral letters
+• All documents encrypted and retained per Digital Health Act 2023
+
+Profile & Consent
+• Manage which healthcare providers can access your data
+• Control your treatment, billing, and research consent separately
+• Biometric login (fingerprint / Face ID) for fast, secure access
+
+DESIGNED FOR:
+All Kenyan residents registered under the Social Health Authority (SHA) and the 
+National Social Health Insurance Fund (SHIF), as well as members of licensed 
+private health insurance plans operating on the UniHealth 360 platform.
+
+SECURITY & PRIVACY:
+• Biometric + PIN authentication
+• All data encrypted in transit (TLS 1.3) and at rest (AES-256)
+• Compliant with Kenya's Data Protection Act 2019, Digital Health Act 2023,
+  and Social Health Insurance Act 2023
+• Data hosted in Kenya — no cross-border transfer without explicit consent
+• ODPC-registered data controller
+
+HELPLINE: 0800 720 601 (SHA toll-free)
+"""
+
+CATEGORY="Medical"
+CONTENT_RATING="Everyone"
+TAGS="NHIF,SHA,SHIF,health insurance,Kenya,medical cover,claims,M-Pesa,PHF,ECCIF"
+PRIVACY_POLICY_URL="https://unihealth360.ke/privacy"
+WEBSITE_URL="https://patient.unihealth360.ke"
+EMAIL="support@unihealth360.ke"
+PHONE="+254 800 720 601"
+
+# Screenshots required by Play Store (produce from running app):
+# 1. Home screen showing coverage card and benefit balances
+# 2. Coverage screen showing PHF/SHIF/ECCIF meters
+# 3. Claims list screen
+# 4. Claim detail with EOB breakdown
+# 5. M-Pesa payment flow (STK push screen)
+# 6. Dependants management screen
+# 7. Document upload screen
+# 8. Profile and consent management

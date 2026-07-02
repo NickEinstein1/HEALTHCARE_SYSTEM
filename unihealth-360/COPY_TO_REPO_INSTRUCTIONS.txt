@@ -1,0 +1,204 @@
+================================================================================
+         COPY UNIHEALTH 360 TO YOUR GITHUB REPOSITORY
+================================================================================
+
+Your repository is here:
+  ~/Documents/GitHub/HEALTHCARE_SYSTEM
+
+UniHealth 360 directories are here (in this session):
+  - unihealth-provider/
+  - unihealth-patient360/
+  - unihealth-shared/
+  + All configuration and documentation files
+
+================================================================================
+TWO-OPTION SETUP
+================================================================================
+
+OPTION 1: Use the Automated Script (Recommended)
+==================================================
+
+macOS / Linux:
+  bash add-unihealth-to-repo.sh ~/Documents/GitHub/HEALTHCARE_SYSTEM
+
+Windows (PowerShell or Command Prompt):
+  add-unihealth-to-repo.bat C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM
+
+Or if running from Command Prompt:
+  add-unihealth-to-repo.bat "C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM"
+
+The script will:
+  1. Create unihealth-360/ folder in your repo
+  2. Copy all files (apps, configs, documentation)
+  3. Create .gitignore
+  4. Stage all files for git
+  5. Create a commit
+  6. Push to GitHub
+
+Result: Your repo will have unihealth-360/ as a subdirectory, ready to use.
+
+================================================================================
+OPTION 2: Manual Setup (if script doesn't work)
+================================================
+
+1. Create directory in your repo:
+   mkdir ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360
+
+2. Copy files (from this session):
+   macOS/Linux:
+     cp -r unihealth-provider ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360/
+     cp -r unihealth-patient360 ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360/
+     cp -r unihealth-shared ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360/
+     cp *.md *.txt docker-compose.yml .env.example ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360/
+
+   Windows (PowerShell):
+     Copy-Item -Path "unihealth-provider" -Destination "C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM\unihealth-360" -Recurse
+     Copy-Item -Path "unihealth-patient360" -Destination "C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM\unihealth-360" -Recurse
+     Copy-Item -Path "unihealth-shared" -Destination "C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM\unihealth-360" -Recurse
+     Copy-Item -Path "*.md","*.txt","docker-compose.yml",".env.example" -Destination "C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM\unihealth-360"
+
+3. Add to git:
+   cd ~/Documents/GitHub/HEALTHCARE_SYSTEM
+   git add unihealth-360/
+   git commit -m "feat: Add UniHealth 360 mobile apps"
+   git push origin main
+
+================================================================================
+AFTER COPYING: YOUR NEW REPO STRUCTURE
+================================================================================
+
+~/Documents/GitHub/HEALTHCARE_SYSTEM/
+├─ [your existing files and folders]
+│
+├─ unihealth-360/                         ← NEW
+│  ├─ unihealth-provider/                 ← Provider app (14 screens)
+│  │  ├─ app/
+│  │  │  ├─ (auth)/
+│  │  │  ├─ (tabs)/
+│  │  │  ├─ claims/
+│  │  │  ├─ encounters/
+│  │  │  └─ preauth/
+│  │  ├─ app.json
+│  │  ├─ eas.json
+│  │  ├─ package.json
+│  │  └─ play-store/
+│  │
+│  ├─ unihealth-patient360/               ← Patient 360 app (10 screens)
+│  │  ├─ app/
+│  │  │  ├─ (auth)/
+│  │  │  ├─ (tabs)/
+│  │  │  ├─ claims/
+│  │  │  ├─ eob/
+│  │  │  ├─ premium/
+│  │  │  ├─ dependants/
+│  │  │  └─ documents/
+│  │  ├─ app.json
+│  │  ├─ eas.json
+│  │  ├─ package.json
+│  │  └─ play-store/
+│  │
+│  ├─ unihealth-shared/                   ← Shared library
+│  │  ├─ tokens.ts                        (design tokens)
+│  │  ├─ components.tsx                   (10 components)
+│  │  └─ api.ts                           (FHIR API client)
+│  │
+│  ├─ docker-compose.yml                  (11-service backend stack)
+│  ├─ .env.example                        (environment template)
+│  ├─ .gitignore
+│  │
+│  └─ Documentation:
+│     ├─ 00_START_HERE.txt               (read this first)
+│     ├─ README_UNIHEALTH.md             (project overview)
+│     ├─ SETUP_UNIHEALTH.md              (complete setup guide)
+│     ├─ BUILD_COMPLETE.md               (metrics & compliance)
+│     ├─ FINAL_SUMMARY.txt               (detailed overview)
+│     ├─ INDEX.txt                       (navigation guide)
+│     ├─ GITHUB_PUSH_GUIDE.md
+│     ├─ ADD_TO_EXISTING_REPO.md
+│     └─ [more docs]
+│
+└─ [rest of your existing structure]
+
+================================================================================
+NEXT STEPS (After copying to repo)
+================================================================================
+
+1. Navigate to UniHealth directory:
+   cd ~/Documents/GitHub/HEALTHCARE_SYSTEM/unihealth-360
+
+2. Start the backend:
+   docker compose up -d
+
+3. Install and start Provider app (in new terminal):
+   cd unihealth-provider
+   npm install
+   npx expo start
+
+4. Install and start Patient app (in another terminal):
+   cd unihealth-patient360
+   npm install
+   npx expo start
+
+5. Test on Android emulator:
+   Press 'a' in the Expo dev server
+
+6. Build for Play Store:
+   cd unihealth-provider
+   eas build --platform android --profile production
+
+================================================================================
+SCRIPT FILES PROVIDED
+================================================================================
+
+add-unihealth-to-repo.sh (macOS/Linux)
+├─ Usage: bash add-unihealth-to-repo.sh ~/Documents/GitHub/HEALTHCARE_SYSTEM
+└─ Fully automated, creates unihealth-360/, commits, and pushes
+
+add-unihealth-to-repo.bat (Windows)
+├─ Usage: add-unihealth-to-repo.bat C:\Users\YourName\Documents\GitHub\HEALTHCARE_SYSTEM
+└─ Fully automated, Windows native batch script
+
+ADD_TO_REPO_QUICK.txt
+├─ 5-minute quick reference for manual copying
+└─ When you want to do it step-by-step
+
+ADD_TO_EXISTING_REPO.md
+├─ Detailed guide with 3 options
+├─ Subdirectory, mixed structure, or git submodule
+└─ For when you need complete flexibility
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Script says "not a git repository":
+→ Make sure you're pointing to a valid GitHub clone folder
+→ Should have a .git/ folder inside
+
+Script fails to copy:
+→ Try Option 2 (manual copy) or use IDE file explorer to drag-and-drop
+
+Permission denied on script:
+macOS/Linux: chmod +x add-unihealth-to-repo.sh
+
+Want to see what will be added before committing:
+→ After "Files staged", run: git diff --cached --name-status
+
+Want to abort before pushing:
+→ After staging but before push: git reset HEAD unihealth-360/
+
+================================================================================
+SUPPORT
+================================================================================
+
+Documentation included in unihealth-360/:
+  - 00_START_HERE.txt       (Quick orientation)
+  - SETUP_UNIHEALTH.md      (Complete build guide)
+  - README_UNIHEALTH.md     (Project overview)
+
+Email: support@unihealth360.ke
+Phone: +254 800 720 601
+
+================================================================================
+READY? Run the script and UniHealth 360 will be in your repo! 🚀
+================================================================================

@@ -1,0 +1,129 @@
+================================================================================
+                  🚀 PUSH TO GITHUB — QUICK STEPS
+================================================================================
+
+PREREQUISITE: Have git installed and GitHub account ready
+
+================================================================================
+STEP 1: Create GitHub Repository (5 minutes)
+================================================================================
+
+1. Go to https://github.com/new
+2. Enter details:
+   Name: unihealth-360
+   Description: National Healthcare Platform — Android Apps
+   Visibility: Private (or Public if open-source)
+3. Do NOT check "Initialize with README" (we have one)
+4. Click "Create repository"
+5. Copy the repository URL
+   Example: https://github.com/your-username/unihealth-360.git
+
+================================================================================
+STEP 2: Initialize Git & Push (10 minutes)
+================================================================================
+
+In your project root directory, run these commands:
+
+# Initialize git
+git init
+
+# Configure your git identity (one-time)
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+
+# Stage all files
+git add .
+
+# Create initial commit
+git commit -m "feat: Initial UniHealth 360 mobile apps build - Production ready"
+
+# Add GitHub remote
+git remote add origin https://github.com/YOUR-USERNAME/unihealth-360.git
+
+# Rename branch to main
+git branch -M main
+
+# Push to GitHub
+git push -u origin main
+
+================================================================================
+STEP 3: Verify (2 minutes)
+================================================================================
+
+1. Go to https://github.com/YOUR-USERNAME/unihealth-360
+2. Verify you see:
+   ✓ unihealth-provider/
+   ✓ unihealth-patient360/
+   ✓ unihealth-shared/
+   ✓ docker-compose.yml
+   ✓ README.md
+   ✓ All documentation files
+
+You're done! 🎉
+
+================================================================================
+STEP 4: Optional — Add Secrets for CI/CD
+================================================================================
+
+To enable automated builds (optional):
+
+1. Go to GitHub repo → Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Add:
+   Name: EAS_TOKEN
+   Value: (Get from https://expo.dev/settings/tokens)
+4. Save
+
+This enables GitHub Actions to auto-build on push.
+
+================================================================================
+COMMON COMMANDS FOR FUTURE USE
+================================================================================
+
+# Check status
+git status
+
+# Make changes, then commit
+git add <files>
+git commit -m "feat: Description of changes"
+git push
+
+# Create feature branch
+git checkout -b feature/my-feature
+git push -u origin feature/my-feature
+
+# View commit history
+git log --oneline
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Undo last commit (discard changes)
+git reset --hard HEAD~1
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+"fatal: destination path already exists"
+→ You already have a .git folder. Try: rm -rf .git && git init
+
+"Permission denied (publickey)"
+→ Add SSH key: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
+
+"fatal: could not read Username"
+→ Use personal access token instead of password
+→ Generate at: https://github.com/settings/tokens
+
+================================================================================
+THAT'S IT! Your code is now on GitHub. 🎉
+
+Next: Share the repo URL with your team and they can:
+  1. Clone: git clone <repo-url>
+  2. Install: npm install (in each directory)
+  3. Develop locally
+  4. Push changes for code review
+
+For detailed guide, see GITHUB_PUSH_GUIDE.md
+
+================================================================================

@@ -1,0 +1,256 @@
+version: "3.9"
+
+# UniHealth 360 — Mobile Apps Development Environment
+# Runs the full backend stack that both apps connect to during development.
+# The Expo dev servers run on your local machine (not in Docker) via:
+#   cd unihealth-provider && npx expo start
+#   cd unihealth-patient360 && npx expo start
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: unihealth_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: unihealth
+      POSTGRES_USER: unihealth
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devpassword}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./backend/init-schemas.sql:/docker-entrypoint-initdb.d/01_init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unihealth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: unihealth_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ── Zookeeper ────────────────────────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: unihealth_zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  # ── Kafka ────────────────────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: unihealth_kafka
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # ── Keycloak ──────────────────────────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: unihealth_keycloak
+    restart: unless-stopped
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/unihealth
+      KC_DB_USERNAME: unihealth
+      KC_DB_PASSWORD: ${DB_PASSWORD:-devpassword}
+      KC_DB_SCHEMA: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HTTP_PORT: 8080
+    volumes:
+      - ./backend/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health/ready || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+      start_period: 40s
+
+  # ── EHR Clinical Gateway (FastAPI) ───────────────────────────────────────────
+  ehr_gateway:
+    build:
+      context: ./backend/ehr-gateway
+      dockerfile: Dockerfile
+    image: unihealth/ehr-gateway:dev
+    container_name: unihealth_ehr_gateway
+    restart: unless-stopped
+    ports:
+      - "8100:8100"
+    environment:
+      DATABASE_URL: postgresql://unihealth:${DB_PASSWORD:-devpassword}@postgres:5432/unihealth
+      REDIS_URL: redis://redis:6379/0
+      KAFKA_BROKERS: kafka:29092
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: unihealth
+      PORT: 8100
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8100/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Insurance Gateway (FastAPI) ──────────────────────────────────────────────
+  insurance_gateway:
+    build:
+      context: ./backend/insurance-gateway
+      dockerfile: Dockerfile
+    image: unihealth/insurance-gateway:dev
+    container_name: unihealth_insurance_gateway
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      DATABASE_URL: postgresql://unihealth:${DB_PASSWORD:-devpassword}@postgres:5432/unihealth
+      REDIS_URL: redis://redis:6379/1
+      KAFKA_BROKERS: kafka:29092
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: unihealth
+      EHR_GATEWAY_URL: http://ehr_gateway:8100
+      AI_AUDIT_URL: http://ai_audit_service:8300
+      PORT: 8200
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      ehr_gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8200/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── AI Audit Service (FastAPI) ───────────────────────────────────────────────
+  ai_audit_service:
+    build:
+      context: ./backend/ai-audit-service
+      dockerfile: Dockerfile
+    image: unihealth/ai-audit-service:dev
+    container_name: unihealth_ai_audit
+    restart: unless-stopped
+    ports:
+      - "8300:8300"
+    environment:
+      DATABASE_URL: postgresql://unihealth:${DB_PASSWORD:-devpassword}@postgres:5432/unihealth
+      KAFKA_BROKERS: kafka:29092
+      EHR_GATEWAY_URL: http://ehr_gateway:8100
+      PORT: 8300
+      LOG_LEVEL: info
+      # AI model path (mount your model files here)
+      MODEL_DIR: /app/models
+    volumes:
+      - ./backend/ai-audit-service/models:/app/models:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8300/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Kafka Consumer Worker ────────────────────────────────────────────────────
+  consumer:
+    build:
+      context: ./backend/consumer
+      dockerfile: Dockerfile
+    image: unihealth/consumer:dev
+    container_name: unihealth_consumer
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://unihealth:${DB_PASSWORD:-devpassword}@postgres:5432/unihealth
+      KAFKA_BROKERS: kafka:29092
+      AI_AUDIT_URL: http://ai_audit_service:8300
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  # ── Nginx API Gateway / Reverse Proxy ────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: unihealth_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./backend/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./backend/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - ehr_gateway
+      - insurance_gateway
+      - ai_audit_service
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  pg_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: unihealth_network
+    driver: bridge

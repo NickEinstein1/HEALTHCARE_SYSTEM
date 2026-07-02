@@ -1,0 +1,126 @@
+================================================================================
+                ADD TO EXISTING REPO — QUICK REFERENCE
+================================================================================
+
+RECOMMENDED APPROACH: Add as a subdirectory
+
+================================================================================
+5-MINUTE SETUP
+================================================================================
+
+1. Navigate to your existing repo
+   cd /path/to/your/existing/repository
+
+2. Create unihealth-360 folder
+   mkdir unihealth-360
+
+3. Copy all UniHealth files into this folder
+   cp -r /path/to/unihealth-provider unihealth-360/
+   cp -r /path/to/unihealth-patient360 unihealth-360/
+   cp -r /path/to/unihealth-shared unihealth-360/
+   cp /path/to/docker-compose.yml unihealth-360/
+   cp /path/to/.env.example unihealth-360/
+   cp /path/to/*.md unihealth-360/
+   cp /path/to/*.txt unihealth-360/
+
+4. Create .gitignore in unihealth-360/ folder
+   (See ADD_TO_EXISTING_REPO.md for full .gitignore content)
+
+5. Add to git
+   git add unihealth-360/
+
+6. Commit
+   git commit -m "feat: Add UniHealth 360 mobile apps as subdirectory"
+
+7. Push
+   git push origin main
+
+Done! 🎉
+
+================================================================================
+YOUR REPO STRUCTURE (After Adding)
+================================================================================
+
+your-existing-repo/
+├─ [your existing folders and files]
+│
+├─ unihealth-360/                    ← NEW FOLDER
+│  ├─ unihealth-provider/            (14 screens)
+│  ├─ unihealth-patient360/          (10 screens)
+│  ├─ unihealth-shared/              (components & design tokens)
+│  ├─ docker-compose.yml
+│  ├─ .env.example
+│  ├─ .gitignore
+│  ├─ README.md
+│  ├─ SETUP.md
+│  └─ [all documentation files]
+│
+└─ [rest of your existing structure]
+
+================================================================================
+ACCESSING UNIHEALTH FROM YOUR REPO
+================================================================================
+
+From repo root:
+
+# Development
+cd unihealth-360/
+docker compose up -d
+cd unihealth-provider && npx expo start
+
+# Or directly:
+cd unihealth-360/unihealth-provider
+npm install
+npx expo start
+
+# Build for Play Store:
+cd unihealth-360/unihealth-provider
+eas build --platform android --profile production
+
+================================================================================
+THREE OPTIONS (Full Details in ADD_TO_EXISTING_REPO.md)
+================================================================================
+
+OPTION 1: Subdirectory (Recommended) ✅
+└─ Simple, clean, all code together
+└─ See steps above
+
+OPTION 2: Mixed Structure
+└─ Merge into existing folder structure
+└─ Example: mobile/unihealth-360/
+
+OPTION 3: Git Submodule
+└─ Separate git history for UniHealth
+└─ Can update independently
+└─ More complex, use if tracking separately
+
+================================================================================
+UPDATING YOUR MAIN README
+================================================================================
+
+Add this to your repo's main README.md:
+
+---
+## Projects
+
+### UniHealth 360 — Mobile Apps
+National healthcare platform with production-ready Android applications.
+
+See [unihealth-360/README.md](./unihealth-360/README.md) for details.
+
+Setup: [unihealth-360/SETUP.md](./unihealth-360/SETUP.md)
+
+---
+
+================================================================================
+THAT'S IT! Your repo now has UniHealth 360 as a subdirectory.
+
+NEXT:
+1. Push changes to GitHub
+2. Team members clone and develop
+3. Build & deploy to Play Store
+4. Implement backend services (16-20 weeks)
+
+For detailed guide, see ADD_TO_EXISTING_REPO.md
+
+================================================================================

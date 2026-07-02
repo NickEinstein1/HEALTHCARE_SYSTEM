@@ -1,0 +1,47 @@
+# UniHealth Provider — Play Store Listing Metadata
+# Place completed versions of these in your Google Play Console
+
+SHORT_DESCRIPTION="Clinical & insurance management for UniHealth 360 providers"
+
+FULL_DESCRIPTION="""
+UniHealth Provider is the official clinical and insurance portal for healthcare 
+professionals registered on the UniHealth 360 platform.
+
+WHAT YOU CAN DO:
+• View and manage patient encounters linked to your facility
+• Submit insurance claims auto-populated from closed EHR encounters
+• Track claim status in real time — Draft, Submitted, Under Review, Paid
+• Review AI fraud-detection risk scores and reason codes for flagged claims
+• Request and track pre-authorizations with SLA timers
+• Adjudicate AI-flagged claims with full encounter-to-claim cross-reference
+• Monitor fund utilization (PHF, SHIF, ECCIF) for your facility
+• Run compliance reports for SHA, IRA, and ODPC submission
+• Export hash-chained, tamper-evident audit logs
+
+DESIGNED FOR:
+Doctors, nurses, hospital billing staff, claims adjudicators, compliance 
+officers, and facility administrators empanelled under the Social Health 
+Authority (SHA) or licensed with the Insurance Regulatory Authority (IRA).
+
+SECURITY & COMPLIANCE:
+• Single sign-on via Keycloak (OIDC) — same credentials as the UniHealth 360 
+  web portal
+• Role-based access control (doctor, nurse, claims_adjudicator, 
+  compliance_auditor, underwriter, scheme_finance)
+• All clinical data is encrypted in transit and at rest
+• Compliant with Kenya's Data Protection Act 2019, Digital Health Act 2023, 
+  and Social Health Insurance Act 2023
+
+FHIR R5 NATIVE:
+Claim submissions use FHIR R5 Coverage, Claim, ClaimResponse, and 
+ExplanationOfBenefit resources — fully compatible with Kenya's national 
+Health Information Exchange (HIE).
+"""
+
+CATEGORY="Medical"
+CONTENT_RATING="Everyone"
+TAGS="healthcare,insurance,NHIF,SHA,SHIF,clinical,FHIR,Kenya,hospital"
+PRIVACY_POLICY_URL="https://unihealth360.ke/privacy"
+WEBSITE_URL="https://provider.unihealth360.ke"
+EMAIL="support@unihealth360.ke"
+PHONE="+254 800 720 601"
