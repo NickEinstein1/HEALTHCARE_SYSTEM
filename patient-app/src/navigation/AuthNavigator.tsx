@@ -10,8 +10,18 @@ export type AuthStackParamList = {
   Landing: undefined;
   SignIn: undefined;
   Register: undefined;
-  Mfa: { phone: string; flow: "signIn" | "register"; displayName?: string };
-  AuthSuccess: { flow: "signIn" | "register"; displayName?: string };
+  Mfa: {
+    phone: string;
+    flow: "signIn" | "register";
+    displayName?: string;
+    patientId?: string;
+    pin?: string;
+  };
+  AuthSuccess: {
+    flow: "signIn" | "register";
+    displayName?: string;
+    patientId?: string;
+  };
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();

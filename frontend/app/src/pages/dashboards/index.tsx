@@ -5,6 +5,7 @@ export {
   LaboratoryDashboard,
   RadiologyDashboard,
   PharmacyDashboard as V2PharmacyModuleDashboard,
+  UHICModule,
   ICUDashboard,
   SurgeryDashboard,
   RehabilitationDashboard,

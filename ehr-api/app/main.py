@@ -601,8 +601,11 @@ async def on_startup() -> None:
     # Phase 3: seed AI simulation data
     from app.state import bootstrap_ai_state
     from app.billing_service import bootstrap_billing_state
+    from app.insurance_service import bootstrap_uhic_state
+
     bootstrap_ai_state()
     bootstrap_billing_state()
+    bootstrap_uhic_state()
 
 
 @app.on_event("shutdown")

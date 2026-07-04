@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     # development | staging | production — production enforces OIDC + strict consent defaults
     deployment_env: str = "development"
 
+    # When true (default in development), API starts even if Postgres/Redis are down.
+    # FHIR cache/DB routes degrade gracefully; in-memory modules (billing, UHIC) still work.
+    infra_optional: bool = True
+
     redis_url: str = "redis://localhost:6379/0"
     postgres_dsn: str = "postgresql://ehr:ehr_dev_password@localhost:5432/ehr"
     cache_ttl_seconds: int = 300  # 5 min for patient summary
@@ -34,6 +38,13 @@ class Settings(BaseSettings):
     oidc_audience: str = "unihealth-gateway"
     oidc_role_claim: str = "unihealth_role"
     oidc_allow_header_fallback: bool = True
+
+    # Patient OTP + gateway-issued session tokens (when Keycloak OIDC is off).
+    # In production with OIDC, OTP is MFA only; access tokens come from Keycloak.
+    patient_session_secret: str = "unihealth-dev-patient-session-change-me"
+    patient_session_ttl_seconds: int = 28_800  # 8 hours
+    otp_ttl_seconds: int = 300
+    otp_simulate: bool = True  # return/log OTP in responses (disable in production)
 
     # Phase 3 WebSocket alerts — dev shared secrets (comma-separated); disabled in production profile.
     ws_dev_tokens: str = "dev-token-1,dev-token-2"
@@ -90,11 +101,13 @@ class Settings(BaseSettings):
             self.consent_mode = "strict"
             self.oidc_allow_header_fallback = False
             self.ws_allow_dev_tokens = False
+            self.infra_optional = False
+            self.otp_simulate = False
             if (self.oidc_issuer_url or "").strip():
                 self.oidc_enabled = True
         elif env == "staging":
             # Staging keeps permissive consent by default but can enable OIDC via env
-            pass
+            self.infra_optional = False
         return self
 
     @property

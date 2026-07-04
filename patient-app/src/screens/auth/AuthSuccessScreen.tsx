@@ -17,13 +17,14 @@ type Props = NativeStackScreenProps<AuthStackParamList, "AuthSuccess"> & {
 
 export function AuthSuccessScreen({ navigation, route, onSignedIn }: Props) {
   const c = PATIENT_ROLE;
-  const { flow, displayName } = route.params;
+  const { flow, displayName, patientId } = route.params;
   const [launching, setLaunching] = useState(false);
 
   const launch = async () => {
     setLaunching(true);
     try {
-      const pid = config.defaultPatientId;
+      // Session token already set by MFA verify; ensure patient id is bound.
+      const pid = patientId || config.defaultPatientId;
       await setPatientId(pid);
       await signInPatient(pid);
       onSignedIn();

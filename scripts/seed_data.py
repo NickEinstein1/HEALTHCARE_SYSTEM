@@ -7,7 +7,7 @@ Run after: docker compose up -d (infra) and schema.sql applied.
 import asyncio
 import os
 import sys
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 
 # Add ehr-api to path so we can use asyncpg with same config
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ehr-api"))
@@ -47,7 +47,7 @@ async def seed():
             gender,
         )
 
-    base = datetime.utcnow() - timedelta(days=30)
+    base = datetime.now(UTC) - timedelta(days=30)
     encounters = [
         ("E001", "P001", "FAC-A", "Pilot Hospital A", "finished", "AMB", base, base + timedelta(hours=1)),
         ("E002", "P001", "FAC-A", "Pilot Hospital A", "finished", "IMP", base - timedelta(days=5), base - timedelta(days=5) + timedelta(hours=24)),

@@ -228,6 +228,16 @@ billing_invoices: list[dict] = []
 billing_payments: list[dict] = []
 mpesa_transactions: list[dict] = []
 
+# UHIC — UniHealth Insurance Cover (in-memory pilot; insurance. schema in Postgres)
+uhic_members: list[dict] = []
+uhic_policies: list[dict] = []
+uhic_claims: list[dict] = []
+uhic_premium_ledger: list[dict] = []
+uhic_provider_scores: list[dict] = []
+uhic_claim_audit: list[dict] = []
+uhic_sync_version: int = 0
+uhic_sync_updated_at: str = ""
+
 # Inter-facility referrals (doctor workflow)
 referrals: list[dict] = []
 

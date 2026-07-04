@@ -19,6 +19,7 @@ export {
   NutritionDashboard,
   BillingDashboard,
   InsuranceDashboard,
+  UHICModule,
   InventoryDashboard,
   FleetDashboard,
   MortuaryDashboard,

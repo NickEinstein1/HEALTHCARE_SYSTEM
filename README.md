@@ -122,6 +122,7 @@ To test the full pipeline **Kafka → consumer → Postgres/Redis → gateway** 
 | [ehr-api/](ehr-api/)         | Edge FHIR gateway (FastAPI; Redis → Postgres) + **Phase 3** `/ai` simulator                |
 | [frontend/](frontend/)       | React web portals (staff + patient dashboard; consumes gateway)                            |
 | [patient-app/](patient-app/) | Expo mobile patient app (same design + API as web patient portal)                        |
+| [uhic-app/](uhic-app/)       | Expo **UHIC** standalone app — insurance, actuarial, claims (UniHealth Insurance Cover)   |
 | [edge-pipeline/](edge-pipeline/) | Kafka consumer → Redis + Postgres                                                    |
 | [load-tests/](load-tests/)   | k6 latency test                                                                          |
 | [scripts/](scripts/)         | Seed data, Kafka producer, **Phase 3 AI smoke** (`smoke_phase3_ai.sh`), full flow         |
@@ -149,6 +150,16 @@ cd patient-app && cp .env.example .env && npm install && npx expo start
 ```
 
 Use `EXPO_PUBLIC_API_BASE_URL=http://localhost:8100` (or your LAN IP on a physical device). Details: **[patient-app/README.md](patient-app/README.md)**.
+
+## UHIC app
+
+**UHIC** standalone app under **[uhic-app/](uhic-app/)** — national health insurance, actuarial reserves, SHIF premiums, claims adjudication, fraud analytics:
+
+```bash
+cd uhic-app && cp .env.example .env && npm install && npx expo start
+```
+
+Details: **[uhic-app/README.md](uhic-app/README.md)**.
 
 ## Phase 1 success criteria
 

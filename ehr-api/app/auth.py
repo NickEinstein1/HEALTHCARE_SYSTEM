@@ -19,7 +19,10 @@ from app.config import settings
 
 _log = logging.getLogger(__name__)
 
-VALID_ROLES = frozenset({"doctor", "nurse", "admin", "patient", "lab", "pharmacy", "billing"})
+VALID_ROLES = frozenset({
+    "doctor", "nurse", "admin", "patient", "lab", "pharmacy", "billing",
+    "underwriter", "claims_adjudicator", "compliance_auditor", "broker", "scheme_finance",
+})
 # Roles allowed on /ai/ws/alerts/{role} (patients use REST polling, not WS).
 WS_ALERT_ROLES = frozenset({"doctor", "nurse", "admin", "lab", "pharmacy"})
 _ROLE_ALIASES = {
@@ -28,6 +31,8 @@ _ROLE_ALIASES = {
     "laboratory": "lab",
     "finance_admin": "billing",
     "accounts_clerk": "billing",
+    "insurance_officer": "claims_adjudicator",
+    "uhic": "claims_adjudicator",
 }
 
 _jwk_client: PyJWKClient | None = None
@@ -168,8 +173,55 @@ def resolve_ws_role(token: str, requested_role: str) -> str:
     raise WsAuthError("Invalid token", 4001)
 
 
+def _role_from_patient_session(token: str) -> str | None:
+    """Gateway-issued patient session JWT (HS256) when Keycloak OIDC is off."""
+    if settings.oidc_enabled:
+        return None
+    try:
+        from app.patient_auth import decode_patient_session_token
+
+        claims = decode_patient_session_token(token)
+        if claims.get("token_use") != "patient_session":
+            return None
+        role = str(claims.get("unihealth_role") or "").strip().lower()
+        return role if role in VALID_ROLES else None
+    except Exception:
+        return None
+
+
+def patient_id_from_request(request: Request) -> str | None:
+    """Patient id from JWT claims or ``X-Patient-Id`` header."""
+    auth = request.headers.get("Authorization", "").strip()
+    if auth.lower().startswith("bearer "):
+        token = auth.split(" ", 1)[1].strip()
+        if settings.oidc_enabled:
+            try:
+                claims = _decode_bearer_claims(token)
+                for key in ("patient_id", "patientId", "sub"):
+                    val = claims.get(key)
+                    if val and str(val).strip():
+                        return str(val).strip()
+            except HTTPException:
+                pass
+        else:
+            try:
+                from app.patient_auth import decode_patient_session_token
+
+                claims = decode_patient_session_token(token)
+                pid = claims.get("patient_id") or claims.get("sub")
+                if pid:
+                    return str(pid).strip()
+            except Exception:
+                pass
+    header_pid = request.headers.get("X-Patient-Id", "").strip()
+    return header_pid or None
+
+
 def resolve_role(request: Request) -> str:
-    """Resolve clinician role from Bearer JWT (if OIDC enabled) or ``X-UniHealth-Role``."""
+    """Resolve role from Bearer JWT (OIDC or patient session) or ``X-UniHealth-Role``."""
+    auth = request.headers.get("Authorization", "").strip()
+    bearer = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
+
     if settings.oidc_enabled:
         # Staging/dev: trust role header when fallback is on (dashboard always sends both).
         if settings.oidc_allow_header_fallback:
@@ -177,10 +229,9 @@ def resolve_role(request: Request) -> str:
             if role_hdr:
                 return _role_from_header(request)
 
-        auth = request.headers.get("Authorization", "").strip()
-        if auth.lower().startswith("bearer "):
+        if bearer:
             try:
-                return _role_from_bearer(auth.split(" ", 1)[1].strip())
+                return _role_from_bearer(bearer)
             except HTTPException:
                 if settings.oidc_allow_header_fallback:
                     return _role_from_header(request)
@@ -188,6 +239,12 @@ def resolve_role(request: Request) -> str:
         if settings.oidc_allow_header_fallback:
             return _role_from_header(request)
         raise HTTPException(status_code=401, detail="Authorization: Bearer token required")
+
+    # OIDC off: prefer gateway patient session token, then role header (local pilot).
+    if bearer:
+        session_role = _role_from_patient_session(bearer)
+        if session_role:
+            return session_role
     return _role_from_header(request)
 
 

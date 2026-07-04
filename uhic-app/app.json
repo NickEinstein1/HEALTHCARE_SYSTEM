@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "UHIC",
+    "slug": "unihealth-uhic",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#4c1d95"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ke.go.health.unihealth.uhic"
+    },
+    "android": {
+      "package": "ke.go.health.unihealth.uhic"
+    }
+  }
+}

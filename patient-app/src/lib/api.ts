@@ -1,15 +1,21 @@
 import { config } from "./config";
-import { getPatientId } from "./storage";
+import { getAccessToken, getPatientId } from "./storage";
 
 async function authHeaders(patientId?: string): Promise<Record<string, string>> {
   const pid = patientId ?? (await getPatientId());
+  const token = await getAccessToken();
   const h: Record<string, string> = {
     Accept: "application/json",
-    "X-UniHealth-Role": "patient",
     "X-Facility-Id": "FAC-A",
     "X-Patient-Id": pid,
   };
-  // Staging pilot: role header satisfies gateway; skip Bearer to avoid stale-token 401s.
+  if (token) {
+    h.Authorization = `Bearer ${token}`;
+  }
+  // Local pilot without tokens: role header. Production/OIDC requires Bearer.
+  if (!token || !config.oidcEnabled) {
+    h["X-UniHealth-Role"] = "patient";
+  }
   return h;
 }
 
@@ -225,6 +231,21 @@ export const api = {
   ): Promise<MpesaStkResult> {
     return postJson("/payments/mpesa/stk-push", payload, "POST", patientId ?? payload.patient_id);
   },
+
+  patientCoverage(patientId: string): Promise<{ eligible: boolean; patient_id: string; member?: Record<string, unknown>; policies?: unknown[] }> {
+    return getJson(`/insurance/coverage/${encodeURIComponent(patientId)}`, patientId);
+  },
+
+  patientClaims(patientId: string): Promise<{ claims: PatientClaim[] }> {
+    return getJson(`/insurance/claims?patient_id=${encodeURIComponent(patientId)}`, patientId);
+  },
+
+  insuranceSync(patientId: string, sinceVersion = 0): Promise<InsuranceSyncResponse> {
+    return getJson(
+      `/insurance/sync?patient_id=${encodeURIComponent(patientId)}&since_version=${sinceVersion}`,
+      patientId,
+    );
+  },
 };
 
 export type LegalDocumentSignature = {
@@ -251,6 +272,37 @@ export type LegalDocumentVerification = {
   valid: boolean;
   verification_code?: string | null;
   disclaimer: string;
+};
+
+export type PatientClaim = {
+  claim_id: string;
+  member_id?: string;
+  patient_id?: string;
+  encounter_id: string;
+  provider_id?: string;
+  scheme_type: string;
+  status: string;
+  submitted_amount_kes: number;
+  adjudicated_amount_kes?: number | null;
+  fraud_score?: number;
+  submitted_at?: string;
+};
+
+export type InsuranceSyncResponse = {
+  sync_version: number;
+  updated_at: string;
+  changed: boolean;
+  coverage_stats?: {
+    balance_kes: number;
+    used_ytd_kes: number;
+    annual_limit_kes: number;
+    claims_count: number;
+    claims_processed: number;
+    renewal_date: string;
+    cover_active: boolean;
+  };
+  patient_claims?: PatientClaim[];
+  billing?: BillingPatientSummary;
 };
 
 export type BillingPatientSummary = {

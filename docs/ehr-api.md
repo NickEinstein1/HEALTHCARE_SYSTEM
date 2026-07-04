@@ -42,6 +42,14 @@ curl -s -X POST http://localhost:8000/consent/revoke \\
 
 ## Run locally
 
+**Quick pilot (no Docker):** UHIC, billing, and `/ai` simulators work without Postgres/Redis when `EHR_INFRA_OPTIONAL=true` (default in `development`). FHIR patient reads return empty until infra is up.
+
+```bash
+cd ehr-api && uvicorn app.main:app --reload --port 8100
+```
+
+**Full stack** (FHIR cache + Postgres):
+
 1. Start infra (from repo root):
 
    ```bash
@@ -95,6 +103,9 @@ Full repo gate (matches GitHub Actions):
 | EHR_REDIS_URL                     | redis://localhost:6379/0                | Redis connection                                                                                                                                                                                                                |
 | EHR_INTEGRATION_IDEMPOTENCY_REDIS | false                                   | When `true`, integration census/HL7 idempotency replays are stored in Redis (same URL) so **multiple API workers or replicas** see the same cached response; when `false`, replay is **in-process memory only** (single worker) |
 | EHR_POSTGRES_DSN                  | postgresql://ehr:...@localhost:5432/ehr | PostgreSQL connection                                                                                                                                                                                                           |
+| EHR_INFRA_OPTIONAL                | true (dev) / false (staging, production) | When `true`, API starts if Postgres/Redis are down; FHIR DB/cache routes degrade                                                                                                                                              |
+| EHR_OTP_SIMULATE                  | true (dev) / false (production)         | When `true`, OTP responses include `debug_otp` for pilot MFA                                                                                                                                    |
+| EHR_PATIENT_SESSION_SECRET        | dev default                             | HS256 secret for gateway patient session JWTs when OIDC is off                                                                                                                                  |
 | EHR_CACHE_TTL_SECONDS             | 300                                     | Cache TTL for patient summary                                                                                                                                                                                                   |
 | EHR_AI_CENSUS_INTEGRATION_SECRET  | _(empty)_                               | When set: enables integration POST routes (`/ai/integration/...`, including HL7 ADT stub); send header `X-AI-Census-Secret`; empty = **404** on those paths                                                                     |
 | EHR_WARD_CENSUS_SQLITE_PATH       | _(empty)_                               | When set: each appended census snapshot is also written to this SQLite file (WAL mode); survives process restarts for pilot durability                                                                                          |

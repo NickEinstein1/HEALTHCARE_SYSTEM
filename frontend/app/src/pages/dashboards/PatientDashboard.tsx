@@ -270,6 +270,11 @@ export function PatientDashboard() {
   const [billingLoading, setBillingLoading] = useState(false);
   const [payBusy, setPayBusy] = useState(false);
 
+  const insuranceSync = usePolling(
+    () => api.insuranceSync(patientId, 0, "patient"),
+    { intervalMs: 8_000, enabled: page === "coverage" || page === "bills" || page === "contributions" },
+  );
+
   const refreshBilling = useCallback(async () => {
     setBillingLoading(true);
     try {
@@ -1920,30 +1925,40 @@ export function PatientDashboard() {
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>🛡️</div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>Ksh 48,200</div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>
+                  Ksh {Math.round(insuranceSync.data?.coverage_stats?.balance_kes ?? 48_200).toLocaleString()}
+                </div>
                 <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Balance remaining this year</div>
                 <div style={{ marginTop: 10 }}>
-                  <span className="tag g dot">Cover Active</span>
+                  <span className="tag g dot">
+                    {insuranceSync.data?.coverage_stats?.cover_active === false ? "Inactive" : "Cover Active"}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>💳</div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--b)" }}>Ksh 1,800</div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--b)" }}>
+                  Ksh {Math.round(insuranceSync.data?.coverage_stats?.used_ytd_kes ?? 1_800).toLocaleString()}
+                </div>
                 <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Used so far this year</div>
                 <div style={{ marginTop: 10 }}>
-                  <span className="tag b">3 claims processed</span>
+                  <span className="tag b">
+                    {insuranceSync.data?.coverage_stats?.claims_processed ?? 3} claims processed
+                  </span>
                 </div>
               </div>
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>📅</div>
-                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--am)" }}>31 Mar 2026</div>
+                <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--am)" }}>
+                  {insuranceSync.data?.coverage_stats?.renewal_date ?? "31 Mar 2026"}
+                </div>
                 <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Cover year renewal date</div>
                 <div style={{ marginTop: 10 }}>
-                  <span className="tag am">21 days left</span>
+                  <span className="tag am">Sync v{insuranceSync.data?.sync_version ?? 0}</span>
                 </div>
               </div>
             </div>
@@ -1988,22 +2003,26 @@ export function PatientDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td className="mono">AFL-CLM-2026-0012</td>
-                      <td>KNH Outpatient</td>
-                      <td>Ksh 1,200</td>
-                      <td>
-                        <span className="tag g">Approved</span>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="mono">AFL-CLM-2025-8841</td>
-                      <td>Coast General</td>
-                      <td>Ksh 600</td>
-                      <td>
-                        <span className="tag g">Approved</span>
-                      </td>
-                    </tr>
+                    {(insuranceSync.data?.patient_claims ?? []).length === 0 ? (
+                      <tr>
+                        <td colSpan={4} style={{ fontSize: 12, color: "var(--t3)", padding: 12 }}>
+                          No claims yet — synced with UHIC every 8s
+                        </td>
+                      </tr>
+                    ) : (
+                      (insuranceSync.data?.patient_claims ?? []).map((c) => (
+                        <tr key={c.claim_id}>
+                          <td className="mono">{c.claim_id}</td>
+                          <td>{c.encounter_id}</td>
+                          <td>Ksh {Math.round(c.submitted_amount_kes).toLocaleString()}</td>
+                          <td>
+                            <span className={`tag ${c.status === "adjudicated" || c.status === "paid" ? "g" : c.status === "denied" ? "r" : "a"}`}>
+                              {c.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

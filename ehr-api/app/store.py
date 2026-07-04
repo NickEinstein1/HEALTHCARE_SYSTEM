@@ -1,6 +1,7 @@
 """Data access: Redis (hot) and PostgreSQL (warm)."""
 
 import json
+import logging
 import time
 from typing import Optional
 
@@ -18,17 +19,33 @@ from app.models import (
 
 _pg_pool: asyncpg.Pool | None = None
 _redis_client: redis.Redis | None = None
+_log = logging.getLogger(__name__)
+
+
+def _infra_connect_errors() -> tuple[type[BaseException], ...]:
+    return (ConnectionRefusedError, OSError, TimeoutError, asyncpg.PostgresConnectionError)
 
 
 async def init_postgres_pool() -> None:
     """Initialize shared asyncpg connection pool once per process."""
     global _pg_pool
-    if _pg_pool is None:
+    if _pg_pool is not None:
+        return
+    try:
         _pg_pool = await asyncpg.create_pool(
             dsn=settings.postgres_dsn,
             min_size=2,
             max_size=20,
         )
+    except _infra_connect_errors() as exc:
+        if settings.infra_optional:
+            _log.warning(
+                "Postgres unavailable (%s); continuing without DB. "
+                "Start infra: cd infra && docker compose up -d postgres redis",
+                exc,
+            )
+            return
+        raise
 
 
 async def close_postgres_pool() -> None:
@@ -52,8 +69,27 @@ def _require_pool() -> asyncpg.Pool:
 async def init_redis_client() -> None:
     """Initialize shared Redis client once per process."""
     global _redis_client
-    if _redis_client is None:
+    if _redis_client is not None:
+        return
+    try:
         _redis_client = redis.from_url(settings.redis_url, decode_responses=True)
+        await _redis_client.ping()
+    except _infra_connect_errors() as exc:
+        if settings.infra_optional:
+            _log.warning(
+                "Redis unavailable (%s); continuing without cache. "
+                "Start infra: cd infra && docker compose up -d postgres redis",
+                exc,
+            )
+            _redis_client = None
+            return
+        raise
+    except redis.RedisError as exc:
+        if settings.infra_optional:
+            _log.warning("Redis unavailable (%s); continuing without cache.", exc)
+            _redis_client = None
+            return
+        raise
 
 
 async def close_redis_client() -> None:

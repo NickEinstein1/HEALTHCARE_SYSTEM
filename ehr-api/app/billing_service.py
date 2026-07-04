@@ -231,6 +231,13 @@ def record_payment(payload: dict[str, Any], recorded_by_role: str) -> dict:
     st.billing_payments.insert(0, row)
     if invoice:
         _apply_payment_to_invoice(invoice, amount)
+    if row_status_completed(str(row.get("status") or "")):
+        try:
+            from app.insurance_service import bump_uhic_sync
+
+            bump_uhic_sync("payment_recorded")
+        except Exception:
+            pass
     return row
 
 

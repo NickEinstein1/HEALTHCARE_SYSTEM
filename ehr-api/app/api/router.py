@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from app.api.routers import (
     admin, appointments, auth_status, billing, clinical_ai, fhir, integrations,
-    lab, legal_documents, metrics, nurse, patient_profile, pharmacy, referrals, ui, walkins,
+    insurance, lab, legal_documents, metrics, nurse, patient_profile, pharmacy, referrals, ui, walkins,
 )
 from app.api.routers import ai as ai_router_module
 
@@ -42,6 +42,9 @@ api_router.include_router(patient_profile.router)
 
 # Billing, invoices, and M-Pesa payments
 api_router.include_router(billing.router)
+
+# UHIC — UniHealth Insurance Cover
+api_router.include_router(insurance.router)
 
 # Phase 3 — AI Assist
 api_router.include_router(ai_router_module.router, tags=["ai"])

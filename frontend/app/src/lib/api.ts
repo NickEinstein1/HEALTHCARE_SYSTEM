@@ -11,6 +11,15 @@ import type {
   EsignVerificationProcess,
   MpesaStkResult,
   ReferralRecord,
+  UhicClaim,
+  UhicDashboardSummary,
+  InsuranceSyncPayload,
+  UhicFraudTrend,
+  UhicMember,
+  UhicPolicy,
+  UhicPremiumQuote,
+  UhicProviderScore,
+  UhicReserveSnapshot,
   MedicationRequest,
   MetricsJson,
   Observation,
@@ -911,6 +920,81 @@ export const api = {
     payload: { patient_id: string; amount_kes?: number; purpose?: string; invoice_id?: string; phone?: string },
   ): Promise<MpesaStkResult> {
     return postJson("/patient/payment", payload, { headers: legalAuthHeaders("patient", payload.patient_id) });
+  },
+
+  /** UHIC — UniHealth Insurance Cover */
+  uhicSummary(role = "admin"): Promise<UhicDashboardSummary> {
+    return getJson("/insurance/uhic/summary", { headers: legalAuthHeaders(role) });
+  },
+
+  uhicMembers(params?: { scheme_type?: string; status?: string }, role = "admin"): Promise<{ members: UhicMember[] }> {
+    const qs = new URLSearchParams();
+    if (params?.scheme_type) qs.set("scheme_type", params.scheme_type);
+    if (params?.status) qs.set("status", params.status);
+    const suffix = qs.toString() ? `?${qs}` : "";
+    return getJson(`/insurance/members${suffix}`, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicPolicies(memberId?: string, role = "admin"): Promise<{ policies: UhicPolicy[] }> {
+    const suffix = memberId ? `?member_id=${encodeURIComponent(memberId)}` : "";
+    return getJson(`/insurance/policies${suffix}`, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicClaims(params?: { member_id?: string; status?: string; provider_id?: string }, role = "admin"): Promise<{ claims: UhicClaim[] }> {
+    const qs = new URLSearchParams();
+    if (params?.member_id) qs.set("member_id", params.member_id);
+    if (params?.status) qs.set("status", params.status);
+    if (params?.provider_id) qs.set("provider_id", params.provider_id);
+    const suffix = qs.toString() ? `?${qs}` : "";
+    return getJson(`/insurance/claims${suffix}`, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicSubmitClaim(payload: Record<string, unknown>, role = "admin"): Promise<{ status: string; claim: UhicClaim }> {
+    return postJson("/insurance/claims", payload, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicDecideClaim(claimId: string, payload: { decision: string; note?: string }, role = "admin"): Promise<{ status: string; claim: UhicClaim }> {
+    return postJson(`/insurance/claims/${encodeURIComponent(claimId)}/decision`, payload, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicPremiumQuote(payload: Record<string, unknown>, role = "admin"): Promise<UhicPremiumQuote> {
+    return postJson("/insurance/premium/quote", payload, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicActuarialReserves(role = "admin"): Promise<UhicReserveSnapshot> {
+    return getJson("/insurance/actuarial/reserves", { headers: legalAuthHeaders(role) });
+  },
+
+  uhicActuarialForecast(months = 12, role = "admin"): Promise<{ eccif_projection: Array<{ month: number; projected_balance_kes: number; net_flow_kes: number }>; assumptions: Record<string, number> }> {
+    return getJson(`/insurance/actuarial/forecast?months=${months}`, { headers: legalAuthHeaders(role) });
+  },
+
+  uhicProviderScores(role = "admin"): Promise<{ providers: UhicProviderScore[] }> {
+    return getJson("/insurance/providers/risk-scores", { headers: legalAuthHeaders(role) });
+  },
+
+  uhicFraudTrend(role = "admin"): Promise<UhicFraudTrend> {
+    return getJson("/audit/aggregate/fraud-trend", { headers: legalAuthHeaders(role) });
+  },
+
+  insuranceSync(
+    patientId: string,
+    sinceVersion = 0,
+    role: "patient" | "admin" = "patient",
+    opts?: { includeSummary?: boolean },
+  ): Promise<InsuranceSyncPayload> {
+    const qs = new URLSearchParams();
+    qs.set("patient_id", patientId);
+    qs.set("since_version", String(sinceVersion));
+    if (opts?.includeSummary) qs.set("include_summary", "true");
+    return getJson(`/insurance/sync?${qs}`, { headers: legalAuthHeaders(role, patientId) });
+  },
+
+  insuranceSyncStaff(sinceVersion = 0, role = "admin"): Promise<InsuranceSyncPayload> {
+    const qs = new URLSearchParams();
+    qs.set("since_version", String(sinceVersion));
+    qs.set("include_summary", "true");
+    return getJson(`/insurance/sync?${qs}`, { headers: legalAuthHeaders(role) });
   },
 };
 

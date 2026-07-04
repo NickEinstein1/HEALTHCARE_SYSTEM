@@ -13,6 +13,8 @@ import {
 import { AuthAltBtn, AuthGhostBtn, AuthOrLine, AuthPrimaryBtn } from "../../components/auth/AuthButtons";
 import { IdTypePicker } from "../../components/auth/IdTypePicker";
 import { PinInput } from "../../components/auth/PinInput";
+import { requestPatientOtp } from "../../lib/auth";
+import { config } from "../../lib/config";
 import { ID_TYPES, PATIENT_ROLE, PHONE_RX, type IdTypeKey } from "../../lib/signInConfig";
 import type { AuthStackParamList } from "../../navigation/AuthNavigator";
 import { fonts } from "../../theme/typography";
@@ -52,15 +54,37 @@ export function PatientSignInScreen({ navigation }: Props) {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigation.navigate("Mfa", { phone: ph, flow: "signIn" });
-    }, 1200);
+    const patientId = idType === "national" ? config.defaultPatientId : id;
+    // Pilot: national ID maps to default FHIR patient (P001) until IPRS registry is live.
+    const resolvedId = config.defaultPatientId || patientId;
+    void (async () => {
+      try {
+        const otp = await requestPatientOtp(resolvedId, ph);
+        if (otp.debug_otp && __DEV__) {
+          console.info(`[UHIC OTP] ${otp.debug_otp}`);
+        }
+        navigation.navigate("Mfa", {
+          phone: ph,
+          flow: "signIn",
+          patientId: resolvedId,
+          pin: pinStr,
+        });
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "Could not send OTP");
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   const stubAlt = () => {
     const ph = phone.replace(/[\s-]/g, "") || "0712345678";
-    navigation.navigate("Mfa", { phone: ph, flow: "signIn" });
+    navigation.navigate("Mfa", {
+      phone: ph,
+      flow: "signIn",
+      patientId: config.defaultPatientId,
+      pin: pin.join("") || "0000",
+    });
   };
 
   return (

@@ -5,6 +5,8 @@ import { AuthShell } from "../../components/auth/AuthShell";
 import { AuthError, AuthField, AuthHeader, AuthStepper, authInputStyle } from "../../components/auth/AuthForm";
 import { AuthGhostBtn, AuthPrimaryBtn } from "../../components/auth/AuthButtons";
 import { IdTypePicker } from "../../components/auth/IdTypePicker";
+import { requestPatientOtp } from "../../lib/auth";
+import { config } from "../../lib/config";
 import { FACILITIES, ID_TYPES, PHONE_RX, type IdTypeKey } from "../../lib/signInConfig";
 import type { AuthStackParamList } from "../../navigation/AuthNavigator";
 import { auth } from "../../theme/authTheme";
@@ -77,14 +79,24 @@ export function RegisterScreen({ navigation }: Props) {
     }
     setErr("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigation.navigate("Mfa", {
-        phone: phone.replace(/[\s-]/g, ""),
-        flow: "register",
-        displayName: `${firstName.trim()} ${lastName.trim()}`,
-      });
-    }, 1400);
+    const ph = phone.replace(/[\s-]/g, "");
+    const pid = config.defaultPatientId;
+    void (async () => {
+      try {
+        await requestPatientOtp(pid, ph);
+        navigation.navigate("Mfa", {
+          phone: ph,
+          flow: "register",
+          displayName: `${firstName.trim()} ${lastName.trim()}`,
+          patientId: pid,
+          pin,
+        });
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "Could not send OTP");
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (

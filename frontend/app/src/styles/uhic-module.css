@@ -1,0 +1,52 @@
+/* UHIC — UniHealth Insurance Cover module accent */
+
+.uhic-module .uhic-bar {
+  background: linear-gradient(90deg, #6d28d9, #0082b4);
+}
+
+.uhic-module .uhic-accent {
+  border-color: rgba(109, 40, 217, 0.35);
+  background: rgba(109, 40, 217, 0.08);
+}
+
+.uhic-module .uhic-scheme-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bdr);
+  font-size: 13px;
+}
+
+.uhic-module .uhic-formula-block {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--t2);
+}
+
+.uhic-module .uhic-formula-block ul {
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
+.uhic-module .uhic-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.uhic-module .tbl-btn {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--bdr);
+  background: var(--card);
+  cursor: pointer;
+}
+
+.uhic-module .pos {
+  color: var(--g);
+}
+
+.uhic-module .neg {
+  color: var(--r);
+}

@@ -168,25 +168,9 @@ export const NutritionDashboard: React.FC = () => (
 // Billing Dashboard — live invoices, payments, M-Pesa (see dashboards/BillingDashboard.tsx)
 export { BillingDashboard } from "./BillingDashboard";
 
-// Insurance Dashboard
-export const InsuranceDashboard: React.FC = () => (
-  <ModuleDashboard
-    config={{
-      name: 'Insurance',
-      title: 'Insurance Management',
-      icon: '🛡️',
-      description: 'Insurance claims and verification management',
-      role: 'Insurance Officer',
-      stats: [
-        { label: 'Claims Submitted', value: '89' },
-        { label: 'Approved', value: '76' },
-        { label: 'Pending', value: '8' },
-        { label: 'Denied', value: '5' },
-      ],
-      widgets: [],
-    }}
-  />
-);
+// Insurance Dashboard — UHIC (UniHealth Insurance Cover 2.0)
+export { UHICModule as InsuranceDashboard } from "../modules/UHICModule";
+export { UHICModule } from "../modules/UHICModule";
 
 // Inventory Dashboard
 export const InventoryDashboard: React.FC = () => (

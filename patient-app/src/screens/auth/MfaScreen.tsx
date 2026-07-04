@@ -5,17 +5,21 @@ import { AuthShell } from "../../components/auth/AuthShell";
 import { AuthError, AuthHeader, AuthStepper } from "../../components/auth/AuthForm";
 import { AuthGhostBtn, AuthPrimaryBtn } from "../../components/auth/AuthButtons";
 import { PinInput } from "../../components/auth/PinInput";
+import { completePatientMfa, requestPatientOtp } from "../../lib/auth";
+import { config } from "../../lib/config";
 import type { AuthStackParamList } from "../../navigation/AuthNavigator";
 import { fonts } from "../../theme/typography";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "Mfa">;
 
 export function MfaScreen({ navigation, route }: Props) {
-  const { phone, flow, displayName } = route.params;
+  const { phone, flow, displayName, patientId, pin } = route.params;
+  const pid = patientId || config.defaultPatientId;
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [resendLeft, setResendLeft] = useState(30);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const [hint, setHint] = useState("");
 
   const masked = phone.length > 6 ? `${phone.slice(0, 4)}•••${phone.slice(-2)}` : phone;
 
@@ -32,10 +36,37 @@ export function MfaScreen({ navigation, route }: Props) {
     }
     setErr("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigation.replace("AuthSuccess", { flow, displayName });
-    }, 1200);
+    void (async () => {
+      try {
+        await completePatientMfa({
+          patientId: pid,
+          phone,
+          code: otp.join(""),
+          pin,
+        });
+        navigation.replace("AuthSuccess", { flow, displayName, patientId: pid });
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "OTP verification failed");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  };
+
+  const resend = () => {
+    setResendLeft(30);
+    void (async () => {
+      try {
+        const res = await requestPatientOtp(pid, phone);
+        if (res.debug_otp && __DEV__) {
+          setHint(`Dev OTP: ${res.debug_otp}`);
+        } else {
+          setHint("A new OTP was sent.");
+        }
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "Resend failed");
+      }
+    })();
   };
 
   return (
@@ -56,18 +87,13 @@ export function MfaScreen({ navigation, route }: Props) {
           onBack={() => navigation.goBack()}
         />
 
-        <Text style={styles.note}>
-          A 6-digit OTP was sent via SMS to {masked}
-        </Text>
+        <Text style={styles.note}>A 6-digit OTP was sent via SMS to {masked}</Text>
+        {hint ? <Text style={styles.hint}>{hint}</Text> : null}
 
         <AuthError message={err} />
         <PinInput length={6} value={otp} onChange={setOtp} />
 
-        <Pressable
-          disabled={resendLeft > 0}
-          onPress={() => setResendLeft(30)}
-          style={{ marginTop: 12 }}
-        >
+        <Pressable disabled={resendLeft > 0} onPress={resend} style={{ marginTop: 12 }}>
           <Text style={[styles.resend, resendLeft > 0 && { opacity: 0.5 }]}>
             {resendLeft > 0 ? `Resend OTP in ${resendLeft}s` : "Resend OTP"}
           </Text>
@@ -84,7 +110,8 @@ export function MfaScreen({ navigation, route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  pad: { padding: 18 },
-  note: { fontFamily: fonts.sans, fontSize: 12, color: "#5f776a", marginBottom: 14, lineHeight: 18 },
-  resend: { fontFamily: fonts.sansBold, fontSize: 12, color: "#1a8a4a", textAlign: "center" },
+  pad: { padding: 24 },
+  note: { fontFamily: fonts.sans, fontSize: 13, color: "#5f776a", marginBottom: 12, lineHeight: 20 },
+  hint: { fontFamily: fonts.mono, fontSize: 11, color: "#0a4a26", marginBottom: 8 },
+  resend: { fontFamily: fonts.sansBold, fontSize: 12, color: "#1a8a4a" },
 });
