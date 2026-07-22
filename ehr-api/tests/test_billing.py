@@ -9,10 +9,14 @@ from fastapi.testclient import TestClient
 import app.state as st
 from app.api.routers import billing as billing_router
 from app.billing_service import bootstrap_billing_state
+from app.config import settings
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch: pytest.MonkeyPatch):
+    # Unit tests use in-memory state; do not require a live Postgres pool.
+    monkeypatch.setattr(settings, "infra_optional", True, raising=False)
+    monkeypatch.setattr(settings, "mpesa_simulate", True, raising=False)
     st.billing_invoices.clear()
     st.billing_payments.clear()
     st.mpesa_transactions.clear()
