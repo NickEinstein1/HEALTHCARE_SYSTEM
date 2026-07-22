@@ -217,6 +217,81 @@ def patient_id_from_request(request: Request) -> str | None:
     return header_pid or None
 
 
+def require_bound_patient_id(
+    request: Request,
+    role: str,
+    *,
+    query_pid: str | None = None,
+    required: bool = True,
+) -> str | None:
+    """
+    Resolve patient_id for scoped routes.
+
+    For ``role == patient``, prefer JWT ``patient_id`` / session claim and reject
+    a mismatched ``X-Patient-Id`` / body / query override (IDOR hardening).
+    """
+    if role != "patient":
+        pid = (query_pid or "").strip() or None
+        if required and not pid:
+            raise HTTPException(status_code=400, detail="patient_id required")
+        return pid
+
+    token_pid = None
+    auth = request.headers.get("Authorization", "").strip()
+    if auth.lower().startswith("bearer "):
+        token = auth.split(" ", 1)[1].strip()
+        if settings.oidc_enabled:
+            try:
+                claims = _decode_bearer_claims(token)
+                for key in ("patient_id", "patientId", "sub"):
+                    val = claims.get(key)
+                    if val and str(val).strip():
+                        # Prefer explicit patient_id claims; use sub only when role is patient.
+                        if key == "sub":
+                            role_claim = _pick_role_from_claims(claims)
+                            if role_claim and role_claim != "patient":
+                                continue
+                        token_pid = str(val).strip()
+                        break
+            except HTTPException:
+                pass
+        else:
+            try:
+                from app.patient_auth import decode_patient_session_token
+
+                claims = decode_patient_session_token(token)
+                if claims.get("token_use") == "patient_session":
+                    raw = claims.get("patient_id") or claims.get("sub")
+                    if raw:
+                        token_pid = str(raw).strip()
+            except Exception:
+                pass
+
+    header_pid = request.headers.get("X-Patient-Id", "").strip() or None
+    query = (query_pid or "").strip() or None
+
+    if token_pid:
+        for candidate in (header_pid, query):
+            if candidate and candidate != token_pid:
+                raise HTTPException(
+                    status_code=403,
+                    detail="patient_id does not match authenticated session",
+                )
+        return token_pid
+
+    # Dev/header-only pilot: allow X-Patient-Id when no bearer patient claim.
+    if settings.oidc_enabled and not settings.oidc_allow_header_fallback:
+        raise HTTPException(
+            status_code=401,
+            detail="Bearer token with patient_id claim required",
+        )
+
+    pid = header_pid or query
+    if required and not pid:
+        raise HTTPException(status_code=400, detail="X-Patient-Id header required for patient role")
+    return pid
+
+
 def resolve_role(request: Request) -> str:
     """Resolve role from Bearer JWT (OIDC or patient session) or ``X-UniHealth-Role``."""
     auth = request.headers.get("Authorization", "").strip()
@@ -245,6 +320,11 @@ def resolve_role(request: Request) -> str:
         session_role = _role_from_patient_session(bearer)
         if session_role:
             return session_role
+    if settings.is_production:
+        raise HTTPException(
+            status_code=401,
+            detail="Authorization: Bearer token required (production rejects role-header-only auth)",
+        )
     return _role_from_header(request)
 
 

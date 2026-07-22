@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from app.auth import require_role
+from app.auth import require_bound_patient_id, require_role
 from app.insurance_service import (
     actuarial_forecast,
     actuarial_reserves,
@@ -41,12 +41,12 @@ _UHIC_ROLES = [
 
 
 def _patient_id_from_request(request: Request, role: str, query_pid: str | None) -> str | None:
-    if role == "patient":
-        header_pid = request.headers.get("X-Patient-Id", "").strip()
-        if not header_pid:
-            raise HTTPException(status_code=400, detail="X-Patient-Id header required for patient role")
-        return header_pid
-    return (query_pid or "").strip() or None
+    return require_bound_patient_id(
+        request,
+        role,
+        query_pid=query_pid,
+        required=(role == "patient"),
+    )
 
 
 @router.get("/insurance/uhic/summary", summary="UHIC dashboard KPIs")
@@ -77,8 +77,11 @@ def insurance_member_get(request: Request, member_id: str):
 
 @router.get("/insurance/members/by-patient/{patient_id}", summary="Member by EHR patient ID")
 def insurance_member_by_patient(request: Request, patient_id: str):
-    require_role(request, _UHIC_ROLES)
-    cov = coverage_for_patient(patient_id)
+    role = require_role(request, _UHIC_ROLES)
+    pid = _patient_id_from_request(request, role, patient_id) or patient_id
+    if role == "patient" and pid != patient_id:
+        raise HTTPException(status_code=403, detail="forbidden")
+    cov = coverage_for_patient(pid)
     if not cov:
         raise HTTPException(status_code=404, detail="no coverage for patient")
     return cov
@@ -86,11 +89,14 @@ def insurance_member_by_patient(request: Request, patient_id: str):
 
 @router.get("/insurance/coverage/{patient_id}", summary="FHIR-aligned coverage snapshot")
 def insurance_coverage(request: Request, patient_id: str):
-    require_role(request, _UHIC_ROLES)
-    cov = coverage_for_patient(patient_id)
+    role = require_role(request, _UHIC_ROLES)
+    pid = _patient_id_from_request(request, role, patient_id) or patient_id
+    if role == "patient" and pid != patient_id:
+        raise HTTPException(status_code=403, detail="forbidden")
+    cov = coverage_for_patient(pid)
     if not cov:
-        return {"eligible": False, "patient_id": patient_id, "policies": []}
-    return {"eligible": cov["eligible"], "patient_id": patient_id, **cov}
+        return {"eligible": False, "patient_id": pid, "policies": []}
+    return {"eligible": cov["eligible"], "patient_id": pid, **cov}
 
 
 @router.get("/insurance/policies", summary="List policies")

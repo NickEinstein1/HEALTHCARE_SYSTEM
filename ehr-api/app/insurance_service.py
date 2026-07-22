@@ -34,11 +34,57 @@ def _hash_chain(prev_hash: str | None, payload: str) -> str:
     return hashlib.sha256(base.encode()).hexdigest()
 
 
-def bump_uhic_sync(reason: str = "update") -> int:
+def verify_claim_audit_chain(entries: list[dict[str, Any]]) -> None:
+    """Raise ValueError if audit prev_hash pointers / hashes are inconsistent."""
+    prev: str | None = None
+    for i, entry in enumerate(entries):
+        h = str(entry.get("hash") or "").strip()
+        if not h:
+            raise ValueError(f"uhic claim audit chain break at index {i} (missing hash)")
+        stored_prev = entry.get("prev_hash")
+        if i == 0:
+            if stored_prev not in (None, ""):
+                # First entry may reference GENESIS-era null only
+                pass
+        elif stored_prev != prev:
+            raise ValueError(
+                f"uhic claim audit chain break at index {i} "
+                f"(prev_hash={stored_prev!r} expected={prev!r})"
+            )
+        prev = h
+
+
+
+def bump_uhic_sync(reason: str = "update", *, persist: bool = True) -> int:
     """Monotonic version — all clients poll to detect claim/payment changes."""
     st.uhic_sync_version = int(st.uhic_sync_version or 0) + 1
     st.uhic_sync_updated_at = _now_iso()
+    if persist:
+        _persist_sync_meta()
     return st.uhic_sync_version
+
+
+def _persist_sync_meta() -> None:
+    from app.persistence import uhic_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(
+        uhic_pg.upsert_sync_meta(int(st.uhic_sync_version or 0), st.uhic_sync_updated_at)
+    )
+
+
+def _persist_claim(row: dict[str, Any]) -> None:
+    from app.persistence import uhic_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(uhic_pg.upsert_claim(row))
+
+
+def _persist_audit(entry: dict[str, Any]) -> None:
+    from app.persistence import uhic_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(uhic_pg.append_audit(entry))
 
 
 def bootstrap_uhic_state() -> None:
@@ -180,7 +226,7 @@ def bootstrap_uhic_state() -> None:
             "prev_hash": st.uhic_claim_audit[-1]["hash"] if st.uhic_claim_audit else None,
         })
     if not st.uhic_sync_updated_at:
-        bump_uhic_sync("bootstrap")
+        bump_uhic_sync("bootstrap", persist=False)
 
 
 def dashboard_summary() -> dict[str, Any]:
@@ -280,14 +326,17 @@ def submit_claim(payload: dict) -> dict:
 
     prev = st.uhic_claim_audit[-1]["hash"] if st.uhic_claim_audit else None
     h = _hash_chain(prev, str(row))
-    st.uhic_claim_audit.append({
+    audit_entry = {
         "ts": _now_iso(),
         "event": "claim_submitted",
         "claim_id": claim_id,
         "payload": row,
         "hash": h,
         "prev_hash": prev,
-    })
+    }
+    st.uhic_claim_audit.append(audit_entry)
+    _persist_claim(row)
+    _persist_audit(audit_entry)
     bump_uhic_sync("claim_submitted")
     return row
 
@@ -320,14 +369,17 @@ def decide_claim(claim_id: str, decision: str, note: str = "") -> dict:
 
     prev = st.uhic_claim_audit[-1]["hash"] if st.uhic_claim_audit else None
     h = _hash_chain(prev, f"{claim_id}:{decision}:{note}")
-    st.uhic_claim_audit.append({
+    audit_entry = {
         "ts": _now_iso(),
         "event": "claim_decision",
         "claim_id": claim_id,
         "payload": {"decision": decision, "note": note},
         "hash": h,
         "prev_hash": prev,
-    })
+    }
+    st.uhic_claim_audit.append(audit_entry)
+    _persist_claim(row)
+    _persist_audit(audit_entry)
     bump_uhic_sync("claim_decision")
     return row
 
@@ -349,14 +401,20 @@ def bridge_claim_to_billing(claim: dict) -> None:
             continue
         if enc and inv.get("encounter_id") == enc:
             _apply_claim_to_invoice(inv, claim, status)
+            from app.billing_service import _persist_invoice
+
+            _persist_invoice(inv)
             return
         if claim_id and inv.get("claim_id") == claim_id:
             _apply_claim_to_invoice(inv, claim, status)
+            from app.billing_service import _persist_invoice
+
+            _persist_invoice(inv)
             return
 
     if status in ("adjudicated", "paid"):
         amount = float(claim.get("adjudicated_amount_kes") or claim.get("submitted_amount_kes") or 0)
-        st.billing_invoices.append({
+        new_inv = {
             "id": f"INV-{claim_id}" if claim_id else f"INV-{uuid.uuid4().hex[:8]}",
             "patient_id": pid,
             "patient_name": pid,
@@ -371,7 +429,11 @@ def bridge_claim_to_billing(claim: dict) -> None:
             "due_at": None,
             "paid_at": _now_iso(),
             "created_by_role": "uhic",
-        })
+        }
+        st.billing_invoices.append(new_inv)
+        from app.billing_service import _persist_invoice
+
+        _persist_invoice(new_inv)
 
 
 def _apply_claim_to_invoice(inv: dict, claim: dict, status: str) -> None:

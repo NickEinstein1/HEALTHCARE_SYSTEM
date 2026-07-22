@@ -21,7 +21,11 @@ POSTGRES_DSN = os.environ.get(
 
 
 async def seed():
-    conn = await asyncpg.connect(POSTGRES_DSN)
+    dsn = POSTGRES_DSN
+    kwargs = {}
+    if "supabase.com" in dsn or "sslmode=require" in dsn:
+        kwargs["ssl"] = "require"
+    conn = await asyncpg.connect(dsn, **kwargs)
 
     patients = [
         ("P001", "NHI001", "Wang", "Wei", date(1980, 5, 15), "male"),

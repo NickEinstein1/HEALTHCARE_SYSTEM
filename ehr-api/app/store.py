@@ -1,5 +1,6 @@
 """Data access: Redis (hot) and PostgreSQL (warm)."""
 
+import asyncio
 import json
 import logging
 import time
@@ -19,6 +20,7 @@ from app.models import (
 
 _pg_pool: asyncpg.Pool | None = None
 _redis_client: redis.Redis | None = None
+_pg_loop: asyncio.AbstractEventLoop | None = None
 _log = logging.getLogger(__name__)
 
 
@@ -28,16 +30,18 @@ def _infra_connect_errors() -> tuple[type[BaseException], ...]:
 
 async def init_postgres_pool() -> None:
     """Initialize shared asyncpg connection pool once per process."""
-    global _pg_pool
+    global _pg_pool, _pg_loop
     if _pg_pool is not None:
         return
     try:
+        _pg_loop = asyncio.get_running_loop()
         _pg_pool = await asyncpg.create_pool(
             dsn=settings.postgres_dsn,
             min_size=2,
             max_size=20,
         )
     except _infra_connect_errors() as exc:
+        _pg_loop = None
         if settings.infra_optional:
             _log.warning(
                 "Postgres unavailable (%s); continuing without DB. "
@@ -50,14 +54,19 @@ async def init_postgres_pool() -> None:
 
 async def close_postgres_pool() -> None:
     """Close pool during app shutdown."""
-    global _pg_pool
+    global _pg_pool, _pg_loop
     if _pg_pool is not None:
         await _pg_pool.close()
         _pg_pool = None
+        _pg_loop = None
 
 
 def has_postgres_pool() -> bool:
     return _pg_pool is not None
+
+
+def get_postgres_loop() -> asyncio.AbstractEventLoop | None:
+    return _pg_loop
 
 
 def _require_pool() -> asyncpg.Pool:

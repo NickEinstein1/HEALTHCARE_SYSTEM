@@ -29,6 +29,77 @@ PAYMENT_PURPOSES = frozenset({"contribution", "invoice", "bill", "wallet_topup"}
 DEFAULT_CONTRIBUTION_KES = 500.0
 
 
+def _persist_invoice(row: dict[str, Any]) -> None:
+    from app.persistence import billing_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(billing_pg.upsert_invoice(row))
+
+
+def _persist_payment(row: dict[str, Any]) -> None:
+    from app.persistence import billing_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(billing_pg.upsert_payment(row))
+
+
+def _persist_mpesa(row: dict[str, Any]) -> None:
+    from app.persistence import billing_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(billing_pg.upsert_mpesa(row))
+
+
+def _persist_payment_bundle(
+    *,
+    invoice: dict[str, Any] | None = None,
+    payment: dict[str, Any] | None = None,
+    mpesa: dict[str, Any] | None = None,
+) -> None:
+    from app.persistence import billing_pg
+    from app.persistence.runtime import schedule_persist
+
+    schedule_persist(
+        billing_pg.persist_payment_bundle(invoice=invoice, payment=payment, mpesa=mpesa)
+    )
+
+
+def _resolve_c2b_patient(payload: dict[str, Any], parsed: dict[str, Any]) -> tuple[str, str | None, str]:
+    """Map C2B callback to patient. Never defaults to P001 outside simulate."""
+    bill_ref = str(parsed.get("bill_ref_number") or "").strip()
+    purpose = "contribution"
+    invoice_id = None
+    if bill_ref.upper().startswith("INV-"):
+        invoice_id = bill_ref.upper()
+        purpose = "invoice"
+        inv = _find_invoice(invoice_id)
+        if inv and inv.get("patient_id"):
+            return str(inv["patient_id"]), invoice_id, purpose
+        raise ValueError(f"unknown invoice bill ref: {invoice_id}")
+
+    # Explicit patient account refs (P001, P002, …)
+    ref_up = bill_ref.upper()
+    if ref_up.startswith("P") and ref_up[1:].isdigit():
+        return ref_up, None, purpose
+
+    explicit = str(payload.get("patient_id") or "").strip()
+    if settings.mpesa_simulate and explicit:
+        return explicit, invoice_id, purpose
+
+    phone = str(parsed.get("msisdn") or "")
+    if phone:
+        for p in st.billing_payments:
+            if normalize_phone(str(p.get("phone") or "")) == phone and p.get("patient_id"):
+                return str(p["patient_id"]), invoice_id, purpose
+        for m in getattr(st, "uhic_members", []) or []:
+            # members don't store phone yet — skip
+            pass
+
+    raise ValueError(
+        "unable to map C2B payment to patient — use INV-* bill ref, P00x account, or known MSISDN"
+    )
+
+
 def _now_iso() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
@@ -170,6 +241,7 @@ def create_invoice(payload: dict[str, Any], created_by_role: str) -> dict:
         "created_by_role": created_by_role,
     }
     st.billing_invoices.insert(0, row)
+    _persist_invoice(row)
     return row
 
 
@@ -207,6 +279,20 @@ def record_payment(payload: dict[str, Any], recorded_by_role: str) -> dict:
     patient_id = str(payload.get("patient_id") or "").strip()
     if not patient_id:
         raise ValueError("patient_id required")
+    receipt = str(payload.get("mpesa_receipt") or "").strip() or None
+    if receipt:
+        existing = next(
+            (
+                p
+                for p in st.billing_payments
+                if str(p.get("mpesa_receipt") or "").strip() == receipt
+            ),
+            None,
+        )
+        if existing:
+            out = dict(existing)
+            out["idempotent_replay"] = True
+            return out
     invoice_id = payload.get("invoice_id")
     invoice = _find_invoice(str(invoice_id)) if invoice_id else None
     if invoice and invoice.get("patient_id") != patient_id:
@@ -222,7 +308,7 @@ def record_payment(payload: dict[str, Any], recorded_by_role: str) -> dict:
         "purpose": str(payload.get("purpose") or ("invoice" if invoice else "contribution")),
         "amount_kes": amount,
         "status": str(payload.get("status") or "completed"),
-        "mpesa_receipt": payload.get("mpesa_receipt"),
+        "mpesa_receipt": receipt,
         "phone": payload.get("phone"),
         "recorded_by_role": recorded_by_role,
         "created_at": now,
@@ -231,6 +317,7 @@ def record_payment(payload: dict[str, Any], recorded_by_role: str) -> dict:
     st.billing_payments.insert(0, row)
     if invoice:
         _apply_payment_to_invoice(invoice, amount)
+    _persist_payment_bundle(invoice=invoice, payment=row)
     if row_status_completed(str(row.get("status") or "")):
         try:
             from app.insurance_service import bump_uhic_sync
@@ -382,10 +469,14 @@ def initiate_stk_push(
             initiated_by_role,
         )
         txn["payment_id"] = payment["id"]
+        # Payment already persisted in record_payment; refresh mpesa row atomically.
+        _persist_payment_bundle(mpesa=txn)
         message = (
             f"M-PESA payment confirmed. Receipt {result['MpesaReceiptNumber']} · "
             f"Ksh {int(amount):,} · Paybill {PAYBILL}"
         )
+    else:
+        _persist_mpesa(txn)
     return {
         "status": txn["status"],
         "checkout_request_id": checkout_id,
@@ -410,13 +501,28 @@ def process_c2b(payload: dict[str, Any], signature: str | None = None) -> dict[s
     amount = float(parsed["amount_kes"] or 0)
     if amount <= 0:
         raise ValueError("invalid amount")
-    patient_id = str(payload.get("patient_id") or "P001").strip()
-    bill_ref = parsed["bill_ref_number"]
-    purpose = "contribution"
-    invoice_id = None
-    if bill_ref.upper().startswith("INV-"):
-        invoice_id = bill_ref.upper()
-        purpose = "invoice"
+    receipt = str(parsed["trans_id"] or "").strip()
+    existing_txn = next(
+        (
+            t
+            for t in st.mpesa_transactions
+            if receipt and str(t.get("mpesa_receipt") or "").strip() == receipt
+        ),
+        None,
+    )
+    if existing_txn:
+        existing_pay = next(
+            (p for p in st.billing_payments if p.get("id") == existing_txn.get("payment_id")),
+            None,
+        )
+        return {
+            "status": "ok",
+            "duplicate": True,
+            "payment": existing_pay,
+            "transaction": existing_txn,
+        }
+
+    patient_id, invoice_id, purpose = _resolve_c2b_patient(payload, parsed)
     payment = record_payment(
         {
             "patient_id": patient_id,
@@ -424,12 +530,29 @@ def process_c2b(payload: dict[str, Any], signature: str | None = None) -> dict[s
             "method": "mpesa",
             "purpose": purpose,
             "invoice_id": invoice_id,
-            "mpesa_receipt": parsed["trans_id"],
+            "mpesa_receipt": receipt,
             "phone": parsed["msisdn"],
             "status": "completed",
         },
         "mpesa_c2b",
     )
+    if payment.get("idempotent_replay"):
+        existing_txn = next(
+            (
+                t
+                for t in st.mpesa_transactions
+                if receipt and str(t.get("mpesa_receipt") or "").strip() == receipt
+            ),
+            None,
+        )
+        if existing_txn:
+            return {
+                "status": "ok",
+                "duplicate": True,
+                "payment": payment,
+                "transaction": existing_txn,
+            }
+
     txn = {
         "id": f"MPESA-{uuid.uuid4().hex[:8].upper()}",
         "checkout_request_id": None,
@@ -440,7 +563,7 @@ def process_c2b(payload: dict[str, Any], signature: str | None = None) -> dict[s
         "amount_kes": amount,
         "phone": parsed["msisdn"],
         "status": "completed",
-        "mpesa_receipt": parsed["trans_id"],
+        "mpesa_receipt": receipt,
         "initiated_by_role": "mpesa_c2b",
         "created_at": _now_iso(),
         "completed_at": _now_iso(),
@@ -449,6 +572,7 @@ def process_c2b(payload: dict[str, Any], signature: str | None = None) -> dict[s
         "raw_json": json.dumps(parsed.get("raw") or {}),
     }
     st.mpesa_transactions.insert(0, txn)
+    _persist_payment_bundle(mpesa=txn)
     return {"status": "ok", "payment": payment, "transaction": txn}
 
 

@@ -1,0 +1,144 @@
+# UniHealth VPS production stack (lean)
+#
+# Architecture:
+#   Supabase  → clinical / billing / UHIC Postgres (external)
+#   VPS       → Keycloak (OIDC), Redis, ehr-api gateway, Keycloak's own DB
+#   Nginx/Caddy on host → TLS for app / api / auth
+#
+# Usage:
+#   cp infra/.env.vps.example infra/.env.vps
+#   # fill secrets + Supabase DSN + public hostnames
+#   docker compose -f infra/docker-compose.vps.yml --env-file infra/.env.vps up -d --build
+#
+# Does NOT run clinical Postgres or Kafka on the VPS (Supabase owns data).
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - vps_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+    restart: unless-stopped
+    networks: [unihealth]
+
+  # Keycloak identity store only (not clinical EHR data)
+  keycloak-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+    volumes:
+      - vps_keycloak_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [unihealth]
+
+  keycloak:
+    build:
+      context: ./keycloak
+      dockerfile: Dockerfile
+    command: start --optimized --import-realm
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HOSTNAME: ${AUTH_HOSTNAME}
+      KC_HOSTNAME_STRICT: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "true"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HEALTH_ENABLED: "true"
+    # Bound to localhost — nginx terminates TLS publicly
+    ports:
+      - "127.0.0.1:8180:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+    restart: unless-stopped
+    networks: [unihealth]
+
+  gateway:
+    build:
+      context: ../ehr-api
+      dockerfile: Dockerfile
+    depends_on:
+      redis:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      EHR_DEPLOYMENT_ENV: production
+      EHR_INFRA_OPTIONAL: "false"
+      EHR_CONSENT_MODE: strict
+      EHR_POSTGRES_DSN: ${EHR_POSTGRES_DSN}
+      EHR_REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      EHR_OIDC_ENABLED: "true"
+      EHR_OIDC_ALLOW_HEADER_FALLBACK: "false"
+      EHR_OIDC_ISSUER_URL: https://${AUTH_HOSTNAME}/realms/unihealth
+      # JWKS fetched inside Docker network (avoids hairpin TLS during validation)
+      EHR_OIDC_JWKS_URL: http://keycloak:8080/realms/unihealth/protocol/openid-connect/certs
+      EHR_OIDC_AUDIENCE: ${EHR_OIDC_AUDIENCE:-account}
+      EHR_OTP_SIMULATE: "false"
+      EHR_MPESA_SIMULATE: "false"
+      EHR_PATIENT_SESSION_SECRET: ${EHR_PATIENT_SESSION_SECRET}
+      EHR_CORS_EXTRA_ORIGINS: https://${APP_HOSTNAME}
+      EHR_WS_ALLOW_DEV_TOKENS: "false"
+      EHR_MPESA_CONSUMER_KEY: ${EHR_MPESA_CONSUMER_KEY:-}
+      EHR_MPESA_CONSUMER_SECRET: ${EHR_MPESA_CONSUMER_SECRET:-}
+      EHR_MPESA_PASSKEY: ${EHR_MPESA_PASSKEY:-}
+      EHR_MPESA_C2B_PASSKEY: ${EHR_MPESA_C2B_PASSKEY:-}
+      EHR_MPESA_SHORTCODE: ${EHR_MPESA_SHORTCODE:-}
+      EHR_MPESA_CALLBACK_BASE_URL: https://${API_HOSTNAME}
+    ports:
+      - "127.0.0.1:8100:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks: [unihealth]
+
+  web:
+    build:
+      context: ../frontend/app
+      dockerfile: Dockerfile.vps
+      args:
+        VITE_API_BASE_URL: https://${API_HOSTNAME}
+        VITE_OIDC_ENABLED: "true"
+        VITE_OIDC_ISSUER: https://${AUTH_HOSTNAME}/realms/unihealth
+        VITE_OIDC_CLIENT_ID: unihealth-spa
+    ports:
+      - "127.0.0.1:8088:80"
+    depends_on:
+      - gateway
+    restart: unless-stopped
+    networks: [unihealth]
+
+networks:
+  unihealth:
+    driver: bridge
+
+volumes:
+  vps_redis:
+  vps_keycloak_db:

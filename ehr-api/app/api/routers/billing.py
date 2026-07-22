@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from app.auth import require_role
+from app.auth import require_bound_patient_id, require_role
 from app.billing_service import (
     bootstrap_billing_state,
     create_invoice,
@@ -19,19 +19,23 @@ from app.billing_service import (
     process_c2b,
     record_payment,
 )
+from app.persistence.runtime import PersistenceError
 
 router = APIRouter(tags=["billing"])
 
 
 def _patient_id_from_request(request: Request, role: str, query_pid: str | None) -> str:
-    if role == "patient":
-        header_pid = request.headers.get("X-Patient-Id", "").strip()
-        if not header_pid:
-            raise HTTPException(status_code=400, detail="X-Patient-Id header required for patient role")
-        return header_pid
-    if query_pid:
-        return query_pid.strip()
-    raise HTTPException(status_code=400, detail="patient_id required")
+    pid = require_bound_patient_id(request, role, query_pid=query_pid, required=True)
+    assert pid is not None
+    return pid
+
+
+def _http_from_exc(exc: Exception) -> HTTPException:
+    if isinstance(exc, PersistenceError):
+        return HTTPException(status_code=503, detail=f"persistence unavailable: {exc}")
+    if isinstance(exc, ValueError):
+        return HTTPException(status_code=400, detail=str(exc))
+    return HTTPException(status_code=500, detail=str(exc))
 
 
 @router.get("/billing/invoices", summary="List invoices")
@@ -97,8 +101,8 @@ def billing_payment_record(request: Request, payload: dict):
     bootstrap_billing_state()
     try:
         row = record_payment(payload, role)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (ValueError, PersistenceError) as exc:
+        raise _http_from_exc(exc) from exc
     return {"status": "recorded", "payment": row}
 
 
@@ -124,8 +128,8 @@ def patient_payment(request: Request, payload: dict):
             phone=payload.get("phone"),
             initiated_by_role=role,
         )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (ValueError, PersistenceError) as exc:
+        raise _http_from_exc(exc) from exc
     return {"status": "ok", **result}
 
 
@@ -147,8 +151,8 @@ def mpesa_stk_push(request: Request, payload: dict):
             phone=payload.get("phone"),
             initiated_by_role=role,
         )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (ValueError, PersistenceError) as exc:
+        raise _http_from_exc(exc) from exc
     return {"status": "ok", **result}
 
 
@@ -158,8 +162,8 @@ def mpesa_c2b(request: Request, payload: dict):
     signature = request.headers.get("X-Mpesa-Signature")
     try:
         result = process_c2b(payload, signature=signature)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (ValueError, PersistenceError) as exc:
+        raise _http_from_exc(exc) from exc
     return result
 
 

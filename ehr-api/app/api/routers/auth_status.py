@@ -9,6 +9,15 @@ from app.patient_auth import request_otp, verify_otp
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    if forwarded:
+        return forwarded
+    if request.client:
+        return request.client.host or "unknown"
+    return "unknown"
+
+
 @router.get("/status")
 async def auth_status():
     return {
@@ -21,6 +30,7 @@ async def auth_status():
         "production_profile": settings.is_production,
         "otp_simulate": settings.otp_simulate,
         "patient_session_enabled": not settings.oidc_enabled,
+        "mpesa_simulate": settings.mpesa_simulate,
     }
 
 
@@ -33,14 +43,15 @@ async def auth_me(request: Request):
 
 
 @router.post("/patient/otp/request", summary="Send patient MFA OTP (SMS in production)")
-async def patient_otp_request(payload: dict):
+async def patient_otp_request(request: Request, payload: dict):
     try:
         return request_otp(
             phone=str(payload.get("phone") or ""),
             patient_id=str(payload.get("patient_id") or ""),
+            client_ip=_client_ip(request),
         )
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=429 if "rate limit" in str(exc).lower() else 400, detail=str(exc)) from exc
 
 
 @router.post("/patient/otp/verify", summary="Verify patient OTP and issue session (or confirm MFA for OIDC)")

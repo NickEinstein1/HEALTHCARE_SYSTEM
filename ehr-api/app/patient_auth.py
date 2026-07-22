@@ -20,19 +20,35 @@ _log = logging.getLogger(__name__)
 
 # phone|patient_id → {code, expires_at}
 _otp_store: dict[str, dict[str, Any]] = {}
+# rate-limit key → timestamps
+_otp_hits: dict[str, list[float]] = {}
 
 
 def _otp_key(phone: str, patient_id: str) -> str:
     return f"{phone.strip()}|{patient_id.strip().upper()}"
 
 
-def request_otp(*, phone: str, patient_id: str) -> dict[str, Any]:
+def _check_otp_rate(key: str) -> None:
+    limit = max(1, int(settings.otp_rate_limit_per_min or 5))
+    now = time.time()
+    window = _otp_hits.setdefault(key, [])
+    _otp_hits[key] = [t for t in window if now - t < 60.0]
+    if len(_otp_hits[key]) >= limit:
+        raise ValueError("OTP rate limit exceeded — try again shortly")
+    _otp_hits[key].append(now)
+
+
+def request_otp(*, phone: str, patient_id: str, client_ip: str | None = None) -> dict[str, Any]:
     phone_n = phone.strip().replace(" ", "").replace("-", "")
     pid = patient_id.strip()
     if not phone_n or len(phone_n) < 9:
         raise ValueError("valid phone required")
     if not pid:
         raise ValueError("patient_id required")
+
+    _check_otp_rate(f"ip:{(client_ip or 'unknown')}")
+    _check_otp_rate(f"phone:{phone_n}")
+    _check_otp_rate(f"patient:{pid.upper()}")
 
     code = f"{secrets.randbelow(1_000_000):06d}"
     key = _otp_key(phone_n, pid)

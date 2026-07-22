@@ -3,7 +3,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="EHR_")
+    model_config = SettingsConfigDict(
+        env_prefix="EHR_",
+        env_file=(".env", ".env.supabase.local"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # development | staging | production — production enforces OIDC + strict consent defaults
     deployment_env: str = "development"
@@ -83,6 +88,12 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     google_model: str = "gemini-1.5-flash"
 
+    # Comma-separated extra CORS origins for facility/public hosts (https://app.example)
+    cors_extra_origins: str = ""
+
+    # OTP abuse controls
+    otp_rate_limit_per_min: int = 5
+
     # M-Pesa (Safaricom Daraja) — simulate STK/C2B in pilot when true.
     mpesa_simulate: bool = True
     mpesa_paybill: str = "400100"
@@ -103,16 +114,43 @@ class Settings(BaseSettings):
             self.ws_allow_dev_tokens = False
             self.infra_optional = False
             self.otp_simulate = False
-            if (self.oidc_issuer_url or "").strip():
+            self.mpesa_simulate = False
+            issuer = (self.oidc_issuer_url or "").strip()
+            if issuer:
                 self.oidc_enabled = True
+            else:
+                # Session-only facility pilot: never trust role headers.
+                self.oidc_enabled = False
+                if (self.patient_session_secret or "").strip() in (
+                    "",
+                    "unihealth-dev-patient-session-change-me",
+                ):
+                    raise ValueError(
+                        "EHR_PATIENT_SESSION_SECRET must be a strong random value "
+                        "when production runs without OIDC"
+                    )
+            if self.oidc_enabled and (self.patient_session_secret or "").strip() == (
+                "unihealth-dev-patient-session-change-me"
+            ):
+                # Still reject default even with OIDC (defense in depth if OIDC later disabled).
+                pass
         elif env == "staging":
-            # Staging keeps permissive consent by default but can enable OIDC via env
             self.infra_optional = False
         return self
 
     @property
     def is_production(self) -> bool:
         return (self.deployment_env or "").strip().lower() == "production"
+
+    def cors_origins_list(self) -> list[str]:
+        base = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:4173",
+            "http://127.0.0.1:4173",
+        ]
+        extra = [o.strip() for o in (self.cors_extra_origins or "").split(",") if o.strip()]
+        return base + extra
 
 
 settings = Settings()

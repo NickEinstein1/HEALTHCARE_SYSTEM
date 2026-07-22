@@ -581,12 +581,7 @@ _metrics_latency_sum_ms = defaultdict(float)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-    ],
+    allow_origins=settings.cors_origins_list(),
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
@@ -600,12 +595,10 @@ async def on_startup() -> None:
     await init_redis_client()
     # Phase 3: seed AI simulation data
     from app.state import bootstrap_ai_state
-    from app.billing_service import bootstrap_billing_state
-    from app.insurance_service import bootstrap_uhic_state
+    from app.persistence.bootstrap import load_pilot_state
 
     bootstrap_ai_state()
-    bootstrap_billing_state()
-    bootstrap_uhic_state()
+    await load_pilot_state()
 
 
 @app.on_event("shutdown")

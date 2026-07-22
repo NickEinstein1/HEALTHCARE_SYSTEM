@@ -290,3 +290,105 @@ CREATE TABLE IF NOT EXISTS mpesa_transactions (
 
 CREATE INDEX IF NOT EXISTS idx_mpesa_tx_patient
     ON mpesa_transactions(patient_id, created_at DESC);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_billing_payments_mpesa_receipt
+    ON billing_payments (mpesa_receipt)
+    WHERE mpesa_receipt IS NOT NULL AND mpesa_receipt <> '';
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_mpesa_tx_receipt
+    ON mpesa_transactions (mpesa_receipt)
+    WHERE mpesa_receipt IS NOT NULL AND mpesa_receipt <> '';
+
+ALTER TABLE billing_invoices
+    ADD COLUMN IF NOT EXISTS encounter_id VARCHAR(64),
+    ADD COLUMN IF NOT EXISTS claim_id VARCHAR(64);
+
+-- UHIC pilot (varchar IDs aligned with in-memory service layer)
+CREATE TABLE IF NOT EXISTS uhic_members (
+    member_id       VARCHAR(64) PRIMARY KEY,
+    patient_id      VARCHAR(64) NOT NULL REFERENCES patients(id),
+    household_id    VARCHAR(64),
+    national_id     VARCHAR(32),
+    scheme_type     VARCHAR(32) NOT NULL DEFAULT 'SHIF',
+    status          VARCHAR(32) NOT NULL DEFAULT 'active',
+    given_name      VARCHAR(128),
+    family_name     VARCHAR(128),
+    created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_uhic_members_patient
+    ON uhic_members(patient_id);
+
+CREATE TABLE IF NOT EXISTS uhic_policies (
+    policy_id                   VARCHAR(64) PRIMARY KEY,
+    member_id                   VARCHAR(64) NOT NULL REFERENCES uhic_members(member_id),
+    payer_type                  VARCHAR(32) NOT NULL,
+    benefit_package_id          VARCHAR(64),
+    effective_from              DATE,
+    effective_to                DATE,
+    status                      VARCHAR(32) NOT NULL DEFAULT 'active',
+    monthly_contribution_kes    NUMERIC(12, 2) NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS uhic_claims (
+    claim_id                VARCHAR(64) PRIMARY KEY,
+    member_id               VARCHAR(64) NOT NULL REFERENCES uhic_members(member_id),
+    patient_id              VARCHAR(64) NOT NULL REFERENCES patients(id),
+    encounter_id            VARCHAR(64),
+    provider_id             VARCHAR(64),
+    scheme_type             VARCHAR(32) NOT NULL DEFAULT 'SHIF',
+    status                  VARCHAR(32) NOT NULL DEFAULT 'submitted',
+    submitted_amount_kes    NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    adjudicated_amount_kes  NUMERIC(12, 2),
+    fraud_score             INTEGER NOT NULL DEFAULT 0,
+    fraud_band              VARCHAR(16),
+    fraud_reasons           JSONB NOT NULL DEFAULT '[]'::jsonb,
+    submitted_at            TIMESTAMPTZ DEFAULT NOW(),
+    decided_at              TIMESTAMPTZ,
+    decision_note           TEXT,
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_uhic_claims_patient
+    ON uhic_claims(patient_id, submitted_at DESC);
+
+CREATE TABLE IF NOT EXISTS uhic_premium_ledger (
+    ledger_id       VARCHAR(64) PRIMARY KEY,
+    policy_id       VARCHAR(64) NOT NULL REFERENCES uhic_policies(policy_id),
+    member_id       VARCHAR(64) NOT NULL REFERENCES uhic_members(member_id),
+    amount_kes      NUMERIC(12, 2) NOT NULL,
+    channel         VARCHAR(32),
+    remittance_ref  VARCHAR(128),
+    penalty_flag    BOOLEAN NOT NULL DEFAULT FALSE,
+    paid_at         TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS uhic_provider_scores (
+    provider_id         VARCHAR(64) PRIMARY KEY,
+    provider_name       VARCHAR(256),
+    facility_tier       INTEGER,
+    fraud_score         INTEGER NOT NULL DEFAULT 0,
+    outlier_flags       JSONB NOT NULL DEFAULT '[]'::jsonb,
+    rejection_rate_pct  NUMERIC(6, 2),
+    avg_claim_kes       NUMERIC(12, 2),
+    last_review         TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS uhic_claim_audit (
+    id          BIGSERIAL PRIMARY KEY,
+    ts          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    event       VARCHAR(64) NOT NULL,
+    claim_id    VARCHAR(64),
+    payload     JSONB NOT NULL DEFAULT '{}'::jsonb,
+    hash        VARCHAR(128) NOT NULL,
+    prev_hash   VARCHAR(128)
+);
+
+CREATE INDEX IF NOT EXISTS idx_uhic_claim_audit_claim
+    ON uhic_claim_audit(claim_id, ts DESC);
+
+CREATE TABLE IF NOT EXISTS uhic_sync_meta (
+    id              SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    sync_version    BIGINT NOT NULL DEFAULT 0,
+    updated_at      TIMESTAMPTZ
+);

@@ -6,7 +6,7 @@ Facility pilot path for **frontend web** and **patient-app** only. UHIC mobile a
 
 - [ ] Domain + TLS for API (`https://api.<domain>`) and web (`https://app.<domain>`)
 - [ ] Postgres + Redis running (`EHR_INFRA_OPTIONAL=false`)
-- [ ] Schema applied: `ehr-api/schema.sql` + seed (`scripts/seed_data.py`)
+- [ ] Schema applied: `ehr-api/schema.sql` (includes `uhic_*` tables + billing `encounter_id`/`claim_id`) + seed (`scripts/seed_data.py`)
 - [ ] Secrets only in server env (never in git or mobile bundles)
 
 ## 1. API gateway
@@ -86,9 +86,28 @@ Auth flow (implemented):
 
 ## 5. Data & payments
 
-- [ ] Postgres persistence for billing + UHIC (still in-memory in pilot — **required before public launch**)
+- [x] Postgres persistence for billing + UHIC (write-through when Postgres pool is up; in-memory fallback when `EHR_INFRA_OPTIONAL=true`)
+- [x] Production profile forces `EHR_MPESA_SIMULATE=false` (mirrors OTP)
+- [x] Patient routes bind `patient_id` to JWT/session (reject mismatched `X-Patient-Id`)
+- [x] M-Pesa receipt idempotency (unique index + in-memory replay return)
 - [ ] M-Pesa live paybill + callback URL on API host
 - [ ] Daily DB backups
+- [ ] SMS OTP provider (replace simulate path)
+
+## Security gates (facility pilot)
+
+| Gate | Status |
+|------|--------|
+| Fail-open async DB writes on financial paths | Mitigated: `persist_now` raises when infra required; payment endpoints → 503 |
+| Simulated M-Pesa durable forgery in production | Mitigated: production forces `mpesa_simulate=false` |
+| Production without OIDC / header-only staff auth | Mitigated: production rejects role-header-only; requires OIDC or strong session secret |
+| Patient IDOR via `X-Patient-Id` / path params | Mitigated: `require_bound_patient_id` on billing + insurance |
+| C2B receipt replay | Mitigated: payment + mpesa txn idempotent; unique receipt indexes |
+| C2B default patient P001 | Mitigated: map via INV-*/P00x/MSISDN; no silent default |
+| Split invoice/payment TX | Mitigated: `persist_payment_bundle` single transaction |
+| UHIC audit hash verify on load | Mitigated: prev_hash pointer integrity on hydrate |
+| OTP SMS flooding | Mitigated: per-IP / phone / patient rate limit |
+| Live M-Pesa + SMS OTP + TLS/Keycloak | Ops remaining |
 
 ## 6. Acceptance tests
 
@@ -110,6 +129,7 @@ Auth flow (implemented):
 
 ## Related
 
+- [vps-production-deploy.md](vps-production-deploy.md) — online VPS (Keycloak + API + web + Supabase)
 - [phase2-production.md](phase2-production.md)
 - [phase2-patient-app.md](phase2-patient-app.md)
 - [ehr-api.md](ehr-api.md)
