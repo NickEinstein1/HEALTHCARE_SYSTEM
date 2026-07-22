@@ -121,8 +121,8 @@ services:
 
   web:
     build:
-      context: ../frontend/app
-      dockerfile: Dockerfile.vps
+      context: ..
+      dockerfile: frontend/app/Dockerfile.vps
       args:
         VITE_API_BASE_URL: https://${API_HOSTNAME}
         VITE_OIDC_ENABLED: "true"

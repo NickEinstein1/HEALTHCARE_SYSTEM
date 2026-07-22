@@ -32,6 +32,11 @@ ml/models/*.meta.json
 *.sqlite3
 .cache/
 
+# Node
+node_modules/
+**/node_modules/
+frontend/app/dist/
+
 # k6
 load-tests/result-*
 
