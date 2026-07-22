@@ -23,11 +23,11 @@ chmod +x scripts/setup_supabase_db.sh
 
 This will:
 
-1. Apply `ehr-api/schema.sql` (patients, clinical, billing, UHIC, …)
-2. Run `scripts/seed_data.py` (P001–P003 + encounters)
-3. Run `scripts/verify_postgres_pilot.py` (tables, seed, indexes)
+- Apply `ehr-api/schema.sql` (patients, clinical, billing, UHIC, …)
+- Run `scripts/seed_data.py` (P001–P003 + encounters)
+- Run `scripts/verify_postgres_pilot.py` (tables, seed, indexes)
 
-6. Point the API at Supabase and start (Redis can remain local for pilot):
+1. Point the API at Supabase and start (Redis can remain local for pilot):
 
 ```bash
 export EHR_POSTGRES_DSN='…same URI…'
@@ -38,7 +38,7 @@ cd ehr-api
 .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8100
 ```
 
-7. Smoke:
+1. Smoke:
 
 ```bash
 EHR_GATEWAY_URL=http://127.0.0.1:8100 ./scripts/smoke_go_live.sh

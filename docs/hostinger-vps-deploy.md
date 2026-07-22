@@ -5,11 +5,13 @@ Step-by-step for **Hostinger VPS** (Ubuntu). Companion to [vps-production-deploy
 ## Before you start (on your Mac)
 
 1. Push the latest code (including VPS files) to GitHub:
+
    ```bash
    git status
    # commit + push infra/docker-compose.vps.yml, docs/, frontend/app/Dockerfile.vps, etc.
    git push origin main
    ```
+
 2. Have ready:
    - Hostinger VPS **IP address**
    - SSH password or key
@@ -21,6 +23,7 @@ Step-by-step for **Hostinger VPS** (Ubuntu). Companion to [vps-production-deploy
 1. VPS is running **Ubuntu 22.04 or 24.04**.
 2. Note the **root password** (or set an SSH key) and **public IP**.
 3. Optional: open **Browser terminal** in hPanel, or use SSH from your Mac:
+
    ```bash
    ssh root@YOUR_VPS_IP
    ```
