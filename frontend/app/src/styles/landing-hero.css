@@ -356,3 +356,283 @@ html[data-theme="dark"] .lp-landing-route section.lp-hero {
     width: 100%;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Landing — tablet & mobile (Android / iPhone)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .lp-landing-route .lp-hide-mobile {
+    display: none !important;
+  }
+
+  .lp-landing-route .lp-three-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .lp-landing-route .lp-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .lp-landing-route .lp-problem-section,
+  .lp-landing-route .lp-features-section,
+  .lp-landing-route .lp-journey-section,
+  .lp-landing-route .lp-metrics-section,
+  .lp-landing-route .lp-ai-section,
+  .lp-landing-route .lp-testimonials-section,
+  .lp-landing-route .lp-compliance-section,
+  .lp-landing-route .lp-faq-section,
+  .lp-landing-route .lp-cta-section {
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .lp-landing-route .lp-topnav {
+    height: 56px;
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  .lp-landing-route section.lp-hero {
+    padding-top: 56px;
+    min-height: auto;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .lp-landing-route .lp-hero-foot {
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+
+  .lp-landing-route .lp-hero-stage {
+    min-height: clamp(48px, 10vh, 100px);
+  }
+
+  .lp-landing-route .lp-hero-live-badge span:last-child {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .lp-landing-route .lp-hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 360px;
+    margin-inline: auto;
+  }
+
+  .lp-landing-route .lp-hero-actions .lp-btn-primary,
+  .lp-landing-route .lp-hero-actions button:not(.lp-btn-primary),
+  .lp-landing-route .lp-hero-actions a {
+    width: 100%;
+    justify-content: center;
+    min-height: 46px;
+    padding: 12px 20px;
+  }
+
+  .lp-landing-route .lp-two-col,
+  .lp-landing-route .lp-three-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lp-landing-route .lp-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .lp-landing-route .lp-problem-col {
+    padding: 20px 18px !important;
+  }
+
+  .lp-landing-route .lp-journey-tabs {
+    flex-wrap: wrap;
+    padding-inline: 8px;
+  }
+
+  .lp-landing-route .lp-journey-tab {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .lp-landing-route .lp-cta-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    max-width: 360px;
+    margin-inline: auto;
+  }
+
+  .lp-landing-route .lp-cta-actions .lp-btn-primary,
+  .lp-landing-route .lp-cta-actions .lp-cta-secondary {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+
+  .lp-landing-route .lp-footer > div {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+  }
+
+  .lp-landing-route .lp-footer-badges {
+    justify-content: center !important;
+  }
+
+  .lp-landing-route .lp-hero-metrics .lp-top-stats > div {
+    flex: 1 1 calc(50% - 8px);
+    border-right: none !important;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.07);
+    padding: 12px 10px;
+  }
+
+  .lp-landing-route .lp-hero-metrics .lp-top-stats > div:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .lp-landing-route .lp-topnav-title {
+    font-size: 15px !important;
+  }
+
+  .lp-landing-route .lp-topnav-signin {
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+    min-height: 40px;
+  }
+
+  .lp-landing-route .lp-topnav-cta {
+    padding: 8px 14px !important;
+    font-size: 11px !important;
+    min-height: 40px;
+  }
+
+  .lp-landing-route .lp-hero-title {
+    font-size: clamp(26px, 8vw, 40px) !important;
+  }
+
+  .lp-landing-route .lp-hero-sub {
+    font-size: 14px !important;
+    line-height: 1.55;
+  }
+
+  .lp-landing-route .lp-steps-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lp-landing-route .lp-section-title,
+  .lp-landing-route .lp-problem-title {
+    font-size: clamp(22px, 6.5vw, 32px) !important;
+  }
+
+  .lp-landing-route .lp-problem-section,
+  .lp-landing-route .lp-features-section,
+  .lp-landing-route .lp-journey-section,
+  .lp-landing-route .lp-metrics-section,
+  .lp-landing-route .lp-ai-section,
+  .lp-landing-route .lp-testimonials-section,
+  .lp-landing-route .lp-compliance-section,
+  .lp-landing-route .lp-faq-section,
+  .lp-landing-route .lp-cta-section {
+    padding-top: 56px !important;
+    padding-bottom: 56px !important;
+  }
+
+  .lp-landing-route .lp-award-card {
+    min-width: 140px !important;
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .lp-landing-route .lp-trust-ticker-item {
+    padding: 0 24px !important;
+    font-size: 12px !important;
+  }
+
+  .lp-landing-route .lp-cta-badge {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .lp-landing-route .lp-cta-badge-text {
+    font-size: 11px !important;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 480px) {
+  .lp-landing-route .lp-topnav-actions {
+    gap: 6px !important;
+  }
+
+  .lp-landing-route .lp-topnav-signin {
+    padding: 8px 10px !important;
+  }
+
+  .lp-landing-route .lp-topnav-cta {
+    padding: 8px 12px !important;
+  }
+
+  .lp-landing-route .lp-hero-head {
+    padding-top: 12px;
+  }
+
+  .lp-landing-route .lp-hero-live-badge {
+    max-width: 100%;
+    text-align: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 6px 12px;
+  }
+
+  .lp-landing-route .lp-hero-metrics .lp-top-stats {
+    flex-direction: column;
+  }
+
+  .lp-landing-route .lp-hero-metrics .lp-top-stats > div {
+    flex: 1 1 auto;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.07) !important;
+  }
+
+  .lp-landing-route .lp-hero-metrics .lp-top-stats > div:last-child {
+    border-bottom: none !important;
+  }
+
+  .lp-landing-route .lp-role-card,
+  .lp-landing-route .lp-step-card,
+  .lp-landing-route .lp-testi-card,
+  .lp-landing-route .lp-ai-card,
+  .lp-landing-route .lp-comp-card {
+    padding: 18px 16px !important;
+  }
+
+  .lp-landing-route .lp-faq-q {
+    font-size: 14px !important;
+  }
+
+  .lp-landing-route .lp-faq-a {
+    font-size: 13px !important;
+  }
+}
+
+/* Touch-friendly taps on phones & tablets */
+@media (hover: none) and (pointer: coarse) {
+  .lp-landing-route .lp-btn-primary,
+  .lp-landing-route .lp-btn-ghost,
+  .lp-landing-route .lp-hero-actions button,
+  .lp-landing-route .lp-hero-actions a,
+  .lp-landing-route .lp-journey-tab,
+  .lp-landing-route .lp-faq-item,
+  .lp-landing-route .lp-role-card {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .lp-landing-route .lp-role-card:hover,
+  .lp-landing-route .lp-step-card:hover,
+  .lp-landing-route .lp-testi-card:hover {
+    transform: none;
+  }
+}
+

@@ -120,7 +120,7 @@ const AWARDS = [
 const FAQS = [
   { q: "Is my health data safe and private?", a: "Yes. Every record is encrypted at rest (AES-256) and in transit (TLS 1.3). Access is role-gated, MFA-enforced, and logged in an append-only KDPA audit trail. You can request erasure or data portability at any time from your patient portal." },
   { q: "Can I use UniHealth on my phone?", a: "The web application is fully responsive and works on any modern smartphone browser. A dedicated Progressive Web App (PWA) install is available for offline triage and appointment management." },
-  { q: "Which hospitals currently use UniHealth?", a: "We are live at 12 facilities across Kenya — including Kenyatta National, Aga Khan, Pumwani Maternity, and Moi Teaching & Referral. Phase 3 targets 47 KMHFL-listed facilities by Q4 2026." },
+  { q: "Which hospitals currently use UniHealth?", a: "We are live across Kenya facilities — including Kenyatta National, Aga Khan, Pumwani Maternity, and Moi Teaching & Referral. Phase 3 targets 47 KMHFL-listed facilities by Q4 2026." },
   { q: "Will my doctor see records from a different hospital?", a: "Yes — that is a core design goal. UniHealth implements FHIR R5 patient correlation across all linked facilities. With your consent, any clinician at any linked facility can view your full longitudinal record." },
   { q: "How are prescriptions handled?", a: "Doctors write electronic prescriptions inside UniHealth. They are routed directly to the dispensing pharmacist's queue, with drug interaction checks run automatically. You can also request refills via your patient portal." },
 ];
@@ -198,17 +198,6 @@ const KEYFRAMES = `
 
 .lp-ai-bar { animation:lp-bar-grow 1.5s 0.3s cubic-bezier(0.23,1,0.32,1) both }
 
-@media (max-width:768px){
-  .lp-two-col { grid-template-columns:1fr !important }
-  .lp-three-col { grid-template-columns:1fr !important }
-  .lp-steps-grid { grid-template-columns:1fr 1fr !important }
-  .lp-hide-mobile { display:none !important }
-}
-@media (max-width:500px){
-  .lp-steps-grid { grid-template-columns:1fr !important }
-  .lp-top-stats { flex-direction:column !important; gap:0 !important }
-  .lp-top-stats > div { border-right:none !important; border-bottom:1px solid rgba(0,212,255,0.07) !important }
-}
 `;
 
 /* ─── sub-components ─────────────────────────────────────────────────── */
@@ -254,20 +243,20 @@ export function LandingPage() {
   /* ── TOPBAR ──────────────────────────────────────────────────────── */
   const Topbar = (
     <nav className="lp-topnav" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 clamp(16px,4vw,48px)", height: 62, backdropFilter: "blur(20px)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="lp-topnav-brand" style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
         <LandingBrandMark size={32} idPrefix="lp-nav" />
-        <span style={{ fontWeight: 800, fontSize: 16, color: "#ddf0ff", letterSpacing: "-0.01em" }}>UniHealth</span>
-        <span style={{ fontSize: 9, color: "#00d4ff", background: "rgba(0,212,255,0.10)", border: "1px solid rgba(0,212,255,0.22)", borderRadius: 4, padding: "2px 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>Innovation at its core</span>
+        <span className="lp-topnav-title" style={{ fontWeight: 800, fontSize: 16, color: "#ddf0ff", letterSpacing: "-0.01em" }}>UniHealth</span>
+        <span className="lp-topnav-tag lp-hide-mobile" style={{ fontSize: 9, color: "#00d4ff", background: "rgba(0,212,255,0.10)", border: "1px solid rgba(0,212,255,0.22)", borderRadius: 4, padding: "2px 6px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em" }}>Innovation at its core</span>
       </div>
       <div className="lp-hide-mobile" style={{ display: "flex", gap: 26, alignItems: "center" }}>
         {[["#features","Portals"],["#how-it-works","How It Works"],["#ai","AI"],["#metrics","Metrics"],["#trust","Trust"]].map(([href, label]) => (
           <a key={label} href={href} className="lp-nav-link" style={{ fontSize: 13, color: "#7ab8d8", textDecoration: "none", fontWeight: 500 }}>{label}</a>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div className="lp-topnav-actions" style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
         <ThemeToggle compact />
-        <button className="lp-btn-ghost" onClick={() => goSignIn()} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#00d4ff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Sign In</button>
-        <button className="lp-btn-primary" onClick={() => goRegister()} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
+        <button type="button" className="lp-btn-ghost lp-topnav-signin" onClick={() => goSignIn()} style={{ padding: "7px 16px", borderRadius: 8, background: "transparent", border: "1px solid rgba(0,212,255,0.28)", color: "#00d4ff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Sign In</button>
+        <button type="button" className="lp-btn-primary lp-topnav-cta" onClick={() => goRegister()} style={{ padding: "7px 18px", borderRadius: 8, background: "#00d4ff", border: "none", color: "#05091a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Get Access</button>
       </div>
     </nav>
   );
@@ -315,7 +304,7 @@ export function LandingPage() {
       <div className="lp-hero-head">
         <div className="lp-fade-up lp-hero-live-badge">
           <span className="lp-hero-live-dot" />
-          <span data-accent="green">Live across 12 Kenya facilities</span>
+          <span data-accent="green">Live across Kenya facilities</span>
         </div>
         <h1 className="lp-fade-up lp-d1 lp-hero-title">
           Healthcare that<br />
