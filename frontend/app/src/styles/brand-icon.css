@@ -98,6 +98,28 @@
   color: inherit;
 }
 
+.reg-role-ico .dash-icon--role,
+.reg-role-ico.dash-icon--role,
+.reg-role-ico__svg.dash-icon--role {
+  width: 24px;
+  height: 24px;
+  color: inherit;
+}
+
+.reg-role-ico--sm .dash-icon--role,
+.reg-role-ico--sm.dash-icon--role,
+.reg-role-ico--sm .reg-role-ico__svg.dash-icon--role {
+  width: 20px;
+  height: 20px;
+}
+
+.reg-role-ico--lg .dash-icon--role,
+.reg-role-ico--lg.dash-icon--role,
+.reg-role-ico--lg .reg-role-ico__svg.dash-icon--role {
+  width: 32px;
+  height: 32px;
+}
+
 .lp-brand-mark {
   display: flex;
   align-items: center;

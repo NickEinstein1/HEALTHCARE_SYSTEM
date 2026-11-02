@@ -10,6 +10,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { DashIcon } from "../components/brand/DashIcon";
 import { UniHealthLogo } from "../components/brand/UniHealthLogo";
 import type { RoleKey } from "../theme/tokens";
 import { getRegisterRoleCards, isPilotRole } from "../lib/pilotRoles";
@@ -132,7 +133,12 @@ function StepPickRole({ onSelect }: { onSelect: (r: RoleKey) => void }) {
                 borderRadius: 14,
                 boxShadow: isHov ? `0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px ${cfg.border}` : "none",
               }}>
-              <div style={{ fontSize: 24, marginBottom: 8 }}>{cfg.icon}</div>
+              <div
+                className="reg-role-ico"
+                style={{ color: isHov ? cfg.color : "#7ab8d8", marginBottom: 8, display: "inline-flex" }}
+              >
+                <DashIcon icon={cfg.icon} idPrefix={`reg-pick-${role}`} className="reg-role-ico__svg" />
+              </div>
               <div style={{ fontWeight: 700, fontSize: 14, color: isHov ? cfg.color : "#ddf0ff", marginBottom: 3 }}>
                 {cfg.label}
               </div>
@@ -242,7 +248,9 @@ function StepFillForm({ role, onBack, onSubmit }: {
         </button>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 22 }}>{cfg.icon}</span>
+            <span className="reg-role-ico reg-role-ico--sm" style={{ color: cfg.color, display: "inline-flex" }}>
+              <DashIcon icon={cfg.icon} idPrefix={`reg-form-${role}`} className="reg-role-ico__svg" />
+            </span>
             <span style={{ fontWeight: 800, fontSize: 17, color: cfg.color }}>{cfg.label}</span>
           </div>
           <div style={{ fontSize: 12, color: "#3e637a", marginTop: 2 }}>Registration — fill your details below</div>
@@ -640,7 +648,12 @@ function StepSuccess({ role, name }: { role: RoleKey; name: string }) {
 
       <div style={{ padding: "16px 18px", background: cfg.bg,
         border: `1px solid ${cfg.border}`, borderRadius: 14, marginBottom: 22 }}>
-        <div style={{ fontSize: 28, marginBottom: 6 }}>{cfg.icon}</div>
+        <div
+          className="reg-role-ico reg-role-ico--lg"
+          style={{ color: cfg.color, marginBottom: 6, display: "inline-flex", justifyContent: "center" }}
+        >
+          <DashIcon icon={cfg.icon} idPrefix={`reg-ok-${role}`} className="reg-role-ico__svg" />
+        </div>
         <div style={{ fontWeight: 700, fontSize: 15, color: cfg.color, marginBottom: 4 }}>{cfg.label} Portal</div>
         <div style={{ fontSize: 12, color: "#7ab8d8" }}>
           {role === "patient"
