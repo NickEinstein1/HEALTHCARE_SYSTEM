@@ -36,6 +36,7 @@ ml/models/*.meta.json
 node_modules/
 **/node_modules/
 frontend/app/dist/
+*.tsbuildinfo
 
 # k6
 load-tests/result-*

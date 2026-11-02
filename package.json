@@ -2,6 +2,6 @@
   "devDependencies": {
     "docx": "^9.7.1",
     "playwright": "^1.61.1",
-    "sharp": "^0.35.2"
+    "sharp": "^0.35.5"
   }
 }
