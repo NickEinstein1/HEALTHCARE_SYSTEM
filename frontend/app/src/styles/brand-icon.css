@@ -70,6 +70,34 @@
   height: 22px;
 }
 
+.dash-icon--role {
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.dash-icon__role-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.lp-role-icon .dash-icon--role {
+  width: 24px;
+  height: 24px;
+  color: inherit;
+}
+
+.lp-role-icon {
+  color: inherit;
+}
+
+.remi .dash-icon--role {
+  width: 28px;
+  height: 28px;
+  color: inherit;
+}
+
 .lp-brand-mark {
   display: flex;
   align-items: center;

@@ -33,12 +33,12 @@ export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient" | "
 
 // Role metadata: accent colour class, display label, icon
 const ROLE_META: Record<DashboardShellVariant, { label: string; icon: string; accentClass: string }> = {
-  admin:    { label: "Admin Console",        icon: "🛡️", accentClass: "role-admin"    },
-  doctor:   { label: "Clinical Workstation", icon: "🩺", accentClass: "role-doctor"   },
-  nurse:    { label: "Nurse Station",        icon: "💗", accentClass: "role-nurse"    },
-  patient:  { label: "Patient Portal",       icon: "🏃", accentClass: "role-patient"  },
-  lab:      { label: "Lab & Imaging",        icon: "🔬", accentClass: "role-lab"      },
-  pharmacy: { label: "Pharmacy Portal",      icon: "💊", accentClass: "role-pharmacy" },
+  admin:    { label: "Admin Console",        icon: "role.admin", accentClass: "role-admin"    },
+  doctor:   { label: "Clinical Workstation", icon: "role.doctor", accentClass: "role-doctor"   },
+  nurse:    { label: "Nurse Station",        icon: "role.nurse", accentClass: "role-nurse"    },
+  patient:  { label: "Patient Portal",       icon: "role.patient", accentClass: "role-patient"  },
+  lab:      { label: "Lab & Imaging",        icon: "role.lab", accentClass: "role-lab"      },
+  pharmacy: { label: "Pharmacy Portal",      icon: "role.pharmacy", accentClass: "role-pharmacy" },
 };
 
 export function DashboardShell(props: {

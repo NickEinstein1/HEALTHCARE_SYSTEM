@@ -1,5 +1,6 @@
 import { BRAND_ICON, isBrandIcon } from "./brandIcon";
 import { UniHealthLogo } from "./UniHealthLogo";
+import { resolveRoleIconKey, RoleIcon } from "./RoleIcons";
 
 type Props = {
   icon: string;
@@ -9,7 +10,7 @@ type Props = {
   size?: number;
 };
 
-/** Renders a dashboard/landing icon: UniHealth mark or emoji fallback. */
+/** Renders a dashboard/landing icon: UniHealth mark, role SVG, or text fallback. */
 export function DashIcon({ icon, idPrefix = "dash-ico", className, size }: Props) {
   if (isBrandIcon(icon)) {
     return (
@@ -18,6 +19,19 @@ export function DashIcon({ icon, idPrefix = "dash-ico", className, size }: Props
       </span>
     );
   }
+
+  const roleKey = resolveRoleIconKey(icon);
+  if (roleKey) {
+    return (
+      <span
+        className={className ? `${className} dash-icon dash-icon--role` : "dash-icon dash-icon--role"}
+        aria-hidden
+      >
+        <RoleIcon iconKey={roleKey} className="dash-icon__role-svg" />
+      </span>
+    );
+  }
+
   return (
     <span className={className ?? "dash-icon"} aria-hidden>
       {icon}

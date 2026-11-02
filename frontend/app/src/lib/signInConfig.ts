@@ -21,7 +21,7 @@ export type RoleConfig = {
 
 export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
   doctor: {
-    ico: "🩺",
+    ico: "role.doctor",
     title: "Sign in as Doctor",
     sub: "Medical Registration No. · Institutional Email · Password",
     noteHead: "Medical Registration No. · email · password",
@@ -38,7 +38,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "Identity verified.\nRedirecting to clinical dashboard…",
   },
   nurse: {
-    ico: "💉",
+    ico: "role.nurse",
     title: "Sign in as Nurse / Clinical Officer",
     sub: "Nursing Registration No. · Institutional Email · Password",
     noteHead: "Nursing Registration No. · email · password",
@@ -55,7 +55,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "Identity verified.\nRedirecting to nursing portal…",
   },
   admin: {
-    ico: "🗂️",
+    ico: "role.admin",
     title: "Sign in as Administrator",
     sub: "HRIS Employee ID · Institutional Email · Password",
     noteHead: "HRIS Employee ID · email · password",
@@ -72,7 +72,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "HRIS identity verified.\nRedirecting to admin dashboard…",
   },
   patient: {
-    ico: "🙋",
+    ico: "role.patient",
     title: "Access Your Health Records",
     sub: "ID type · ID number · 4-digit PIN → OTP or Biometric",
     noteHead: "National / Passport / Alien ID · 4-digit UniHealth PIN",
@@ -83,7 +83,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "UniHealth identity verified.\nRedirecting to your health records…",
   },
   lab: {
-    ico: "🧫",
+    ico: "role.lab",
     title: "Sign in to Laboratory Portal",
     sub: "Lab Staff ID · Institutional Email · Password",
     noteHead: "Laboratory Staff ID · email · password",
@@ -100,7 +100,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "Identity verified.\nRedirecting to laboratory portal…",
   },
   pharmacy: {
-    ico: "💊",
+    ico: "role.pharmacy",
     title: "Sign in to Pharmacy Portal",
     sub: "Pharmacy Registration ID · Institutional Email · Password",
     noteHead: "Pharmacy Registration ID · email · password",
@@ -117,7 +117,7 @@ export const ROLE_CONFIG: Record<RoleKey, RoleConfig> = {
     successMsg: "Identity verified.\nRedirecting to pharmacy portal…",
   },
   billing: {
-    ico: "💰",
+    ico: "role.billing",
     title: "Sign in to Billing & Finance",
     sub: "Finance Staff ID · Institutional Email · Password",
     noteHead: "Finance Staff ID · email · password",

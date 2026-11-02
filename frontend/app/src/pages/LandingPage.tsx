@@ -417,7 +417,7 @@ export function LandingPage() {
                 opacity: rolesVisible ? 1 : 0, transform: rolesVisible ? "translateY(0)" : "translateY(28px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: r.bg, border: `1px solid ${r.border}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }} className="lp-role-icon">
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: r.bg, border: `1px solid ${r.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: r.color }} className="lp-role-icon">
                   <DashIcon icon={r.icon} idPrefix={`lp-role-${r.id}`} />
                 </div>
                 <div>

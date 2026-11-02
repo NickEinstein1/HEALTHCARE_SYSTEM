@@ -55,7 +55,6 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
         >
           {PILOT_ROLE_ORDER.map((r) => {
             const pilot = getPilotRole(r);
-            const roleCfg = ROLE_CONFIG[r];
             const isSel = selected === r;
             return (
               <button
@@ -68,7 +67,9 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
                 onClick={() => onSelect(r)}
               >
                 <div className="rchk" aria-hidden>✓</div>
-                <div className="remi" aria-hidden>{roleCfg.ico}</div>
+                <div className="remi" aria-hidden style={{ color: pilot.color }}>
+                  <DashIcon icon={pilot.icon} idPrefix={`role-tile-${r}`} />
+                </div>
                 <div className="rnm">{pilot.signInName}</div>
                 <div className="rds">{pilot.signInDesc}</div>
               </button>
