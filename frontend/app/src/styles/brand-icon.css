@@ -120,6 +120,54 @@
   height: 32px;
 }
 
+.master-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  color: inherit;
+}
+
+.master-glyph__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.master-si-ic .master-glyph {
+  width: 12px;
+  height: 12px;
+}
+
+.master-mod-ic .master-glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.master-fn-c .master-glyph {
+  width: 13px;
+  height: 13px;
+}
+
+.master-mw-badge .master-glyph {
+  width: 10px;
+  height: 10px;
+  margin-right: 2px;
+  vertical-align: -1px;
+}
+
+.module-pull-chip .master-glyph {
+  width: 12px;
+  height: 12px;
+  margin-right: 2px;
+}
+
+.sxi .dash-icon--role {
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
 .lp-brand-mark {
   display: flex;
   align-items: center;

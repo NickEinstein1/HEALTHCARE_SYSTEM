@@ -1,5 +1,6 @@
 import { useMemo, type CSSProperties } from "react";
 import type { RoleKey } from "../../theme/tokens";
+import { MasterGlyphOrText } from "../brand/MasterGlyph";
 import { UniHealthLogo } from "../brand/UniHealthLogo";
 import {
   getDashboardPreview,
@@ -16,12 +17,12 @@ const MASTER_METRICS = [
 ];
 
 const SYSTEM_STATUS = [
-  { icon: "🤖", label: "AI Engine", status: "Active · 98.4%", tone: "g" },
-  { icon: "🌐", label: "Hospital Network", status: "14/14 Online", tone: "b" },
-  { icon: "🛡️", label: "CIC Insurance", status: "Connected · Live", tone: "p" },
-  { icon: "💼", label: "Old Mutual", status: "Verification Live", tone: "a" },
-  { icon: "📹", label: "Telemedicine", status: "7 live sessions", tone: "t" },
-  { icon: "❤️", label: "Maternity Monitor", status: "Live · 47 patients", tone: "pk" },
+  { icon: "status.ai", label: "AI Engine", status: "Active · 98.4%", tone: "g" },
+  { icon: "status.network", label: "Hospital Network", status: "14/14 Online", tone: "b" },
+  { icon: "status.cic", label: "CIC Insurance", status: "Connected · Live", tone: "p" },
+  { icon: "status.old_mutual", label: "Old Mutual", status: "Verification Live", tone: "a" },
+  { icon: "status.tele", label: "Telemedicine", status: "7 live sessions", tone: "t" },
+  { icon: "status.maternity", label: "Maternity Monitor", status: "Live · 47 patients", tone: "pk" },
 ];
 
 type Props = {
@@ -131,7 +132,9 @@ export function MasterDashboardPanel({ aiAttempts, auditLines, selectedRole, sig
           <div className="master-sg">
             {SYSTEM_STATUS.map((s) => (
               <div key={s.label} className="master-si">
-                <div className={`master-si-ic tone-${s.tone}`}>{s.icon}</div>
+                <div className={`master-si-ic tone-${s.tone}`}>
+                  <MasterGlyphOrText icon={s.icon} title={s.label} className="master-glyph__svg" />
+                </div>
                 <div className="master-si-tx">
                   <div className="master-si-nm">{s.label}</div>
                   <div className="master-si-st">{s.status}</div>
@@ -144,7 +147,10 @@ export function MasterDashboardPanel({ aiAttempts, auditLines, selectedRole, sig
 
         <div className="master-mw" role="region" aria-label="Maternity live stats">
           <div className="master-mw-hd">
-            <span className="master-mw-badge">❤️ Maternity & Women&apos;s Health · Live</span>
+            <span className="master-mw-badge">
+              <MasterGlyphOrText icon="badge.maternity" title="Maternity" className="master-glyph__svg" />
+              {" "}Maternity & Women&apos;s Health · Live
+            </span>
           </div>
           <div className="master-mw-g">
             {[
@@ -173,7 +179,9 @@ export function MasterDashboardPanel({ aiAttempts, auditLines, selectedRole, sig
           <div className="master-mg">
             {MASTER_INTEGRATED_MODULES.map((mod) => (
               <div key={mod.id} className={`master-mod${mod.maternity ? " mat" : ""}`} title={mod.desc}>
-                <span className="master-mod-ic">{mod.icon}</span>
+                <span className="master-mod-ic">
+                  <MasterGlyphOrText icon={mod.icon} title={mod.label} className="master-glyph__svg" />
+                </span>
                 <span className="master-mod-nm">{mod.label}</span>
               </div>
             ))}
@@ -186,7 +194,9 @@ export function MasterDashboardPanel({ aiAttempts, auditLines, selectedRole, sig
             {MODULE_PULL_FLOW_STEPS.flatMap((step, i) => [
               i > 0 ? <div key={`sep-${step.id}`} className="master-fa" aria-hidden /> : null,
               <div key={step.id} className="master-fn">
-                <div className={`master-fn-c${i <= flowIdx ? " on" : ""}`}>{step.icon}</div>
+                <div className={`master-fn-c${i <= flowIdx ? " on" : ""}`}>
+                  <MasterGlyphOrText icon={step.icon} title={step.label} className="master-glyph__svg" />
+                </div>
                 <div className="master-fn-l">{step.label}</div>
               </div>,
             ])}

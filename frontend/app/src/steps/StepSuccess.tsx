@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { DashIcon } from "../components/brand/DashIcon";
+import { MasterGlyphOrText } from "../components/brand/MasterGlyph";
 import type { RoleKey } from "../theme/tokens";
 import { ROLE_CONFIG } from "../lib/signInConfig";
 import { getModulesForRole } from "../lib/modulePull";
@@ -34,7 +36,9 @@ export function StepSuccess({ role, addAudit }: Props) {
           dangerouslySetInnerHTML={{ __html: c.successMsg.replace(/\n/g, "<br />") }}
         />
         <div className="sxcard">
-          <span className="sxi">{c.ico}</span>
+          <span className="sxi">
+            <DashIcon icon={c.ico} idPrefix={`sx-${role}`} />
+          </span>
           <div>
             <div className="sxrole">{c.successRole}</div>
             <div className="sxs">UniHealth verified · Data protection · Session secured</div>
@@ -53,7 +57,8 @@ export function StepSuccess({ role, addAudit }: Props) {
           <div className="module-pull-chips">
             {pulledModules.map((mod) => (
               <Link key={mod.id} to={mod.path} className={`module-pull-chip${mod.maternity ? " mat" : ""}`}>
-                {mod.icon} {mod.label}
+                <MasterGlyphOrText icon={mod.icon} title={mod.label} className="master-glyph__svg" />
+                {" "}{mod.label}
               </Link>
             ))}
           </div>

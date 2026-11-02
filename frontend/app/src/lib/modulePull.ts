@@ -15,24 +15,24 @@ export type MasterModule = {
 
 /** Full integrated module grid — aligned with unihealth360-final.html */
 export const MASTER_INTEGRATED_MODULES: MasterModule[] = [
-  { id: "emr", label: "EMR", path: "/modules/emr", icon: "📋", section: "CLINICAL", desc: "Electronic Medical Records" },
-  { id: "billing", label: "Billing", path: "/modules/billing", icon: "💰", section: "OPERATIONS", desc: "Financial management" },
-  { id: "maternity", label: "Maternity", path: "/modules/maternity", icon: "❤️", section: "CLINICAL", desc: "Maternal care", maternity: true },
-  { id: "nicu", label: "NICU", path: "/modules/maternity", icon: "👶", section: "CLINICAL", desc: "Neonatal ICU", maternity: true },
-  { id: "cic", label: "CIC", path: "/modules/uhic", icon: "🛡️", section: "INTEGRATIONS", desc: "CIC Insurance via UHIC" },
-  { id: "old_mutual", label: "Old Mutual", path: "/modules/uhic", icon: "💼", section: "INTEGRATIONS", desc: "Old Mutual via UHIC" },
-  { id: "lab", label: "Lab", path: "/dashboard/lab", icon: "🧪", section: "CLINICAL", desc: "Laboratory services" },
-  { id: "pharmacy", label: "Pharmacy", path: "/dashboard/pharmacy", icon: "💊", section: "CLINICAL", desc: "Pharmacy & dispensing" },
-  { id: "radiology", label: "Radiology", path: "/modules/radiology", icon: "🔍", section: "CLINICAL", desc: "Imaging & PACS" },
-  { id: "teleconsult", label: "Teleconsult", path: "/modules/teleconsult", icon: "📹", section: "CLINICAL", desc: "Telemedicine" },
-  { id: "icu", label: "ICU", path: "/modules/icu", icon: "⚡", section: "CLINICAL", desc: "Critical care" },
-  { id: "emergency", label: "Emergency", path: "/modules/icu", icon: "🚨", section: "CLINICAL", desc: "Emergency department" },
-  { id: "surgery", label: "Surgery", path: "/modules/surgery", icon: "✂️", section: "CLINICAL", desc: "Surgical operations" },
-  { id: "fetal_monitor", label: "Fetal Mon.", path: "/modules/maternity", icon: "📡", section: "CLINICAL", desc: "Fetal monitoring", maternity: true },
-  { id: "kemsa", label: "KEMSA", path: "/dashboard/pharmacy", icon: "🚚", section: "INTEGRATIONS", desc: "KEMSA supply orders" },
-  { id: "oncology", label: "Oncology", path: "/modules/emr", icon: "🎯", section: "CLINICAL", desc: "Oncology workflows" },
-  { id: "ai_engine", label: "AI Engine", path: "/modules/analytics", icon: "🤖", section: "PLATFORM", desc: "AI analytics & risk" },
-  { id: "iot_monitor", label: "IoT Mon.", path: "/modules/icu", icon: "📶", section: "PLATFORM", desc: "Device & IoT monitoring" },
+  { id: "emr", label: "EMR", path: "/modules/emr", icon: "mod.emr", section: "CLINICAL", desc: "Electronic Medical Records" },
+  { id: "billing", label: "Billing", path: "/modules/billing", icon: "mod.billing", section: "OPERATIONS", desc: "Financial management" },
+  { id: "maternity", label: "Maternity", path: "/modules/maternity", icon: "mod.maternity", section: "CLINICAL", desc: "Maternal care", maternity: true },
+  { id: "nicu", label: "NICU", path: "/modules/maternity", icon: "mod.nicu", section: "CLINICAL", desc: "Neonatal ICU", maternity: true },
+  { id: "cic", label: "CIC", path: "/modules/uhic", icon: "mod.cic", section: "INTEGRATIONS", desc: "CIC Insurance via UHIC" },
+  { id: "old_mutual", label: "Old Mutual", path: "/modules/uhic", icon: "mod.old_mutual", section: "INTEGRATIONS", desc: "Old Mutual via UHIC" },
+  { id: "lab", label: "Lab", path: "/dashboard/lab", icon: "mod.lab", section: "CLINICAL", desc: "Laboratory services" },
+  { id: "pharmacy", label: "Pharmacy", path: "/dashboard/pharmacy", icon: "mod.pharmacy", section: "CLINICAL", desc: "Pharmacy & dispensing" },
+  { id: "radiology", label: "Radiology", path: "/modules/radiology", icon: "mod.radiology", section: "CLINICAL", desc: "Imaging & PACS" },
+  { id: "teleconsult", label: "Teleconsult", path: "/modules/teleconsult", icon: "mod.teleconsult", section: "CLINICAL", desc: "Telemedicine" },
+  { id: "icu", label: "ICU", path: "/modules/icu", icon: "mod.icu", section: "CLINICAL", desc: "Critical care" },
+  { id: "emergency", label: "Emergency", path: "/modules/icu", icon: "mod.emergency", section: "CLINICAL", desc: "Emergency department" },
+  { id: "surgery", label: "Surgery", path: "/modules/surgery", icon: "mod.surgery", section: "CLINICAL", desc: "Surgical operations" },
+  { id: "fetal_monitor", label: "Fetal Mon.", path: "/modules/maternity", icon: "mod.fetal", section: "CLINICAL", desc: "Fetal monitoring", maternity: true },
+  { id: "kemsa", label: "KEMSA", path: "/dashboard/pharmacy", icon: "mod.kemsa", section: "INTEGRATIONS", desc: "KEMSA supply orders" },
+  { id: "oncology", label: "Oncology", path: "/modules/emr", icon: "mod.oncology", section: "CLINICAL", desc: "Oncology workflows" },
+  { id: "ai_engine", label: "AI Engine", path: "/modules/analytics", icon: "mod.ai", section: "PLATFORM", desc: "AI analytics & risk" },
+  { id: "iot_monitor", label: "IoT Mon.", path: "/modules/icu", icon: "mod.iot", section: "PLATFORM", desc: "Device & IoT monitoring" },
 ];
 
 const MODULE_BY_ID = Object.fromEntries(MASTER_INTEGRATED_MODULES.map((m) => [m.id, m])) as Record<string, MasterModule>;
@@ -200,11 +200,11 @@ export const MASTER_PORTAL_SECTIONS: Array<{ section: ModuleSection; items: Mast
 ];
 
 export const MODULE_PULL_FLOW_STEPS = [
-  { id: "login", icon: "🔑", label: "Login" },
-  { id: "auth", icon: "🔒", label: "Auth" },
-  { id: "role", icon: "👤", label: "Role" },
-  { id: "api", icon: "🖥️", label: "Module API" },
-  { id: "dash", icon: "📊", label: "Dashboard" },
+  { id: "login", icon: "flow.login", label: "Login" },
+  { id: "auth", icon: "flow.auth", label: "Auth" },
+  { id: "role", icon: "flow.role", label: "Role" },
+  { id: "api", icon: "flow.api", label: "Module API" },
+  { id: "dash", icon: "flow.dash", label: "Dashboard" },
 ] as const;
 
 export function modulePullFlowIndex(signInStep: number): number {
