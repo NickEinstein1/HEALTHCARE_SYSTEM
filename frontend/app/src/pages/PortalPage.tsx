@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
+import { DashIcon } from "../components/brand/DashIcon";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { MASTER_PORTAL_SECTIONS } from "../lib/modulePull";
 import { PILOT_AUTH_PORTALS } from "../lib/pilotRoles";
-import { ThemeToggle } from "../components/ThemeToggle";
 import "./PortalPage.css";
 
 const PORTAL_MODULES = MASTER_PORTAL_SECTIONS.flatMap((section) =>
@@ -75,7 +76,9 @@ export const PortalPage: React.FC = () => {
         <div className="auth-grid">
           {PILOT_AUTH_PORTALS.map((portal) => (
             <div key={portal.role} className="auth-card auth-card-split">
-              <div className="auth-icon">{portal.icon}</div>
+              <div className="auth-icon">
+                <DashIcon icon={portal.icon} idPrefix={`portal-role-${portal.role}`} />
+              </div>
               <div>
                 <div className="auth-title">{portal.title}</div>
                 <div className="auth-desc">{portal.desc}</div>
@@ -99,7 +102,9 @@ export const PortalPage: React.FC = () => {
         <div className="grid">
           {PORTAL_MODULES.map((module) => (
             <Link key={`${module.path}-${module.label}`} to={module.path} className="card">
-              <div className="card-icon">{module.icon}</div>
+              <div className="card-icon">
+                <DashIcon icon={module.icon} idPrefix={`portal-mod-${module.path}-${module.label}`} />
+              </div>
               <div className="card-name">{module.label}</div>
               <div className="card-desc">{module.desc ?? module.label}</div>
               <span className="card-tag">{module.tag}</span>

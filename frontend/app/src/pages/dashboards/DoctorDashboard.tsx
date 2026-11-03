@@ -9,6 +9,7 @@ import { ReferralFormPanel } from "../../components/referrals/ReferralFormPanel"
 import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 import { useAiRiskScore } from "../../hooks/useAiRiskScore";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type DocPage =
   | "home"
@@ -2243,7 +2244,7 @@ export function DoctorDashboard() {
           </div>
 
           <div className="notice g">
-            <span className="notice-ico">📅</span>
+            <span className="notice-ico"><DashIcon icon="📅" /></span>
             <div className="notice-txt">Appointments booked by patients appear here automatically and sync with the nursing team.</div>
           </div>
 

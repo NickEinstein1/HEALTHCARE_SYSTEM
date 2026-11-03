@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 export function AiAdminStatusWidget() {
   const [status, setStatus] = useState<any | null>(null);
@@ -48,7 +49,7 @@ export function AiAdminStatusWidget() {
 
       {status ? (
         <div className="ai-row" style={{ border: "none" }}>
-          <span className="ai-row-ico">🗄️</span>
+          <span className="ai-row-ico"><DashIcon icon="🗄️" /></span>
           <div className="ai-row-body">
             <div className="ai-row-ti">Postgres {status.postgres_enabled ? "enabled" : "disabled"}</div>
             <div className="ai-row-su">

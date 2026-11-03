@@ -6,6 +6,7 @@ import { api } from "../../lib/api";
 import type { UhicClaim, UhicMember, UhicPremiumQuote, UhicProviderScore } from "../../lib/apiTypes";
 import { usePolling } from "../../hooks/usePolling";
 import "../../styles/uhic-module.css";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type UhicPage =
   | "overview"
@@ -165,7 +166,7 @@ export function UHICModule() {
   const renderOverview = () => (
     <>
       <div className="notice uhic-accent" style={{ marginBottom: 14 }}>
-        <span className="notice-ico">🛡️</span>
+        <span className="notice-ico"><DashIcon icon="🛡️" /></span>
         <div className="notice-tx">
           <strong>Kenya National Health Insurance (UHIC)</strong> — operational layer for Social Health Authority
           (SHIF), replacing NHIF. Universal coverage for all Kenyans: formal payroll at 2.75% of income (Ksh 300–9,000)
@@ -176,28 +177,28 @@ export function UHICModule() {
       <div className="kpis">
         <div className="kpi">
           <div className="kpi-bar uhic-bar" />
-          <div className="kpi-ico">👥</div>
+          <div className="kpi-ico"><DashIcon icon="👥" /></div>
           <div className="kpi-lbl">Active Members</div>
           <div className="kpi-val">{summary?.active_members ?? "—"}</div>
           <div className="kpi-meta">{summary?.active_policies ?? 0} policies</div>
         </div>
         <div className="kpi">
           <div className="kpi-bar am" />
-          <div className="kpi-ico">📋</div>
+          <div className="kpi-ico"><DashIcon icon="📋" /></div>
           <div className="kpi-lbl">Claims</div>
           <div className="kpi-val">{summary?.claims_submitted ?? "—"}</div>
           <div className="kpi-meta">{summary?.claims_flagged ?? 0} flagged</div>
         </div>
         <div className="kpi">
           <div className="kpi-bar r" />
-          <div className="kpi-ico">📉</div>
+          <div className="kpi-ico"><DashIcon icon="📉" /></div>
           <div className="kpi-lbl">Loss Ratio</div>
           <div className="kpi-val">{lossRatioPct}</div>
           <div className="kpi-meta">IRA solvency watch</div>
         </div>
         <div className="kpi">
           <div className="kpi-bar g" />
-          <div className="kpi-ico">🔬</div>
+          <div className="kpi-ico"><DashIcon icon="🔬" /></div>
           <div className="kpi-lbl">IBNR Reserve</div>
           <div className="kpi-val">{reserves ? fmtKes(reserves.ibnr_kes) : "—"}</div>
           <div className="kpi-meta">Chain-ladder estimate</div>
@@ -286,7 +287,7 @@ export function UHICModule() {
       </div>
       {quoteResult && (
         <div className="notice g" style={{ marginBottom: 14 }}>
-          <span className="notice-ico">💰</span>
+          <span className="notice-ico"><DashIcon icon="💰" /></span>
           <div className="notice-tx">
             <strong>{quoteResult.scheme_type}</strong> — Monthly{" "}
             {fmtKes(quoteResult.monthly_contribution_kes ?? quoteResult.monthly_premium_kes ?? 0)}
@@ -466,7 +467,7 @@ export function UHICModule() {
         </div>
       </div>
       <div className="notice am" style={{ marginTop: 14 }}>
-        <span className="notice-ico">⚖️</span>
+        <span className="notice-ico"><DashIcon icon="⚖️" /></span>
         <div className="notice-tx">
           Human-in-the-loop by design — AI flags route to adjudicators; every denial is hash-chained and appealable
           (Constitution Art. 47).

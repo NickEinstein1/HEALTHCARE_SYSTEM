@@ -4,6 +4,7 @@ import { ApiRefPanel } from "../../components/dashboard/ApiRefPanel";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 import { FormModal } from "../../components/FormModal";
 import { buildV2ModuleNav } from "../../lib/moduleNav";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type MatPage = "overview" | "anc" | "labor" | "nicu" | "postnatal" | "api";
 
@@ -73,35 +74,35 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
         <div className="kpis">
           <div className="kpi">
             <div className="kpi-bar" style={{ background: "#ff4d85" }} />
-            <div className="kpi-ico">🤰</div>
+            <div className="kpi-ico"><DashIcon icon="🤰" /></div>
             <div className="kpi-lbl">Active Patients</div>
             <div className="kpi-val">47</div>
             <div className="kpi-meta">ANC · Labor · Postnatal</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar am" />
-            <div className="kpi-ico">🏥</div>
+            <div className="kpi-ico"><DashIcon icon="🏥" /></div>
             <div className="kpi-lbl">In Active Labor</div>
             <div className="kpi-val">3</div>
             <div className="kpi-meta">Bay 2 · Bay 5 · Bay 7</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar r" />
-            <div className="kpi-ico">👶</div>
+            <div className="kpi-ico"><DashIcon icon="👶" /></div>
             <div className="kpi-lbl">NICU Infants</div>
             <div className="kpi-val">8</div>
             <div className="kpi-meta">2 critical monitoring</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar g" />
-            <div className="kpi-ico">📋</div>
+            <div className="kpi-ico"><DashIcon icon="📋" /></div>
             <div className="kpi-lbl">ANC Today</div>
             <div className="kpi-val">24</div>
             <div className="kpi-meta">6 high-risk flagged</div>
           </div>
         </div>
         <div className="notice r" style={{ marginBottom: 14 }}>
-          <span className="notice-ico">⚠️</span>
+          <span className="notice-ico"><DashIcon icon="⚠️" /></span>
           <div className="notice-tx">
             <strong>AI Maternal Alert:</strong> Grace Kamau (KE-00849) — high-risk pregnancy. Pre-eclampsia risk 78%.
             Immediate obstetric review recommended.
@@ -155,7 +156,7 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
                 </div>
               </div>
               <div className="notice am" style={{ margin: 0 }}>
-                <span className="notice-ico">💡</span>
+                <span className="notice-ico"><DashIcon icon="💡" /></span>
                 <div className="notice-tx">Schedule Grace Kamau for urgent hypertension review + 24hr urine protein.</div>
               </div>
             </div>
@@ -354,7 +355,7 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
             </tbody>
           </table>
           <div className="notice r" style={{ marginTop: 14 }}>
-            <span className="notice-ico">🚨</span>
+            <span className="notice-ico"><DashIcon icon="🚨" /></span>
             <div className="notice-tx">
               <strong>NICU Alert:</strong> NEO-002 — SpO₂ dropped to 91%. Oxygen adjusted. NICU physician paged.
             </div>

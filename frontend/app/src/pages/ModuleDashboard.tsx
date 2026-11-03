@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { DashIcon } from "../components/brand/DashIcon";
 import {
   DashboardShell,
   type DashboardShellVariant,
@@ -93,7 +94,9 @@ export function ModuleDashboard({ config }: ModuleDashboardProps) {
                     {config.stats.map((stat, idx) => (
                       <div className="kpi" key={stat.label}>
                         <div className={`kpi-bar ${KPI_BARS[idx % KPI_BARS.length]}`} />
-                        <div className="kpi-ico">{config.icon}</div>
+                        <div className="kpi-ico">
+                          <DashIcon icon={config.icon} idPrefix={`mod-kpi-${config.name}`} />
+                        </div>
                         <div className="kpi-lbl">{stat.label}</div>
                         <div className="kpi-val">{stat.value}</div>
                         {stat.meta ? <div className="kpi-meta">{stat.meta}</div> : null}

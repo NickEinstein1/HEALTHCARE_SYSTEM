@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { DashIcon } from "../brand/DashIcon";
 import { V2_MODULE_NAV } from "../../routes/dashboardRoutes";
 import "./DashboardLayout.css";
 
@@ -72,7 +73,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     className={`sb-lnk${active ? " active" : ""}`}
                     to={item.path}
                   >
-                    <span>{item.icon}</span>
+                    <span className="sb-lnk-ico">
+                      <DashIcon icon={item.icon} idPrefix={`v2-nav-${item.path}`} />
+                    </span>
                     {item.label}
                   </Link>
                 );
@@ -103,7 +106,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             ☰
           </button>
           <div className="tb-page">
-            <span style={{ fontSize: "16px" }}>{pageIcon}</span>
+            <span className="topbar-page-ico" style={{ width: 16, height: 16, display: "inline-flex" }}>
+              <DashIcon icon={pageIcon} idPrefix="topbar-page" />
+            </span>
             {pageTitle}
           </div>
           <div className="tb-badge bg">

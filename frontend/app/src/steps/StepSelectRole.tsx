@@ -36,7 +36,9 @@ export function StepSelectRole({ selected, onSelect, onContinue }: Props) {
 
       {/* ── Header ── */}
       <div className="shd">
-        <div className="sico" aria-hidden>👤</div>
+        <div className="sico" aria-hidden>
+          <DashIcon icon="role.patient" idPrefix="signin-pick-role" />
+        </div>
         <div className="stitle">Select your role</div>
         <div className="ssub">Choose the role that matches your access level</div>
       </div>

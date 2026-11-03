@@ -26,6 +26,78 @@
   font-size: 14px;
 }
 
+.dash-icon--glyph {
+  width: 1em;
+  height: 1em;
+  color: inherit;
+}
+
+.dash-icon__glyph-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ni-ico-wrap .dash-icon--role,
+.ni-ico-wrap .dash-icon--glyph,
+.ni-ico.dash-icon--role,
+.ni-ico.dash-icon--glyph {
+  width: 15px;
+  height: 15px;
+  font-size: inherit;
+}
+
+.sb-role-icon .dash-icon--role,
+.sb-role-icon .dash-icon--glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.sb-lnk-ico .dash-icon--role,
+.sb-lnk-ico .dash-icon--glyph {
+  width: 14px;
+  height: 14px;
+}
+
+.kpi-ico .dash-icon--role,
+.kpi-ico .dash-icon--glyph {
+  width: 22px;
+  height: 22px;
+  opacity: 0.85;
+}
+
+.ov-ico .dash-icon--role,
+.ov-ico .dash-icon--glyph,
+.notice-ico .dash-icon--role,
+.notice-ico .dash-icon--glyph,
+.ai-row-ico .dash-icon--role,
+.ai-row-ico .dash-icon--glyph,
+.vital-e .dash-icon--role,
+.vital-e .dash-icon--glyph {
+  width: 18px;
+  height: 18px;
+}
+
+.auth-icon .dash-icon--role,
+.auth-icon .dash-icon--glyph,
+.card-icon .dash-icon--role,
+.card-icon .dash-icon--glyph {
+  width: 22px;
+  height: 22px;
+}
+
+.sico .dash-icon--role,
+.sico .dash-icon--glyph {
+  width: 28px;
+  height: 28px;
+}
+
+.fig-callout-icon .dash-icon--role,
+.fig-callout-icon .dash-icon--glyph {
+  width: 14px;
+  height: 14px;
+}
+
 .kpi-ico .dash-icon--brand {
   width: 26px;
   height: 26px;

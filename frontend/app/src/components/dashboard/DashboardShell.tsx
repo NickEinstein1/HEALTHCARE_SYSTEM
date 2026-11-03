@@ -172,7 +172,9 @@ export function DashboardShell(props: {
             {/* ── Role chip ── */}
             {meta && (
               <div className="sb-role-chip">
-                <span className="sb-role-icon" aria-hidden>{meta.icon}</span>
+                <span className="sb-role-icon" aria-hidden>
+                  <DashIcon icon={meta.icon} idPrefix={`shell-role-${shellVariant ?? "x"}`} />
+                </span>
                 <span className="sb-role-label">{meta.label}</span>
                 <span className="sb-role-online">
                   <span className="sb-role-dot" />

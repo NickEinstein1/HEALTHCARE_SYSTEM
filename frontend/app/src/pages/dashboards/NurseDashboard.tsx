@@ -10,6 +10,7 @@ import { riskBandClass } from "../../components/ai/riskScoreHelpers";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
 import { ESignModulePanel } from "../../components/legal/ESignModulePanel";
 import { useAiRiskScore } from "../../hooks/useAiRiskScore";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 function formatRowTime(ts?: number | string): string {
   if (!ts) return "—";
@@ -1573,7 +1574,7 @@ export function NurseDashboard() {
               </button>
             </div>
             <div className="ai-row">
-              <span className="ai-row-ico">🔴</span>
+              <span className="ai-row-ico"><DashIcon icon="🔴" /></span>
               <div className="ai-row-body">
                 <div className="ai-row-ti">
                   Bed 01 — Wangui Njoroge &nbsp;<span className="ews-badge ews-high">NEWS2: 7 — HIGH</span>
@@ -1586,7 +1587,7 @@ export function NurseDashboard() {
               <span className="ai-pri crit">ESCALATE</span>
             </div>
             <div className="ai-row">
-              <span className="ai-row-ico">🟡</span>
+              <span className="ai-row-ico"><DashIcon icon="🟡" /></span>
               <div className="ai-row-body">
                 <div className="ai-row-ti">
                   Bed 04 — Adhiambo Grace &nbsp;<span className="ews-badge ews-med">NEWS2: 4 — MEDIUM</span>
@@ -1598,7 +1599,7 @@ export function NurseDashboard() {
               <span className="ai-pri high">MONITOR</span>
             </div>
             <div className="ai-row">
-              <span className="ai-row-ico">🟢</span>
+              <span className="ai-row-ico"><DashIcon icon="🟢" /></span>
               <div className="ai-row-body">
                 <div className="ai-row-ti">
                   Remaining 10 patients &nbsp;<span className="ews-badge ews-0">NEWS2: 0–2 — LOW</span>
@@ -3385,7 +3386,7 @@ export function NurseDashboard() {
                   { ico: "✅", ti: "All Tasks Logged",   su: "18 of 21 tasks complete. 3 deferred to next shift (documented)." },
                 ].map(({ ico, ti, su }) => (
                   <div key={ti} className="ai-row">
-                    <span className="ai-row-ico">{ico}</span>
+                    <span className="ai-row-ico"><DashIcon icon={ico} /></span>
                     <div className="ai-row-body">
                       <div className="ai-row-ti">{ti}</div>
                       <div className="ai-row-su">{su}</div>

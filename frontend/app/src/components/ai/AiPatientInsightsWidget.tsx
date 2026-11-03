@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { buildVitalMapFromObs } from "./riskScoreHelpers";
 import { insightIcon, insightSeverityTag } from "./aiInsightHelpers";
 import { usePatientAiInsights } from "../../hooks/usePatientAiInsights";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type Props = {
   patientId: string;
@@ -77,7 +78,7 @@ export function AiPatientInsightsWidget({
           <div className="uh-ai-live-alerts-hd">Live alerts</div>
           {alerts.map((alert, i) => (
             <div className="ai-row" key={`alert-${i}`}>
-              <span className="ai-row-ico">🔔</span>
+              <span className="ai-row-ico"><DashIcon icon="🔔" /></span>
               <div className="ai-row-body">
                 <div className="ai-row-ti">{alert.title ?? "Alert"}</div>
                 <div className="ai-row-su">{alert.body ?? ""}</div>

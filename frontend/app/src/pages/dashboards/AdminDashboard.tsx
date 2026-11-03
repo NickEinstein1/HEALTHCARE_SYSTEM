@@ -1023,14 +1023,14 @@ export function AdminDashboard() {
         <div className="kpis">
           <div className="kpi">
             <div className="kpi-bar g" />
-            <div className="kpi-ico">👥</div>
+            <div className="kpi-ico"><DashIcon icon="👥" /></div>
             <div className="kpi-lbl">Registered Patients</div>
             <div className="kpi-val">55.2M</div>
             <div className="kpi-meta up">▲ 2.1% this month</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar b" />
-            <div className="kpi-ico">👥</div>
+            <div className="kpi-ico"><DashIcon icon="👥" /></div>
             <div className="kpi-lbl">Active Staff</div>
             <div className="kpi-val">48,914</div>
             <div className="kpi-meta up">▲ 340 new this week</div>
@@ -1044,7 +1044,7 @@ export function AdminDashboard() {
           </div>
           <div className="kpi">
             <div className="kpi-bar r" />
-            <div className="kpi-ico">⚠️</div>
+            <div className="kpi-ico"><DashIcon icon="⚠️" /></div>
             <div className="kpi-lbl">Pending Approvals</div>
             <div className="kpi-val">127</div>
             <div className="kpi-meta dn">▼ Needs attention</div>
@@ -2567,21 +2567,21 @@ export function AdminDashboard() {
         <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
           <div className="kpi">
             <div className="kpi-bar g" />
-            <div className="kpi-ico">🏛️</div>
+            <div className="kpi-ico"><DashIcon icon="🏛️" /></div>
             <div className="kpi-lbl">Claims Today</div>
             <div className="kpi-val">14,823</div>
             <div className="kpi-meta up">▲ Ksh 47.5B disbursed</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar am" />
-            <div className="kpi-ico">⏳</div>
+            <div className="kpi-ico"><DashIcon icon="⏳" /></div>
             <div className="kpi-lbl">Pending Claims</div>
             <div className="kpi-val">127</div>
             <div className="kpi-meta dn">▼ Avg wait 4.2h</div>
           </div>
           <div className="kpi">
             <div className="kpi-bar r" />
-            <div className="kpi-ico">❌</div>
+            <div className="kpi-ico"><DashIcon icon="❌" /></div>
             <div className="kpi-lbl">Rejected Claims</div>
             <div className="kpi-val">23</div>
             <div className="kpi-meta fl">— fraud prevention active</div>

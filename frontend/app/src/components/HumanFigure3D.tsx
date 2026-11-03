@@ -4,6 +4,7 @@
  * interactive vitals callouts per body region.
  */
 import { useMemo } from "react";
+import { DashIcon } from "./brand/DashIcon";
 
 export type VitalCallout = {
   key: string;
@@ -403,7 +404,9 @@ export function HumanFigure3D({ gender = "male", vitals = [], onVitalHover, acti
             }}
           >
             <div className="fig-callout-in" style={{ borderColor: isActive ? color : undefined }}>
-              <span className="fig-callout-icon">{v.icon}</span>
+              <span className="fig-callout-icon">
+                <DashIcon icon={v.icon} idPrefix={`fig-${v.key}`} />
+              </span>
               <div className="fig-callout-body">
                 <div className="fig-callout-label">{v.label}</div>
                 <div className="fig-callout-value" style={{ color }}>

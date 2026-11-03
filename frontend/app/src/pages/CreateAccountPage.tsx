@@ -757,7 +757,9 @@ function RegisterBrandPanel({ step }: { step: number }) {
           {BENEFITS.map(b => (
             <div key={b.title} style={{ marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontSize: 16 }}>{b.icon}</span>
+                <span style={{ width: 16, height: 16, display: "inline-flex", color: "#7ab8d8" }}>
+                  <DashIcon icon={b.icon} idPrefix={`reg-benefit-${b.title}`} />
+                </span>
                 <span style={{ fontWeight: 700, fontSize: 13, color: "#ddf0ff" }}>{b.title}</span>
               </div>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", lineHeight: 1.6, margin: "0 0 0 24px" }}>

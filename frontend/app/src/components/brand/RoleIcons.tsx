@@ -88,9 +88,8 @@ export type RoleIconKey = (typeof ROLE_ICON_KEYS)[number];
 
 /** Map legacy emoji + role keys → Lucide role key */
 const EMOJI_TO_KEY: Record<string, RoleIconKey> = {
-  "⚙": "role.admin",
-  "⚙️": "role.admin",
-  "🗂️": "role.admin",
+  // Prefer MasterGlyph for generic UI emoji (folders, charts, etc.).
+  // Only map role-distinctive emoji here.
   "🩺": "role.doctor",
   "💉": "role.nurse",
   "💰": "role.billing",

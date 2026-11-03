@@ -1,6 +1,7 @@
 import { BRAND_ICON, isBrandIcon } from "./brandIcon";
-import { UniHealthLogo } from "./UniHealthLogo";
+import { resolveLucideIcon } from "./MasterGlyph";
 import { resolveRoleIconKey, RoleIcon } from "./RoleIcons";
+import { UniHealthLogo } from "./UniHealthLogo";
 
 type Props = {
   icon: string;
@@ -10,7 +11,7 @@ type Props = {
   size?: number;
 };
 
-/** Renders a dashboard/landing icon: UniHealth mark, role SVG, or text fallback. */
+/** Renders a dashboard/landing icon: UniHealth mark, role SVG, Lucide glyph, or text fallback. */
 export function DashIcon({ icon, idPrefix = "dash-ico", className, size }: Props) {
   if (isBrandIcon(icon)) {
     return (
@@ -28,6 +29,24 @@ export function DashIcon({ icon, idPrefix = "dash-ico", className, size }: Props
         aria-hidden
       >
         <RoleIcon iconKey={roleKey} className="dash-icon__role-svg" />
+      </span>
+    );
+  }
+
+  const Lucide = resolveLucideIcon(icon);
+  if (Lucide) {
+    return (
+      <span
+        className={className ? `${className} dash-icon dash-icon--glyph` : "dash-icon dash-icon--glyph"}
+        aria-hidden
+      >
+        <Lucide
+          className="dash-icon__glyph-svg"
+          size="100%"
+          strokeWidth={1.75}
+          absoluteStrokeWidth={false}
+          aria-hidden
+        />
       </span>
     );
   }

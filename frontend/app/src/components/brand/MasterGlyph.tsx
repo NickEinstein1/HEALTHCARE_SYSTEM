@@ -1,68 +1,89 @@
 /**
- * Sign-in master panel glyphs — real Lucide icons (identical stroke family).
+ * Shared app glyphs — Lucide stroke icons for dashboards, modules, and sign-in.
+ * Accepts semantic keys (mod.*, ui.*) or legacy emoji strings.
  */
 import type { LucideIcon, LucideProps } from "lucide-react";
 import {
+  Activity,
+  AlertTriangle,
+  Ambulance,
+  Atom,
   Baby,
+  Ban,
+  BarChart3,
+  BedDouble,
+  Bone,
   Bot,
+  Box,
+  Brain,
   BrainCircuit,
   Briefcase,
+  Building2,
+  Calendar,
+  Camera,
+  CheckCircle2,
+  CircleDot,
   ClipboardList,
+  CreditCard,
   Crosshair,
+  Dna,
+  Download,
+  Droplets,
+  Eye,
+  FilePenLine,
+  FileText,
+  Flame,
   FlaskConical,
+  FolderOpen,
+  HardDrive,
   Heart,
+  HeartPulse,
+  Home,
   KeyRound,
+  Landmark,
   LayoutDashboard,
+  Lightbulb,
+  Link2,
   Lock,
+  LockKeyhole,
+  Map,
+  Microscope,
   Monitor,
   Network,
+  NotebookPen,
+  Package,
+  PenLine,
+  Pencil,
+  Phone,
   Pill,
+  Printer,
   Radio,
   Receipt,
+  RefreshCw,
+  Ruler,
+  Scale,
   ScanSearch,
   Scissors,
   Shield,
   Siren,
+  Smartphone,
+  Stethoscope,
+  Syringe,
+  Thermometer,
+  Trash2,
+  TrendingDown,
   Truck,
   UserRound,
+  Users,
+  Utensils,
   Video,
   Wifi,
+  Wind,
+  Workflow,
   Zap,
 } from "lucide-react";
 
-export type MasterGlyphKey =
-  | "mod.emr"
-  | "mod.billing"
-  | "mod.maternity"
-  | "mod.nicu"
-  | "mod.cic"
-  | "mod.old_mutual"
-  | "mod.lab"
-  | "mod.pharmacy"
-  | "mod.radiology"
-  | "mod.teleconsult"
-  | "mod.icu"
-  | "mod.emergency"
-  | "mod.surgery"
-  | "mod.fetal"
-  | "mod.kemsa"
-  | "mod.oncology"
-  | "mod.ai"
-  | "mod.iot"
-  | "status.ai"
-  | "status.network"
-  | "status.cic"
-  | "status.old_mutual"
-  | "status.tele"
-  | "status.maternity"
-  | "flow.login"
-  | "flow.auth"
-  | "flow.role"
-  | "flow.api"
-  | "flow.dash"
-  | "badge.maternity";
-
-const GLYPH_MAP: Record<MasterGlyphKey, LucideIcon> = {
+const KEY_MAP: Record<string, LucideIcon> = {
   "mod.emr": ClipboardList,
   "mod.billing": Receipt,
   "mod.maternity": Heart,
@@ -81,6 +102,15 @@ const GLYPH_MAP: Record<MasterGlyphKey, LucideIcon> = {
   "mod.oncology": Crosshair,
   "mod.ai": BrainCircuit,
   "mod.iot": Wifi,
+  "mod.inventory": Package,
+  "mod.fleet": Ambulance,
+  "mod.mortuary": Flame,
+  "mod.rehab": Activity,
+  "mod.nutrition": Utensils,
+  "mod.admin": Workflow,
+  "mod.hr": Users,
+  "mod.research": Microscope,
+  "mod.patient": UserRound,
   "status.ai": Bot,
   "status.network": Network,
   "status.cic": Shield,
@@ -93,38 +123,160 @@ const GLYPH_MAP: Record<MasterGlyphKey, LucideIcon> = {
   "flow.api": Monitor,
   "flow.dash": LayoutDashboard,
   "badge.maternity": Heart,
+  "ui.home": Home,
+  "ui.calendar": Calendar,
+  "ui.users": Users,
+  "ui.chart": BarChart3,
+  "ui.file": FileText,
+  "ui.folder": FolderOpen,
+  "ui.lock": LockKeyhole,
+  "ui.check": CheckCircle2,
+  "ui.warn": AlertTriangle,
+  "ui.audit": Link2,
+  "ui.health": HardDrive,
+  "ui.phone": Smartphone,
+  "ui.card": CreditCard,
+  "ui.pen": PenLine,
+  "ui.blood": Droplets,
+  "ui.heart": HeartPulse,
+  "ui.temp": Thermometer,
+  "ui.brain": Brain,
+  "ui.bed": BedDouble,
+  "ui.map": Map,
+  "ui.building": Building2,
+  "ui.camera": Camera,
+  "ui.dna": Dna,
+  "ui.eye": Eye,
+  "ui.atom": Atom,
+  "ui.bone": Bone,
+  "ui.print": Printer,
+  "ui.scale": Scale,
+  "ui.ruler": Ruler,
+  "ui.ban": Ban,
+  "ui.trash": Trash2,
+  "ui.refresh": RefreshCw,
+  "ui.landmark": Landmark,
+  "ui.syringe": Syringe,
+  "ui.stethoscope": Stethoscope,
+  "ui.notebook": NotebookPen,
+  "ui.box": Box,
+  "ui.droplet": Droplets,
+  "ui.wind": Wind,
+  "ui.circle": CircleDot,
+  "ui.phone.call": Phone,
+  "ui.file.pen": FilePenLine,
+  "ui.pencil": Pencil,
 };
 
-/** Legacy emoji → Lucide key (keeps older modulePull aliases working). */
-const EMOJI_TO_GLYPH: Record<string, MasterGlyphKey> = {
-  "📋": "mod.emr",
-  "💰": "mod.billing",
-  "❤️": "mod.maternity",
-  "♥️": "mod.maternity",
-  "👶": "mod.nicu",
-  "🛡️": "mod.cic",
-  "🛡": "mod.cic",
-  "💼": "mod.old_mutual",
-  "🧪": "mod.lab",
-  "💊": "mod.pharmacy",
-  "🔍": "mod.radiology",
-  "📹": "mod.teleconsult",
-  "⚡": "mod.icu",
-  "🚨": "mod.emergency",
-  "✂️": "mod.surgery",
-  "📡": "mod.fetal",
-  "🚚": "mod.kemsa",
-  "🎯": "mod.oncology",
-  "🤖": "mod.ai",
-  "📶": "mod.iot",
-  "🌐": "status.network",
-  "🔑": "flow.login",
-  "🔒": "flow.auth",
-  "👤": "flow.role",
-  "🖥️": "flow.api",
-  "🖥": "flow.api",
-  "📊": "flow.dash",
-  "🚑": "mod.emergency",
+/** Legacy emoji → Lucide component */
+const EMOJI_MAP: Record<string, LucideIcon> = {
+  "📋": ClipboardList,
+  "💰": Receipt,
+  "❤️": Heart,
+  "♥️": Heart,
+  "💗": HeartPulse,
+  "👶": Baby,
+  "🛡️": Shield,
+  "🛡": Shield,
+  "💼": Briefcase,
+  "🧪": FlaskConical,
+  "💊": Pill,
+  "🔍": ScanSearch,
+  "📹": Video,
+  "⚡": Zap,
+  "🚨": Siren,
+  "✂️": Scissors,
+  "📡": Radio,
+  "🚚": Truck,
+  "🎯": Crosshair,
+  "🤖": Bot,
+  "📶": Wifi,
+  "🌐": Network,
+  "🔑": KeyRound,
+  "🔒": Lock,
+  "🔐": LockKeyhole,
+  "👤": UserRound,
+  "👥": Users,
+  "🖥️": Monitor,
+  "🖥": Monitor,
+  "📊": BarChart3,
+  "🚑": Ambulance,
+  "🏠": Home,
+  "📅": Calendar,
+  "📄": FileText,
+  "📂": FolderOpen,
+  "📱": Smartphone,
+  "💳": CreditCard,
+  "📦": Package,
+  "📝": NotebookPen,
+  "✍️": PenLine,
+  "✏️": Pencil,
+  "✅": CheckCircle2,
+  "⚠️": AlertTriangle,
+  "⚠": AlertTriangle,
+  "⛓️": Link2,
+  "🔗": Link2,
+  "💾": HardDrive,
+  "⚙️": Workflow,
+  "⚙": Workflow,
+  "🗂️": FolderOpen,
+  "🗂": FolderOpen,
+  "🛏️": BedDouble,
+  "🛏": BedDouble,
+  "🩸": Droplets,
+  "🌡️": Thermometer,
+  "🌡": Thermometer,
+  "🩺": Stethoscope,
+  "🔬": Microscope,
+  "🧠": Brain,
+  "🫁": Wind,
+  "💧": Droplets,
+  "🩹": HeartPulse,
+  "🏃": Activity,
+  "🍽️": Utensils,
+  "🍽": Utensils,
+  "🕯️": Flame,
+  "🕯": Flame,
+  "⚕️": Stethoscope,
+  "⚕": Stethoscope,
+  "🏥": Building2,
+  "🏢": Building2,
+  "🏛️": Landmark,
+  "🏛": Landmark,
+  "🗺️": Map,
+  "🗺": Map,
+  "📷": Camera,
+  "🩻": Bone,
+  "⚛️": Atom,
+  "⚛": Atom,
+  "👁️": Eye,
+  "👁": Eye,
+  "🧬": Dna,
+  "🖨️": Printer,
+  "🖨": Printer,
+  "⚖️": Scale,
+  "⚖": Scale,
+  "📏": Ruler,
+  "🧮": BarChart3,
+  "😖": AlertTriangle,
+  "🗑️": Trash2,
+  "🗑": Trash2,
+  "🚫": Ban,
+  "🔄": RefreshCw,
+  "🔴": CircleDot,
+  "🟡": CircleDot,
+  "🔵": CircleDot,
+  "🤰": Baby,
+  "🌸": Heart,
+  "🧑‍⚕️": Stethoscope,
+  "👨‍⚕️": Stethoscope,
+  "👩‍⚕️": Stethoscope,
+  "💉": Syringe,
+  "📞": Phone,
+  "💡": Lightbulb,
+  "📥": Download,
+  "📉": TrendingDown,
+  "🟢": CircleDot,
 };
 
 const lucideDefaults: LucideProps = {
@@ -134,9 +286,14 @@ const lucideDefaults: LucideProps = {
   "aria-hidden": true,
 };
 
-export function resolveMasterGlyphKey(icon: string): MasterGlyphKey | null {
-  if (icon in GLYPH_MAP) return icon as MasterGlyphKey;
-  return EMOJI_TO_GLYPH[icon] ?? null;
+export function resolveLucideIcon(icon: string): LucideIcon | null {
+  return KEY_MAP[icon] ?? EMOJI_MAP[icon] ?? null;
+}
+
+/** Kept for callers that check mapped vs unmapped glyphs. */
+export function resolveMasterGlyphKey(icon: string): string | null {
+  if (KEY_MAP[icon] || EMOJI_MAP[icon]) return icon;
+  return null;
 }
 
 type Props = {
@@ -145,28 +302,24 @@ type Props = {
   title?: string;
 };
 
-/** Renders a Lucide glyph for master/sign-in icons, or null if unknown. */
 export function MasterGlyph({ icon, className, title }: Props) {
-  const key = resolveMasterGlyphKey(icon);
-  if (!key) return null;
-  const Icon = GLYPH_MAP[key];
+  const Icon = resolveLucideIcon(icon);
+  if (!Icon) return null;
   return (
     <Icon
       {...lucideDefaults}
       className={className}
       role="img"
-      aria-label={title ?? key}
+      aria-label={title ?? icon}
     />
   );
 }
 
-/** Prefer Lucide; fall back to raw text (emoji) only if unmapped. */
 export function MasterGlyphOrText({ icon, className, title }: Props) {
-  const glyph = <MasterGlyph icon={icon} className={className} title={title} />;
-  if (resolveMasterGlyphKey(icon)) {
+  if (resolveLucideIcon(icon)) {
     return (
       <span className="master-glyph" aria-hidden>
-        {glyph}
+        <MasterGlyph icon={icon} className={className} title={title} />
       </span>
     );
   }

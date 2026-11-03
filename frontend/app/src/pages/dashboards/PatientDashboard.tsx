@@ -801,7 +801,7 @@ export function PatientDashboard() {
                         }}
                       >
                         <div className="ov-ico" aria-hidden>
-                          {n.icon}
+                          <DashIcon icon={n.icon} idPrefix={`notif-${n.go}-${n.time}`} />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="ov-title">{n.title}</div>
@@ -955,7 +955,7 @@ export function PatientDashboard() {
                   <span className="kdpa-badge">🔒 KDPA 2019</span>
                 </div>
                 <div className="ai-row">
-                  <span className="ai-row-ico">⚠️</span>
+                  <span className="ai-row-ico"><DashIcon icon="⚠️" /></span>
                   <div className="ai-row-body">
                     <div className="ai-row-ti">Potassium levels require follow-up</div>
                     <div className="ai-row-su">
@@ -968,7 +968,7 @@ export function PatientDashboard() {
                   </span>
                 </div>
                 <div className="ai-row">
-                  <span className="ai-row-ico">💊</span>
+                  <span className="ai-row-ico"><DashIcon icon="💊" /></span>
                   <div className="ai-row-body">
                     <div className="ai-row-ti">Medication refill due in 5 days</div>
                     <div className="ai-row-su">
@@ -981,7 +981,7 @@ export function PatientDashboard() {
                   </span>
                 </div>
                 <div className="ai-row">
-                  <span className="ai-row-ico">💡</span>
+                  <span className="ai-row-ico"><DashIcon icon="💡" /></span>
                   <div className="ai-row-body">
                     <div className="ai-row-ti">Preventive care: annual eye check overdue</div>
                     <div className="ai-row-su">
@@ -1278,7 +1278,7 @@ export function PatientDashboard() {
             </button>
           </div>
           <div className="notice g">
-            <span className="notice-ico">📅</span>
+            <span className="notice-ico"><DashIcon icon="📅" /></span>
             <div className="notice-txt">
               You have <strong>{appts.length} upcoming appointment{appts.length === 1 ? "" : "s"}</strong> — next on{" "}
               <strong>{appts[0]?.when ?? "—"}</strong>.
@@ -1521,7 +1521,7 @@ export function PatientDashboard() {
             />
           </div>
           <div className="notice am">
-            <span className="notice-ico">⚠️</span>
+            <span className="notice-ico"><DashIcon icon="⚠️" /></span>
             <div className="notice-txt">
               <strong>1 result needs attention:</strong> LDL Cholesterol is above the normal range. Please discuss with your doctor at your next visit.
             </div>
@@ -1618,7 +1618,7 @@ export function PatientDashboard() {
             />
           </div>
           <div className="notice b">
-            <span className="notice-ico">💊</span>
+            <span className="notice-ico"><DashIcon icon="💊" /></span>
             <div className="notice-txt">
               <strong>Refill reminder:</strong> Amlodipine 5mg is due for refill in 5 days. Request at any UniHealth-accredited pharmacy.
             </div>
@@ -1734,7 +1734,9 @@ export function PatientDashboard() {
               <div className="g4" style={{ marginBottom: 16 }}>
                 {latestVitals.slice(0, 8).map((v) => (
                   <div key={v.key} className="vital">
-                    <div className="vital-e">{v.icon}</div>
+                    <div className="vital-e">
+                      <DashIcon icon={v.icon} idPrefix={`vital-${v.key}`} />
+                    </div>
                     <div className="vital-v">
                       {v.value ?? "—"}
                       <span className="vital-u">{v.unit}</span>
@@ -1778,8 +1780,9 @@ export function PatientDashboard() {
                   <tbody>
                     {latestVitals.map((v) => (
                       <tr key={v.key}>
-                        <td style={{ fontWeight: 800 }}>
-                          {v.icon} {v.label}
+                        <td style={{ fontWeight: 800, display: "flex", alignItems: "center", gap: 6 }}>
+                          <DashIcon icon={v.icon} idPrefix={`vital-row-${v.key}`} />
+                          {v.label}
                         </td>
                         <td className="mono" style={{ fontWeight: 800 }}>
                           {(v.value ?? "—") + (v.unit ? ` ${v.unit}` : "")}
@@ -2203,7 +2206,9 @@ export function PatientDashboard() {
             />
           </div>
           <div className={`notice ${(billing?.outstanding_total_kes ?? 0) > 0 ? "a" : "g"}`}>
-            <span className="notice-ico">{(billing?.outstanding_total_kes ?? 0) > 0 ? "⚠️" : "✅"}</span>
+            <span className="notice-ico">
+              <DashIcon icon={(billing?.outstanding_total_kes ?? 0) > 0 ? "⚠️" : "✅"} />
+            </span>
             <div className="notice-txt">
               {(billing?.outstanding_total_kes ?? 0) > 0 ? (
                 <>
@@ -2456,7 +2461,7 @@ export function PatientDashboard() {
               </div>
               <div className="pnl-bd">
                 <div className="notice r">
-                  <span className="notice-ico">🚨</span>
+                  <span className="notice-ico"><DashIcon icon="🚨" /></span>
                   <div className="notice-txt">
                     <strong>Allergy on file:</strong> Penicillin — Severe allergic reaction (anaphylaxis).
                   </div>
@@ -2650,7 +2655,7 @@ export function PatientDashboard() {
             <div className="pnl-bd">
               <div className="ai-widget green" style={{ marginBottom: 12 }}>
                 <div className="ai-row">
-                  <span className="ai-row-ico">🔐</span>
+                  <span className="ai-row-ico"><DashIcon icon="🔐" /></span>
                   <div className="ai-row-body">
                     <div className="ai-row-ti">Active Session</div>
                     <div className="ai-row-su">Signed in via UniHealth PIN + Biometric MFA · TLS 1.3 encrypted · Session expires after 30 minutes of inactivity.</div>
@@ -2780,7 +2785,7 @@ export function PatientDashboard() {
               <div className="pnl-bd">
                 <div className="ai-widget green" style={{ marginBottom: 14 }}>
                   <div className="ai-row">
-                    <span className="ai-row-ico">📥</span>
+                    <span className="ai-row-ico"><DashIcon icon="📥" /></span>
                     <div className="ai-row-body">
                       <div className="ai-row-ti">Download Your Health Data</div>
                       <div className="ai-row-su">Export records in FHIR R5 JSON or PDF. Right to data portability under KDPA 2019.</div>
