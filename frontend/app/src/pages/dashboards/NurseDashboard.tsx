@@ -256,7 +256,7 @@ export function NurseDashboard() {
               border: `1px solid ${a.severity === "CRITICAL" ? "rgba(255,51,102,0.3)" : "rgba(255,184,48,0.2)"}`,
               borderRadius: 10,
             }}>
-              <span style={{ fontSize: 18, flexShrink: 0 }}>{a.severity === "CRITICAL" ? "🚨" : "⚠️"}</span>
+              <span style={{ fontSize: 18, flexShrink: 0 }}><DashIcon icon={(a.severity === "CRITICAL" ? "🚨" : "⚠️")} /></span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: 13,
                   color: a.severity === "CRITICAL" ? "#ff3366" : "#ffb830" }}>
@@ -1162,13 +1162,13 @@ export function NurseDashboard() {
               {/* Modal header */}
               <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(0,210,255,0.10)", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,77,133,0.16)", border: "1px solid rgba(255,77,133,0.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>
-                  📝
+                  <DashIcon icon="📝" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 800, color: "#ddf0ff", fontSize: 14 }}>Sign & Submit Shift Handover</div>
                   <div style={{ fontSize: 11, color: "rgba(0,210,255,0.55)", marginTop: 2 }}>SBAR format · Ward 4B · {handoverForm.shift}</div>
                 </div>
-                <button className="btn-s btn-sm" type="button" onClick={() => setShowHandover(false)}>✕ Close</button>
+                <button className="btn-s btn-sm" type="button" onClick={() => setShowHandover(false)}><DashIcon icon="✕" /> Close</button>
               </div>
 
               {/* Modal body */}
@@ -1243,7 +1243,7 @@ export function NurseDashboard() {
                     }
                   }}
                 >
-                  ✍ Sign & Submit Handover
+                  <DashIcon icon="✍" /> Sign & Submit Handover
                 </button>
               </div>
             </div>
@@ -1502,23 +1502,23 @@ export function NurseDashboard() {
           <div className="ph">
             <div>
               <div className="ph-ey">Morning Shift · Ward 4B</div>
-              <div className="ph-ti">Good morning, Nurse Atieno 🩺</div>
+              <div className="ph-ti">Good morning, Nurse Atieno <DashIcon icon="🩺" /></div>
               <div className="ph-su">
                 07:00–15:00 · <strong>12 patients</strong> assigned · <strong>5 tasks pending</strong> · <strong>4 vitals due</strong>
               </div>
             </div>
             <div className="ph-r">
               <button className="btn-s btn-sm" type="button" onClick={() => setPage("handover")}>
-                📋 Handover Notes
+                <DashIcon icon="📋" /> Handover Notes
               </button>
               <button className="btn-vitals" type="button" onClick={() => setPage("vitals")}>
-                💗 Record Vitals
+                <DashIcon icon="💗" /> Record Vitals
               </button>
             </div>
           </div>
 
           <div className="sync-bar">
-            <span style={{ fontSize: 16 }}>🟢</span>
+            <span style={{ fontSize: 16 }}><DashIcon icon="🟢" /></span>
             <span>
               UniHealth Sync: <strong>Online</strong> · Last sync 47s ago · FHIR events: 312 queued · Data integrity: verified · IndexedDB: ready
               for offline
@@ -1545,7 +1545,7 @@ export function NurseDashboard() {
           <div className="ai-widget teal" style={{ animationDelay: ".08s" }}>
             <div className="ai-widget-hd">
               <div>
-                <div className="ai-widget-ti">🤖 AI Early Warning Score (NEWS2)</div>
+                <div className="ai-widget-ti"><DashIcon icon="🤖" /> AI Early Warning Score (NEWS2)</div>
                 <div style={{ fontSize: 11.5, color: "var(--t2)", marginTop: 3, fontWeight: 650 }}>
                   Automated vital-sign analysis · Real-time risk escalation
                 </div>
@@ -1610,18 +1610,18 @@ export function NurseDashboard() {
               </div>
               <span className="ai-pri med">STABLE</span>
             </div>
-            <div className="audit-notice">⛓️ All NEWS2 scores logged to FHIR · Escalations recorded in append-only shift audit trail</div>
+            <div className="audit-notice"><DashIcon icon="⛓️" /> All NEWS2 scores logged to FHIR · Escalations recorded in append-only shift audit trail</div>
           </div>
 
           <div className="g4" style={{ marginBottom: 14 }}>
             <div className="kpi" style={{ animationDelay: ".03s", borderTop: "3px solid var(--ro)" }}>
-              <div className="kpi-e">🛏️</div>
+              <div className="kpi-e"><DashIcon icon="🛏️" /></div>
               <div className="kpi-v">12</div>
               <div className="kpi-l">My Patients</div>
               <div className="kpi-su">Ward 4B assigned</div>
             </div>
             <div className="kpi" style={{ animationDelay: ".06s", borderTop: "3px solid var(--r)" }}>
-              <div className="kpi-e">🚨</div>
+              <div className="kpi-e"><DashIcon icon="🚨" /></div>
               <div className="kpi-v" style={{ color: "var(--r)" }}>
                 2
               </div>
@@ -1629,7 +1629,7 @@ export function NurseDashboard() {
               <div className="kpi-su">Bed 01, Bed 04</div>
             </div>
             <div className="kpi" style={{ animationDelay: ".09s", borderTop: "3px solid var(--am)" }}>
-              <div className="kpi-e">⏰</div>
+              <div className="kpi-e"><DashIcon icon="⏰" /></div>
               <div className="kpi-v" style={{ color: "var(--am)" }}>
                 5
               </div>
@@ -1637,7 +1637,7 @@ export function NurseDashboard() {
               <div className="kpi-su">3 vitals · 2 meds due</div>
             </div>
             <div className="kpi" style={{ animationDelay: ".12s", borderTop: "3px solid var(--g)" }}>
-              <div className="kpi-e">✅</div>
+              <div className="kpi-e"><DashIcon icon="✅" /></div>
               <div className="kpi-v" style={{ color: "var(--g)" }}>
                 18
               </div>
@@ -1647,7 +1647,7 @@ export function NurseDashboard() {
           </div>
 
           <div className="notice r notice-critical-anim">
-            <span className="notice-e">🚨</span>
+            <span className="notice-e"><DashIcon icon="🚨" /></span>
             <div className="notice-tx">
               <strong>CRITICAL — Bed 01 (Wangui Njoroge):</strong> K⁺ 6.8 mmol/L. Dr. Mutuku has been notified. Please ensure IV Calcium Gluconate is
               prepared and administer per order. <strong>ECG monitoring must be continuous.</strong>
@@ -1777,16 +1777,16 @@ export function NurseDashboard() {
                 <div className="pnl-bd">
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     <button className="btn-vitals" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("vitals")}>
-                      💗 Record Vitals
+                      <DashIcon icon="💗" /> Record Vitals
                     </button>
                     <button className="btn-pg" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("mar")}>
-                      💊 Give Medication
+                      <DashIcon icon="💊" /> Give Medication
                     </button>
                     <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("fluids")}>
-                      💧 Update Fluids
+                      <DashIcon icon="💧" /> Update Fluids
                     </button>
                     <button className="btn-s" style={{ justifyContent: "center" }} type="button" onClick={() => setPage("incidents")}>
-                      ⚠️ Report Incident
+                      <DashIcon icon="⚠️" /> Report Incident
                     </button>
                     <button
                       className="btn-s"
@@ -1805,7 +1805,7 @@ export function NurseDashboard() {
                         }
                       }}
                     >
-                      📞 Call Doctor
+                      <DashIcon icon="📞" /> Call Doctor
                     </button>
                     <button
                       className="btn-s"
@@ -1824,7 +1824,7 @@ export function NurseDashboard() {
                         }
                       }}
                     >
-                      🚑 Request Transfer
+                      <DashIcon icon="🚑" /> Request Transfer
                     </button>
                   </div>
                 </div>
@@ -1872,7 +1872,7 @@ export function NurseDashboard() {
 
               {obs.error && (
                 <div className="errbanner is-visible" role="alert">
-                  <span>⚠️</span>
+                  <span><DashIcon icon="⚠️" /></span>
                   <span>
                     {obs.error} (Try starting the API and using <code>P001</code>.)
                   </span>
@@ -2019,13 +2019,13 @@ export function NurseDashboard() {
                 disabled={riskLoading}
                 onClick={() => void fetchRiskScore()}
               >
-                {riskLoading ? "Scoring…" : "📊 Risk"}
+                {riskLoading  ? "Scoring…" : (<><DashIcon icon="📊" /> Risk</>)}
               </button>
               <button className="btn-p btn-sm" type="button" onClick={() => setPage("vitals")}>
-                💗 Vitals
+                <DashIcon icon="💗" /> Vitals
               </button>
               <button className="btn-pg btn-sm" type="button" onClick={() => setPage("mar")}>
-                💊 MAR
+                <DashIcon icon="💊" /> MAR
               </button>
             </div>
           </div>
@@ -2039,7 +2039,7 @@ export function NurseDashboard() {
 
           {(summary.error || meds.error || obs.error) && (
             <div className="errbanner is-visible" role="alert" style={{ marginBottom: 14 }}>
-              <span>⚠️</span>
+              <span><DashIcon icon="⚠️" /></span>
               <span>
                 {(summary.error || meds.error || obs.error) ?? "Unknown error"} (Ensure the API is running and the patient ID exists.)
               </span>
@@ -2247,7 +2247,7 @@ export function NurseDashboard() {
           </div>
           {walkinMatches && walkinMatches.length > 0 && (
             <div className="notice am" style={{ marginBottom: 14 }}>
-              <span className="notice-e">🧬</span>
+              <span className="notice-e"><DashIcon icon="🧬" /></span>
               <div className="notice-tx">
                 <strong>Possible existing patient matches found:</strong>{" "}
                 {walkinMatches.slice(0, 3).map((m) => `${m.uhid} (${Math.round(m.score * 100)}%)`).join(", ")}
@@ -2257,28 +2257,28 @@ export function NurseDashboard() {
           )}
           <div className="g4" style={{ marginBottom: 14 }}>
             <div className="kpi" style={{ borderTop: "3px solid #ef4444" }}>
-              <div className="kpi-e">🔴</div>
+              <div className="kpi-e"><DashIcon icon="🔴" /></div>
               <div className="kpi-v" style={{ color: "#ef4444" }}>
                 1
               </div>
               <div className="kpi-l">Red — Immediate</div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid #f97316" }}>
-              <div className="kpi-e">🟠</div>
+              <div className="kpi-e"><DashIcon icon="🟠" /></div>
               <div className="kpi-v" style={{ color: "#f97316" }}>
                 1
               </div>
               <div className="kpi-l">Orange — Urgent</div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid #eab308" }}>
-              <div className="kpi-e">🟡</div>
+              <div className="kpi-e"><DashIcon icon="🟡" /></div>
               <div className="kpi-v" style={{ color: "#eab308" }}>
                 1
               </div>
               <div className="kpi-l">Yellow — Semi-urgent</div>
             </div>
             <div className="kpi" style={{ borderTop: "3px solid var(--g)" }}>
-              <div className="kpi-e">🟢</div>
+              <div className="kpi-e"><DashIcon icon="🟢" /></div>
               <div className="kpi-v" style={{ color: "var(--g)" }}>
                 3
               </div>
@@ -2418,7 +2418,7 @@ export function NurseDashboard() {
                                   }
                                 }}
                               >
-                                ✓ Resolve
+                                <DashIcon icon="✓" /> Resolve
                               </button>
                             )}
                           </td>
@@ -2437,7 +2437,7 @@ export function NurseDashboard() {
 
           {lastCreated && (
             <div className="notice g" style={{ marginTop: 14 }}>
-              <span className="notice-e">✅</span>
+              <span className="notice-e"><DashIcon icon="✅" /></span>
               <div className="notice-tx" style={{ width: "100%" }}>
                 <strong>Walk-in created</strong> · UHID <span className="mono">{lastCreated.uhid}</span> · ID{" "}
                 <span className="mono">{lastCreated.walkinId}</span>
@@ -2469,7 +2469,7 @@ export function NurseDashboard() {
                   <div className="modal-su">Quick registration + cross-facility patient correlation (UHID)</div>
                 </div>
                 <button className="btn-x" type="button" onClick={() => setShowWalkin(false)} aria-label="Close">
-                  ✕
+                  <DashIcon icon="✕" />
                 </button>
               </div>
               <div className="modal-bd">
@@ -2551,7 +2551,7 @@ export function NurseDashboard() {
                 {/* Correlation matches panel */}
                 {walkinMatches && walkinMatches.length > 0 && (
                   <div className="notice am" style={{ marginTop: 14 }}>
-                    <span className="notice-e">🧬</span>
+                    <span className="notice-e"><DashIcon icon="🧬" /></span>
                     <div className="notice-tx" style={{ width: "100%" }}>
                       <strong>Possible existing records found — is this the same patient?</strong>
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
@@ -2582,7 +2582,7 @@ export function NurseDashboard() {
                                 disabled={walkinBusy}
                                 onClick={() => void submitWalkin(m.uhid)}
                               >
-                                ✓ Link to this UHID
+                                <DashIcon icon="✓" /> Link to this UHID
                               </button>
                               <button
                                 className="btn-s btn-sm"
@@ -2641,7 +2641,7 @@ export function NurseDashboard() {
             </button>
           </div>
           <div className="notice am" style={{ marginBottom: 14 }}>
-            <span className="notice-e">⏰</span>
+            <span className="notice-e"><DashIcon icon="⏰" /></span>
             <div className="notice-tx">
               <strong>4 patients have vitals due now:</strong> Bed 01 (Wangui Njoroge), Bed 04 (Adhiambo Grace), Bed 07 (Fatuma Ali),
               Bed 10 (Mary K.). Next scheduled round: 12:00.
@@ -2678,7 +2678,7 @@ export function NurseDashboard() {
                 </div>
                 {obs.error && (
                   <div className="errbanner is-visible" role="alert">
-                    <span>⚠️</span>
+                    <span><DashIcon icon="⚠️" /></span>
                     <span>{obs.error}</span>
                   </div>
                 )}
@@ -2838,7 +2838,7 @@ export function NurseDashboard() {
             </div>
           </div>
           <div className="notice ro" style={{ marginBottom: 14 }}>
-            <span className="notice-e">⚠️</span>
+            <span className="notice-e"><DashIcon icon="⚠️" /></span>
             <div className="notice-tx">
               <strong>Allergy on file — Wangui Njoroge:</strong> Penicillin (Anaphylaxis), Sulfa drugs (Rash). System will alert if
               contraindicated drug is administered.
@@ -2850,7 +2850,7 @@ export function NurseDashboard() {
                 <div className="pnl-ti">Wangui Njoroge — Bed 01</div>
                 <div className="pnl-su">AFL-78841209 · Internal Medicine</div>
               </div>
-              <span className="tag r">⚠ Allergy: Penicillin</span>
+              <span className="tag r"><DashIcon icon="⚠" /> Allergy: Penicillin</span>
             </div>
             <div className="pnl-bd">
               <table className="tbl">
@@ -3026,12 +3026,12 @@ export function NurseDashboard() {
               <div className="pnl-bd">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                   <div style={{ background: "var(--bl)", border: "1.5px solid var(--bm)", borderRadius: 9, padding: 12, textAlign: "center" }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>🔵</div>
+                    <div style={{ fontSize: 22, marginBottom: 4 }}><DashIcon icon="🔵" /></div>
                     <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--b)" }}>920 ml</div>
                     <div style={{ fontSize: 10.5, fontWeight: 950, color: "var(--t2)", marginTop: 3, letterSpacing: 0.2 }}>TOTAL INTAKE</div>
                   </div>
                   <div style={{ background: "var(--gl)", border: "1.5px solid var(--gm)", borderRadius: 9, padding: 12, textAlign: "center" }}>
-                    <div style={{ fontSize: 22, marginBottom: 4 }}>🟢</div>
+                    <div style={{ fontSize: 22, marginBottom: 4 }}><DashIcon icon="🟢" /></div>
                     <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>740 ml</div>
                     <div style={{ fontSize: 10.5, fontWeight: 950, color: "var(--t2)", marginTop: 3, letterSpacing: 0.2 }}>TOTAL OUTPUT</div>
                   </div>
@@ -3243,8 +3243,8 @@ export function NurseDashboard() {
               <div className="ph-su">Morning Shift · Ward 4B · 07:00–15:00 · SBAR format</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button className="btn-s" type="button" onClick={() => window.print()}>🖨 Print Report</button>
-              <button className="btn-p" type="button" onClick={() => setShowHandover(true)}>✍ Sign Handover</button>
+              <button className="btn-s" type="button" onClick={() => window.print()}><DashIcon icon="🖨" /> Print Report</button>
+              <button className="btn-p" type="button" onClick={() => setShowHandover(true)}><DashIcon icon="✍" /> Sign Handover</button>
             </div>
           </div>
 
@@ -3253,7 +3253,7 @@ export function NurseDashboard() {
             <div className="ho-banner-accent" />
             <div className="ho-banner-in">
               <div className="ho-banner-left">
-                <div className="ho-banner-icon">📋</div>
+                <div className="ho-banner-icon"><DashIcon icon="📋" /></div>
                 <div>
                   <div className="ho-banner-ti">Morning Shift — Ward 4B</div>
                   <div className="ho-banner-su">Nurse Atieno Achieng (NCK/RN/2021/08432) · Handing to Nurse Omondi · 15:00</div>
@@ -3290,7 +3290,7 @@ export function NurseDashboard() {
                     { ico: "👩‍⚕️", text: <>Outgoing: <strong>Nurse Atieno Achieng</strong> · NCK/RN/2021/08432</> },
                     { ico: "🔄", text: <>Incoming: <strong>Nurse Omondi</strong> (Night, 15:00–23:00)</> },
                   ].map(({ ico, text }, i) => (
-                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico"><DashIcon icon={ico} /></span><div>{text}</div></div>
                   ))}
                 </div>
               </div>
@@ -3303,7 +3303,7 @@ export function NurseDashboard() {
                     { ico: "💊", text: <><strong>Medications:</strong> 36 administered, 0 missed doses, 2 PRN given. IV lines patent on all patients.</> },
                     { ico: "🧪", text: <><strong>Labs:</strong> FBC/U&amp;E pending for Bed 01 (13:00). Culture results expected for Bed 05 (17:00).</> },
                   ].map(({ ico, text }, i) => (
-                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico"><DashIcon icon={ico} /></span><div>{text}</div></div>
                   ))}
                 </div>
               </div>
@@ -3338,7 +3338,7 @@ export function NurseDashboard() {
                     { ico: "🔵", text: "BED 09: Prepare monitoring bay — O₂, IV trolley, drug chart ready before A&E transfer arrives." },
                     { ico: "📋", text: "Ward: Complete drug round at 14:30 before handover. Document all PRN given in MAR." },
                   ].map(({ ico, text }, i) => (
-                    <div key={i} className="sbar-row"><span className="sbar-row-ico">{ico}</span><div>{text}</div></div>
+                    <div key={i} className="sbar-row"><span className="sbar-row-ico"><DashIcon icon={ico} /></span><div>{text}</div></div>
                   ))}
                 </div>
               </div>
@@ -3350,7 +3350,7 @@ export function NurseDashboard() {
               <div className="panel">
                 <div className="pnl-hd">
                   <div>
-                    <div className="pnl-ti">📥 Incoming Handover</div>
+                    <div className="pnl-ti"><DashIcon icon="📥" /> Incoming Handover</div>
                     <div className="pnl-su">From Night Shift · Nurse Osei</div>
                   </div>
                   <span className="tag am">00:00–07:00</span>
@@ -3375,7 +3375,7 @@ export function NurseDashboard() {
               <div className="ai-widget amber">
                 <div className="ai-widget-hd">
                   <div>
-                    <div className="ai-widget-ti">🤖 AI Shift Summary</div>
+                    <div className="ai-widget-ti"><DashIcon icon="🤖" /> AI Shift Summary</div>
                     <div style={{ fontSize: 11, color: "var(--t2)", marginTop: 2, fontWeight: 600 }}>Auto-generated · Vitals + MAR + Tasks</div>
                   </div>
                   <span className="tag am">07:00–15:00</span>
@@ -3393,7 +3393,7 @@ export function NurseDashboard() {
                     </div>
                   </div>
                 ))}
-                <div className="audit-notice">⛓️ FHIR synced · Shift audit trail verified</div>
+                <div className="audit-notice"><DashIcon icon="⛓️" /> FHIR synced · Shift audit trail verified</div>
               </div>
 
               <div className="panel">
@@ -3424,13 +3424,13 @@ export function NurseDashboard() {
 
               <div className="ho-sign-cta">
                 <div className="ho-sign-cta-text">
-                  <span className="ho-sign-cta-ico">✍</span>
+                  <span className="ho-sign-cta-ico"><DashIcon icon="✍" /></span>
                   <div>
                     <div style={{ fontWeight: 700, color: "#ddf0ff", fontSize: 13 }}>Ready to sign off?</div>
                     <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginTop: 2 }}>Complete SBAR and submit your digital handover to the incoming nurse.</div>
                   </div>
                 </div>
-                <button className="btn-p" type="button" onClick={() => setShowHandover(true)}>✍ Sign & Submit</button>
+                <button className="btn-p" type="button" onClick={() => setShowHandover(true)}><DashIcon icon="✍" /> Sign & Submit</button>
               </div>
             </div>
           </div>
@@ -3551,7 +3551,7 @@ export function NurseDashboard() {
             </button>
           </div>
           <div className="notice am">
-            <span className="notice-e">⚠️</span>
+            <span className="notice-e"><DashIcon icon="⚠️" /></span>
             <div className="notice-tx">
               <strong>Low stock alert:</strong> Normal Saline 0.9% (500ml) — only 4 bags remaining. Paracetamol IV — 2 vials.
             </div>
@@ -3706,7 +3706,7 @@ function NurseAppointmentsWidget() {
         onClick={() => setExpanded((v) => !v)}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 16 }}>📅</span>
+          <span style={{ fontSize: 16 }}><DashIcon icon="📅" /></span>
           <div>
             <div style={{ fontWeight: 800, fontSize: 13, color: "var(--am)" }}>
               Pending Patient Appointments ({pending.length})
@@ -3714,7 +3714,7 @@ function NurseAppointmentsWidget() {
             <div style={{ fontSize: 10.5, color: "var(--t3)" }}>Booked via portal — awaiting confirmation</div>
           </div>
         </div>
-        <span style={{ color: "var(--t3)", fontSize: 12 }}>{expanded ? "▲" : "▼"}</span>
+        <span style={{ color: "var(--t3)", fontSize: 12 }}><DashIcon icon={(expanded ? "▲" : "▼")} /></span>
       </div>
       {expanded && (
         <div style={{ padding: "0 16px 12px" }}>

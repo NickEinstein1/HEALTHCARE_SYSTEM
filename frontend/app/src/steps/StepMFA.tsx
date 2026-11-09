@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DashIcon } from "../components/brand/DashIcon";
 import type { RoleKey } from "../theme/tokens";
 import { computeRiskState } from "../lib/risk";
 
@@ -146,7 +147,7 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
           </div>
         </div>
         <div className="shd" style={{ marginBottom: 10 }}>
-          <div className="sico">📱</div>
+          <div className="sico"><DashIcon icon="📱" idPrefix="mfa-otp" /></div>
           <div className="stitle">Enter OTP</div>
           <div className="ssub">{otpNoteText(contact, via)}</div>
         </div>

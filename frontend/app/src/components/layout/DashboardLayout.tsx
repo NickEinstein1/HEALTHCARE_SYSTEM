@@ -103,7 +103,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
           >
-            ☰
+            <DashIcon icon="☰" />
           </button>
           <div className="tb-page">
             <span className="topbar-page-ico" style={{ width: 16, height: 16, display: "inline-flex" }}>
@@ -116,7 +116,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             LIVE · FHIR R5
           </div>
           <button type="button" className="tb-btn bp" onClick={onNewPatient}>
-            <span>➕</span> New Patient
+            <span><DashIcon icon="➕" /></span> New Patient
           </button>
           <div
             className="tb-ic"
@@ -125,7 +125,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             tabIndex={0}
             onKeyDown={(e) => e.key === "Enter" && setShowNotifications((v) => !v)}
           >
-            🔔
+            <DashIcon icon="🔔" />
             <div className="nn">{notificationCount}</div>
           </div>
           <div className="clk">{time}</div>

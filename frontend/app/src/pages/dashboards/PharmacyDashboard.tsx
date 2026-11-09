@@ -4,6 +4,7 @@ import { usePolling } from "../../hooks/usePolling";
 import { CrudRowActions } from "../../components/CrudRowActions";
 import { FormModal } from "../../components/FormModal";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type PharmacyPage =
   | "overview"
@@ -168,10 +169,10 @@ export function PharmacyDashboard() {
           </div>
           <div className="ph-right">
             <button className="btn-s" type="button" onClick={() => setPage("queue")}>
-              📋 Queue
+              <DashIcon icon="📋" /> Queue
             </button>
             <button className="btn-p" type="button" onClick={() => setPage("stock")}>
-              📦 Stock
+              <DashIcon icon="📦" /> Stock
             </button>
           </div>
         </div>
@@ -559,7 +560,7 @@ export function PharmacyDashboard() {
             <div className="ph-sub">Kenya Medical Supplies Authority catalogue orders (synced with v2 pharmacy HTML).</div>
           </div>
           <button className="btn-p" type="button" onClick={() => void uiAction("KEMSA order submitted")}>
-            🏛️ New KEMSA Order
+            <DashIcon icon="🏛️" /> New KEMSA Order
           </button>
         </div>
         <div className="panel">
@@ -659,8 +660,8 @@ export function PharmacyDashboard() {
               <div className="pnl-hd"><div className="pnl-title">{TITLES[p]}</div></div>
               <div className="pnl-body" style={{ color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div>✅ Navigation is live. Every button action is logged to the audit trail.</div>
-                  <div>💊 <strong>{TITLES[p]}</strong> full workflows include clinical data, LIS integrations, and claim submissions.</div>
+                  <div><DashIcon icon="✅" /> Navigation is live. Every button action is logged to the audit trail.</div>
+                  <div><DashIcon icon="💊" /> <strong>{TITLES[p]}</strong> full workflows include clinical data, LIS integrations, and claim submissions.</div>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                     <button
                       className="btn-s btn-sm"

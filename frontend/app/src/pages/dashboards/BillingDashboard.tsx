@@ -190,7 +190,7 @@ export function BillingDashboard() {
 
   return (
     <DashboardShell
-      shellVariant="admin"
+      shellVariant="billing"
       title={TITLES[page]}
       crumb={page === "overview" ? "Billing & Finance" : `Billing › ${TITLES[page]}`}
       portalSubtitle="Billing & Finance Portal"

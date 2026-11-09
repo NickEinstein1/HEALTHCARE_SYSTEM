@@ -8,7 +8,7 @@ export const EMRModuleDashboard: React.FC = () => (
     config={{
       name: 'EMR',
       title: 'Electronic Medical Records',
-      icon: '🏥',
+      icon: 'ui.building',
       description: 'Complete patient medical records and clinical documentation',
       role: 'Attending Physician',
       stats: [
@@ -31,7 +31,7 @@ export const LaboratoryDashboard: React.FC = () => (
     config={{
       name: 'Laboratory',
       title: 'Laboratory Services',
-      icon: '🧪',
+      icon: 'mod.lab',
       description: 'Laboratory testing and result management',
       role: 'Lab Technician',
       stats: [
@@ -51,7 +51,7 @@ export const RadiologyDashboard: React.FC = () => (
     config={{
       name: 'Radiology',
       title: 'Radiology & Imaging',
-      icon: '🔍',
+      icon: 'mod.radiology',
       description: 'Medical imaging and radiology services',
       role: 'Radiologist',
       stats: [
@@ -71,7 +71,7 @@ export const PharmacyDashboard: React.FC = () => (
     config={{
       name: 'Pharmacy',
       title: 'Pharmacy Management',
-      icon: '💊',
+      icon: 'mod.pharmacy',
       description: 'Medication dispensing and inventory management',
       role: 'Pharmacist',
       stats: [
@@ -91,7 +91,7 @@ export const ICUDashboard: React.FC = () => (
     config={{
       name: 'ICU',
       title: 'ICU & Emergency Care',
-      icon: '⚡',
+      icon: 'mod.icu',
       description: 'Intensive care and emergency department management',
       role: 'ICU Manager',
       stats: [
@@ -111,7 +111,7 @@ export const SurgeryDashboard: React.FC = () => (
     config={{
       name: 'Surgery',
       title: 'Surgical Services',
-      icon: '✂️',
+      icon: 'mod.surgery',
       description: 'Operating room and surgical scheduling management',
       role: 'Surgical Coordinator',
       stats: [
@@ -131,7 +131,7 @@ export const RehabilitationDashboard: React.FC = () => (
     config={{
       name: 'Rehabilitation',
       title: 'Rehabilitation Services',
-      icon: '🏃',
+      icon: 'mod.rehab',
       description: 'Patient rehabilitation and physical therapy management',
       role: 'Rehabilitation Specialist',
       stats: [
@@ -151,7 +151,7 @@ export const NutritionDashboard: React.FC = () => (
     config={{
       name: 'Nutrition',
       title: 'Nutritional Services',
-      icon: '🍽️',
+      icon: 'mod.nutrition',
       description: 'Meal planning and nutritional care management',
       role: 'Nutritionist',
       stats: [
@@ -178,7 +178,7 @@ export const InventoryDashboard: React.FC = () => (
     config={{
       name: 'Inventory',
       title: 'Inventory Management',
-      icon: '📦',
+      icon: 'mod.inventory',
       description: 'Medical supplies and equipment inventory tracking',
       role: 'Inventory Manager',
       stats: [
@@ -198,7 +198,7 @@ export const FleetDashboard: React.FC = () => (
     config={{
       name: 'Fleet',
       title: 'Ambulance & Fleet Management',
-      icon: '🚑',
+      icon: 'mod.fleet',
       description: 'Emergency transport and fleet vehicle management',
       role: 'Fleet Manager',
       stats: [
@@ -218,7 +218,7 @@ export const MortuaryDashboard: React.FC = () => (
     config={{
       name: 'Mortuary',
       title: 'Mortuary Services',
-      icon: '🕯️',
+      icon: 'mod.mortuary',
       description: 'Deceased patient management and mortuary operations',
       role: 'Mortuary Manager',
       stats: [
@@ -238,7 +238,7 @@ export const TelemediciDashboard: React.FC = () => (
     config={{
       name: 'Telemedicine',
       title: 'Telemedicine Services',
-      icon: '📹',
+      icon: 'mod.teleconsult',
       description: 'Remote consultation and telehealth services',
       role: 'Telemedicine Coordinator',
       stats: [
@@ -258,7 +258,7 @@ export const AdministrationDashboard: React.FC = () => (
     config={{
       name: 'Administration',
       title: 'System Administration',
-      icon: '⚙️',
+      icon: 'mod.admin',
       description: 'System configuration and facility management',
       role: 'System Administrator',
       stats: [
@@ -278,7 +278,7 @@ export const HRDashboard: React.FC = () => (
     config={{
       name: 'HR',
       title: 'HR & Payroll Management',
-      icon: '👥',
+      icon: 'mod.hr',
       description: 'Human resources and staff payroll management',
       role: 'HR Manager',
       stats: [
@@ -298,7 +298,7 @@ export const AnalyticsDashboard: React.FC = () => (
     config={{
       name: 'Analytics',
       title: 'AI Analytics',
-      icon: '📊',
+      icon: 'ui.chart',
       description: 'Data intelligence and predictive analytics',
       role: 'Analytics Manager',
       stats: [
@@ -318,7 +318,7 @@ export const ResearchDashboard: React.FC = () => (
     config={{
       name: 'Research',
       title: 'Research Management',
-      icon: '🔬',
+      icon: 'mod.research',
       description: 'Clinical research and study management',
       role: 'Research Director',
       stats: [
@@ -338,7 +338,7 @@ export const PatientDashboard: React.FC = () => (
     config={{
       name: 'Patient',
       title: 'Patient Portal',
-      icon: '👤',
+      icon: 'mod.patient',
       description: 'Personal health records and patient self-service',
       role: 'Patient',
       stats: [
@@ -358,7 +358,7 @@ export const SuperAdminDashboard: React.FC = () => (
     config={{
       name: 'SuperAdmin',
       title: 'Super Admin Console',
-      icon: '🏥',
+      icon: 'ui.building',
       description: 'Complete system oversight and facility management',
       role: 'Super Administrator',
       stats: [
@@ -378,7 +378,7 @@ export const NurseDashboard: React.FC = () => (
     config={{
       name: 'Nurse',
       title: 'Nursing Station',
-      icon: '⚕️',
+      icon: 'ui.stethoscope',
       description: 'Patient care management and nursing operations',
       role: 'Registered Nurse',
       stats: [
@@ -398,7 +398,7 @@ export const DoctorDashboard: React.FC = () => (
     config={{
       name: 'Doctor',
       title: 'Doctor\'s Clinic',
-      icon: '👨‍⚕️',
+      icon: 'ui.stethoscope',
       description: 'Clinical practice and patient consultation management',
       role: 'Medical Doctor',
       stats: [

@@ -5,6 +5,7 @@ import { DashboardSubTabs } from "../components/dashboard/DashboardSubTabs";
 import { FormModal } from "../components/FormModal";
 import { buildV2ModuleNav } from "../lib/moduleNav";
 import "../styles/emr-module.css";
+import { DashIcon } from "../components/brand/DashIcon";
 
 const API_ENDPOINTS = [
   { method: "GET", path: "/api/emr/patients?query=", desc: "Search patients by name/ID" },
@@ -110,7 +111,7 @@ export function EMRDashboard() {
             </div>
             <div className="ph-r">
               <button className="btn-p btn-sm" type="button" onClick={() => setShowNewPatient(true)}>
-                ➕ New Patient
+                <DashIcon icon="➕" /> New Patient
               </button>
             </div>
           </div>
@@ -120,7 +121,7 @@ export function EMRDashboard() {
               <div className="pl-hd">
                 <div className="pl-title">Patient List</div>
                 <div className="pl-srch">
-                  <span aria-hidden>🔍</span>
+                  <span aria-hidden><DashIcon icon="🔍" /></span>
                   <input
                     placeholder="Search name / ID…"
                     value={searchTerm}
@@ -159,17 +160,17 @@ export function EMRDashboard() {
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: "var(--t1)" }}>{selectedPatient.name}</div>
                       <div style={{ fontSize: 11.5, color: "var(--t2)", marginTop: 6, display: "flex", flexWrap: "wrap", gap: 12 }}>
-                        <span>📅 DOB: {selectedPatient.dob}</span>
+                        <span><DashIcon icon="📅" /> DOB: {selectedPatient.dob}</span>
                         <span className="mono"># {selectedPatient.id}</span>
-                        <span>📍 {selectedPatient.location}</span>
-                        <span>🩸 {selectedPatient.bloodType}</span>
-                        <span>⚖️ {selectedPatient.weight} kg</span>
+                        <span><DashIcon icon="📍" /> {selectedPatient.location}</span>
+                        <span><DashIcon icon="🩸" /> {selectedPatient.bloodType}</span>
+                        <span><DashIcon icon="⚖️" /> {selectedPatient.weight} kg</span>
                       </div>
                       <div className="emr-alerts">
-                        <span className="emr-chip r">⚠️ Penicillin Allergy</span>
-                        <span className="emr-chip a">💓 Hypertension Active</span>
+                        <span className="emr-chip r"><DashIcon icon="⚠️" /> Penicillin Allergy</span>
+                        <span className="emr-chip a"><DashIcon icon="💓" /> Hypertension Active</span>
                         {selectedPatient.condition.includes("Diabetes") && (
-                          <span className="emr-chip r">⚡ Diabetic</span>
+                          <span className="emr-chip r"><DashIcon icon="⚡" /> Diabetic</span>
                         )}
                       </div>
                     </div>
@@ -196,7 +197,7 @@ export function EMRDashboard() {
               </div>
 
               <div className="notice b" style={{ marginBottom: 14 }}>
-                <span className="notice-e">🤖</span>
+                <span className="notice-e"><DashIcon icon="🤖" /></span>
                 <div className="notice-tx">
                   <strong>AI Clinical Summary:</strong> Patient {selectedPatient.name} — cardiovascular risk elevated.
                   BP avg 142/91 over 30 days. Review glycaemic control if diabetic. Penicillin allergy flagged on all orders.
@@ -211,7 +212,7 @@ export function EMRDashboard() {
                   <div className="pnl-hd">
                     <div className="pnl-title">SOAP Clinical Note</div>
                     <button className="btn-p btn-sm" type="button" onClick={() => toast("Clinical note saved.")}>
-                      💾 Save Note
+                      <DashIcon icon="💾" /> Save Note
                     </button>
                   </div>
                   <div className="pnl-body">
@@ -362,7 +363,7 @@ export function EMRDashboard() {
                   <div className="pnl-hd">
                     <div className="pnl-title">Clinical Orders</div>
                     <button className="btn-p btn-sm" type="button" onClick={() => toast("New order form opened.")}>
-                      ➕ New Order
+                      <DashIcon icon="➕" /> New Order
                     </button>
                   </div>
                   <div className="pnl-body">

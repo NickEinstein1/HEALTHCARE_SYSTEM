@@ -3,6 +3,7 @@ import { api } from "../../lib/api";
 import { usePolling } from "../../hooks/usePolling";
 import { CrudRowActions } from "../../components/CrudRowActions";
 import { DashboardShell, useDashboardToast } from "../../components/dashboard/DashboardShell";
+import { DashIcon } from "../../components/brand/DashIcon";
 
 type LabPage =
   | "overview"
@@ -205,10 +206,10 @@ export function LabDashboard() {
           </div>
           <div className="ph-right">
             <button className="btn-s" type="button" onClick={() => setPage("collection")}>
-              📋 Collect
+              <DashIcon icon="📋" /> Collect
             </button>
             <button className="btn-p" type="button" onClick={() => setPage("imaging")}>
-              📷 Imaging
+              <DashIcon icon="📷" /> Imaging
             </button>
           </div>
         </div>
@@ -637,8 +638,8 @@ export function LabDashboard() {
               <div className="pnl-hd"><div className="pnl-title">{TITLES[p]}</div></div>
               <div className="pnl-body" style={{ color: "var(--t2)", fontSize: 12, lineHeight: 1.8 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <div>✅ Navigation and audit logging are live. Every action is recorded to <code>/ui/actions</code>.</div>
-                  <div>🔬 <strong>{TITLES[p]}</strong> workflows will be expanded with dedicated CRUD, LIS integrations, and reports.</div>
+                  <div><DashIcon icon="✅" /> Navigation and audit logging are live. Every action is recorded to <code>/ui/actions</code>.</div>
+                  <div><DashIcon icon="🔬" /> <strong>{TITLES[p]}</strong> workflows will be expanded with dedicated CRUD, LIS integrations, and reports.</div>
                   <button
                     className="btn-s btn-sm"
                     type="button"

@@ -98,6 +98,45 @@
   height: 14px;
 }
 
+.qa-e.dash-icon--brand,
+.qa-e.dash-icon--role,
+.qa-e.dash-icon--glyph,
+.qa-e .dash-icon--role,
+.qa-e .dash-icon--glyph {
+  width: 20px;
+  height: 20px;
+}
+
+.kpi-e .dash-icon--glyph,
+.kpi-e .dash-icon--role,
+.notice-e .dash-icon--glyph,
+.notice-e .dash-icon--role,
+.bed-e .dash-icon--glyph,
+.sbar-row-ico .dash-icon--glyph,
+.sbar-row-ico .dash-icon--role,
+.ho-banner-icon .dash-icon--glyph,
+.ho-sign-cta-ico .dash-icon--glyph,
+.pay-logo .dash-icon--glyph,
+.consent-ico .dash-icon--glyph,
+.ref-ico .dash-icon--glyph,
+.cover-emblem .dash-icon--glyph {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-s .dash-icon--glyph,
+.btn-p .dash-icon--glyph,
+.btn-s .dash-icon--role,
+.btn-p .dash-icon--role,
+.ph-r .dash-icon--glyph,
+.ph-r .dash-icon--role {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  display: inline-flex;
+}
+
 .kpi-ico .dash-icon--brand {
   width: 26px;
   height: 26px;

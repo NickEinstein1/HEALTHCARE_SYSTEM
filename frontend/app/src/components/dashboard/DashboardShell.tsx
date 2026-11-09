@@ -29,7 +29,14 @@ export type DashboardNavSection = {
   items: DashboardNavItem[];
 };
 
-export type DashboardShellVariant = "admin" | "doctor" | "nurse" | "patient" | "lab" | "pharmacy";
+export type DashboardShellVariant =
+  | "admin"
+  | "doctor"
+  | "nurse"
+  | "patient"
+  | "lab"
+  | "pharmacy"
+  | "billing";
 
 // Role metadata: accent colour class, display label, icon
 const ROLE_META: Record<DashboardShellVariant, { label: string; icon: string; accentClass: string }> = {
@@ -39,6 +46,7 @@ const ROLE_META: Record<DashboardShellVariant, { label: string; icon: string; ac
   patient:  { label: "Patient Portal",       icon: "role.patient", accentClass: "role-patient"  },
   lab:      { label: "Lab & Imaging",        icon: "role.lab", accentClass: "role-lab"      },
   pharmacy: { label: "Pharmacy Portal",      icon: "role.pharmacy", accentClass: "role-pharmacy" },
+  billing:  { label: "Billing & Finance",    icon: "role.billing", accentClass: "role-billing" },
 };
 
 export function DashboardShell(props: {
@@ -341,7 +349,7 @@ export function DashboardShell(props: {
           {toastMsg && (
             <div className="ds-toast" role="status" aria-live="polite">
               <div className="ds-toast-in">
-                <span className="ds-toast-ico" aria-hidden>✦</span>
+                <span className="ds-toast-ico" aria-hidden><DashIcon icon="✦" /></span>
                 <span>{toastMsg}</span>
                 <button className="ds-toast-x" type="button" onClick={() => setToastMsg(null)} aria-label="Dismiss">✕</button>
               </div>

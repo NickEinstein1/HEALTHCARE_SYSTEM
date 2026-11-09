@@ -310,7 +310,7 @@ export function DoctorDashboard() {
           background: a.severity === "CRITICAL" ? "rgba(255,51,102,0.08)" : "rgba(255,184,48,0.07)",
           border: `1px solid ${a.severity === "CRITICAL" ? "rgba(255,51,102,0.3)" : "rgba(255,184,48,0.25)"}`,
         }}>
-          <span style={{ fontSize: 16 }}>{a.severity === "CRITICAL" ? "🚨" : "⚠️"}</span>
+          <span style={{ fontSize: 16 }}><DashIcon icon={(a.severity === "CRITICAL" ? "🚨" : "⚠️")} /></span>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: a.severity === "CRITICAL" ? "#ff3366" : "#ffb830" }}>
               {a.severity} · {(a.metric ?? "").toUpperCase()} = {a.value}
@@ -646,7 +646,7 @@ export function DoctorDashboard() {
               toast(`Opened patient chart for ${patientId}.`);
             }}
           >
-            🗂️ Open Patient Chart →
+            <DashIcon icon="🗂️" /> Open Patient Chart →
           </button>
         </div>
       </div>
@@ -657,7 +657,7 @@ export function DoctorDashboard() {
     <>
       {apiErr && (
         <div className="errbanner is-visible doc-section" role="alert">
-          <span>⚠️</span>
+          <span><DashIcon icon="⚠️" /></span>
           <span>
             API not reachable or patient missing. Start FastAPI and seed data, then try <code>P001</code>.
             <br />
@@ -670,7 +670,7 @@ export function DoctorDashboard() {
         <div className="pt-banner doc-section">
           <div className="pt-in">
             <div className="pt-av" aria-hidden>
-              👤
+              <DashIcon icon="👤" />
             </div>
             <div>
               <div className="pt-name">
@@ -1077,12 +1077,12 @@ export function DoctorDashboard() {
           <div className="ph">
             <div>
               <div className="ph-ey">Internal Medicine · KNH</div>
-              <div className="ph-ti">Good morning, Dr. Mutuku 👋</div>
+              <div className="ph-ti">Good morning, Dr. Mutuku <DashIcon icon="👋" /></div>
               <div className="ph-su">Live view (polling) from the UniHealth edge gateway.</div>
             </div>
             <div className="ph-r">
               <button className="btn-s" type="button" onClick={() => { setPage("notes"); void uiAction("Opening note composer."); }}>
-                📋 New Note
+                <DashIcon icon="📋" /> New Note
               </button>
               <button
                 className="btn-p"
@@ -1116,10 +1116,10 @@ export function DoctorDashboard() {
                 ← Queue
               </button>
               <button className="btn-s btn-sm" type="button" onClick={() => setPage("ward")}>
-                🛏️ Ward
+                <DashIcon icon="🛏️" /> Ward
               </button>
               <button className="btn-p btn-sm" type="button" onClick={() => setPage("patient")}>
-                🩺 Workup
+                <DashIcon icon="🩺" /> Workup
               </button>
             </div>
           </div>
@@ -1140,10 +1140,10 @@ export function DoctorDashboard() {
                 type="button"
                 onClick={() => { setDischargePatient(patientId); setShowDischarge(true); }}
               >
-                🏠 Discharge
+                <DashIcon icon="🏠" /> Discharge
               </button>
               <button className="btn-s btn-sm" type="button" onClick={() => { setPage("referrals"); void uiAction("Opening referral form."); }}>
-                📋 Refer
+                <DashIcon icon="📋" /> Refer
               </button>
               <button
                 className="btn-s btn-sm"
@@ -1152,7 +1152,7 @@ export function DoctorDashboard() {
                 onClick={() => void fetchRiskScore()}
                 style={{ background: "rgba(124,111,255,0.1)", border: "1px solid rgba(124,111,255,0.35)", color: "#7c6fff" }}
               >
-                {riskLoading ? "Scoring…" : "📊 Risk score"}
+                {riskLoading  ? "Scoring…" : (<><DashIcon icon="📊" /> Risk score</>)}
               </button>
               <button
                 className="btn-s btn-sm"
@@ -1161,16 +1161,16 @@ export function DoctorDashboard() {
                 onClick={() => void fetchAiHints()}
                 style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.35)", color: "#00d4ff" }}
               >
-                {aiHintsLoading ? "Analysing…" : "🤖 AI Hints"}
+                {aiHintsLoading  ? "Analysing…" : (<><DashIcon icon="🤖" /> AI Hints</>)}
               </button>
               <button className="btn-p" type="button" onClick={() => { setPage("notes"); void uiAction("Add clinical note."); }}>
-                📝 Add Note
+                <DashIcon icon="📝" /> Add Note
               </button>
             </div>
           </div>
           {patientIdPanel}
           <div className="notice r" style={{ marginBottom: 14 }}>
-            <span className="notice-e">🚨</span>
+            <span className="notice-e"><DashIcon icon="🚨" /></span>
             <div className="notice-tx">
               <strong>Allergies on file:</strong> <span className="allergy">Penicillin — Anaphylaxis</span>
               <span className="allergy">Sulfa drugs — Rash</span>
@@ -1545,15 +1545,15 @@ export function DoctorDashboard() {
               </div>
               <div className="pnl-bd">
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12, fontSize: 11, color: "var(--t3)" }}>
-                  <span>🔴 Occupied</span>
-                  <span>🟢 Available</span>
-                  <span>🟡 Reserved</span>
-                  <span>🟣 Maintenance</span>
+                  <span><DashIcon icon="🔴" /> Occupied</span>
+                  <span><DashIcon icon="🟢" /> Available</span>
+                  <span><DashIcon icon="🟡" /> Reserved</span>
+                  <span><DashIcon icon="🟣" /> Maintenance</span>
                 </div>
                 <div className="bed-grid">
                   {beds.map((b) => (
                     <div className={`bed ${b.cls}`} key={b.id}>
-                      <div className="bed-e">{b.cls === "free" ? "🟢" : b.cls === "res" ? "🟡" : b.cls === "main" ? "🟣" : "🔴"}</div>
+                      <div className="bed-e"><DashIcon icon={(b.cls === "free" ? "🟢" : b.cls === "res" ? "🟡" : b.cls === "main" ? "🟣" : "🔴")} /></div>
                       <div className="bed-id">Bed {b.id}</div>
                       <div className="bed-pt">{b.pt}</div>
                     </div>
@@ -1624,7 +1624,7 @@ export function DoctorDashboard() {
             </button>
           </div>
           <div className="notice r" style={{ marginBottom: 14 }}>
-            <span className="notice-e">🚨</span>
+            <span className="notice-e"><DashIcon icon="🚨" /></span>
             <div className="notice-tx">
               <strong>Demo alert:</strong> Review critical results in your LIS; below lists FHIR Observations for the selected patient.
             </div>
@@ -1781,7 +1781,7 @@ export function DoctorDashboard() {
               gap: 8,
             }}
           >
-            <span style={{ fontSize: 16 }}>⛓️</span>
+            <span style={{ fontSize: 16 }}><DashIcon icon="⛓️" /></span>
             <strong>Audit Trail Active:</strong> prescription actions are logged to the patient record.
           </div>
           <div className="ph">
@@ -2044,7 +2044,7 @@ export function DoctorDashboard() {
               </div>
             </div>
             <button className="btn-s btn-sm" type="button" onClick={() => setPage("patient")}>
-              🩺 Workup
+              <DashIcon icon="🩺" /> Workup
             </button>
           </div>
           {patientIdPanel}
@@ -2348,7 +2348,7 @@ export function DoctorDashboard() {
           <div className="modal" style={{ maxWidth: 460, width: "95vw" }} role="dialog" aria-modal>
             <div className="modal-hd">
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>🏠 Discharge Patient</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}><DashIcon icon="🏠" /> Discharge Patient</div>
                 <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Complete the discharge summary</div>
               </div>
               <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowDischarge(false)}>✕</button>
@@ -2398,7 +2398,7 @@ export function DoctorDashboard() {
           <div className="modal" style={{ maxWidth: 500, width: "95vw" }} role="dialog" aria-modal>
             <div className="modal-hd">
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>🚶 Register Walk-in Patient</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}><DashIcon icon="🚶" /> Register Walk-in Patient</div>
                 <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Quick registration + correlation across facilities</div>
               </div>
               <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowWalkin(false)}>✕</button>

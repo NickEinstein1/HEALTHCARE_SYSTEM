@@ -173,7 +173,7 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
           <div className="pnl-hd">
             <div className="pnl-title">ANC Appointments Today</div>
             <button className="btn-p btn-sm" type="button" onClick={() => toast("ANC visit form opened.")}>
-              ➕ New Visit
+              <DashIcon icon="➕" /> New Visit
             </button>
           </div>
           <div className="pnl-body">
@@ -248,7 +248,7 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
               <textarea rows={2} placeholder="Observations and plan…" />
             </div>
             <button className="btn-p btn-sm" type="button" style={{ marginTop: 12 }} onClick={() => toast("ANC visit saved.")}>
-              💾 Save Visit
+              <DashIcon icon="💾" /> Save Visit
             </button>
           </div>
         </div>
@@ -265,9 +265,9 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
         </div>
         <div className="pnl-body">
           <div className="g3" style={{ marginBottom: 14 }}>
-            <LaborBay tone="r" label="🔴 Bay 2 — Active Labor" name="Ruth Achieng" meta="G2P1 · 39w 2d · Cervix 7cm" fhr="148" tag="Pushing Phase" tagClass="r" />
-            <LaborBay tone="am" label="🟡 Bay 5 — Active Labor" name="Janet Wairimu" meta="G1P0 · 38w 0d · Cervix 4cm" fhr="156" tag="Early Active" tagClass="am" />
-            <LaborBay tone="g" label="🟢 Bay 7 — Active Labor" name="Miriam Otieno" meta="G3P2 · 40w 1d · Cervix 9cm" fhr="142" tag="Near Delivery" tagClass="g" />
+            <LaborBay tone="r" label="Bay 2 — Active Labor" name="Ruth Achieng" meta="G2P1 · 39w 2d · Cervix 7cm" fhr="148" tag="Pushing Phase" tagClass="r" />
+            <LaborBay tone="am" label="Bay 5 — Active Labor" name="Janet Wairimu" meta="G1P0 · 38w 0d · Cervix 4cm" fhr="156" tag="Early Active" tagClass="am" />
+            <LaborBay tone="g" label="Bay 7 — Active Labor" name="Miriam Otieno" meta="G3P2 · 40w 1d · Cervix 9cm" fhr="142" tag="Near Delivery" tagClass="g" />
           </div>
           <div className="pnl-title" style={{ marginBottom: 10 }}>Record Delivery Outcome</div>
           <div className="g2">
@@ -293,7 +293,7 @@ function MaternityPageBody({ page, toast }: { page: MatPage; toast: (m: string) 
             </div>
           </div>
           <button className="btn-p btn-sm" type="button" style={{ marginTop: 12 }} onClick={() => toast("Delivery outcome recorded.")}>
-            ✓ Record Delivery
+            <DashIcon icon="✓" /> Record Delivery
           </button>
         </div>
       </div>
@@ -444,7 +444,7 @@ export function MaternityModule() {
   const topAction: ReactNode =
     page === "overview" || page === "anc" ? (
       <button className="btn-p btn-sm" type="button" onClick={() => setAncModal(true)}>
-        ➕ ANC Visit
+        <DashIcon icon="➕" /> ANC Visit
       </button>
     ) : null;
 

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { DashIcon } from "./brand/DashIcon";
 import { runExport, ExportFormat, ExportConfig } from "../lib/exportUtils";
 
 const FORMATS: { fmt: ExportFormat; label: string; icon: string; desc: string }[] = [
-  { fmt: "csv",  label: "CSV Spreadsheet",  icon: "📊", desc: "Excel / Google Sheets compatible" },
-  { fmt: "json", label: "JSON Data",        icon: "🗂️", desc: "Raw structured data" },
-  { fmt: "pdf",  label: "Print / Save PDF", icon: "🖨️", desc: "Opens browser print dialog" },
+  { fmt: "csv",  label: "CSV Spreadsheet",  icon: "ui.chart", desc: "Excel / Google Sheets compatible" },
+  { fmt: "json", label: "JSON Data",        icon: "ui.folder", desc: "Raw structured data" },
+  { fmt: "pdf",  label: "Print / Save PDF", icon: "ui.print", desc: "Opens browser print dialog" },
 ];
 
 interface ExportMenuProps {
@@ -78,7 +79,9 @@ export function ExportMenu({ config, label = "Export", className = "btn-s", onEx
                 onExported?.(fmt);
               }}
             >
-              <span className="exp-item-ico" aria-hidden>{icon}</span>
+              <span className="exp-item-ico" aria-hidden>
+                <DashIcon icon={icon} idPrefix={`export-${fmt}`} />
+              </span>
               <span className="exp-item-body">
                 <span className="exp-item-lbl">{fmtLabel}</span>
                 <span className="exp-item-desc">{desc}</span>

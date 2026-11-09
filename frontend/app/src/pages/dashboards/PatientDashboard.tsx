@@ -850,7 +850,7 @@ export function PatientDashboard() {
                     Your health at a glance
                   </div>
                   <div className="hero-greet">
-                    Good morning, <em>{heroFirstName}</em> 👋
+                    Good morning, <em>{heroFirstName}</em> <DashIcon icon="👋" />
                   </div>
                   <div className="hero-sub">All your health information, in one secure place.</div>
                 </div>
@@ -893,20 +893,20 @@ export function PatientDashboard() {
 
           <div className="qas">
             <button type="button" className="qa" onClick={() => setPage("appointments")}>
-              <span className="qa-e">📅</span>
+              <span className="qa-e"><DashIcon icon="📅" /></span>
               <span className="qa-l">Book Appointment</span>
               <span className="qa-dot" />
             </button>
             <button type="button" className="qa" onClick={() => setPage("results")}>
-              <span className="qa-e">🧪</span>
+              <span className="qa-e"><DashIcon icon="🧪" /></span>
               <span className="qa-l">Test Results</span>
             </button>
             <button type="button" className="qa" onClick={() => setPage("payments")}>
-              <span className="qa-e">📱</span>
+              <span className="qa-e"><DashIcon icon="📱" /></span>
               <span className="qa-l">Make a Payment</span>
             </button>
             <button type="button" className="qa" onClick={() => setPage("records")}>
-              <span className="qa-e">📂</span>
+              <span className="qa-e"><DashIcon icon="📂" /></span>
               <span className="qa-l">My Records</span>
             </button>
             <button
@@ -914,7 +914,7 @@ export function PatientDashboard() {
               className="qa"
               onClick={() => { setMsgSent(false); setMsgText(""); setShowMsgModal(true); }}
             >
-              <span className="qa-e">💬</span>
+              <span className="qa-e"><DashIcon icon="💬" /></span>
               <span className="qa-l">Message Doctor</span>
             </button>
           </div>
@@ -933,7 +933,7 @@ export function PatientDashboard() {
 
           {(summary.error || meds.error || obs.error) && (
             <div className="errbanner is-visible" role="alert">
-              <span>⚠️</span>
+              <span><DashIcon icon="⚠️" /></span>
               <span>
                 {summary.error ?? meds.error ?? obs.error} (Start the API and try <code>P001</code>.)
               </span>
@@ -946,13 +946,13 @@ export function PatientDashboard() {
                 <div className="ai-widget-hd">
                   <div>
                     <div className="ai-widget-ti">
-                      🤖 AI Health Insights — {summary.data ? `${summary.data.patient.given_name ?? "You"}` : "Demo patient"}
+                      <DashIcon icon="🤖" /> AI Health Insights — {summary.data ? `${summary.data.patient.given_name ?? "You"}` : "Demo patient"}
                     </div>
                     <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 2 }}>
                       Personalised analysis based on your latest results & vitals
                     </div>
                   </div>
-                  <span className="kdpa-badge">🔒 KDPA 2019</span>
+                  <span className="kdpa-badge"><DashIcon icon="🔒" /> KDPA 2019</span>
                 </div>
                 <div className="ai-row">
                   <span className="ai-row-ico"><DashIcon icon="⚠️" /></span>
@@ -1008,7 +1008,7 @@ export function PatientDashboard() {
                     gap: 7,
                   }}
                 >
-                  🔒 AI insights are generated from your own health records only. Your data is never shared without your consent (KDPA 2019).
+                  <DashIcon icon="🔒" /> AI insights are generated from your own health records only. Your data is never shared without your consent (KDPA 2019).
                 </div>
               </div>
 
@@ -1054,7 +1054,7 @@ export function PatientDashboard() {
                   {(meds.data ?? []).slice(0, 5).map((m) => (
                     <div className="med" key={m.id}>
                       <div className="med-ico" style={{ background: "var(--gl)", border: "1px solid var(--gm)" }}>
-                        💊
+                        <DashIcon icon="💊" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="med-name">{m.medication_code ?? "Medication"}</div>
@@ -1124,13 +1124,13 @@ export function PatientDashboard() {
             <div>
               <div className="cover-card patient-card-in" style={{ marginBottom: 16, animationDelay: ".08s" }}>
                 <div className="cover-top">
-                  <div className="cover-emblem">🛡️</div>
+                  <div className="cover-emblem"><DashIcon icon="🛡️" /></div>
                   <div className="cover-in">
                     <div className="cover-lbl">UniHealth Annual Cover Balance</div>
                     <div className="cover-amt">Ksh 48,200</div>
                     <div className="cover-sub">of Ksh 50,000 remaining · FY 2025/26</div>
                     <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <div className="cover-chip">✅ Cover Active</div>
+                      <div className="cover-chip"><DashIcon icon="✅" /> Cover Active</div>
                       <div className="cover-chip">AFL-MBR-884321</div>
                       <div className="cover-chip">M-TIBA Linked</div>
                     </div>
@@ -1243,7 +1243,7 @@ export function PatientDashboard() {
               </div>
 
               <div className="ref-card patient-card-in" style={{ animationDelay: ".16s" }}>
-                <div className="ref-ico">📋</div>
+                <div className="ref-ico"><DashIcon icon="📋" /></div>
                 <div>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1e3a8a", marginBottom: 3 }}>Active Referral</div>
                   <div style={{ fontSize: 11, color: "#2563eb", lineHeight: 1.5 }}>
@@ -1439,7 +1439,7 @@ export function PatientDashboard() {
                           style={{ width: "100%", justifyContent: "center" }}
                           onClick={() => openBookModal(ymd(selectedApptDay))}
                         >
-                          📅 Book for {selectedApptDay.toDateString().slice(4, 10)}
+                          <DashIcon icon="📅" /> Book for {selectedApptDay.toDateString().slice(4, 10)}
                         </button>
                       </div>
                     ) : (
@@ -1537,7 +1537,7 @@ export function PatientDashboard() {
               <div className="pnl-bd">
                 {obs.error && (
                   <div className="errbanner is-visible" role="alert">
-                    <span>⚠️</span>
+                    <span><DashIcon icon="⚠️" /></span>
                     <span>{obs.error}</span>
                   </div>
                 )}
@@ -1603,7 +1603,7 @@ export function PatientDashboard() {
               <div className="ph-su">Current prescriptions, dosage schedules and refills</div>
             </div>
             <ExportMenu
-              label="📥 Print / Export"
+              label="Print / Export"
               config={{
                 filename: "my-medications",
                 printTitle: "UniHealth – My Medication List",
@@ -1632,7 +1632,7 @@ export function PatientDashboard() {
                 {(meds.data ?? []).map((m) => (
                   <div className="med" key={m.id}>
                     <div className="med-ico" style={{ background: "var(--gl)", border: "1px solid var(--gm)" }}>
-                      💊
+                      <DashIcon icon="💊" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="med-name">{m.medication_code ?? "Medication"}</div>
@@ -1650,7 +1650,7 @@ export function PatientDashboard() {
                             toast(`Refill request sent for ${m.medication_code ?? m.id}. Your pharmacist will prepare it within 24 hours.`);
                           }}
                         >
-                          💊 Request Refill
+                          <DashIcon icon="💊" /> Request Refill
                         </button>
                         <button
                           type="button"
@@ -1725,7 +1725,7 @@ export function PatientDashboard() {
           </div>
           {obs.error && (
             <div className="errbanner is-visible" role="alert">
-              <span>⚠️</span>
+              <span><DashIcon icon="⚠️" /></span>
               <span>{obs.error}</span>
             </div>
           )}
@@ -1910,7 +1910,7 @@ export function PatientDashboard() {
                   toast("Redirecting to UniHealth account linking portal… (In production this opens the OAuth flow for your insurer/payer.)");
                 }}
               >
-                🔗 Link Account
+                <DashIcon icon="🔗" /> Link Account
               </button>
               <button
                 className="btn-p"
@@ -1927,7 +1927,7 @@ export function PatientDashboard() {
           <div className="g3" style={{ marginBottom: 16 }}>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>🛡️</div>
+                <div style={{ fontSize: 28, marginBottom: 8 }}><DashIcon icon="🛡️" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>
                   Ksh {Math.round(insuranceSync.data?.coverage_stats?.balance_kes ?? 48_200).toLocaleString()}
                 </div>
@@ -1941,7 +1941,7 @@ export function PatientDashboard() {
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>💳</div>
+                <div style={{ fontSize: 28, marginBottom: 8 }}><DashIcon icon="💳" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--b)" }}>
                   Ksh {Math.round(insuranceSync.data?.coverage_stats?.used_ytd_kes ?? 1_800).toLocaleString()}
                 </div>
@@ -1955,7 +1955,7 @@ export function PatientDashboard() {
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: 20 }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>📅</div>
+                <div style={{ fontSize: 28, marginBottom: 8 }}><DashIcon icon="📅" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--am)" }}>
                   {insuranceSync.data?.coverage_stats?.renewal_date ?? "31 Mar 2026"}
                 </div>
@@ -2048,7 +2048,7 @@ export function PatientDashboard() {
                   void uiAction("Statement download started.");
                 }}
               >
-                📥 Statement
+                <DashIcon icon="📥" /> Statement
               </button>
               <button
                 className="btn-p"
@@ -2065,7 +2065,7 @@ export function PatientDashboard() {
           <div className="g3" style={{ marginBottom: 16 }}>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: "18px 12px" }}>
-                <div style={{ fontSize: 24, marginBottom: 6 }}>📊</div>
+                <div style={{ fontSize: 24, marginBottom: 6 }}><DashIcon icon="📊" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--t1)" }}>
                   Ksh {Math.round(billing?.total_contributions_kes ?? 0).toLocaleString()}
                 </div>
@@ -2077,7 +2077,7 @@ export function PatientDashboard() {
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: "18px 12px" }}>
-                <div style={{ fontSize: 24, marginBottom: 6 }}>✅</div>
+                <div style={{ fontSize: 24, marginBottom: 6 }}><DashIcon icon="✅" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--g)" }}>
                   {billing?.membership_status === "up_to_date" ? "Up to Date" : "Payment Due"}
                 </div>
@@ -2093,7 +2093,7 @@ export function PatientDashboard() {
             </div>
             <div className="panel">
               <div className="pnl-bd" style={{ textAlign: "center", padding: "18px 12px" }}>
-                <div style={{ fontSize: 24, marginBottom: 6 }}>📅</div>
+                <div style={{ fontSize: 24, marginBottom: 6 }}><DashIcon icon="📅" /></div>
                 <div style={{ fontFamily: "var(--serif)", fontSize: 22, color: "var(--t1)" }}>3 years</div>
                 <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 3 }}>Total UniHealth membership</div>
                 <div style={{ marginTop: 8 }}>
@@ -2159,7 +2159,7 @@ export function PatientDashboard() {
                 }}
                 disabled={payBusy}
               >
-                <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
+                <div className="pay-logo" style={{ background: "#00b300" }}><DashIcon icon="💚" /></div>
                 <div>
                   <div className="pay-name">M-PESA Paybill</div>
                   <div className="pay-desc">
@@ -2177,7 +2177,7 @@ export function PatientDashboard() {
                   toast("PESALINK: Use your Equity, KCB, NCBA or Co-op mobile banking app. Account No: 1234567890 · Bank: Equity Bank · Ref: AFL-MBR-884321");
                 }}
               >
-                <div className="pay-logo" style={{ background: "var(--b)" }}>🏦</div>
+                <div className="pay-logo" style={{ background: "var(--b)" }}><DashIcon icon="🏦" /></div>
                 <div>
                   <div className="pay-name">Bank Transfer (PESALINK)</div>
                   <div className="pay-desc">Equity, KCB, NCBA, Co-op — all PESALINK banks</div>
@@ -2270,7 +2270,7 @@ export function PatientDashboard() {
                               toast(`Invoice for ${bill.desc} (${bill.date}) downloading…`);
                             }}
                           >
-                            📥 Invoice
+                            <DashIcon icon="📥" /> Invoice
                           </button>
                         </td>
                       </tr>
@@ -2309,7 +2309,7 @@ export function PatientDashboard() {
                   }}
                   disabled={payBusy}
                 >
-                  <div className="pay-logo" style={{ background: "#00b300" }}>💚</div>
+                  <div className="pay-logo" style={{ background: "#00b300" }}><DashIcon icon="💚" /></div>
                   <div>
                     <div className="pay-name">M-PESA</div>
                     <div className="pay-desc">
@@ -2327,7 +2327,7 @@ export function PatientDashboard() {
                     toast("M-TIBA Wallet balance: Ksh 3,200. Redirecting to M-TIBA payment flow… Use the M-TIBA app or dial *253# to authorise the payment.");
                   }}
                 >
-                  <div className="pay-logo" style={{ background: "#e8490a" }}>🟠</div>
+                  <div className="pay-logo" style={{ background: "#e8490a" }}><DashIcon icon="🟠" /></div>
                   <div>
                     <div className="pay-name">M-TIBA Health Wallet</div>
                     <div className="pay-desc">
@@ -2386,7 +2386,7 @@ export function PatientDashboard() {
                   color: "#fff",
                 }}
               >
-                <div style={{ fontSize: 32 }}>🟠</div>
+                <div style={{ fontSize: 32 }}><DashIcon icon="🟠" /></div>
                 <div>
                   <div style={{ fontSize: 11, fontWeight: 700, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>M-TIBA Balance</div>
                   <div style={{ fontFamily: "var(--serif)", fontSize: 28, letterSpacing: -0.3 }}>Ksh 3,200</div>
@@ -2443,7 +2443,7 @@ export function PatientDashboard() {
               <div className="pnl-bd">
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 10, background: "var(--bg)", borderRadius: 8 }}>
-                    <span style={{ fontSize: 18 }}>💗</span>
+                    <span style={{ fontSize: 18 }}><DashIcon icon="💗" /></span>
                     <div>
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--t1)" }}>Mild Hypertension</div>
                       <div style={{ fontSize: 11, color: "var(--t3)" }}>ICD-10: I10 · Diagnosed Oct 2024 · Managed</div>
@@ -2515,7 +2515,7 @@ export function PatientDashboard() {
                           toast("Immunisation certificate for Influenza (Flu) · Jul 2025 · Coast General downloading… In production this generates a signed PDF certificate.");
                         }}
                       >
-                        📄 Certificate
+                        <DashIcon icon="📄" /> Certificate
                       </button>
                     </td>
                   </tr>
@@ -2537,7 +2537,7 @@ export function PatientDashboard() {
               type="button"
               onClick={handleDocUpload}
             >
-              📤 Upload Document
+              <DashIcon icon="📤" /> Upload Document
             </button>
           </div>
           <div className="g3">
@@ -2549,7 +2549,7 @@ export function PatientDashboard() {
             ].map((doc) => (
               <div key={doc.n} className="panel">
                 <div className="pnl-bd" style={{ textAlign: "center", padding: 18 }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{doc.ico}</div>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}><DashIcon icon={doc.ico} /></div>
                   <div style={{ fontWeight: 800 }}>{doc.n}</div>
                   <div style={{ fontSize: 10.5, color: "var(--t3)", marginTop: 6 }}>{doc.d}</div>
                   <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 12 }}>
@@ -2649,7 +2649,7 @@ export function PatientDashboard() {
           </div>
           <div className="panel">
             <div className="pnl-hd">
-              <div className="pnl-ti">🔒 Security & Access</div>
+              <div className="pnl-ti"><DashIcon icon="🔒" /> Security & Access</div>
               <div className="pnl-su">PIN, password and registered devices</div>
             </div>
             <div className="pnl-bd">
@@ -2671,7 +2671,7 @@ export function PatientDashboard() {
                     toast("PIN change flow started. You will receive an OTP on your registered phone (0712 3•• ••78) to verify before setting your new 4-digit UniHealth PIN.");
                   }}
                 >
-                  🔢 Change PIN
+                  <DashIcon icon="🔢" /> Change PIN
                 </button>
                 <button
                   type="button"
@@ -2681,7 +2681,7 @@ export function PatientDashboard() {
                     toast("Biometric re-enrolment flow opened. Visit any UniHealth-accredited facility with a biometric reader to update your fingerprint record.");
                   }}
                 >
-                  👁️ Re-enrol Biometric
+                  <DashIcon icon="👁️" /> Re-enrol Biometric
                 </button>
                 <button
                   type="button"
@@ -2692,7 +2692,7 @@ export function PatientDashboard() {
                     toast("All other sessions have been signed out. Your current session remains active.");
                   }}
                 >
-                  🚪 Sign Out All Devices
+                  <DashIcon icon="🚪" /> Sign Out All Devices
                 </button>
               </div>
             </div>
@@ -2707,7 +2707,7 @@ export function PatientDashboard() {
               <div className="ph-su">Your data rights · Consent management · Who has accessed your records</div>
             </div>
             <div className="ph-r">
-              <span className="kdpa-badge">🔒 KDPA 2019 Protected</span>
+              <span className="kdpa-badge"><DashIcon icon="🔒" /> KDPA 2019 Protected</span>
             </div>
           </div>
           <div
@@ -2722,7 +2722,7 @@ export function PatientDashboard() {
               gap: 12,
             }}
           >
-            <span style={{ fontSize: 24 }}>🏛️</span>
+            <span style={{ fontSize: 24 }}><DashIcon icon="🏛️" /></span>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--gd)", marginBottom: 5 }}>Your Rights Under Kenya&apos;s Data Protection Act (KDPA 2019)</div>
               <div style={{ fontSize: 11.5, color: "var(--t2)", lineHeight: 1.7 }}>
@@ -2750,11 +2750,11 @@ export function PatientDashboard() {
                     <div className="consent-date">Consented: 14 Jan 2024 · Required for UniHealth cover</div>
                   </div>
                   <div className="consent-right">
-                    <span className="tag g">✓ Granted</span>
+                    <span className="tag g"><DashIcon icon="✓" /> Granted</span>
                   </div>
                 </div>
                 <div className="consent-row">
-                  <span className="consent-ico">📊</span>
+                  <span className="consent-ico"><DashIcon icon="📊" /></span>
                   <div className="consent-body">
                     <div className="consent-ti">Public Health Research (Anonymised)</div>
                     <div className="consent-su">Allow anonymised data for MOH public health research. Your name and ID are never shared.</div>
@@ -2819,7 +2819,7 @@ export function PatientDashboard() {
                         toast(`${r.lbl} request submitted. ${r.detail} The Data Protection Officer will respond within 14 working days.`);
                       }}
                     >
-                      <span style={{ marginRight: 7 }}>{r.ico}</span>
+                      <span style={{ marginRight: 7 }}><DashIcon icon={r.ico} /></span>
                       {r.lbl}
                     </button>
                   ))}
@@ -2840,14 +2840,14 @@ export function PatientDashboard() {
           <div className="modal" style={{ maxWidth: 460, width: "95vw" }} role="dialog" aria-modal aria-label="Message Care Team">
             <div className="modal-hd">
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>💬 Message Care Team</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}><DashIcon icon="💬" /> Message Care Team</div>
                 <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Secure message to your assigned doctor & nurse</div>
               </div>
               <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => { setShowMsgModal(false); setMsgSent(false); }}>✕</button>
             </div>
             {msgSent ? (
               <div style={{ padding: 24, textAlign: "center" }}>
-                <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
+                <div style={{ fontSize: 36, marginBottom: 10 }}><DashIcon icon="✅" /></div>
                 <div style={{ fontWeight: 800, fontSize: 14, color: "var(--g)", marginBottom: 8 }}>Message Sent!</div>
                 <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6 }}>Your care team will respond within 24 hours. Urgent concerns: call emergency services (999) or your facility directly.</div>
                 <button type="button" className="btn-s btn-sm" style={{ marginTop: 16 }} onClick={() => { setShowMsgModal(false); setMsgSent(false); }}>Close</button>
@@ -2855,7 +2855,7 @@ export function PatientDashboard() {
             ) : (
               <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={{ background: "rgba(0,210,255,0.05)", border: "1px solid rgba(0,210,255,0.12)", borderRadius: 8, padding: "8px 12px", fontSize: 11, color: "var(--t3)" }}>
-                  ⚠️ <strong>Not for emergencies.</strong> For urgent or life-threatening concerns, call 999 or go to your nearest emergency department.
+                  <DashIcon icon="⚠️" /> <strong>Not for emergencies.</strong> For urgent or life-threatening concerns, call 999 or go to your nearest emergency department.
                 </div>
                 <div>
                   <label style={{ fontSize: 11, fontWeight: 700, color: "var(--t2)", display: "block", marginBottom: 5 }}>Your message</label>
@@ -2891,7 +2891,7 @@ export function PatientDashboard() {
           <div className="modal" style={{ maxWidth: 520, width: "95vw" }} role="dialog" aria-modal aria-label="Book Appointment">
             <div className="modal-hd">
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}>📅 Book Appointment</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--t1)" }}><DashIcon icon="📅" /> Book Appointment</div>
                 <div style={{ fontSize: 11, color: "var(--t3)", marginTop: 2 }}>Select facility, department, date and time</div>
               </div>
               <button type="button" className="sb-close" style={{ position: "static", marginLeft: "auto" }} onClick={() => setShowBookModal(false)}>✕</button>
@@ -2899,7 +2899,7 @@ export function PatientDashboard() {
 
             {bookingSuccess ? (
               <div style={{ padding: 24, textAlign: "center" }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 40, marginBottom: 12 }}><DashIcon icon="✅" /></div>
                 <div style={{ fontWeight: 800, fontSize: 15, color: "var(--g)", marginBottom: 6 }}>Appointment Booked!</div>
                 <div style={{ fontSize: 12, color: "var(--t2)", lineHeight: 1.6, marginBottom: 4 }}>
                   <strong>{bookingFacility}</strong> · {bookingDept}<br />

@@ -928,7 +928,7 @@ export function AdminDashboard() {
       {/* OVERVIEW */}
       <div className={`pg${page === "overview" ? " on" : ""}`} id="pg-overview">
         <div className="alert-strip" id="alertStrip">
-          <span style={{ fontSize: 18 }}>⚠️</span>
+          <span style={{ fontSize: 18 }}><DashIcon icon="⚠️" /></span>
           <span className="alert-msg">
             Nakuru Level 5 Hospital node is <strong>degraded</strong> — 3 pending UniHealth approvals may be affected.
             <span
@@ -939,21 +939,21 @@ export function AdminDashboard() {
             </span>
           </span>
           <button className="alert-x" type="button" onClick={() => (document.getElementById("alertStrip")!.style.display = "none")}>
-            ✕
+            <DashIcon icon="✕" />
           </button>
         </div>
 
         <div className="ph">
           <div>
             <div className="ph-eyebrow">Ministry of Health Kenya · 2026</div>
-            <div className="ph-title">Good morning, Administrator 👋</div>
+            <div className="ph-title">Good morning, Administrator <DashIcon icon="👋" /></div>
             <div className="ph-sub">
               System overview for <span style={{ color: "var(--g)", fontWeight: 700 }}>{todayFull}</span>
             </div>
           </div>
           <div className="ph-right">
             <button className="btn-s" type="button" onClick={() => void exportOverviewHeader()}>
-              📥 Export Report
+              <DashIcon icon="📥" /> Export Report
             </button>
             <button className="btn-p" type="button" onClick={() => { setPage("users"); void uiAction("Opening user creation."); }}>
               + Add User
@@ -971,7 +971,7 @@ export function AdminDashboard() {
               openCreateUser();
             }}
           >
-            <span className="qa-e">👤</span>
+            <span className="qa-e"><DashIcon icon="👤" /></span>
             <span className="qa-t">Add Staff</span>
           </div>
           <div
@@ -983,7 +983,7 @@ export function AdminDashboard() {
               openCreatePatient();
             }}
           >
-            <span className="qa-e">🧑‍⚕️</span>
+            <span className="qa-e"><DashIcon icon="🧑‍⚕️" /></span>
             <span className="qa-t">Register Patient</span>
           </div>
           <div
@@ -999,23 +999,23 @@ export function AdminDashboard() {
             <span className="qa-t">New Facility</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("unihealth")}>
-            <span className="qa-e">🏛️</span>
+            <span className="qa-e"><DashIcon icon="🏛️" /></span>
             <span className="qa-t">UniHealth Claims</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("reports")}>
-            <span className="qa-e">📋</span>
+            <span className="qa-e"><DashIcon icon="📋" /></span>
             <span className="qa-t">Generate Report</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("audit")}>
-            <span className="qa-e">⛓️</span>
+            <span className="qa-e"><DashIcon icon="⛓️" /></span>
             <span className="qa-t">Audit Log</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("counties")}>
-            <span className="qa-e">🗺️</span>
+            <span className="qa-e"><DashIcon icon="🗺️" /></span>
             <span className="qa-t">County Map</span>
           </div>
           <div className="qa-item" role="button" tabIndex={0} onClick={() => setPage("settings")}>
-            <span className="qa-e">⚙️</span>
+            <span className="qa-e"><DashIcon icon="⚙️" /></span>
             <span className="qa-t">Settings</span>
           </div>
         </div>
@@ -1202,7 +1202,7 @@ export function AdminDashboard() {
             <div className="pnl-body">
               {metrics.error ? (
                 <div className="errbanner is-visible" role="alert">
-                  <span>⚠️</span>
+                  <span><DashIcon icon="⚠️" /></span>
                   <span>
                     Cannot reach API. Start the backend, or configure <code>VITE_API_BASE_URL</code>.
                     <br />
@@ -1266,7 +1266,7 @@ export function AdminDashboard() {
               onClick={() => setShowCsvImport((s) => !s)}
               aria-expanded={showCsvImport}
             >
-              📥 Import CSV
+              <DashIcon icon="📥" /> Import CSV
             </button>
             <button className="btn-p" type="button" onClick={openCreateUser}>
               + Add User
@@ -1443,7 +1443,7 @@ export function AdminDashboard() {
                 <tr>
                   <td colSpan={8} style={{ padding: 14 }}>
                     <div className="errbanner is-visible" role="alert">
-                      <span>⚠️</span>
+                      <span><DashIcon icon="⚠️" /></span>
                       <span style={{ lineHeight: 1.6 }}>
                         Failed to load users.
                         <br />
@@ -1642,7 +1642,7 @@ export function AdminDashboard() {
                 ) : null}
                 {kmhflError ? (
                   <div className="errbanner is-visible" role="alert">
-                    <span>⚠️</span>
+                    <span><DashIcon icon="⚠️" /></span>
                     <span style={{ lineHeight: 1.6 }}>
                       KMHFL lookup failed.
                       <br />
@@ -1766,7 +1766,7 @@ export function AdminDashboard() {
                 <tr>
                   <td colSpan={6} style={{ padding: 14 }}>
                     <div className="errbanner is-visible" role="alert">
-                      <span>⚠️</span>
+                      <span><DashIcon icon="⚠️" /></span>
                       <span style={{ lineHeight: 1.6 }}>
                         Failed to load facilities.
                         <br />
@@ -1925,7 +1925,7 @@ export function AdminDashboard() {
                   <div className="modal-su">Quick registration + cross-facility patient correlation (UHID)</div>
                 </div>
                 <button className="btn-x" type="button" onClick={() => setShowWalkin(false)} aria-label="Close">
-                  ✕
+                  <DashIcon icon="✕" />
                 </button>
               </div>
               <div className="modal-bd">
@@ -1999,7 +1999,7 @@ export function AdminDashboard() {
 
                 {walkinMatches && walkinMatches.length > 0 && (
                   <div className="notice am" style={{ marginTop: 14 }}>
-                    <span className="notice-e">🧬</span>
+                    <span className="notice-e"><DashIcon icon="🧬" /></span>
                     <div className="notice-tx" style={{ width: "100%" }}>
                       <strong>Possible existing records — is this the same patient?</strong>
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
@@ -2025,7 +2025,7 @@ export function AdminDashboard() {
                             </div>
                             <div style={{ display: "flex", gap: 8 }}>
                               <button className="btn-p btn-sm" type="button" disabled={walkinBusy} onClick={() => void submitWalkin(m.uhid)}>
-                                ✓ Link to UHID
+                                <DashIcon icon="✓" /> Link to UHID
                               </button>
                               <button className="btn-s btn-sm" type="button" disabled={walkinBusy} onClick={() => { setWalkinMatches(null); void submitWalkin("__create_new__"); }}>
                                 No, new patient
@@ -2121,7 +2121,7 @@ export function AdminDashboard() {
         )}
         {lastCreatedWalkin && (
           <div className="notice g" style={{ marginBottom: 14 }}>
-            <span className="notice-e">✅</span>
+            <span className="notice-e"><DashIcon icon="✅" /></span>
             <div className="notice-tx" style={{ width: "100%" }}>
               <strong>Walk-in registered</strong> ·{" "}
               {lastCreatedWalkin.action === "created_new" ? "New patient created" : `Linked to existing patient`} ·{" "}
@@ -2375,7 +2375,7 @@ export function AdminDashboard() {
                 <tr>
                   <td colSpan={6} style={{ padding: 14 }}>
                     <div className="errbanner is-visible" role="alert">
-                      <span>⚠️</span>
+                      <span><DashIcon icon="⚠️" /></span>
                       <span style={{ lineHeight: 1.6 }}>
                         Failed to load patients.
                         <br />
@@ -2637,7 +2637,7 @@ export function AdminDashboard() {
               }}
             >
               <div className="rep-ico" style={{ background: r.tone === "g" ? "var(--gl)" : r.tone === "b" ? "var(--bl)" : "var(--al)" }}>
-                {r.ico}
+                <DashIcon icon={r.ico} />
               </div>
               <div style={{ flex: 1 }}>
                 <div className="rep-name">{r.name}</div>
@@ -2664,7 +2664,7 @@ export function AdminDashboard() {
         <div className="panel">
           <div className="pnl-hd">
             <div>
-              <div className="pnl-title">🔗 Blockchain Audit Ledger</div>
+              <div className="pnl-title"><DashIcon icon="🔗" /> Blockchain Audit Ledger</div>
               <div className="pnl-sub">Append-only · Tamper-evident</div>
             </div>
             <span className="tag g dot">INTACT</span>
@@ -3293,7 +3293,7 @@ export function AdminDashboard() {
                 <div className="bc-track">
                   <div className="bc-fill g" style={{ width: "90%" }} />
                 </div>
-                <span className="bc-val">✓ 2h</span>
+                <span className="bc-val"><DashIcon icon="✓" /> 2h</span>
               </div>
               <div className="bc-row">
                 <span className="bc-lbl" style={{ width: 170 }}>
@@ -3302,7 +3302,7 @@ export function AdminDashboard() {
                 <div className="bc-track">
                   <div className="bc-fill g" style={{ width: "96%" }} />
                 </div>
-                <span className="bc-val">✓ 15m</span>
+                <span className="bc-val"><DashIcon icon="✓" /> 15m</span>
               </div>
               <div className="bc-row">
                 <span className="bc-lbl" style={{ width: 170 }}>
