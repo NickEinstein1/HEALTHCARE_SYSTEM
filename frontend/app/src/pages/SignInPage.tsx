@@ -27,7 +27,7 @@ const INITIAL_AUDIT: [string, string, string] = [
 ];
 
 export function SignInPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<RoleKey | null>(null);
   const [mfaContact, setMfaContact] = useState("");
@@ -53,6 +53,7 @@ export function SignInPage() {
     const q = searchParams.get("role");
     if (!isPilotRole(q)) return;
     setRole(q);
+    setStep(2);
     addAudit(`AUTH ROLE_PRESELECT role=${q}`);
   }, [searchParams, addAudit]);
 
@@ -60,6 +61,11 @@ export function SignInPage() {
     setStep(1);
     setRole(null);
     setStaffFailedAttempts(0);
+    if (searchParams.has("role")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("role");
+      setSearchParams(next, { replace: true });
+    }
   }
 
   function goStep2(r: RoleKey) {

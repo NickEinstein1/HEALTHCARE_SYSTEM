@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { DashIcon } from "../brand/DashIcon";
 import type { RoleKey } from "../../theme/tokens";
 import { ROLE_CONFIG } from "../../lib/signInConfig";
 import { newCaptchaChallenge } from "../../lib/captcha";
@@ -145,7 +146,8 @@ export function StaffSignInForm({
   }
 
   return (
-    <>
+    <div className="si-step">
+      <div className="si-step-scroll">
       <div className="stepper">
         <div className="sdot done">✓</div>
         <div className="sline done" />
@@ -157,7 +159,9 @@ export function StaffSignInForm({
         ← Back
       </button>
       <div className="shd">
-        <div className="sico">{c.ico}</div>
+        <div className="sico" aria-hidden>
+          <DashIcon icon={c.ico} idPrefix={`signin-staff-${role}`} />
+        </div>
         <div className="stitle">{c.title}</div>
         <div className="ssub">{c.sub}</div>
       </div>
@@ -337,11 +341,13 @@ export function StaffSignInForm({
             </span>
           </div>
         )}
+      </div>
+      </div>
 
+      <div className="si-step-actions">
         <button
           className="btn"
           type="button"
-          style={{ marginTop: "10px" }}
           disabled={loading || lockoutActive}
           onClick={submit}
         >
@@ -365,7 +371,7 @@ export function StaffSignInForm({
           <AltButton label="📱 Practice 360" onActivate={() => stubbedAlt("p360")} />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

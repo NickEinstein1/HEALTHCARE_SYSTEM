@@ -282,10 +282,12 @@ export function LandingPage() {
         <div className="lp-hero-grid" />
         <div className="lp-hero-glow lp-hero-glow--left" />
         <div className="lp-hero-glow lp-hero-glow--right" />
-        <div className="lp-hide-mobile lp-hero-float-card lp-hero-float-card--cyan">
-          <div data-accent="cyan">Appointment Booked</div>
-          <div>Grace M. · Thu 09:30 · Cardiology</div>
-          <div>Synced to Dr. Njoroge · Confirmed</div>
+        <div className="lp-hide-mobile lp-hero-float-stack lp-hero-float-stack--left">
+          <div className="lp-hero-float-card lp-hero-float-card--cyan">
+            <div data-accent="cyan">Appointment Booked</div>
+            <div>Grace M. · Thu 09:30 · Cardiology</div>
+            <div>Synced to Dr. Njoroge · Confirmed</div>
+          </div>
         </div>
         <div className="lp-hide-mobile lp-hero-float-stack lp-hero-float-stack--right">
           <div className="lp-hero-float-card lp-hero-float-card--green">
@@ -307,9 +309,12 @@ export function LandingPage() {
           <span data-accent="green">Live across Kenya facilities</span>
         </div>
         <h1 className="lp-fade-up lp-d1 lp-hero-title">
-          Healthcare that<br />
-          <span className="lp-hero-glow-word" data-accent="cyan">knows you</span>
-          <span className="lp-hero-title-muted">, everywhere.</span>
+          {"Healthcare that "}
+          <br />
+          <span className="lp-hero-title-line2">
+            <span className="lp-hero-glow-word" data-accent="cyan">knows you,</span>
+            <span className="lp-hero-title-muted"> everywhere.</span>
+          </span>
         </h1>
         <p className="lp-fade-up lp-d2 lp-hero-sub">
           UniHealth connects patients, doctors, nurses, labs and pharmacies on one FHIR-native platform — with AI-assisted diagnostics, real-time alerts, and Kenya-first compliance built in from day one.
@@ -320,9 +325,11 @@ export function LandingPage() {
 
       <div className="lp-hero-foot">
         <div className="lp-fade-up lp-d3 lp-hero-actions">
-          <button className="lp-btn-primary" type="button" onClick={() => goRegister()}>Create Your Account</button>
-          <button type="button" onClick={() => goSignIn()}>Sign In →</button>
-          <a href="#features">See How It Works →</a>
+          <div className="lp-hero-actions-row">
+            <button className="lp-btn-primary" type="button" onClick={() => goRegister()}>Create Your Account</button>
+            <button type="button" onClick={() => goSignIn()}>Sign In →</button>
+          </div>
+          <a className="lp-hero-actions-link" href="#features">See How It Works →</a>
         </div>
       </div>
     </section>
@@ -406,17 +413,17 @@ export function LandingPage() {
     <section id="features" className="lp-features-section" style={{ padding: "100px clamp(16px,5vw,60px)", background: "rgba(0,0,0,0.22)" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div className="lp-section-head" style={{ textAlign: "center", marginBottom: 56 }}>
-          <p className="lp-section-eyebrow lp-eyebrow--cyan" style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Six Purpose-Built Portals</p>
+          <p className="lp-section-eyebrow lp-eyebrow--cyan" style={{ fontSize: 11, color: "#00d4ff", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>{ROLES.length} Purpose-Built Portals</p>
           <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>Every Role. One Platform.</h2>
           <p className="lp-section-lead" style={{ fontSize: 15, color: "#7ab8d8", marginTop: 12, maxWidth: 500, margin: "12px auto 0" }}>Each portal is tailored to its clinical context, sharing the same patient record in real time.</p>
         </div>
-        <div ref={rolesRef} className="lp-three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18 }}>
+        <div ref={rolesRef} className="lp-roles-grid" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 18 }}>
           {ROLES.map((r, i) => (
             <div key={r.id} className="lp-role-card"
               style={{ padding: "26px 24px", background: r.bg, border: `1px solid ${r.border}`, borderRadius: 18,
                 opacity: rolesVisible ? 1 : 0, transform: rolesVisible ? "translateY(0)" : "translateY(28px)",
                 transition: `opacity 0.5s ${i * 0.07}s, transform 0.5s ${i * 0.07}s cubic-bezier(0.23,1,0.32,1)` }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+              <div className="lp-role-card-top" style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, background: r.bg, border: `1px solid ${r.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: r.color }} className="lp-role-icon">
                   <DashIcon icon={r.icon} idPrefix={`lp-role-${r.id}`} />
                 </div>
@@ -426,11 +433,11 @@ export function LandingPage() {
                 </div>
               </div>
               <p className="lp-role-desc" style={{ fontSize: 13, color: "#7ab8d8", lineHeight: 1.62, margin: "0 0 16px" }}>{r.desc}</p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button type="button" className="lp-role-cta" data-accent={lpAccent(r.color)} onClick={() => goRegister(r.id)} style={{ fontSize: 12, color: r.color, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              <div className="lp-role-card-actions" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <button type="button" className="lp-role-cta" data-accent={lpAccent(r.color)} onClick={() => goRegister(r.id)} style={{ fontSize: 12, color: r.color, fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: "8px 4px", minHeight: 40 }}>
                   Get access →
                 </button>
-                <button type="button" className="lp-role-cta-secondary" onClick={() => goSignIn(r.id)} style={{ fontSize: 12, color: "#7ab8d8", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                <button type="button" className="lp-role-cta-secondary" onClick={() => goSignIn(r.id)} style={{ fontSize: 12, color: "#7ab8d8", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: "8px 4px", minHeight: 40 }}>
                   Sign in
                 </button>
               </div>
@@ -449,7 +456,7 @@ export function LandingPage() {
           <p className="lp-section-eyebrow lp-eyebrow--purple" style={{ fontSize: 11, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.12em", fontWeight: 600, marginBottom: 10 }}>Step by Step</p>
           <h2 className="lp-section-title" style={{ fontSize: "clamp(24px,4vw,44px)", fontWeight: 800, color: "#ddf0ff", margin: 0, letterSpacing: "-0.02em" }}>How It Works</h2>
         </div>
-        <div className="lp-journey-tabs" style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 44 }}>
+        <div className="lp-journey-tabs" style={{ display: "flex", gap: 8, justifyContent: "center", alignItems: "center", marginBottom: 44 }}>
           {(["patient","clinician"] as const).map(t => (
             <button key={t} type="button" onClick={() => setJourneyTab(t)}
               className={`lp-journey-tab${journeyTab === t ? " lp-journey-tab--active" : ""}`}

@@ -203,7 +203,7 @@ html[data-theme="light"] .lp-root .lp-hero .lp-top-stats,
 html[data-theme="light"] .lp-root .lp-hero .lp-top-stats div,
 html[data-theme="light"] .lp-root .lp-hero .lp-top-stats [style*="color"],
 html[data-theme="light"] .lp-root .lp-hero .lp-hide-mobile div,
-html[data-theme="light"] .lp-root .lp-hero a,
+html[data-theme="light"] .lp-root .lp-hero a:not(.lp-hero-actions-link),
 html[data-theme="light"] .lp-root .lp-hero button:not(.lp-btn-primary) {
   color: #000000 !important;
   font-weight: 800 !important;

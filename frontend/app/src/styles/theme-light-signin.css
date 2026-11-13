@@ -159,6 +159,15 @@ html[data-theme="light"] .sign-in-root .card {
   box-shadow: 0 12px 40px rgba(74, 58, 28, 0.14) !important;
 }
 
+html[data-theme="light"] .sign-in-root .si-step-actions {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--card) 98%, transparent) 55%,
+    color-mix(in srgb, var(--card) 92%, transparent) 85%,
+    color-mix(in srgb, var(--card) 70%, transparent) 100%
+  ) !important;
+}
+
 html[data-theme="light"] .sign-in-root .card:hover {
   border-color: var(--p) !important;
   box-shadow: 0 16px 48px rgba(90, 165, 210, 0.22) !important;

@@ -1,4 +1,5 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
+import { DashIcon } from "../brand/DashIcon";
 import { ROLE_CONFIG, ID_TYPES, type IdTypeKey } from "../../lib/signInConfig";
 import { fetchPasswordGrantToken, oidcEnabled } from "../../lib/oidc";
 
@@ -90,7 +91,8 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
   }
 
   return (
-    <>
+    <div className="si-step">
+      <div className="si-step-scroll">
       <div className="stepper">
         <div className="sdot done">✓</div>
         <div className="sline done" />
@@ -102,7 +104,9 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
         ← Back
       </button>
       <div className="shd">
-        <div className="sico">{c.ico}</div>
+        <div className="sico" aria-hidden>
+          <DashIcon icon={c.ico} idPrefix="signin-patient" />
+        </div>
         <div className="stitle">{c.title}</div>
         <div className="ssub">{c.sub}</div>
       </div>
@@ -215,34 +219,38 @@ export function PatientSignInForm({ onBack, onSuccess, addAudit }: Props) {
           <span className="fhint">Phone number linked to your UniHealth Patient Portal account</span>
         </div>
       </div>
-      <button className="btn" type="button" disabled={loading} onClick={submit}>
-        <div className="bspin" style={{ display: loading ? "block" : "none" }} />
-        <span>{loading ? "Verifying with UniHealth…" : "Verify with UniHealth"}</span>
-        {!loading && (
-          <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-            <path
-              fillRule="evenodd"
-              d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )}
-      </button>
-      <div className="orline">
-        <span>or verify with</span>
       </div>
-      <div className="alt-row">
-        <AltBusy label="👁️ Biometric" onClick={() => stubAlt("bio")} />
-        <AltBusy label="📱 Practice 360" onClick={() => stubAlt("p360")} />
-        <AltBusy
-          label="📞 *147# USSD"
-          onClick={() => {
-            addAudit("AUTH ALT_ussd role=patient");
-            window.alert("Dial *147# on your UniHealth-registered phone to verify via USSD.");
-          }}
-        />
+
+      <div className="si-step-actions">
+        <button className="btn" type="button" disabled={loading} onClick={submit}>
+          <div className="bspin" style={{ display: loading ? "block" : "none" }} />
+          <span>{loading ? "Verifying with UniHealth…" : "Verify with UniHealth"}</span>
+          {!loading && (
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+              <path
+                fillRule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
+        </button>
+        <div className="orline">
+          <span>or verify with</span>
+        </div>
+        <div className="alt-row">
+          <AltBusy label="👁️ Biometric" onClick={() => stubAlt("bio")} />
+          <AltBusy label="📱 Practice 360" onClick={() => stubAlt("p360")} />
+          <AltBusy
+            label="📞 *147# USSD"
+            onClick={() => {
+              addAudit("AUTH ALT_ussd role=patient");
+              window.alert("Dial *147# on your UniHealth-registered phone to verify via USSD.");
+            }}
+          />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 

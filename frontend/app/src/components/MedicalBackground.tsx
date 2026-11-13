@@ -627,18 +627,19 @@ function drawMedCross(
 function sceneLayoutCoords(layout: "default" | "landing", w: number, h: number) {
   const m = Math.min(w, h);
   if (layout === "landing") {
+    // Keep figures + vitals HUD in side gutters / lower stage so hero copy stays clear.
     return {
       hubX: w * 0.50,
-      hubY: h * 0.54,
-      patCX: w * 0.11,
-      patCY: h * 0.56,
-      patScale: m * 0.18,
-      drCX: w * 0.90,
-      drCY: h * 0.50,
-      drScale: m * 0.22,
-      bodyCX: w * 0.24,
-      bodyCY: h * 0.58,
-      bodyScale: m * 0.19,
+      hubY: h * 0.62,
+      patCX: w * 0.08,
+      patCY: h * 0.68,
+      patScale: m * 0.16,
+      drCX: w * 0.94,
+      drCY: h * 0.64,
+      drScale: m * 0.18,
+      bodyCX: w * 0.18,
+      bodyCY: h * 0.72,
+      bodyScale: m * 0.16,
     };
   }
   return {
@@ -961,9 +962,19 @@ export function MedicalBackground({ layout = "default" }: { layout?: "default" |
 
       const { patCX, patCY, patScale, drCX, drCY, drScale, bodyCX, bodyCY, bodyScale } = lay;
       const figAlpha = tone.figMul;
+      const isLanding = layout === "landing";
+      // On narrow landing viewports, skip clinical HUD so hero CTAs stay readable.
+      const showLandingHud = !isLanding || w >= 900;
+
+      if (showLandingHud) {
       drawPatient(ctx, patCX, patCY, patScale, 0.88 * figAlpha, now, C);
 
-      const ptPanelX = patCX - 100, ptPanelY = patCY - patScale * 0.68;
+      const ptPanelX = isLanding
+        ? Math.max(10, patCX - 40)
+        : patCX - 100;
+      const ptPanelY = isLanding
+        ? Math.min(h - 140, patCY - patScale * 0.55)
+        : patCY - patScale * 0.68;
       drawVitalsPanel(ctx, ptPanelX, ptPanelY, ptVitals, isLight ? 0.92 : 0.78, C.cyan, C, isLight);
 
       ctx.strokeStyle = pcol(C, "cyan", isLight ? 0.58 : 0.38); ctx.lineWidth = 1.0;
@@ -976,7 +987,12 @@ export function MedicalBackground({ layout = "default" }: { layout?: "default" |
 
       drawDoctor(ctx, drCX, drCY, drScale, 0.90 * figAlpha, now, C);
 
-      const drPanelX = drCX - 220, drPanelY = drCY - drScale * 0.50;
+      const drPanelX = isLanding
+        ? Math.min(w - 178, drCX - 175)
+        : drCX - 220;
+      const drPanelY = isLanding
+        ? Math.min(h - 160, drCY - drScale * 0.42)
+        : drCY - drScale * 0.50;
       drawVitalsPanel(ctx, drPanelX, drPanelY, drVitals, isLight ? 0.92 : 0.78, C.green, C, isLight);
 
       ctx.strokeStyle = pcol(C, "green", isLight ? 0.52 : 0.34); ctx.lineWidth = 1.0;
@@ -988,7 +1004,13 @@ export function MedicalBackground({ layout = "default" }: { layout?: "default" |
       ctx.stroke(); ctx.setLineDash([]);
 
       drawBodyWireframe(ctx, bodyCX, bodyCY, bodyScale, bodyAlpha, C);
+      } else if (isLanding) {
+        // Soft silhouette wash only — no HUD panels over mobile hero CTAs
+        drawPatient(ctx, patCX, patCY, patScale * 0.85, 0.35 * figAlpha, now, C);
+        drawDoctor(ctx, drCX, drCY, drScale * 0.85, 0.35 * figAlpha, now, C);
+      }
 
+      if (showLandingHud) {
       ORGANS.forEach((org, oi) => {
         const orgCol = organCols[oi];
         const ox = bodyCX + org.dx * bodyScale;
@@ -1022,6 +1044,7 @@ export function MedicalBackground({ layout = "default" }: { layout?: "default" |
           ctx.moveTo(bodyCX - bodyW * 1.3, ry); ctx.lineTo(bodyCX + bodyW * 1.3, ry);
           ctx.strokeStyle = pcol(C, "green", ringAlpha * 3.8); ctx.lineWidth = 1.1; ctx.stroke();
         }
+      }
       }
 
       // ── 10. Full-width scan line ───────────────────────────────

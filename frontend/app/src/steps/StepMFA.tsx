@@ -109,7 +109,8 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
   }
 
   return (
-    <div className="fade">
+    <div className="si-step fade">
+      <div className="si-step-scroll">
       <div className="stepper">
         <div className="sdot done">✓</div>
         <div className="sline done" />
@@ -275,6 +276,7 @@ export function StepMFA({ role, contact, via, staffFailedAttempts, onBack, onSuc
             <span>{p360Loading ? "Waiting…" : "Awaiting App Approval…"}</span>
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

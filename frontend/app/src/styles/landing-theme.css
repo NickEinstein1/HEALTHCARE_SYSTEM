@@ -75,7 +75,7 @@ html[data-theme="light"] .lp-root .lp-hero button {
   font-weight: 700 !important;
 }
 
-html[data-theme="light"] .lp-root .lp-hero a {
+html[data-theme="light"] .lp-root .lp-hero a:not(.lp-hero-actions-link) {
   border: 2px solid var(--p) !important;
   color: var(--t1) !important;
   font-weight: 800 !important;

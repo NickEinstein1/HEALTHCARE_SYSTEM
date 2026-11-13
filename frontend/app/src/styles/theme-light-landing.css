@@ -335,6 +335,18 @@ html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(1
   font-weight: 800 !important;
 }
 
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(1)[data-accent="cyan"] {
+  color: #0082b4 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(1)[data-accent="green"] {
+  color: #047857 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(1)[data-accent="violet"] {
+  color: #6d28d9 !important;
+}
+
 html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(2) {
   color: var(--t1) !important;
   font-weight: 700 !important;
@@ -343,6 +355,28 @@ html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(2
 html[data-theme="light"] .lp-landing-route .lp-hero-float-card > div:nth-child(3) {
   color: var(--t2) !important;
   font-weight: 600 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-actions-row button:not(.lp-btn-primary) {
+  border: 1.5px solid var(--bdr2) !important;
+  background: color-mix(in srgb, var(--card) 78%, transparent) !important;
+  color: var(--t1) !important;
+  font-weight: 800 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-actions-link {
+  color: var(--t2) !important;
+  border: none !important;
+  background: none !important;
+  font-weight: 700 !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-actions-link:hover {
+  color: var(--pd) !important;
+}
+
+html[data-theme="light"] .lp-landing-route .lp-hero-sub {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 /* Top stats — vivid accent numbers */

@@ -438,6 +438,13 @@ h1 em {
   color: var(--neon);
   font-weight: 600;
   margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 2px;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 .auth-card-split {
