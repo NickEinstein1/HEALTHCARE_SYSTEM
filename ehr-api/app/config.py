@@ -40,7 +40,8 @@ class Settings(BaseSettings):
     oidc_enabled: bool = False
     oidc_issuer_url: str = ""
     oidc_jwks_url: str = ""
-    oidc_audience: str = "unihealth-gateway"
+    # Empty = do not verify aud (Keycloak public SPA tokens often omit audience).
+    oidc_audience: str = ""
     oidc_role_claim: str = "unihealth_role"
     oidc_allow_header_fallback: bool = True
 

@@ -96,7 +96,9 @@ services:
       EHR_OIDC_ISSUER_URL: https://${AUTH_HOSTNAME}/realms/unihealth
       # JWKS fetched inside Docker network (avoids hairpin TLS during validation)
       EHR_OIDC_JWKS_URL: http://keycloak:8080/realms/unihealth/protocol/openid-connect/certs
-      EHR_OIDC_AUDIENCE: ${EHR_OIDC_AUDIENCE:-account}
+      # SPA password-grant tokens often omit aud — leave empty unless you mint audience-bound tokens
+      EHR_OIDC_AUDIENCE: ${EHR_OIDC_AUDIENCE:-}
+      EHR_AI_RISK_SCORE_ENABLED: ${EHR_AI_RISK_SCORE_ENABLED:-true}
       EHR_OTP_SIMULATE: "false"
       EHR_MPESA_SIMULATE: "false"
       EHR_PATIENT_SESSION_SECRET: ${EHR_PATIENT_SESSION_SECRET}

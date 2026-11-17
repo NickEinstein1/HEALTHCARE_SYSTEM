@@ -29,8 +29,14 @@ export function useAiAlertsWebSocket(
 
     const connect = () => {
       if (cancelled) return;
+      const url = aiAlertsWebSocketUrl(role);
+      if (!url) {
+        // OIDC on but no access token yet — retry until sign-in completes.
+        scheduleReconnect();
+        return;
+      }
       try {
-        ws = new WebSocket(aiAlertsWebSocketUrl(role));
+        ws = new WebSocket(url);
       } catch {
         scheduleReconnect();
         return;

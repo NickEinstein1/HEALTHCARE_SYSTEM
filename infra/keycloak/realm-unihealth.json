@@ -24,8 +24,13 @@
       "publicClient": true,
       "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
-      "redirectUris": ["http://localhost:5173/*", "http://localhost:3000/*"],
-      "webOrigins": ["+"]
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:3000/*",
+        "https://app.unihealth360.com/*",
+        "https://*.unihealth360.com/*"
+      ],
+      "webOrigins": ["+", "https://app.unihealth360.com"]
     },
     {
       "clientId": "unihealth-gateway",

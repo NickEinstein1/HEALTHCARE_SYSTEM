@@ -51,10 +51,16 @@ ON CONFLICT (id) DO UPDATE SET
   status = EXCLUDED.status,
   updated_at = NOW();
 
--- ML Tier C: analytics consent (required for export_ml_features_staging.sql)
+-- Pilot consents: treatment (FHIR reads with X-Facility-Id) + analytics (ML export)
 INSERT INTO consents (patient_id, facility_id, scope, active)
 SELECT v.patient_id, v.facility_id, v.scope, true
 FROM (VALUES
+  ('P001', 'FAC-A', 'treatment'),
+  ('P001', 'FAC-B', 'treatment'),
+  ('P002', 'FAC-A', 'treatment'),
+  ('P002', 'FAC-B', 'treatment'),
+  ('P003', 'FAC-A', 'treatment'),
+  ('P003', 'FAC-B', 'treatment'),
   ('P001', 'FAC-A', 'analytics'),
   ('P001', 'FAC-B', 'analytics'),
   ('P002', 'FAC-A', 'analytics'),

@@ -26,7 +26,7 @@ import type {
   PatientSummary,
 } from "./apiTypes";
 import { authHeaders } from "./authHeaders";
-import { getStoredAccessToken } from "./oidc";
+import { getStoredAccessToken, oidcEnabled } from "./oidc";
 
 export function apiBaseUrl(): string {
   const env = (import.meta as { env?: Record<string, string> }).env;
@@ -1001,7 +1001,13 @@ export const api = {
 export type AiWsAlertRole = "doctor" | "nurse" | "admin" | "lab" | "pharmacy";
 
 /** WebSocket URL for Phase 3 ``/ai/ws/alerts/{role}`` (Bearer token when signed in). */
-export function aiAlertsWebSocketUrl(role: AiWsAlertRole): string {
+export function aiAlertsWebSocketUrl(role: AiWsAlertRole): string | null {
+  const token = getStoredAccessToken();
+  // Production OIDC: never fall back to dev-token-* (gateway rejects them).
+  if (!token) {
+    if (oidcEnabled()) return null;
+    // Local/dev pilot only
+  }
   const httpBase = apiBaseUrl();
   let wsBase: string;
   if (httpBase) {
@@ -1013,7 +1019,6 @@ export function aiAlertsWebSocketUrl(role: AiWsAlertRole): string {
     wsBase = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
   }
   const qs = new URLSearchParams();
-  const token = getStoredAccessToken();
   qs.set("token", token || "dev-token-1");
   return `${wsBase}/ai/ws/alerts/${role}?${qs.toString()}`;
 }
